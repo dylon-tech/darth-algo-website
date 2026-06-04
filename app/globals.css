@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  background: #020203;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at 50% -10%, rgba(255, 26, 26, 0.22), transparent 30rem),
+    radial-gradient(circle at 92% 8%, rgba(185, 0, 0, 0.15), transparent 20rem),
+    #020203;
+  color: #f4f4f5;
+  font-family: var(--font-sora), system-ui, sans-serif;
+}
+
+::selection {
+  background: rgba(255, 26, 26, 0.75);
+  color: white;
+}
+
+.font-display {
+  font-family: var(--font-rajdhani), system-ui, sans-serif;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.section-shell {
+  @apply mx-auto w-full max-w-7xl px-5 sm:px-6 lg:px-8;
+}
+
+.panel-border {
+  @apply border border-white/10 bg-white/[0.035] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)];
+}
+
+.red-line {
+  background: linear-gradient(90deg, transparent, #ff1a1a, transparent);
+}
+
+.market-tape {
+  mask-image: linear-gradient(90deg, transparent, black 12%, black 88%, transparent);
+}
+
+.market-tape-track {
+  animation: marketTape 36s linear infinite;
+}
+
+.market-depth {
+  animation: marketDrift 10s ease-in-out infinite;
+}
+
+@keyframes marketTape {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-33.333%);
+  }
+}
+
+@keyframes marketDrift {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-12px);
+  }
+}
