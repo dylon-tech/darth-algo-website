@@ -8,16 +8,23 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        obsidian: "#020203",
-        carbon: "#08090b",
-        ember: "#ff1a1a",
-        crimson: "#b90000",
-        oxide: "#320607",
-        steel: "#b6bbc5",
+        obsidian: "#0D1117",
+        secondary: "#161B22",
+        card: "#1D2430",
+        carbon: "#090D13",
+        ember: "#DC3741",
+        crimson: "#A8232D",
+        oxide: "#32090D",
+        steel: "#98A2B3",
+        bull: "#00BE5F",
+        bear: "#DC3741",
+        swing: "#1E7DDC",
+        scalp: "#EB9114",
+        pro: "#8B5CF6",
       },
       boxShadow: {
-        glow: "0 0 34px rgba(255, 26, 26, 0.35)",
-        "glow-lg": "0 0 90px rgba(255, 26, 26, 0.28)",
+        glow: "0 0 34px rgba(220, 55, 65, 0.3)",
+        "glow-lg": "0 0 90px rgba(220, 55, 65, 0.22)",
       },
       animation: {
         pulseGlow: "pulseGlow 3.8s ease-in-out infinite",
@@ -40,7 +47,7 @@ const config: Config = {
       },
       backgroundImage: {
         grid:
-          "linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px)",
+          "linear-gradient(rgba(152,162,179,0.055) 1px, transparent 1px), linear-gradient(90deg, rgba(152,162,179,0.055) 1px, transparent 1px)",
       },
     },
   },
