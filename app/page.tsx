@@ -533,10 +533,19 @@ export default function Home() {
       setLandingIntro(false);
       return;
     }
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reducedMotion) {
+      window.sessionStorage.setItem(landingIntroKey, "true");
+      setLandingIntro(false);
+      return;
+    }
+
+    const introDuration = window.matchMedia("(max-width: 767px)").matches ? 1050 : 2400;
     const introTimer = window.setTimeout(() => {
       window.sessionStorage.setItem(landingIntroKey, "true");
       setLandingIntro(false);
-    }, 2400);
+    }, introDuration);
     return () => window.clearTimeout(introTimer);
   }, []);
 

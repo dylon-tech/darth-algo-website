@@ -1493,6 +1493,75 @@ summary {
   }
 }
 
+@media (max-width: 767px) {
+  .landing-intro {
+    animation-duration: 1.05s;
+  }
+
+  .landing-market-scene,
+  .landing-intro-scan,
+  .landing-intro-shutter,
+  .landing-intro-skip {
+    display: none;
+  }
+
+  .landing-intro-grid {
+    animation: none;
+    mask-image: radial-gradient(circle, black 0%, transparent 76%);
+    opacity: 0.5;
+  }
+
+  .landing-intro-mark {
+    animation: heroEnter 320ms ease-out both;
+  }
+
+  .landing-intro-loader span {
+    animation-duration: 520ms;
+    animation-delay: 120ms;
+  }
+
+  .ambient-market-chart,
+  .ambient-market-chart .market-candle,
+  .ambient-market-chart .market-equity-line,
+  .ambient-market-scan,
+  .ai-powered-badge::before,
+  .ai-update-dot,
+  .brand-crest-beam,
+  .brand-crest-bars i,
+  .brand-crest-core,
+  .brand-crest-orbit,
+  .brand-wordmark,
+  .chart-hotspot-dot::after,
+  .hero-orbit::after,
+  .hero-orbit-core,
+  .hero-scanline,
+  .market-depth,
+  .market-tape-track {
+    animation: none;
+  }
+
+  .ambient-market-chart .market-equity-line {
+    filter: none;
+    stroke-dasharray: none;
+  }
+
+  [data-reveal="true"] {
+    filter: none;
+    transform: translateY(14px);
+    transition-duration: 420ms;
+  }
+
+  .site-header,
+  .newsletter-popup {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .site-header {
+    background: rgba(0, 0, 0, 0.94);
+  }
+}
+
 @media (min-width: 1024px) {
   .app-shell {
     padding-bottom: 0;
