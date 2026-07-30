@@ -303,22 +303,11 @@ const pricingPlans = [
 ];
 
 const checkoutLinks = {
-  scalper:
-    process.env.NEXT_PUBLIC_STRIPE_SCALPER_LINK ||
-    "https://buy.stripe.com/14AfZi4T5fRidqS2oc6kg03",
-  swing:
-    process.env.NEXT_PUBLIC_STRIPE_SWING_LINK ||
-    "https://buy.stripe.com/28EcN699l8oQ9aC5Ao6kg02",
-  swingTrial:
-    process.env.NEXT_PUBLIC_STRIPE_SWING_TRIAL_LINK ||
-    process.env.NEXT_PUBLIC_STRIPE_SWING_LINK ||
-    "https://buy.stripe.com/28EcN699l8oQ9aC5Ao6kg02",
-  pro:
-    process.env.NEXT_PUBLIC_STRIPE_MONTHLY_LINK ||
-    "https://buy.stripe.com/4gM8wQfxJ6gI1IabYM6kg05",
-  lifetime:
-    process.env.NEXT_PUBLIC_STRIPE_LIFETIME_LINK ||
-    "https://buy.stripe.com/6oUcN62KX0WoeuW1k86kg04",
+  scalper: "https://buy.stripe.com/14AfZi4T5fRidqS2oc6kg03",
+  swing: "https://buy.stripe.com/28EcN699l8oQ9aC5Ao6kg02",
+  swingTrial: "https://buy.stripe.com/28EcN699l8oQ9aC5Ao6kg02",
+  pro: "https://buy.stripe.com/4gM8wQfxJ6gI1IabYM6kg05",
+  lifetime: "https://buy.stripe.com/6oUcN62KX0WoeuW1k86kg04",
 };
 
 const performanceMetrics = [
