@@ -38,7 +38,8 @@ NEXT_PUBLIC_STRIPE_SCALPER_LINK=https://buy.stripe.com/14AfZi4T5fRidqS2oc6kg03
 NEXT_PUBLIC_STRIPE_SWING_LINK=https://buy.stripe.com/28EcN699l8oQ9aC5Ao6kg02
 NEXT_PUBLIC_STRIPE_SWING_TRIAL_LINK=https://buy.stripe.com/28EcN699l8oQ9aC5Ao6kg02
 STRIPE_SECRET_KEY=your_stripe_secret_key
-NEWSLETTER_WEBHOOK_URL=your_email_platform_or_automation_webhook
+BREVO_API_KEY=your_brevo_api_key
+BREVO_LIST_ID=your_brevo_contact_list_id
 NEXT_PUBLIC_SUPPORT_EMAIL=your_support_email
 NEXT_PUBLIC_STRIPE_MONTHLY_LINK=https://buy.stripe.com/4gM8wQfxJ6gI1IabYM6kg05
 NEXT_PUBLIC_STRIPE_LIFETIME_LINK=https://buy.stripe.com/6oUcN62KX0WoeuW1k86kg04
@@ -47,10 +48,13 @@ NEXT_PUBLIC_SITE_URL=https://darthalgo.com
 
 ## Newsletter
 
-The newsletter form posts subscriber consent and email data through the server-side
-`NEWSLETTER_WEBHOOK_URL`. Connect this URL to your email platform directly or through
-an automation tool such as Zapier or Make. The webhook receives `email`, `consent`,
-`source`, and `subscribedAt` fields.
+The newsletter form sends subscriber emails to Brevo from the server-side newsletter
+API. Add `BREVO_API_KEY` and `BREVO_LIST_ID` in Vercel so signups are added to your
+Brevo contact list without exposing private credentials in the browser.
+
+Optional fallback: if you prefer Make, Zapier, or another email automation later, set
+`NEWSLETTER_WEBHOOK_URL` instead. The webhook receives `email`, `consent`, `source`,
+and `subscribedAt` fields.
 
 Suggested checkout confirmation message:
 
