@@ -130,10 +130,10 @@ export const productList = Object.values(products);
 
 export function getCheckoutLink(slug: ProductSlug) {
   if (slug === "scalper") {
-    return process.env.NEXT_PUBLIC_STRIPE_SCALPER_LINK || "https://buy.stripe.com/14AfZi4T5fRidqS2oc6kg03";
+    return "https://buy.stripe.com/14AfZi4T5fRidqS2oc6kg03";
   }
   if (slug === "swing") {
-    return process.env.NEXT_PUBLIC_STRIPE_SWING_TRIAL_LINK || process.env.NEXT_PUBLIC_STRIPE_SWING_LINK || "https://buy.stripe.com/28EcN699l8oQ9aC5Ao6kg02";
+    return "https://buy.stripe.com/28EcN699l8oQ9aC5Ao6kg02";
   }
-  return process.env.NEXT_PUBLIC_STRIPE_MONTHLY_LINK || "https://buy.stripe.com/4gM8wQfxJ6gI1IabYM6kg05";
+  return "https://buy.stripe.com/4gM8wQfxJ6gI1IabYM6kg05";
 }
