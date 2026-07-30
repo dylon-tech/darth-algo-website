@@ -2,6 +2,15 @@ import { NextResponse } from "next/server";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function parseBrevoListIds(value?: string) {
+  if (!value) return [];
+
+  return value
+    .split(",")
+    .map((item) => Number.parseInt(item.trim(), 10))
+    .filter((item) => Number.isFinite(item) && item > 0);
+}
+
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as {
@@ -23,6 +32,32 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "Email consent is required." }, { status: 400 });
     }
 
+    const subscribedAt = new Date().toISOString();
+    const brevoApiKey = process.env.BREVO_API_KEY;
+    const brevoListIds = parseBrevoListIds(process.env.BREVO_LIST_ID ?? process.env.BREVO_LIST_IDS);
+
+    if (brevoApiKey && brevoListIds.length > 0) {
+      const response = await fetch("https://api.brevo.com/v3/contacts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "api-key": brevoApiKey,
+        },
+        body: JSON.stringify({
+          email,
+          listIds: brevoListIds,
+          updateEnabled: true,
+        }),
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        return NextResponse.json({ message: "We could not add you right now. Please try again." }, { status: 502 });
+      }
+
+      return NextResponse.json({ ok: true });
+    }
+
     const webhookUrl = process.env.NEWSLETTER_WEBHOOK_URL;
     if (!webhookUrl) {
       return NextResponse.json(
@@ -38,7 +73,7 @@ export async function POST(request: Request) {
         email,
         consent: true,
         source: "darthalgo-website",
-        subscribedAt: new Date().toISOString(),
+        subscribedAt,
       }),
       cache: "no-store",
     });
