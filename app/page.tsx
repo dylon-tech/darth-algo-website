@@ -455,6 +455,103 @@ function AnimatedCandles({ ambient = false }: { ambient?: boolean }) {
   );
 }
 
+function CommandCenterDemoChart() {
+  const demoCandles = [
+    [18, 112, 103, 96, 124],
+    [40, 104, 95, 88, 112],
+    [62, 96, 108, 91, 116],
+    [84, 107, 92, 86, 113],
+    [106, 93, 84, 76, 101],
+    [128, 84, 76, 70, 92],
+    [150, 77, 86, 72, 94],
+    [172, 87, 98, 80, 105],
+    [194, 99, 88, 82, 108],
+    [216, 89, 76, 70, 96],
+    [238, 75, 64, 57, 84],
+    [260, 63, 54, 47, 73],
+    [282, 55, 46, 40, 63],
+    [304, 47, 37, 30, 55],
+    [326, 38, 30, 24, 48],
+    [348, 31, 21, 16, 40],
+  ] as const;
+
+  return (
+    <div className="demo-chart-shell">
+      <div className="demo-chart-toolbar">
+        <span>Micro Silver Futures · 3m</span>
+        <strong>SCALP</strong>
+      </div>
+      <svg className="demo-chart" viewBox="0 0 370 150" role="img" aria-label="Demo Darth Algo chart showing sell signal, risk zone, entry, stop, and target levels">
+        <defs>
+          <linearGradient id="demoRiskRed" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#ff364d" stopOpacity="0.32" />
+            <stop offset="100%" stopColor="#ff364d" stopOpacity="0.04" />
+          </linearGradient>
+          <linearGradient id="demoTargetGreen" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#00d084" stopOpacity="0.12" />
+            <stop offset="100%" stopColor="#00d084" stopOpacity="0.34" />
+          </linearGradient>
+          <linearGradient id="demoBearCloud" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#ff364d" stopOpacity="0.38" />
+            <stop offset="100%" stopColor="#ff364d" stopOpacity="0.08" />
+          </linearGradient>
+          <filter id="demoRedGlow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="2.5" result="blur" />
+            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+        </defs>
+
+        <g className="demo-grid">
+          {[0, 1, 2, 3, 4].map((line) => <line key={`h-${line}`} x1="0" x2="370" y1={22 + line * 26} y2={22 + line * 26} />)}
+          {[0, 1, 2, 3, 4, 5].map((line) => <line key={`v-${line}`} x1={24 + line * 62} x2={24 + line * 62} y1="0" y2="150" />)}
+        </g>
+
+        <path className="demo-cloud" d="M0 104 C38 96 58 112 91 95 S147 72 183 87 S250 73 288 50 S333 52 370 31 L370 55 C333 76 296 77 254 91 S194 105 152 101 S73 120 0 129 Z" />
+        <path className="demo-fast-line" d="M0 105 C41 95 63 111 94 94 S144 71 181 84 S251 68 286 47 S331 47 370 29" />
+        <path className="demo-slow-line" d="M0 126 C42 115 72 120 107 105 S169 91 211 96 S275 86 316 66 S350 58 370 50" />
+
+        <g className="demo-candles">
+          {demoCandles.map(([x, open, close, high, low], index) => {
+            const green = close < open;
+            const color = green ? "#00d084" : "#ff364d";
+            const bodyY = Math.min(open, close);
+            const bodyHeight = Math.max(Math.abs(open - close), 4);
+            return (
+              <g key={x} style={{ animationDelay: `${index * 52}ms` }}>
+                <line x1={x} x2={x} y1={high} y2={low} stroke={color} />
+                <rect x={x - 4} y={bodyY} width="8" height={bodyHeight} fill={color} />
+              </g>
+            );
+          })}
+        </g>
+
+        <g className="demo-risk-plan">
+          <rect x="214" y="45" width="120" height="28" fill="url(#demoRiskRed)" stroke="#ff364d" />
+          <rect x="214" y="73" width="120" height="54" fill="url(#demoTargetGreen)" stroke="#00d084" />
+          <line x1="214" x2="334" y1="73" y2="73" stroke="#ff364d" />
+          <line x1="214" x2="334" y1="100" y2="100" stroke="#00d084" strokeDasharray="5 5" />
+          <line x1="214" x2="334" y1="127" y2="127" stroke="#00d084" />
+        </g>
+
+        <g className="demo-label demo-sell" transform="translate(194 26)">
+          <path d="M0 0 H38 Q42 0 42 4 V22 Q42 26 38 26 H25 L21 32 L17 26 H0 Q-4 26 -4 22 V4 Q-4 0 0 0 Z" />
+          <text x="19" y="17">SELL</text>
+        </g>
+        <g className="demo-level-label demo-stop" transform="translate(330 40)"><path d="M0 0 H35 Q39 0 39 4 V15 Q39 19 35 19 H0 L-6 9.5 Z" /><text x="18" y="13">STOP</text></g>
+        <g className="demo-level-label demo-entry" transform="translate(330 64)"><path d="M0 0 H40 Q44 0 44 4 V15 Q44 19 40 19 H0 L-6 9.5 Z" /><text x="20" y="13">ENTRY</text></g>
+        <g className="demo-level-label demo-target" transform="translate(330 91)"><path d="M0 0 H50 Q54 0 54 4 V15 Q54 19 50 19 H0 L-6 9.5 Z" /><text x="25" y="13">TARGET 1</text></g>
+        <g className="demo-level-label demo-target" transform="translate(330 118)"><path d="M0 0 H50 Q54 0 54 4 V15 Q54 19 50 19 H0 L-6 9.5 Z" /><text x="25" y="13">TARGET 2</text></g>
+      </svg>
+      <div className="demo-chart-dashboard">
+        <span><b>Market</b> Downtrend</span>
+        <span><b>Signal</b> Sell</span>
+        <span><b>Plan</b> Target 2 hit</span>
+        <span><b>R/R</b> 1:2</span>
+      </div>
+    </div>
+  );
+}
+
 function Brand({ small = false }: { small?: boolean }) {
   return (
     <span className="inline-flex items-center gap-3 leading-none">
@@ -858,10 +955,10 @@ export default function Home() {
             </div>
             <div className="hero-terminal-chart mt-5 overflow-hidden rounded border border-white/10 bg-[#080b11] p-4">
               <div className="mb-4 flex items-center justify-between font-mono text-[9px] font-bold uppercase text-zinc-600">
-                <span>MGC / structure scan</span>
-                <span className="text-emerald-400">TP2 tracking</span>
+                <span>Live setup demo</span>
+                <span className="text-emerald-400">Target 2 tracking</span>
               </div>
-              <AnimatedCandles ambient />
+              <CommandCenterDemoChart />
             </div>
             <div className="mt-5 grid grid-cols-3 gap-2">
               {["Alerts", "Targets", "Dashboard"].map((item) => <span key={item} className="rounded border border-ember/20 bg-ember/[0.07] px-3 py-2 text-center font-mono text-[9px] font-bold uppercase text-red-100">{item}</span>)}

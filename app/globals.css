@@ -662,6 +662,158 @@ a:hover .brand-wordmark {
   opacity: 0.34;
 }
 
+.demo-chart-shell {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 5px;
+  background:
+    radial-gradient(circle at 84% 18%, rgba(255, 36, 36, 0.11), transparent 28%),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.74), rgba(7, 10, 16, 0.96));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.055), 0 18px 42px rgba(0, 0, 0, 0.32);
+}
+
+.demo-chart-shell::before {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(30, 64, 175, 0.13) 0 54%, rgba(0, 0, 0, 0.18) 54% 100%);
+  content: "";
+  pointer-events: none;
+}
+
+.demo-chart-toolbar,
+.demo-chart-dashboard {
+  position: relative;
+  z-index: 2;
+}
+
+.demo-chart-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.55rem 0.65rem 0;
+  color: #98a2b3;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.55rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.demo-chart-toolbar strong {
+  border-radius: 3px;
+  background: #e38b14;
+  padding: 0.22rem 0.42rem;
+  color: white;
+  box-shadow: 0 0 16px rgba(227, 139, 20, 0.22);
+}
+
+.demo-chart {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 150px;
+  overflow: visible;
+}
+
+.demo-grid line {
+  stroke: rgba(255, 255, 255, 0.07);
+  stroke-width: 0.6;
+}
+
+.demo-cloud {
+  fill: url(#demoBearCloud);
+  opacity: 0.9;
+}
+
+.demo-fast-line {
+  fill: none;
+  stroke: #ff364d;
+  stroke-width: 2;
+  filter: url(#demoRedGlow);
+}
+
+.demo-slow-line {
+  fill: none;
+  stroke: rgba(255, 54, 77, 0.52);
+  stroke-width: 1.2;
+}
+
+.demo-candles g {
+  opacity: 0;
+  transform: translateY(8px);
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  animation: demoCandleIn 520ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.demo-candles line {
+  stroke-width: 1.1;
+}
+
+.demo-risk-plan {
+  opacity: 0;
+  animation: demoPlanIn 680ms cubic-bezier(0.22, 1, 0.36, 1) 640ms forwards;
+}
+
+.demo-label,
+.demo-level-label {
+  opacity: 0;
+  filter: drop-shadow(0 0 8px rgba(255, 36, 36, 0.38));
+  animation: demoLabelIn 460ms cubic-bezier(0.22, 1, 0.36, 1) 780ms forwards;
+}
+
+.demo-label path,
+.demo-level-label path {
+  fill: #ff364d;
+}
+
+.demo-label text,
+.demo-level-label text {
+  fill: #fff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 9px;
+  font-weight: 900;
+  text-anchor: middle;
+}
+
+.demo-target {
+  filter: drop-shadow(0 0 8px rgba(0, 208, 132, 0.36));
+}
+
+.demo-target path {
+  fill: #00b86b;
+}
+
+.demo-chart-dashboard {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.demo-chart-dashboard span {
+  display: flex;
+  min-height: 2.3rem;
+  flex-direction: column;
+  justify-content: center;
+  background: rgba(2, 2, 3, 0.7);
+  padding: 0.42rem 0.5rem;
+  color: #ff465a;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.52rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.demo-chart-dashboard b {
+  margin-bottom: 0.1rem;
+  color: #98a2b3;
+  font-size: 0.48rem;
+}
+
 .terminal-stack {
   perspective: 900px;
 }
@@ -1404,6 +1556,37 @@ a:hover .brand-wordmark {
 
   50% {
     transform: translateY(-10px) rotateX(1.2deg);
+  }
+}
+
+@keyframes demoCandleIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes demoPlanIn {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes demoLabelIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.92);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
