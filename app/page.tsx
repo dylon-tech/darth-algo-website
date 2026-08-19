@@ -455,98 +455,88 @@ function AnimatedCandles({ ambient = false }: { ambient?: boolean }) {
   );
 }
 
-function CommandCenterDemoChart() {
-  const demoCandles = [
-    [18, 112, 103, 96, 124],
-    [40, 104, 95, 88, 112],
-    [62, 96, 108, 91, 116],
-    [84, 107, 92, 86, 113],
-    [106, 93, 84, 76, 101],
-    [128, 84, 76, 70, 92],
-    [150, 77, 86, 72, 94],
-    [172, 87, 98, 80, 105],
-    [194, 99, 88, 82, 108],
-    [216, 89, 76, 70, 96],
-    [238, 75, 64, 57, 84],
-    [260, 63, 54, 47, 73],
-    [282, 55, 46, 40, 63],
-    [304, 47, 37, 30, 55],
-    [326, 38, 30, 24, 48],
-    [348, 31, 21, 16, 40],
-  ] as const;
+const commandCenterModes = [
+  {
+    id: "swing",
+    label: "Swing",
+    assetLabel: "Micro Gold Futures · 5m",
+    image: "/indicators/swing-overview.png",
+    alt: "Darth Algo Swing Tool chart with uptrend dashboard, buy setup, entry, stop and target levels",
+    accent: "text-swing",
+    badge: "bg-swing",
+    stack: [
+      ["Market", "Uptrend", "text-emerald-400"],
+      ["Guidance", "Look for BUY setups", "text-white"],
+      ["Last Signal", "BUY", "text-emerald-400"],
+      ["Trade Plan", "Target 2 hit", "text-emerald-400"],
+      ["Current Candle", "Hollow - Lower", "text-zinc-400"],
+      ["Risk / Reward", "1:2", "text-emerald-400"],
+      ["Access", "Invite-only", "text-ember"],
+    ],
+  },
+  {
+    id: "scalper",
+    label: "Scalper",
+    assetLabel: "Micro Silver Futures · 3m",
+    image: "/indicators/scalper-overview.png",
+    alt: "Darth Algo Scalper Tool chart with downtrend dashboard, sell setup, entry, stop and target levels",
+    accent: "text-scalp",
+    badge: "bg-scalp",
+    stack: [
+      ["Market", "Downtrend", "text-ember"],
+      ["Guidance", "Look for SELL setups", "text-white"],
+      ["Last Signal", "SELL", "text-ember"],
+      ["Trade Plan", "Target 2 hit", "text-emerald-400"],
+      ["Current Candle", "Hollow - Lower", "text-zinc-400"],
+      ["Risk / Reward", "1:2", "text-ember"],
+      ["Access", "Invite-only", "text-ember"],
+    ],
+  },
+] as const;
 
+function CommandCenterChartShowcase({
+  activeMode,
+  onModeChange,
+}: {
+  activeMode: (typeof commandCenterModes)[number];
+  onModeChange: (modeId: (typeof commandCenterModes)[number]["id"]) => void;
+}) {
   return (
-    <div className="demo-chart-shell">
-      <div className="demo-chart-toolbar">
-        <span>Micro Silver Futures · 3m</span>
-        <strong>SCALP</strong>
+    <div className="reference-chart-shell">
+      <div className="reference-chart-toolbar">
+        <span>{activeMode.assetLabel}</span>
+        <strong className={activeMode.badge}>{activeMode.label}</strong>
       </div>
-      <svg className="demo-chart" viewBox="0 0 370 150" role="img" aria-label="Demo Darth Algo chart showing sell signal, risk zone, entry, stop, and target levels">
-        <defs>
-          <linearGradient id="demoRiskRed" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#ff364d" stopOpacity="0.32" />
-            <stop offset="100%" stopColor="#ff364d" stopOpacity="0.04" />
-          </linearGradient>
-          <linearGradient id="demoTargetGreen" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#00d084" stopOpacity="0.12" />
-            <stop offset="100%" stopColor="#00d084" stopOpacity="0.34" />
-          </linearGradient>
-          <linearGradient id="demoBearCloud" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#ff364d" stopOpacity="0.38" />
-            <stop offset="100%" stopColor="#ff364d" stopOpacity="0.08" />
-          </linearGradient>
-          <filter id="demoRedGlow" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="2.5" result="blur" />
-            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-          </filter>
-        </defs>
-
-        <g className="demo-grid">
-          {[0, 1, 2, 3, 4].map((line) => <line key={`h-${line}`} x1="0" x2="370" y1={22 + line * 26} y2={22 + line * 26} />)}
-          {[0, 1, 2, 3, 4, 5].map((line) => <line key={`v-${line}`} x1={24 + line * 62} x2={24 + line * 62} y1="0" y2="150" />)}
-        </g>
-
-        <path className="demo-cloud" d="M0 104 C38 96 58 112 91 95 S147 72 183 87 S250 73 288 50 S333 52 370 31 L370 55 C333 76 296 77 254 91 S194 105 152 101 S73 120 0 129 Z" />
-        <path className="demo-fast-line" d="M0 105 C41 95 63 111 94 94 S144 71 181 84 S251 68 286 47 S331 47 370 29" />
-        <path className="demo-slow-line" d="M0 126 C42 115 72 120 107 105 S169 91 211 96 S275 86 316 66 S350 58 370 50" />
-
-        <g className="demo-candles">
-          {demoCandles.map(([x, open, close, high, low], index) => {
-            const green = close < open;
-            const color = green ? "#00d084" : "#ff364d";
-            const bodyY = Math.min(open, close);
-            const bodyHeight = Math.max(Math.abs(open - close), 4);
-            return (
-              <g key={x} style={{ animationDelay: `${index * 52}ms` }}>
-                <line x1={x} x2={x} y1={high} y2={low} stroke={color} />
-                <rect x={x - 4} y={bodyY} width="8" height={bodyHeight} fill={color} />
-              </g>
-            );
-          })}
-        </g>
-
-        <g className="demo-risk-plan">
-          <rect x="214" y="45" width="120" height="28" fill="url(#demoRiskRed)" stroke="#ff364d" />
-          <rect x="214" y="73" width="120" height="54" fill="url(#demoTargetGreen)" stroke="#00d084" />
-          <line x1="214" x2="334" y1="73" y2="73" stroke="#ff364d" />
-          <line x1="214" x2="334" y1="100" y2="100" stroke="#00d084" strokeDasharray="5 5" />
-          <line x1="214" x2="334" y1="127" y2="127" stroke="#00d084" />
-        </g>
-
-        <g className="demo-label demo-sell" transform="translate(194 26)">
-          <path d="M0 0 H38 Q42 0 42 4 V22 Q42 26 38 26 H25 L21 32 L17 26 H0 Q-4 26 -4 22 V4 Q-4 0 0 0 Z" />
-          <text x="19" y="17">SELL</text>
-        </g>
-        <g className="demo-level-label demo-stop" transform="translate(330 40)"><path d="M0 0 H35 Q39 0 39 4 V15 Q39 19 35 19 H0 L-6 9.5 Z" /><text x="18" y="13">STOP</text></g>
-        <g className="demo-level-label demo-entry" transform="translate(330 64)"><path d="M0 0 H40 Q44 0 44 4 V15 Q44 19 40 19 H0 L-6 9.5 Z" /><text x="20" y="13">ENTRY</text></g>
-        <g className="demo-level-label demo-target" transform="translate(330 91)"><path d="M0 0 H50 Q54 0 54 4 V15 Q54 19 50 19 H0 L-6 9.5 Z" /><text x="25" y="13">TARGET 1</text></g>
-        <g className="demo-level-label demo-target" transform="translate(330 118)"><path d="M0 0 H50 Q54 0 54 4 V15 Q54 19 50 19 H0 L-6 9.5 Z" /><text x="25" y="13">TARGET 2</text></g>
-      </svg>
-      <div className="demo-chart-dashboard">
-        <span><b>Market</b> Downtrend</span>
-        <span><b>Signal</b> Sell</span>
-        <span><b>Plan</b> Target 2 hit</span>
-        <span><b>R/R</b> 1:2</span>
+      <div className="reference-chart-frame">
+        <Image
+          key={activeMode.id}
+          src={activeMode.image}
+          alt={activeMode.alt}
+          fill
+          className="reference-chart-image object-cover"
+          sizes="(min-width: 1024px) 42vw, 100vw"
+          priority
+        />
+        <div className="reference-chart-glow" />
+        <div className="reference-chart-callout reference-chart-callout-a">
+          <span>Dashboard matches live bias</span>
+        </div>
+        <div className="reference-chart-callout reference-chart-callout-b">
+          <span>Entry, stop, TP1, TP2 mapped</span>
+        </div>
+      </div>
+      <div className="reference-chart-controls">
+        {commandCenterModes.map((mode) => (
+          <button
+            key={mode.id}
+            type="button"
+            onClick={() => onModeChange(mode.id)}
+            className={activeMode.id === mode.id ? "is-active" : ""}
+            aria-pressed={activeMode.id === mode.id}
+          >
+            {mode.label}
+          </button>
+        ))}
       </div>
     </div>
   );
@@ -650,12 +640,14 @@ export default function Home() {
   const [landingIntro, setLandingIntro] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeIndicator, setActiveIndicator] = useState<keyof typeof indicatorWalkthroughs>("scalper");
+  const [commandModeId, setCommandModeId] = useState<(typeof commandCenterModes)[number]["id"]>("swing");
   const [activeZone, setActiveZone] = useState("top");
   const [expandedImage, setExpandedImage] = useState<null | { src: string; alt: string; title: string }>(null);
   const lightboxRef = useRef<HTMLDivElement>(null);
   const lightboxCloseRef = useRef<HTMLButtonElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
   const walkthrough = indicatorWalkthroughs[activeIndicator];
+  const commandMode = commandCenterModes.find((mode) => mode.id === commandModeId) ?? commandCenterModes[0];
 
   const dismissLandingIntro = () => {
     window.sessionStorage.setItem(landingIntroKey, "true");
@@ -691,6 +683,17 @@ export default function Home() {
     document.addEventListener("keydown", closeOnEscape);
     return () => document.removeEventListener("keydown", closeOnEscape);
   }, [mobileOpen]);
+
+  useEffect(() => {
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reducedMotion) return;
+
+    const modeTimer = window.setInterval(() => {
+      setCommandModeId((currentMode) => (currentMode === "swing" ? "scalper" : "swing"));
+    }, 5200);
+
+    return () => window.clearInterval(modeTimer);
+  }, []);
 
   useEffect(() => {
     const revealTargets = Array.from(
@@ -912,12 +915,12 @@ export default function Home() {
                 </div>
               ))}
             </div>
-            <div className="ai-powered-badge hero-enter hero-delay-3 mt-6 inline-flex items-center gap-3 border border-white/10 bg-black/65 px-3 py-2.5 backdrop-blur-xl" aria-label="Developed with ChatGPT through continuous AI-assisted product updates">
+            <div className="ai-powered-badge hero-enter hero-delay-3 mt-6 inline-flex items-center gap-3 border border-white/10 bg-black/65 px-3 py-2.5 backdrop-blur-xl" aria-label="Powered by ChatGPT through continuous AI-assisted product updates">
               <span className="ai-powered-mark grid h-9 w-9 shrink-0 place-items-center border border-white/15 bg-white/[0.05]">
                 <Sparkles className="h-4 w-4 text-white" />
               </span>
               <span className="text-left leading-tight">
-                <span className="block font-mono text-[9px] font-bold uppercase text-zinc-500">Developed with</span>
+                <span className="block font-mono text-[9px] font-bold uppercase text-zinc-500">Powered by</span>
                 <strong className="mt-0.5 block font-display text-sm font-black text-white">ChatGPT <span className="text-ember">AI</span></strong>
               </span>
               <span className="hidden h-8 w-px bg-white/10 sm:block" />
@@ -940,36 +943,38 @@ export default function Home() {
               </div>
               <span className="inline-flex items-center gap-2 rounded border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-1 font-mono text-[9px] font-bold uppercase text-emerald-300"><i className="ai-update-dot" /> Online</span>
             </div>
-            <div className="mt-5 grid gap-3">
-              {[
-                ["Trend", "Bullish", "text-emerald-400"],
-                ["Signal", "Buy setup", "text-emerald-400"],
-                ["Risk / Reward", "1:2.3", "text-white"],
-                ["Access", "Invite-only", "text-ember"],
-              ].map(([label, value, color]) => (
+            <div className="mt-5 grid gap-2">
+              {commandMode.stack.map(([label, value, color]) => (
                 <div key={label} className="hero-terminal-row grid grid-cols-[1fr_auto] items-center rounded border border-white/10 bg-white/[0.035] px-4 py-3">
                   <span className="font-mono text-[10px] font-bold uppercase text-zinc-500">{label}</span>
-                  <strong className={`font-display text-sm font-black uppercase ${color}`}>{value}</strong>
+                  <strong className={`font-display text-xs font-black uppercase ${color}`}>{value}</strong>
                 </div>
               ))}
             </div>
             <div className="hero-terminal-chart mt-5 overflow-hidden rounded border border-white/10 bg-[#080b11] p-4">
               <div className="mb-4 flex items-center justify-between font-mono text-[9px] font-bold uppercase text-zinc-600">
-                <span>Live setup demo</span>
-                <span className="text-emerald-400">Target 2 tracking</span>
+                <span>{commandMode.label} chart reference</span>
+                <span className={commandMode.accent}>Dashboard verified</span>
               </div>
-              <CommandCenterDemoChart />
+              <CommandCenterChartShowcase activeMode={commandMode} onModeChange={setCommandModeId} />
             </div>
             <div className="mt-5 grid grid-cols-3 gap-2">
               {["Alerts", "Targets", "Dashboard"].map((item) => <span key={item} className="rounded border border-ember/20 bg-ember/[0.07] px-3 py-2 text-center font-mono text-[9px] font-bold uppercase text-red-100">{item}</span>)}
             </div>
             <div className="mt-5 rounded border border-white/10 bg-white/[0.035] p-4">
               <p className="font-mono text-[9px] font-bold uppercase text-zinc-500">Buyer path</p>
-              <div className="mt-3 flex items-center gap-2">
-                <span className="h-2 flex-1 rounded bg-scalp shadow-[0_0_12px_rgba(235,145,20,0.35)]" />
-                <span className="h-2 flex-1 rounded bg-swing shadow-[0_0_12px_rgba(30,125,220,0.35)]" />
-                <span className="h-2 flex-1 rounded bg-pro shadow-[0_0_12px_rgba(139,92,246,0.35)]" />
-                <span className="h-2 flex-1 rounded bg-ember shadow-[0_0_12px_rgba(220,55,65,0.45)]" />
+              <div className="buyer-path-lanes mt-3 grid grid-cols-4 gap-2">
+                {[
+                  ["Scalper", "bg-scalp", "shadow-[0_0_12px_rgba(235,145,20,0.35)]"],
+                  ["Swing", "bg-swing", "shadow-[0_0_12px_rgba(30,125,220,0.35)]"],
+                  ["Pro", "bg-pro", "shadow-[0_0_12px_rgba(139,92,246,0.35)]"],
+                  ["Lifetime", "bg-ember", "shadow-[0_0_12px_rgba(220,55,65,0.45)]"],
+                ].map(([label, color, shadow]) => (
+                  <span key={label} className="buyer-path-lane">
+                    <i className={`${color} ${shadow}`} />
+                    <b>{label}</b>
+                  </span>
+                ))}
               </div>
             </div>
           </aside>
