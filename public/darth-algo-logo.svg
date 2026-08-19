@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Darth Algo Bull Bear Logo</title>
+  <desc id="desc">Neon red Darth Algo logo with bull and bear heads, candlesticks, and a rising market arrow.</desc>
+  <defs>
+    <radialGradient id="logoBg" cx="50%" cy="34%" r="62%">
+      <stop offset="0%" stop-color="#14161a"/>
+      <stop offset="62%" stop-color="#040506"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </radialGradient>
+    <linearGradient id="neonRed" x1="220" x2="1260" y1="690" y2="80" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#670707"/>
+      <stop offset="31%" stop-color="#ff1717"/>
+      <stop offset="55%" stop-color="#ff756b"/>
+      <stop offset="76%" stop-color="#d30000"/>
+      <stop offset="100%" stop-color="#5b0505"/>
+    </linearGradient>
+    <linearGradient id="darkSteel" x1="260" x2="760" y1="90" y2="370" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="23%" stop-color="#9ca1aa"/>
+      <stop offset="60%" stop-color="#262932"/>
+      <stop offset="100%" stop-color="#030304"/>
+    </linearGradient>
+    <linearGradient id="darthText" x1="0" x2="0" y1="520" y2="760" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ff8177"/>
+      <stop offset="28%" stop-color="#ff1a1a"/>
+      <stop offset="65%" stop-color="#a80808"/>
+      <stop offset="100%" stop-color="#420404"/>
+    </linearGradient>
+    <linearGradient id="algoText" x1="0" x2="0" y1="715" y2="870" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="35%" stop-color="#b8bdc5"/>
+      <stop offset="72%" stop-color="#4c5058"/>
+      <stop offset="100%" stop-color="#111318"/>
+    </linearGradient>
+    <filter id="redGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#ff1a1a" flood-opacity=".88"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="24" flood-color="#b90000" flood-opacity=".46"/>
+    </filter>
+    <filter id="heavyShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="16" stdDeviation="22" flood-color="#000000" flood-opacity=".9"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="900" fill="transparent"/>
+  <ellipse cx="800" cy="330" rx="482" ry="292" fill="url(#logoBg)" opacity=".98"/>
+  <path d="M326 508a420 420 0 0 1 793-280" fill="none" stroke="url(#neonRed)" stroke-width="16" stroke-linecap="round" filter="url(#redGlow)"/>
+  <path d="M389 185a386 386 0 0 1 650-26" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" opacity=".55"/>
+  <path d="M1000 150c-52 92-104 191-148 302" fill="none" stroke="#ff1a1a" stroke-width="2" opacity=".35"/>
+
+  <g opacity=".7">
+    <line x1="560" x2="560" y1="132" y2="425" stroke="#ff1a1a" stroke-width="3"/>
+    <rect x="542" y="250" width="36" height="84" fill="#9a0c0c" stroke="#ff655d" stroke-width="3"/>
+    <line x1="620" x2="620" y1="97" y2="405" stroke="#ff1a1a" stroke-width="3"/>
+    <rect x="602" y="205" width="36" height="116" fill="#d91414" stroke="#ff655d" stroke-width="3"/>
+    <line x1="682" x2="682" y1="146" y2="390" stroke="#ff1a1a" stroke-width="3"/>
+    <rect x="664" y="226" width="36" height="92" fill="#7d0909" stroke="#ff655d" stroke-width="3"/>
+    <line x1="746" x2="746" y1="84" y2="364" stroke="#ff1a1a" stroke-width="3"/>
+    <rect x="728" y="172" width="36" height="126" fill="#d91414" stroke="#ff655d" stroke-width="3"/>
+    <line x1="808" x2="808" y1="126" y2="340" stroke="#ff1a1a" stroke-width="3"/>
+    <rect x="790" y="188" width="36" height="94" fill="#9a0c0c" stroke="#ff655d" stroke-width="3"/>
+    <line x1="870" x2="870" y1="72" y2="320" stroke="#ff1a1a" stroke-width="3"/>
+    <rect x="852" y="132" width="36" height="120" fill="#ee211c" stroke="#ff655d" stroke-width="3"/>
+  </g>
+
+  <g filter="url(#heavyShadow)">
+    <path d="M162 360c42-160 160-251 312-224 83 15 144 67 176 150-88-42-184-40-257 0-66 37-111 96-132 178-54-13-93-48-99-104Z" fill="#030304"/>
+    <path d="M185 198c-26-101 60-151 174-175-52 71-31 126 32 172-71-9-124 5-206 3Z" fill="url(#darkSteel)" stroke="#ff1a1a" stroke-width="7" filter="url(#redGlow)"/>
+    <path d="M479 162c50 8 87 37 108 77-55-15-105-7-153 26 5-40 16-72 45-103Z" fill="#121419" stroke="#ff1a1a" stroke-width="4" opacity=".82"/>
+    <path d="M1058 212c124-90 263-22 319 116-79-45-151-45-214-1-49 34-80 86-93 150-64-54-88-133-12-265Z" fill="#09090a"/>
+    <path d="M1088 187c106 18 200 92 247 200-61-62-141-87-228-61-58 17-91 59-114 104 5-73 31-140 95-243Z" fill="#1a0909" stroke="#ff1a1a" stroke-width="5" filter="url(#redGlow)" opacity=".9"/>
+  </g>
+
+  <path d="M193 585c178-146 371-205 602-150" fill="none" stroke="url(#neonRed)" stroke-width="17" stroke-linecap="round" filter="url(#redGlow)"/>
+  <path d="M632 500 1116 54l-22 104 88-20-292 302 26-105-252 230Z" fill="url(#neonRed)" stroke="#ff9b94" stroke-width="5" filter="url(#redGlow)"/>
+
+  <g filter="url(#redGlow)">
+    <path d="M319 376c42-24 81-17 113 17-42 8-80 4-113-17Z" fill="#ff1a1a"/>
+    <path d="M1212 352c40-25 77-14 105 20-38 8-73 2-105-20Z" fill="#ff1a1a"/>
+    <path d="M98 472c38-27 79-29 118-4" fill="none" stroke="#ff1a1a" stroke-width="6" opacity=".68"/>
+    <path d="M1307 510c42-32 84-30 126 2" fill="none" stroke="#ff1a1a" stroke-width="6" opacity=".68"/>
+  </g>
+
+  <line x1="180" x2="1420" y1="637" y2="637" stroke="#ff1a1a" stroke-width="5" filter="url(#redGlow)" opacity=".95"/>
+  <text
+    x="800"
+    y="760"
+    text-anchor="middle"
+    font-family="Arial Black, Impact, sans-serif"
+    font-size="178"
+    font-weight="900"
+    letter-spacing="28"
+    fill="url(#darthText)"
+    stroke="#ff7067"
+    stroke-width="2"
+    filter="url(#redGlow)"
+  >DARTH</text>
+  <text
+    x="800"
+    y="852"
+    text-anchor="middle"
+    font-family="Arial Black, Impact, sans-serif"
+    font-size="74"
+    font-weight="900"
+    letter-spacing="54"
+    fill="url(#algoText)"
+    stroke="#eef0f4"
+    stroke-width="1"
+    filter="url(#redGlow)"
+  >ALGO</text>
+  <path d="M125 835h300" stroke="#ff1a1a" stroke-width="8" stroke-linecap="round" filter="url(#redGlow)"/>
+  <path d="M1175 835h300" stroke="#ff1a1a" stroke-width="8" stroke-linecap="round" filter="url(#redGlow)"/>
+</svg>

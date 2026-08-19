@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Darth Algo Bull Bear Icon</title>
+  <desc id="desc">Neon red bull and bear trading emblem with candlesticks and rising arrow.</desc>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="45%" r="58%">
+      <stop offset="0%" stop-color="#18191d"/>
+      <stop offset="62%" stop-color="#07080a"/>
+      <stop offset="100%" stop-color="#020203"/>
+    </radialGradient>
+    <linearGradient id="redHot" x1="75" x2="430" y1="420" y2="80" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#5b0505"/>
+      <stop offset="32%" stop-color="#ff1a1a"/>
+      <stop offset="68%" stop-color="#ff554b"/>
+      <stop offset="100%" stop-color="#9c0505"/>
+    </linearGradient>
+    <linearGradient id="steel" x1="120" x2="250" y1="100" y2="230" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="35%" stop-color="#8d929b"/>
+      <stop offset="100%" stop-color="#08090b"/>
+    </linearGradient>
+    <filter id="glow" x="-35%" y="-35%" width="170%" height="170%">
+      <feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="#ff1a1a" flood-opacity=".82"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="18" flood-color="#b90000" flood-opacity=".42"/>
+    </filter>
+    <filter id="blackLift" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity=".75"/>
+    </filter>
+  </defs>
+
+  <rect width="512" height="512" rx="54" fill="#020203"/>
+  <circle cx="256" cy="244" r="196" fill="url(#bg)"/>
+  <path d="M91 310a181 181 0 0 1 315-161" fill="none" stroke="url(#redHot)" stroke-width="12" stroke-linecap="round" filter="url(#glow)"/>
+  <path d="M119 350a190 190 0 0 0 307-28" fill="none" stroke="#ff1a1a" stroke-width="5" stroke-linecap="round" opacity=".55"/>
+
+  <g filter="url(#blackLift)">
+    <path d="M80 246c25-83 88-133 164-119 42 8 73 34 91 74-44-19-92-18-127 4-31 20-51 55-59 100-31-5-55-22-69-59Z" fill="#030405"/>
+    <path d="M87 172c-10-54 28-88 86-104-27 35-24 73 8 102-36-3-61 4-94 2Z" fill="url(#steel)" stroke="#ff1a1a" stroke-width="4" filter="url(#glow)"/>
+    <path d="M284 171c38-45 86-44 132-20-38 16-64 46-78 90-25-26-52-39-74-43Z" fill="#07080a" stroke="#ff1a1a" stroke-width="5"/>
+    <path d="M326 205c53-58 127-27 146 47-31-24-63-30-93-16-25 12-42 35-52 67-27-25-32-70-1-98Z" fill="#07080a"/>
+  </g>
+
+  <path d="M71 352c78-60 163-88 264-64" fill="none" stroke="url(#redHot)" stroke-width="10" stroke-linecap="round" filter="url(#glow)"/>
+  <path d="M248 340 405 128l1 67 51-8-111 124 4-57-85 112Z" fill="url(#redHot)" stroke="#ff8d86" stroke-width="3" filter="url(#glow)"/>
+
+  <g filter="url(#glow)">
+    <line x1="187" x2="187" y1="185" y2="344" stroke="#ff5252" stroke-width="5" stroke-linecap="round"/>
+    <rect x="173" y="252" width="28" height="56" rx="2" fill="#cf1616" stroke="#ff8179" stroke-width="3"/>
+    <line x1="226" x2="226" y1="156" y2="336" stroke="#ff5252" stroke-width="5" stroke-linecap="round"/>
+    <rect x="212" y="219" width="28" height="76" rx="2" fill="#f1261f" stroke="#ff8179" stroke-width="3"/>
+    <line x1="266" x2="266" y1="168" y2="318" stroke="#ff5252" stroke-width="5" stroke-linecap="round"/>
+    <rect x="252" y="205" width="28" height="68" rx="2" fill="#b80f0f" stroke="#ff8179" stroke-width="3"/>
+    <line x1="307" x2="307" y1="129" y2="284" stroke="#ff5252" stroke-width="5" stroke-linecap="round"/>
+    <rect x="293" y="176" width="28" height="78" rx="2" fill="#f1261f" stroke="#ff8179" stroke-width="3"/>
+  </g>
+
+  <path d="M148 229c17-10 32-8 45 4-18 2-35 4-45-4Z" fill="#ff1a1a" filter="url(#glow)"/>
+  <path d="M392 230c14-9 26-7 37 4-14 3-27 3-37-4Z" fill="#ff1a1a" filter="url(#glow)"/>
+  <circle cx="256" cy="244" r="198" fill="none" stroke="#ffffff" stroke-width="2" opacity=".12"/>
+  <circle cx="256" cy="244" r="178" fill="none" stroke="#ff1a1a" stroke-width="2" opacity=".28"/>
+</svg>
