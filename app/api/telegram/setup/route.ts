@@ -47,7 +47,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.darthalgo.com").replace(/\/$/, "");
+    const siteUrl = "https://www.darthalgo.com";
     await telegram("setWebhook", {
       url: `${siteUrl}/api/telegram/webhook`,
       secret_token: required("TELEGRAM_WEBHOOK_SECRET"),
