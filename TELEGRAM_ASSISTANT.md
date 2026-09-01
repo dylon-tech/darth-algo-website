@@ -15,8 +15,9 @@ The Telegram manager runs as two Next.js route handlers:
 - `TELEGRAM_COMMUNITY_ID`: reserved for community automation.
 - `TELEGRAM_BOT_USERNAME`: defaults to `DarthAlgoAssistantBot`.
 - `TELEGRAM_BRIEFING_THRESHOLD`: handled cases before an automatic owner briefing; defaults to `10`.
-- `OPENAI_API_KEY`: server-side project key for AI customer support.
-- `OPENAI_SUPPORT_MODEL`: defaults to `gpt-5.6-luna`.
+- `OPENAI_API_KEY`: optional direct OpenAI project key for AI customer support.
+- `AI_GATEWAY_API_KEY`: optional static Vercel AI Gateway key. On Vercel, the deployment's rotating `VERCEL_OIDC_TOKEN` is used automatically when neither static key is set.
+- `OPENAI_SUPPORT_MODEL`: defaults to `openai/gpt-5.4-mini` on Vercel AI Gateway.
 
 Set secrets for Production, Preview, and Development. Never commit live secret values.
 

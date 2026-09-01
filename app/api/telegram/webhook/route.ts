@@ -167,13 +167,21 @@ Return only data that matches the requested JSON schema.`;
 
 async function askAssistant(message: TelegramMessage): Promise<SupportResult> {
   const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) throw new Error("OPENAI_API_KEY is not configured");
+  const gatewayToken = process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN;
+  if (!apiKey && !gatewayToken) throw new Error("AI authentication is not configured");
 
-  const response = await fetch("https://api.openai.com/v1/responses", {
+  const usingGateway = !apiKey;
+  const endpoint = usingGateway
+    ? "https://ai-gateway.vercel.sh/v1/responses"
+    : "https://api.openai.com/v1/responses";
+  const model = process.env.OPENAI_SUPPORT_MODEL ||
+    (usingGateway ? "openai/gpt-5.4-mini" : "gpt-5.6-luna");
+
+  const response = await fetch(endpoint, {
     method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    headers: { Authorization: `Bearer ${apiKey || gatewayToken}`, "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: process.env.OPENAI_SUPPORT_MODEL || "gpt-5.6-luna",
+      model,
       instructions: supportInstructions(),
       input: [{ role: "user", content: `Customer: ${displayName(message.from)}\nQuestion: ${message.text || ""}` }],
       max_output_tokens: 700,
@@ -318,7 +326,8 @@ async function handleOwnerCommand(message: TelegramMessage) {
   }
 
   if (commandFrom(text) === "/status") {
-    await sendMessage(message.chat.id, `✅ D.A. Assistant is online.\n\nAI support: ${process.env.OPENAI_API_KEY ? "configured" : "waiting for OPENAI_API_KEY"}\nCurrent briefing batch: ${pendingBriefing.length}`);
+    const aiConfigured = Boolean(process.env.OPENAI_API_KEY || process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN);
+    await sendMessage(message.chat.id, `✅ D.A. Assistant is online.\n\nAI support: ${aiConfigured ? "configured" : "waiting for AI authentication"}\nCurrent briefing batch: ${pendingBriefing.length}`);
     return true;
   }
 
