@@ -11,6 +11,7 @@ type TelegramChat = {
 
 type TelegramMessage = {
   message_id: number;
+  message_thread_id?: number;
   chat: TelegramChat;
   from?: TelegramUser;
   text?: string;
@@ -115,12 +116,14 @@ async function sendMessage(
   chatId: number | string,
   text: string,
   keyboard?: InlineKeyboardButton[][],
+  messageThreadId?: number,
 ) {
   return telegram("sendMessage", {
     chat_id: chatId,
     text,
     parse_mode: "HTML",
     disable_web_page_preview: true,
+    ...(messageThreadId ? { message_thread_id: messageThreadId } : {}),
     ...(keyboard ? { reply_markup: { inline_keyboard: keyboard } } : {}),
   });
 }
@@ -254,11 +257,11 @@ async function handleSupportQuestion(message: TelegramMessage) {
   try {
     await telegram("sendChatAction", { chat_id: message.chat.id, action: "typing" });
     const result = await askAssistant(message);
-    await sendMessage(message.chat.id, `${escapeHtml(result.answer)}${result.resolution === "needs_owner" ? "\n\n<b>I've sent this to the Darth Algo owner for review.</b>" : ""}`, [[{ text: "⚡ View Plans", callback_data: "plans" }, { text: "🏠 Main Menu", callback_data: "menu" }]]);
+    await sendMessage(message.chat.id, `<b><u>🤖 D.A. ASSISTANT</u></b>\n\n${escapeHtml(result.answer)}${result.resolution === "needs_owner" ? "\n\n<b>I've sent this to the Darth Algo owner for review.</b>" : ""}`, [[{ text: "⚡ View Plans", callback_data: "plans" }, { text: "🏠 Main Menu", callback_data: "menu" }]], message.message_thread_id);
     await notifyOwner(message, result);
   } catch (error) {
     console.error("AI support error", error);
-    await sendMessage(message.chat.id, "I can still help with the menu below, but my live support brain is temporarily unavailable. Please tap Customer Support and try again shortly.", mainKeyboard);
+    await sendMessage(message.chat.id, "<b><u>🤖 D.A. ASSISTANT</u></b>\n\nI can still help with the menu below, but my live support brain is temporarily unavailable. Please tap Customer Support and try again shortly.", mainKeyboard, message.message_thread_id);
   }
 }
 
@@ -268,44 +271,44 @@ function commandFrom(text?: string) {
 
 const copy = {
   menu:
-    "<b>⚡ DARTH ALGO CONTROL CENTER</b>\n\nChoose what you need below. I can take you directly to a plan, guide your TradingView setup, route support questions, or help with community resources.\n\n<i>Educational purposes only—not financial advice. Trading involves risk.</i>",
+    "<b><u>⚡ DARTH ALGO CONTROL CENTER ⚡</u></b>\n\n<b>Fast answers. Direct access. Zero confusion.</b>\n\nChoose what you need below and D.A. Assistant will take you there.\n\n<i>Educational purposes only—not financial advice. Trading involves risk.</i>",
   plans:
-    "<b>⚡ CHOOSE YOUR DARTH ALGO PLAN</b>\n\n🎯 <b>Scalper — $18.99/month</b>\nFast signals for active intraday sessions.\n\n📈 <b>Swing — 2 days free, then $14.99/month</b>\nBroader trend-following signals. Cancel anytime.\n\n🔥 <b>Pro — $29/month</b>\nScalper + Swing in one complete workflow.\n\n👑 <b>Lifetime — $134.99 one time</b>\nComplete suite, future updates, source code, and commercial-use rights.\n\nEnter your exact TradingView username at checkout. Access is normally activated within 24 hours.",
+    "<b><u>⚡ CHOOSE YOUR DARTH ALGO PLAN ⚡</u></b>\n\n🎯 <b>SCALPER — $18.99/MONTH</b>\nFast signals for active intraday sessions.\n\n📈 <b>SWING — 2 DAYS FREE</b>\nThen $14.99/month. Cancel anytime.\n\n🔥 <b>PRO — $29/MONTH</b>\nScalper + Swing in one complete workflow.\n\n👑 <b>LIFETIME — $134.99 ONE TIME</b>\nComplete suite, future updates, source code, and commercial-use rights.\n\n<b>Next step:</b> Enter your exact TradingView username at checkout. Access is normally activated within 24 hours.",
   setup:
-    "<b>🛠 INDICATOR SETUP</b>\n\n1. Choose a plan and enter your exact TradingView username at checkout.\n2. Wait for invite-only access—normally within 24 hours.\n3. Open TradingView.\n4. Select <b>Indicators → Invite-only Scripts</b>.\n5. Add your Darth Algo indicator to the chart.\n\nIf it does not appear, refresh TradingView and verify your username spelling. Never share passwords, login codes, or payment information.",
+    "<b><u>🛠 INDICATOR SETUP</u></b>\n\n1️⃣ Choose a plan and enter your exact TradingView username at checkout.\n2️⃣ Wait for invite-only access—normally within 24 hours.\n3️⃣ Open TradingView.\n4️⃣ Select <b>Indicators → Invite-only Scripts</b>.\n5️⃣ Add your Darth Algo indicator to the chart.\n\nIf it does not appear, refresh TradingView and verify your username spelling. Never share passwords, login codes, or payment information.",
   support:
-    "<b>🆘 CUSTOMER SUPPORT</b>\n\nSend a short description containing:\n• Your indicator or plan\n• Mobile or desktop\n• What you expected\n• What happened instead\n• A screenshot with private information hidden\n\nNever post passwords, payment details, Telegram codes, full order numbers, or private account information.",
+    "<b><u>🆘 CUSTOMER SUPPORT</u></b>\n\nSend a short description containing:\n• Your indicator or plan\n• Mobile or desktop\n• What you expected\n• What happened instead\n• A screenshot with private information hidden\n\nNever post passwords, payment details, Telegram codes, full order numbers, or private account information.",
   wins:
-    "<b>🏆 SUBMIT A WIN</b>\n\nShare your result in the Results & Wins community topic. Include the Darth Algo tool, market, timeframe, and a short factual recap. Hide account numbers and private details.\n\nPosting allows community discussion only. Darth Algo will ask separately before using any result as a testimonial.",
+    "<b><u>🏆 SUBMIT A WIN</u></b>\n\nShare your result in the Results & Wins community topic. Include the Darth Algo tool, market, timeframe, and a short factual recap. Hide account numbers and private details.\n\nPosting allows community discussion only. Darth Algo will ask separately before using any result as a testimonial.",
   rules:
-    "<b>📌 COMMUNITY RULES</b>\n\n• Be respectful and useful.\n• No spam, scams, unsolicited DMs, or outside promotions.\n• Never share passwords, login codes, or payment information.\n• No guaranteed-profit claims or account-management offers.\n• Results are not guaranteed. Trading involves risk.\n• All content is educational and is not financial advice.",
+    "<b><u>📌 COMMUNITY RULES</u></b>\n\n✅ Be respectful and useful.\n🚫 No spam, scams, unsolicited DMs, or outside promotions.\n🔒 Never share passwords, login codes, or payment information.\n⚠️ No guaranteed-profit claims or account-management offers.\n📉 Results are not guaranteed. Trading involves risk.\n🎓 All content is educational and is not financial advice.",
 };
 
-async function handleAction(chatId: number, action: string) {
+async function handleAction(chatId: number, action: string, messageThreadId?: number) {
   switch (action) {
     case "plans":
-      return sendMessage(chatId, copy.plans, plansKeyboard);
+      return sendMessage(chatId, copy.plans, plansKeyboard, messageThreadId);
     case "scalper":
-      return sendMessage(chatId, "<b>🎯 Darth Algo Scalper</b>\n\n$18.99/month for active intraday setups.", [[{ text: "Buy Scalper", url: CHECKOUT.scalper }], [{ text: "⬅️ All Plans", callback_data: "plans" }]]);
+      return sendMessage(chatId, "<b><u>🎯 DARTH ALGO SCALPER</u></b>\n\n$18.99/month for active intraday setups.", [[{ text: "Buy Scalper", url: CHECKOUT.scalper }], [{ text: "⬅️ All Plans", callback_data: "plans" }]], messageThreadId);
     case "swing":
-      return sendMessage(chatId, "<b>📈 Darth Algo Swing</b>\n\nTry it free for 2 days, then $14.99/month. Cancel anytime.", [[{ text: "Start Free Trial", url: CHECKOUT.swing }], [{ text: "⬅️ All Plans", callback_data: "plans" }]]);
+      return sendMessage(chatId, "<b><u>📈 DARTH ALGO SWING</u></b>\n\nTry it free for 2 days, then $14.99/month. Cancel anytime.", [[{ text: "Start Free Trial", url: CHECKOUT.swing }], [{ text: "⬅️ All Plans", callback_data: "plans" }]], messageThreadId);
     case "pro":
-      return sendMessage(chatId, "<b>🔥 Darth Algo Pro</b>\n\nScalper + Swing together for $29/month.", [[{ text: "Buy Pro", url: CHECKOUT.pro }], [{ text: "⬅️ All Plans", callback_data: "plans" }]]);
+      return sendMessage(chatId, "<b><u>🔥 DARTH ALGO PRO</u></b>\n\nScalper + Swing together for $29/month.", [[{ text: "Buy Pro", url: CHECKOUT.pro }], [{ text: "⬅️ All Plans", callback_data: "plans" }]], messageThreadId);
     case "lifetime":
-      return sendMessage(chatId, "<b>👑 Darth Algo Lifetime</b>\n\nOwn the complete suite for $134.99 one time.", [[{ text: "Buy Lifetime", url: CHECKOUT.lifetime }], [{ text: "⬅️ All Plans", callback_data: "plans" }]]);
+      return sendMessage(chatId, "<b><u>👑 DARTH ALGO LIFETIME</u></b>\n\nOwn the complete suite for $134.99 one time.", [[{ text: "Buy Lifetime", url: CHECKOUT.lifetime }], [{ text: "⬅️ All Plans", callback_data: "plans" }]], messageThreadId);
     case "setup":
-      return sendMessage(chatId, copy.setup, [[{ text: "View Plans", url: PRICING_URL }], [{ text: "🆘 Still Need Help", callback_data: "support" }], [{ text: "⬅️ Main Menu", callback_data: "menu" }]]);
+      return sendMessage(chatId, copy.setup, [[{ text: "View Plans", url: PRICING_URL }], [{ text: "🆘 Still Need Help", callback_data: "support" }], [{ text: "⬅️ Main Menu", callback_data: "menu" }]], messageThreadId);
     case "support":
-      return sendMessage(chatId, copy.support, [[{ text: "👥 Open Community", url: COMMUNITY_URL }], [{ text: "🛠 Setup Guide", callback_data: "setup" }], [{ text: "⬅️ Main Menu", callback_data: "menu" }]]);
+      return sendMessage(chatId, copy.support, [[{ text: "👥 Open Community", url: COMMUNITY_URL }], [{ text: "🛠 Setup Guide", callback_data: "setup" }], [{ text: "⬅️ Main Menu", callback_data: "menu" }]], messageThreadId);
     case "wins":
-      return sendMessage(chatId, copy.wins, [[{ text: "👥 Open Community", url: COMMUNITY_URL }], [{ text: "⬅️ Main Menu", callback_data: "menu" }]]);
+      return sendMessage(chatId, copy.wins, [[{ text: "👥 Open Community", url: COMMUNITY_URL }], [{ text: "⬅️ Main Menu", callback_data: "menu" }]], messageThreadId);
     case "affiliate":
-      return sendMessage(chatId, "<b>💸 DARTH ALGO AFFILIATE PROGRAM</b>\n\nApply to promote Darth Algo and earn tracked commissions.", [[{ text: "Apply Now", url: AFFILIATE_URL }], [{ text: "⬅️ Main Menu", callback_data: "menu" }]]);
+      return sendMessage(chatId, "<b><u>💸 DARTH ALGO AFFILIATE PROGRAM</u></b>\n\nApply to promote Darth Algo and earn tracked commissions.", [[{ text: "Apply Now", url: AFFILIATE_URL }], [{ text: "⬅️ Main Menu", callback_data: "menu" }]], messageThreadId);
     case "rules":
-      return sendMessage(chatId, copy.rules, [[{ text: "⬅️ Main Menu", callback_data: "menu" }]]);
+      return sendMessage(chatId, copy.rules, [[{ text: "⬅️ Main Menu", callback_data: "menu" }]], messageThreadId);
     case "menu":
     default:
-      return sendMessage(chatId, copy.menu, mainKeyboard);
+      return sendMessage(chatId, copy.menu, mainKeyboard, messageThreadId);
   }
 }
 
@@ -353,7 +356,7 @@ async function handleOwnerCommand(message: TelegramMessage) {
 async function handleMessage(message: TelegramMessage) {
   if (message.new_chat_members?.length) {
     const names = message.new_chat_members.map((member) => member.first_name || "trader").join(", ");
-    await sendMessage(message.chat.id, `<b>👋 Welcome, ${names}!</b>\n\nStart with the buttons below. D.A. Assistant can guide you to plans, setup, support, rules, and community resources.`, mainKeyboard);
+    await sendMessage(message.chat.id, `<b><u>⚡ WELCOME TO DARTH ALGO ⚡</u></b>\n\n👋 Welcome, <b>${escapeHtml(names)}</b>!\n\nYou are now inside the official community for traders using—or exploring—the Darth Algo indicator suite.\n\n<b><u>START HERE</u></b>\n1️⃣ Compare the indicator plans\n2️⃣ Get TradingView setup help\n3️⃣ Ask D.A. Assistant a question\n4️⃣ Share results and learn with the community\n\n<b>Need help?</b> Mention <b>@DarthAlgoAssistantBot</b> in any topic.\n\n<i>Educational purposes only. Trading involves risk.</i>`, mainKeyboard, message.message_thread_id);
   }
 
   if (await handleOwnerCommand(message)) return;
@@ -377,7 +380,7 @@ async function handleMessage(message: TelegramMessage) {
   };
 
   if (actionByCommand[command]) {
-    await handleAction(message.chat.id, actionByCommand[command]);
+    await handleAction(message.chat.id, actionByCommand[command], message.message_thread_id);
     return;
   }
 
@@ -394,7 +397,7 @@ async function handleMessage(message: TelegramMessage) {
 async function handleCallback(query: TelegramCallbackQuery) {
   await telegram("answerCallbackQuery", { callback_query_id: query.id });
   if (query.message?.chat.id && query.data) {
-    await handleAction(query.message.chat.id, query.data);
+    await handleAction(query.message.chat.id, query.data, query.message.message_thread_id);
   }
 }
 
