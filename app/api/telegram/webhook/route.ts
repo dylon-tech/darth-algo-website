@@ -40,7 +40,7 @@ type InlineKeyboardButton = {
 const SITE_URL = "https://www.darthalgo.com";
 const PRICING_URL = `${SITE_URL}/#pricing`;
 const COMMUNITY_URL = "https://t.me/+swxeZlm3_y8yZWMx";
-const AFFILIATE_URL = "https://whop.com/darth-algo-5c99/affiliates";
+const AFFILIATE_URL = "https://www.darthalgo.com/affiliates";
 
 type SupportResult = {
   answer: string;
