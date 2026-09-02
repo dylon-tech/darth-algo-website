@@ -10,6 +10,7 @@ const links = [
   ["Results", "/#performance"],
   ["Education", "/education"],
   ["Pricing", "/#pricing"],
+  ["Affiliates", "/affiliates"],
   ["Support", "/support"],
 ];
 
