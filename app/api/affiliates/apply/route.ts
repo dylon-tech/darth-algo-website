@@ -10,22 +10,19 @@ export async function POST(request: Request) {
     const email = String(data.email ?? "").trim().toLowerCase();
     const password = String(data.password ?? "");
     const code = normalizeAffiliateCode(String(data.preferredCode ?? ""));
-    const required = [data.fullName, data.tradingViewUsername, data.primaryPlatform, data.profileUrl, data.audienceSize, data.contentPlan, data.payoutMethod, data.payoutHandle];
-    if (!email.includes("@") || password.length < 8 || code.length < 3 || !data.acceptTerms || required.some((value)=>!String(value??"").trim()) || String(data.contentPlan).trim().length < 40) {
+    const dashboardUsername = String(data.dashboardUsername ?? "").trim();
+    const required = [data.fullName, dashboardUsername, data.socialMediaHandle];
+    if (!email.includes("@") || password.length < 8 || code.length < 3 || dashboardUsername.length < 3 || !data.acceptTerms || required.some((value)=>!String(value??"").trim())) {
       return NextResponse.json({ error: "Check your email, password, creator code, and agreement." }, { status: 400 });
     }
     const id = randomUUID();
     await db()`
       insert into affiliate_applications (
-        id, full_name, email, password_hash, tradingview_username, primary_platform,
-        profile_url, audience_size, content_plan, preferred_code, payout_method,
-        payout_handle, terms_accepted_at
+        id, full_name, email, dashboard_username, password_hash, social_media_handle,
+        preferred_code, terms_accepted_at
       ) values (
-        ${id}, ${String(data.fullName).trim()}, ${email}, ${hashPassword(password)},
-        ${String(data.tradingViewUsername).trim()}, ${String(data.primaryPlatform).trim()},
-        ${String(data.profileUrl).trim()}, ${String(data.audienceSize).trim()},
-        ${String(data.contentPlan).trim()}, ${code}, ${String(data.payoutMethod).trim()},
-        ${String(data.payoutHandle).trim()}, now()
+        ${id}, ${String(data.fullName).trim()}, ${email}, ${dashboardUsername}, ${hashPassword(password)},
+        ${String(data.socialMediaHandle).trim()}, ${code}, now()
       )
     `;
     const response = NextResponse.json({ ok: true });

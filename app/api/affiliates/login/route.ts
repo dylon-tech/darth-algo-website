@@ -5,8 +5,9 @@ import { db, ensureAffiliateSchema } from "../../../lib/affiliate-db";
 export async function POST(request: Request) {
   try {
     await ensureAffiliateSchema();
-    const { email, password } = await request.json();
-    const rows = await db()`select id, password_hash from affiliate_applications where email=${String(email).trim().toLowerCase()} limit 1`;
+    const { username, password } = await request.json();
+    const credential = String(username).trim().toLowerCase();
+    const rows = await db()`select id, password_hash from affiliate_applications where lower(email)=${credential} or lower(dashboard_username)=${credential} limit 1`;
     const affiliate = rows[0];
     if (!affiliate || !verifyPassword(String(password), affiliate.password_hash)) {
       return NextResponse.json({ error: "Email or password is incorrect." }, { status: 401 });

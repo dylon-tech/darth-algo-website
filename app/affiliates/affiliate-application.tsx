@@ -34,15 +34,10 @@ export default function AffiliateApplication() {
       <div className="grid gap-5 sm:grid-cols-2">
         <label className="text-sm font-bold text-zinc-300">Full name<input name="fullName" required className={fieldClass} autoComplete="name" /></label>
         <label className="text-sm font-bold text-zinc-300">Email<input name="email" required type="email" className={fieldClass} autoComplete="email" /></label>
-        <label className="text-sm font-bold text-zinc-300">Create dashboard password<input name="password" required minLength={8} type="password" className={fieldClass} autoComplete="new-password" placeholder="8+ characters" /></label>
-        <label className="text-sm font-bold text-zinc-300">TradingView username<input name="tradingViewUsername" required className={fieldClass} /></label>
-        <label className="text-sm font-bold text-zinc-300">Main platform<select name="primaryPlatform" required className={fieldClass}><option value="">Choose one</option><option>TikTok</option><option>Instagram</option><option>YouTube</option><option>X / Twitter</option><option>Reddit</option><option>Other</option></select></label>
-        <label className="text-sm font-bold text-zinc-300">Profile or channel URL<input name="profileUrl" required type="url" className={fieldClass} placeholder="https://" /></label>
-        <label className="text-sm font-bold text-zinc-300">Audience size<select name="audienceSize" required className={fieldClass}><option value="">Choose a range</option><option>Under 1,000</option><option>1,000–5,000</option><option>5,000–25,000</option><option>25,000–100,000</option><option>100,000+</option></select></label>
+        <label className="text-sm font-bold text-zinc-300">Social media handle<input name="socialMediaHandle" required className={fieldClass} placeholder="@yourhandle" /></label>
         <label className="text-sm font-bold text-zinc-300">Preferred creator code<input name="preferredCode" required minLength={3} maxLength={20} pattern="[A-Za-z0-9]+" className={fieldClass} placeholder="Example: DYLAN25" /></label>
-        <label className="text-sm font-bold text-zinc-300">Payout method<select name="payoutMethod" required className={fieldClass}><option value="">Choose one</option><option>Cash App</option><option>Bitcoin</option></select></label>
-        <label className="text-sm font-bold text-zinc-300">Payout handle or wallet<input name="payoutHandle" required className={fieldClass} placeholder="$cashtag or BTC address" /></label>
-        <label className="text-sm font-bold text-zinc-300 sm:col-span-2">How will you introduce Darth Algo to your audience?<textarea name="contentPlan" required minLength={40} rows={4} className={`${fieldClass} py-3`} placeholder="Tell us about your content and audience..." /></label>
+        <label className="text-sm font-bold text-zinc-300">Dashboard username<input name="dashboardUsername" required minLength={3} className={fieldClass} autoComplete="username" placeholder="Choose a login username" /></label>
+        <label className="text-sm font-bold text-zinc-300">Dashboard password<input name="password" required minLength={8} type="password" className={fieldClass} autoComplete="new-password" placeholder="8+ characters" /></label>
       </div>
       <label className="mt-6 flex items-start gap-3 text-sm leading-6 text-zinc-400"><input name="acceptTerms" required type="checkbox" className="mt-1 h-5 w-5 accent-red-500" /><span>I agree to disclose my affiliate relationship, avoid profit guarantees or misleading claims, follow platform rules, and accept the program terms shown above.</span></label>
       {error && <p role="alert" className="mt-5 rounded-md border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">{error}</p>}
@@ -50,4 +45,3 @@ export default function AffiliateApplication() {
     </form>
   );
 }
-

@@ -11,7 +11,8 @@ export async function PATCH(request:Request,{params}:{params:Promise<{id:string}
   if(!affiliate)return NextResponse.json({error:'Application not found'},{status:404});
   if(action==='approve'){
     if(!affiliate.stripe_promotion_code_id){
-      const coupon=await stripe().coupons.create({percent_off:affiliate.commission_rate_bps/100,duration:'forever',name:`Darth Algo affiliate — ${affiliate.full_name}`,metadata:{affiliate_id:id}});
+      const discount=Math.max(1,Math.min(50,Number(process.env.AFFILIATE_CUSTOMER_DISCOUNT_PERCENT??10)));
+      const coupon=await stripe().coupons.create({percent_off:discount,duration:'forever',name:`Darth Algo affiliate — ${affiliate.full_name}`,metadata:{affiliate_id:id}});
       const promotion=await stripe().promotionCodes.create({coupon:coupon.id,code:affiliate.preferred_code,metadata:{affiliate_id:id}});
       await db()`update affiliate_applications set status='approved',stripe_coupon_id=${coupon.id},stripe_promotion_code_id=${promotion.id},approved_at=now(),updated_at=now() where id=${id}`;
     }
