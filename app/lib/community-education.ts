@@ -84,6 +84,17 @@ const lessons = [
   },
 ];
 
+export async function getEducationCardData(index: number) {
+  const lesson = lessons[((index % lessons.length) + lessons.length) % lessons.length];
+  const marketSnapshot = await Promise.all([
+    quote("ES=F", "S&P 500"),
+    quote("NQ=F", "Nasdaq 100"),
+    quote("GC=F", "Gold"),
+    quote("CL=F", "Crude Oil"),
+  ]);
+  return { lesson, marketSnapshot, createdAt: new Date() };
+}
+
 let communitySchemaReady: Promise<void> | undefined;
 
 export function ensureCommunityEducationSchema() {
@@ -181,13 +192,8 @@ export async function publishEducationPost(options: { force?: boolean } = {}) {
   if (!chatId || !threadId) throw new Error("Trading Education topic is not configured");
 
   const [{ count }] = await sql<{ count: number }[]>`select count(*)::int as count from community_education_posts where status='posted'`;
-  const lesson = lessons[Number(count) % lessons.length];
-  const marketSnapshot = await Promise.all([
-    quote("ES=F", "S&P 500"),
-    quote("NQ=F", "Nasdaq 100"),
-    quote("GC=F", "Gold"),
-    quote("CL=F", "Crude Oil"),
-  ]);
+  const lessonIndex = Number(count) % lessons.length;
+  const { lesson, marketSnapshot } = await getEducationCardData(lessonIndex);
   const id = randomUUID();
   await sql`
     insert into community_education_posts(id,title,market,bullets,chart_focus,market_snapshot)
@@ -198,7 +204,7 @@ export async function publishEducationPost(options: { force?: boolean } = {}) {
     const result = await telegram("sendPhoto", {
       chat_id: chatId,
       message_thread_id: Number(threadId),
-      photo: `${SITE_URL}/api/community/education-card/${id}`,
+      photo: `${SITE_URL}/api/community/education-card/${lessonIndex}?post=${id}`,
       caption: `<b><u>FUTURES EDUCATION DROP</u></b>\n\n<b>${lesson.title}</b>\n${lesson.chartFocus}\n\nMarket figures in the graphic may be delayed. Verify prices on your live chart. Educational purposes only—not financial advice. Trading involves risk.`,
       parse_mode: "HTML",
       reply_markup: { inline_keyboard: [[{ text: "Open TradingView", url: "https://www.tradingview.com/chart/" }], [{ text: "View Darth Algo Plans", url: `${SITE_URL}/#pricing` }]] },
