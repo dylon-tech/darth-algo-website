@@ -41,6 +41,7 @@ const SITE_URL = "https://www.darthalgo.com";
 const PRICING_URL = `${SITE_URL}/#pricing`;
 const COMMUNITY_URL = "https://t.me/+swxeZlm3_y8yZWMx";
 const AFFILIATE_URL = "https://www.darthalgo.com/affiliates";
+const AFFILIATE_DASHBOARD_URL = "https://www.darthalgo.com/affiliate-dashboard";
 
 type SupportResult = {
   answer: string;
@@ -70,7 +71,7 @@ const mainKeyboard: InlineKeyboardButton[][] = [
   [{ text: "🧭 Find My Plan", callback_data: "plan_finder" }, { text: "⚡ View All Plans", callback_data: "plans" }],
   [{ text: "🚀 5-Minute Quick Start", callback_data: "quickstart" }, { text: "🛠 Setup Help", callback_data: "setup" }],
   [{ text: "❓ FAQ", callback_data: "faq" }, { text: "🆘 Customer Support", callback_data: "support" }],
-  [{ text: "🏆 Submit a Win", callback_data: "wins" }, { text: "💸 Affiliate Program", url: AFFILIATE_URL }],
+  [{ text: "🏆 Submit a Win", callback_data: "wins" }, { text: "💸 Affiliate Program", callback_data: "affiliate" }],
   [{ text: "📌 Community Rules", callback_data: "rules" }, { text: "👥 Join Community", url: COMMUNITY_URL }],
 ];
 
@@ -347,7 +348,7 @@ async function handleAction(chatId: number, action: string, messageThreadId?: nu
     case "wins":
       return sendMessage(chatId, copy.wins, [[{ text: "👥 Open Community", url: COMMUNITY_URL }], [{ text: "⬅️ Main Menu", callback_data: "menu" }]], messageThreadId);
     case "affiliate":
-      return sendMessage(chatId, "<b><u>💸 DARTH ALGO AFFILIATE PROGRAM</u></b>\n\nApply to promote Darth Algo and earn tracked commissions.", [[{ text: "Apply Now", url: AFFILIATE_URL }], [{ text: "⬅️ Main Menu", callback_data: "menu" }]], messageThreadId);
+      return sendMessage(chatId, "<b><u>💸 DARTH ALGO CREATOR AFFILIATE PROGRAM</u></b>\n\nEarn <b>25% commission</b> on net collected revenue from customers who use your personal code. Your audience receives <b>10% off</b>.\n\n✅ Sales and commissions tracked automatically\n✅ Private earnings dashboard\n✅ Monthly payouts after a 30-day hold\n✅ Direct support from the Darth Algo team\n\nThe application takes about two minutes. You only need your name, email, social handle, preferred promo code, and dashboard login.", [[{ text: "🚀 Apply to Become an Affiliate", url: AFFILIATE_URL }], [{ text: "📊 Creator Earnings Dashboard", url: AFFILIATE_DASHBOARD_URL }], [{ text: "🆘 Affiliate Help", callback_data: "support" }, { text: "⬅️ Main Menu", callback_data: "menu" }]], messageThreadId);
     case "rules":
       return sendMessage(chatId, copy.rules, [[{ text: "⬅️ Main Menu", callback_data: "menu" }]], messageThreadId);
     case "menu":
