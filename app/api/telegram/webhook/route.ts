@@ -1,3 +1,5 @@
+import { configureEducationDestination, publishEducationPost } from "../../../lib/community-education";
+
 type TelegramUser = {
   id: number;
   first_name?: string;
@@ -39,7 +41,7 @@ type InlineKeyboardButton = {
 
 const SITE_URL = "https://www.darthalgo.com";
 const PRICING_URL = `${SITE_URL}/#pricing`;
-const COMMUNITY_URL = "https://t.me/+swxeZlm3_y8yZWMx";
+const COMMUNITY_URL = process.env.TELEGRAM_COMMUNITY_URL || SITE_URL;
 const AFFILIATE_URL = "https://www.darthalgo.com/affiliates";
 const AFFILIATE_DASHBOARD_URL = "https://www.darthalgo.com/affiliate-dashboard";
 
@@ -129,6 +131,23 @@ async function sendMessage(
     text,
     parse_mode: "HTML",
     disable_web_page_preview: true,
+    ...(messageThreadId ? { message_thread_id: messageThreadId } : {}),
+    ...(keyboard ? { reply_markup: { inline_keyboard: keyboard } } : {}),
+  });
+}
+
+async function sendPhoto(
+  chatId: number | string,
+  photo: string,
+  caption: string,
+  keyboard?: InlineKeyboardButton[][],
+  messageThreadId?: number,
+) {
+  return telegram("sendPhoto", {
+    chat_id: chatId,
+    photo,
+    caption,
+    parse_mode: "HTML",
     ...(messageThreadId ? { message_thread_id: messageThreadId } : {}),
     ...(keyboard ? { reply_markup: { inline_keyboard: keyboard } } : {}),
   });
@@ -326,6 +345,8 @@ const copy = {
     "<b><u>🏆 SUBMIT A WIN</u></b>\n\nShare your result in the Results & Wins community topic. Include the Darth Algo tool, market, timeframe, and a short factual recap. Hide account numbers and private details.\n\nPosting allows community discussion only. Darth Algo will ask separately before using any result as a testimonial.",
   rules:
     "<b><u>📌 COMMUNITY RULES</u></b>\n\n✅ Be respectful and useful.\n🚫 No spam, scams, unsolicited DMs, or outside promotions.\n🔒 Never share passwords, login codes, or payment information.\n⚠️ No guaranteed-profit claims or account-management offers.\n📉 Results are not guaranteed. Trading involves risk.\n🎓 All content is educational and is not financial advice.",
+  features:
+    "<b><u>⚡ DARTH ALGO FEATURES</u></b>\n\n🎯 Clear buy and sell signals\n🧭 Trend and directional guidance\n📍 Structured entry, risk, and target planning\n🔔 TradingView alert support\n📈 Workflows for scalping and swing trading\n\nUse the plan finder to match the tool to your trading style. Signals are educational decision-support—not guarantees.",
 };
 
 async function handleAction(chatId: number, action: string, messageThreadId?: number, editMessageId?: number) {
@@ -377,6 +398,8 @@ async function handleAction(chatId: number, action: string, messageThreadId?: nu
       return sendMessage(chatId, "<b><u>💸 DARTH ALGO CREATOR AFFILIATE PROGRAM</u></b>\n\nEarn <b>25% commission</b> on each new customer's first paid purchase using your personal code. Renewals do not earn additional commission. Your audience receives <b>10% off</b>.\n\n✅ New customers and commissions tracked automatically\n✅ Private earnings dashboard\n✅ Monthly payouts after a 30-day hold\n✅ Direct support from the Darth Algo team\n\nThe application takes about two minutes. You only need your name, email, social handle, preferred promo code, and dashboard login.", [[{ text: "🚀 Apply to Become an Affiliate", url: AFFILIATE_URL }], [{ text: "📊 Creator Earnings Dashboard", url: AFFILIATE_DASHBOARD_URL }], [{ text: "🆘 Affiliate Help", callback_data: "support" }, { text: "⬅️ Main Menu", callback_data: "menu" }]], messageThreadId);
     case "rules":
       return sendMessage(chatId, copy.rules, [[{ text: "⬅️ Main Menu", callback_data: "menu" }]], messageThreadId);
+    case "features":
+      return sendMessage(chatId, copy.features, [[{ text: "🧭 Find My Plan", callback_data: "plan_finder" }, { text: "⚡ View Plans", callback_data: "plans" }], [{ text: "⬅️ Main Menu", callback_data: "menu" }]], messageThreadId);
     case "menu":
     default:
       return sendMessage(chatId, copy.menu, mainKeyboard, messageThreadId);
@@ -388,6 +411,34 @@ async function handleOwnerCommand(message: TelegramMessage) {
   if (!ownerId || String(message.from?.id) !== ownerId) return false;
 
   const text = message.text?.trim() || "";
+  const command = commandFrom(text);
+
+  if (command === "/seteducation") {
+    if (!message.message_thread_id) {
+      await sendMessage(message.chat.id, "Run this command inside the Trading Education topic.");
+      return true;
+    }
+    await configureEducationDestination(message.chat.id, message.message_thread_id);
+    await publishEducationPost({ force: true });
+    return true;
+  }
+
+  if (command === "/publishsetup") {
+    await sendPhoto(
+      message.chat.id,
+      `${SITE_URL}/api/community/setup-card`,
+      "<b><u>INDICATOR SETUP — PURCHASE TO CHART</u></b>\n\n1. Choose a plan at darthalgo.com/#pricing.\n2. Enter your exact TradingView username at checkout.\n3. Wait for invite-only access—normally within 24 hours.\n4. Open TradingView and select Indicators.\n5. Open Invite-only Scripts and add your Darth Algo indicator.\n6. Begin in paper trading while learning the signals.\n\nNever share passwords or login codes. Educational purposes only; trading involves risk.",
+      [[{ text: "Choose Your Indicator", url: PRICING_URL }], [{ text: "Open TradingView", url: "https://www.tradingview.com/chart/" }], [{ text: "Message D.A. Assistant", url: "https://t.me/DarthAlgoAssistantBot" }]],
+      message.message_thread_id,
+    );
+    return true;
+  }
+
+  if (command === "/launch") {
+    await sendMessage(message.chat.id, "<b><u>🚀 DARTH ALGO COMMUNITY IS OPEN</u></b>\n\nThe official Darth Algo community is ready for traders who want cleaner chart structure, indicator setup support, futures education, product updates, and a place to learn with other members.\n\n<b>What happens here:</b>\n• Product and indicator updates\n• New setup guides and tutorials\n• Futures education drops every 72 hours\n• Community events and important maintenance notices\n\nTurn on notifications for this topic so you do not miss important updates. Educational purposes only—not financial advice. Trading involves risk.", [[{ text: "⚡ View Indicator Plans", url: PRICING_URL }], [{ text: "🤖 Message D.A. Assistant", url: "https://t.me/DarthAlgoAssistantBot" }]], message.message_thread_id);
+    return true;
+  }
+
   if (text.startsWith("/announce ")) {
     const destination = process.env.TELEGRAM_CHANNEL_ID;
     if (!destination) {
@@ -452,6 +503,7 @@ async function handleMessage(message: TelegramMessage) {
     "/wins": "wins",
     "/affiliate": "affiliate",
     "/rules": "rules",
+    "/features": "features",
   };
 
   if (actionByCommand[command]) {
