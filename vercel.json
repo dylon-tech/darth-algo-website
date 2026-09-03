@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/community-education",
+      "schedule": "0 14 * * *"
+    }
+  ]
+}
