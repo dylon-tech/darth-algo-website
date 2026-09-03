@@ -134,6 +134,29 @@ async function sendMessage(
   });
 }
 
+const postMessage = sendMessage;
+
+async function editInteractiveMessage(
+  chatId: number | string,
+  messageId: number,
+  text: string,
+  keyboard?: InlineKeyboardButton[][],
+) {
+  try {
+    return await telegram("editMessageText", {
+      chat_id: chatId,
+      message_id: messageId,
+      text,
+      parse_mode: "HTML",
+      disable_web_page_preview: true,
+      ...(keyboard ? { reply_markup: { inline_keyboard: keyboard } } : {}),
+    });
+  } catch (error) {
+    if (error instanceof Error && error.message.toLowerCase().includes("message is not modified")) return { ok: true };
+    throw error;
+  }
+}
+
 function escapeHtml(value: string) {
   return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 }
@@ -305,7 +328,10 @@ const copy = {
     "<b><u>📌 COMMUNITY RULES</u></b>\n\n✅ Be respectful and useful.\n🚫 No spam, scams, unsolicited DMs, or outside promotions.\n🔒 Never share passwords, login codes, or payment information.\n⚠️ No guaranteed-profit claims or account-management offers.\n📉 Results are not guaranteed. Trading involves risk.\n🎓 All content is educational and is not financial advice.",
 };
 
-async function handleAction(chatId: number, action: string, messageThreadId?: number) {
+async function handleAction(chatId: number, action: string, messageThreadId?: number, editMessageId?: number) {
+  const sendMessage: typeof postMessage = editMessageId
+    ? (targetChatId, text, keyboard) => editInteractiveMessage(targetChatId, editMessageId, text, keyboard)
+    : postMessage;
   switch (action) {
     case "plans":
       return sendMessage(chatId, copy.plans, plansKeyboard, messageThreadId);
@@ -456,7 +482,7 @@ async function handleMessage(message: TelegramMessage) {
 async function handleCallback(query: TelegramCallbackQuery) {
   await telegram("answerCallbackQuery", { callback_query_id: query.id });
   if (query.message?.chat.id && query.data) {
-    await handleAction(query.message.chat.id, query.data, query.message.message_thread_id);
+    await handleAction(query.message.chat.id, query.data, query.message.message_thread_id, query.message.message_id);
   }
 }
 
