@@ -49,8 +49,24 @@ export function ensureAffiliateSchema() {
         paid_at timestamptz
       )
     `;
+    await sql`alter table affiliate_commissions add column if not exists customer_key text`;
+    await sql`
+      with first_commission as (
+        select id
+        from (
+          select id, row_number() over (partition by stripe_customer_id order by created_at, id) as row_number
+          from affiliate_commissions
+          where stripe_customer_id is not null
+        ) ranked
+        where row_number = 1
+      )
+      update affiliate_commissions
+      set customer_key = 'stripe:' || stripe_customer_id
+      where customer_key is null and id in (select id from first_commission)
+    `;
     await sql`create index if not exists affiliate_commissions_affiliate_id_idx on affiliate_commissions(affiliate_id)`;
     await sql`create index if not exists affiliate_commissions_payable_at_idx on affiliate_commissions(payable_at)`;
+    await sql`create unique index if not exists affiliate_commissions_first_customer_idx on affiliate_commissions(customer_key) where customer_key is not null`;
     await sql`create table if not exists affiliate_webhook_events (stripe_event_id text primary key, processed_at timestamptz not null default now())`;
   })();
   return schemaReady;
