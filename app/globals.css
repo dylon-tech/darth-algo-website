@@ -19,6 +19,16 @@
   50% { transform: translate3d(1.5%, -1.5%, 0) scale(1.07); opacity: 0.38; }
 }
 
+@keyframes market-hero-breathe {
+  0%, 100% { transform: scale(1.04) translate3d(-0.5%, 0, 0); opacity: 0.2; }
+  50% { transform: scale(1.09) translate3d(0.5%, -0.75%, 0); opacity: 0.28; }
+}
+
+.market-hero-chart {
+  animation: market-hero-breathe 18s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
 .market-chart-drift {
   animation: market-chart-drift 16s ease-in-out infinite;
   transform-origin: center;
@@ -41,6 +51,10 @@
   }
 
   .market-chart-drift {
+    animation: none;
+  }
+
+  .market-hero-chart {
     animation: none;
   }
 }
