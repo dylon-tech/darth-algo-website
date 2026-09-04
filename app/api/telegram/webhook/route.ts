@@ -1,4 +1,5 @@
 import { configureEducationDestination, publishEducationPost } from "../../../lib/community-education";
+import { growthSources, saveGrowthInvite, sourceFromInvite, trackGrowthEvent } from "../../../lib/growth-db";
 
 type TelegramUser = {
   id: number;
@@ -28,9 +29,18 @@ type TelegramCallbackQuery = {
   message?: TelegramMessage;
 };
 
+type TelegramChatMemberUpdated = {
+  chat: TelegramChat;
+  from: TelegramUser;
+  old_chat_member: { status: string; user: TelegramUser };
+  new_chat_member: { status: string; user: TelegramUser };
+  invite_link?: { invite_link?: string; name?: string };
+};
+
 type TelegramUpdate = {
   message?: TelegramMessage;
   callback_query?: TelegramCallbackQuery;
+  chat_member?: TelegramChatMemberUpdated;
 };
 
 type InlineKeyboardButton = {
@@ -113,11 +123,26 @@ async function telegram(method: string, payload: Record<string, unknown>) {
     cache: "no-store",
   });
 
-  const result = (await response.json()) as { ok: boolean; description?: string };
+  const result = (await response.json()) as { ok: boolean; description?: string; result?: unknown };
   if (!response.ok || !result.ok) {
     throw new Error(result.description || `Telegram ${method} failed`);
   }
   return result;
+}
+
+async function createGrowthInviteLinks(chatId: number) {
+  const created: string[] = [];
+  for (const source of growthSources) {
+    const result = await telegram("createChatInviteLink", {
+      chat_id: chatId,
+      name: `Darth Algo — ${source}`.slice(0, 32),
+    }) as { result?: { invite_link?: string } };
+    const inviteLink = result.result?.invite_link;
+    if (!inviteLink) throw new Error(`Telegram did not return an invite for ${source}`);
+    await saveGrowthInvite(source, inviteLink);
+    created.push(source);
+  }
+  return created;
 }
 
 async function sendMessage(
@@ -434,6 +459,12 @@ async function handleOwnerCommand(message: TelegramMessage) {
     return true;
   }
 
+  if (command === "/setupgrowth") {
+    const sources = await createGrowthInviteLinks(message.chat.id);
+    await sendMessage(message.chat.id, `<b>✅ COMMUNITY GROWTH TRACKING IS LIVE</b>\n\n${sources.length} source-specific invitation routes were created. New verified joins will now appear in the private growth dashboard.`, undefined, message.message_thread_id);
+    return true;
+  }
+
   if (command === "/launch") {
     await sendMessage(message.chat.id, "<b><u>🚀 DARTH ALGO COMMUNITY IS OPEN</u></b>\n\nThe official Darth Algo community is ready for traders who want cleaner chart structure, indicator setup support, futures education, product updates, and a place to learn with other members.\n\n<b>What happens here:</b>\n• Product and indicator updates\n• New setup guides and tutorials\n• Futures education drops every 72 hours\n• Community events and important maintenance notices\n\nTurn on notifications for this topic so you do not miss important updates. Educational purposes only—not financial advice. Trading involves risk.", [[{ text: "⚡ View Indicator Plans", url: PRICING_URL }], [{ text: "🤖 Message D.A. Assistant", url: "https://t.me/DarthAlgoAssistantBot" }]], message.message_thread_id);
     return true;
@@ -538,6 +569,19 @@ async function handleCallback(query: TelegramCallbackQuery) {
   }
 }
 
+async function handleChatMember(update: TelegramChatMemberUpdated) {
+  const wasMember = ["member", "administrator", "creator"].includes(update.old_chat_member.status);
+  const isMember = ["member", "administrator", "creator"].includes(update.new_chat_member.status);
+  if (wasMember || !isMember) return;
+  const source = await sourceFromInvite(update.invite_link?.invite_link);
+  await trackGrowthEvent({
+    eventType: "telegram_join",
+    source,
+    campaign: "telegram-invite",
+    telegramUserId: update.new_chat_member.user.id,
+  });
+}
+
 export async function GET() {
   return Response.json({ ok: true, service: "darth-algo-telegram-assistant" });
 }
@@ -553,6 +597,7 @@ export async function POST(request: Request) {
   try {
     const update = (await request.json()) as TelegramUpdate;
     if (update.callback_query) await handleCallback(update.callback_query);
+    if (update.chat_member) await handleChatMember(update.chat_member);
     if (update.message) await handleMessage(update.message);
     return Response.json({ ok: true });
   } catch (error) {
