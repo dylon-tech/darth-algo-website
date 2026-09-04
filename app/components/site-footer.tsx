@@ -5,6 +5,7 @@ import SiteBrand from "./site-brand";
 const footerLinks = [
   ["Products", "/#examples"],
   ["Education", "/education"],
+  ["Community", "/community"],
   ["Pricing", "/#pricing"],
   ["Affiliate Program", "/affiliates"],
   ["Creator Dashboard", "/affiliate-dashboard"],

@@ -39,6 +39,7 @@ const policySections = [
     title: "Cookies And Analytics",
     body: [
       "Our website may use basic cookies, hosting logs, analytics, or similar technologies to understand site performance and improve the customer experience.",
+      "When you visit or join our community, we may record the referring platform, campaign label, anonymous browser identifier, Telegram invitation source, and join time. We do not store your Telegram user ID in readable form for growth reporting.",
       "You can control cookies through your browser settings, but some website features may not work as expected if cookies are disabled.",
     ],
   },
@@ -102,7 +103,7 @@ export default function PrivacyPolicyPage() {
             protects information related to website visits, Stripe purchases,
             support, and TradingView invite-only access.
           </p>
-          <p className="mt-4 text-sm text-zinc-500">Effective date: July 29, 2026</p>
+          <p className="mt-4 text-sm text-zinc-500">Effective date: September 4, 2026</p>
         </div>
       </section>
 

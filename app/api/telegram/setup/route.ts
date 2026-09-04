@@ -51,7 +51,7 @@ export async function POST(request: Request) {
     await telegram("setWebhook", {
       url: `${siteUrl}/api/telegram/webhook`,
       secret_token: required("TELEGRAM_WEBHOOK_SECRET"),
-      allowed_updates: ["message", "callback_query"],
+      allowed_updates: ["message", "callback_query", "chat_member"],
       drop_pending_updates: true,
     });
     await telegram("setMyCommands", { commands });
