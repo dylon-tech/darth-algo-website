@@ -9,6 +9,27 @@
   --font-display: "Space Grotesk", "Aptos Display", "Segoe UI Variable Display", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
 }
 
+@keyframes market-ticker-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.market-ticker-track {
+  animation: market-ticker-scroll 30s linear infinite;
+  will-change: transform;
+}
+
+.market-ticker-reverse {
+  animation-direction: reverse;
+  animation-duration: 36s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .market-ticker-track {
+    animation: none;
+  }
+}
+
 * {
   box-sizing: border-box;
 }

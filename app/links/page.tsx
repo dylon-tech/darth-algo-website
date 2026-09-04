@@ -14,7 +14,6 @@ import {
   ShieldCheck,
   Sparkles,
   TrendingUp,
-  Users,
   Youtube,
   Zap,
 } from "lucide-react";
@@ -31,18 +30,6 @@ export const metadata: Metadata = {
     images: [{ url: "/hero/darth-algo-before-after.jpg", width: 1254, height: 1254, alt: "Darth Algo TradingView indicator" }],
   },
 };
-
-const primaryLinks = [
-  {
-    title: "Enter the Darth Algo Community",
-    detail: "Free trading education • live chart talk • indicator help",
-    href: "/go/community?source=direct&campaign=links",
-    icon: Users,
-    accent: "from-emerald-400/40 via-cyan-400/15 to-violet-500/10",
-    badge: "JOIN FREE",
-    externalRoute: true,
-  },
-] as const;
 
 const secondaryLinks = [
   { title: "Trading Education", href: "/education", icon: BookOpen },
@@ -75,6 +62,22 @@ export default function LinksPage() {
           </g>
           <g fill="#ffffff" fontFamily="monospace" fontSize="19" fontWeight="700" opacity=".4"><text x="45" y="545">SELL</text><text x="178" y="215">BUY</text><text x="955" y="770">SELL</text><text x="1080" y="400">BUY</text></g>
         </svg>
+        <div className="absolute inset-x-0 top-[28rem] -rotate-2 overflow-hidden border-y border-emerald-300/10 bg-black/30 py-2 opacity-40 backdrop-blur-sm">
+          <div className="market-ticker-track flex w-max items-center gap-10 whitespace-nowrap font-mono text-[10px] font-black uppercase tracking-[.14em] text-zinc-400">
+            {[0,1].map((copy) => <span key={copy} className="flex items-center gap-10"><span className="text-zinc-600">Sample market feed</span><span className="text-emerald-300">ES +0.62%</span><span className="text-red-300">NQ −0.18%</span><span className="text-emerald-300">GC +0.41%</span><span>Trend momentum rising</span><span>Risk levels mapped</span><span>Market pulse active</span></span>)}
+          </div>
+        </div>
+        <div className="absolute inset-x-0 top-[92rem] rotate-2 overflow-hidden border-y border-red-300/10 bg-black/30 py-2 opacity-35 backdrop-blur-sm">
+          <div className="market-ticker-track market-ticker-reverse flex w-max items-center gap-10 whitespace-nowrap font-mono text-[10px] font-black uppercase tracking-[.14em] text-zinc-400">
+            {[0,1].map((copy) => <span key={copy} className="flex items-center gap-10"><span className="text-zinc-600">Darth Algo wire</span><span>Futures session watch</span><span className="text-sky-300">Signal context online</span><span>New education posted</span><span className="text-emerald-300">Community room open</span><span>TradingView ready</span></span>)}
+          </div>
+        </div>
+        <div className="absolute left-[max(1.5rem,calc(50%-31rem))] top-[45rem] hidden w-44 rotate-[-4deg] rounded-xl border border-emerald-300/15 bg-[#0a1212]/65 p-3 font-mono shadow-[0_20px_50px_rgba(0,0,0,.3)] backdrop-blur md:block">
+          <p className="text-[8px] font-black uppercase tracking-wider text-zinc-600">Market pulse</p><p className="mt-2 text-lg font-black text-emerald-300">+0.62%</p><div className="mt-2 flex h-7 items-end gap-1">{[35,55,42,70,62,88,76].map((height,index)=><span key={index} className="w-2 rounded-t-sm bg-emerald-400/50" style={{height:`${height}%`}} />)}</div>
+        </div>
+        <div className="absolute right-[max(1.5rem,calc(50%-31rem))] top-[68rem] hidden w-44 rotate-3 rounded-xl border border-red-300/15 bg-[#120a0b]/65 p-3 font-mono shadow-[0_20px_50px_rgba(0,0,0,.3)] backdrop-blur md:block">
+          <p className="text-[8px] font-black uppercase tracking-wider text-zinc-600">Session watch</p><p className="mt-2 text-xs font-black text-white">NY PM • ACTIVE</p><p className="mt-2 text-[8px] leading-4 text-zinc-500">Momentum and risk context updating</p>
+        </div>
       </div>
 
       <div className="relative mx-auto w-full max-w-xl">
@@ -150,45 +153,25 @@ export default function LinksPage() {
           <span className="flex items-center gap-1.5 text-emerald-300"><TrendingUp className="h-3.5 w-3.5" /> Futures focused</span><span>ES</span><span>NQ</span><span>GC</span><span className="text-red-300">Live signals</span>
         </div>
 
-        <section aria-label="Main Darth Algo links" className="mt-8 space-y-3">
-          {primaryLinks.map((item) => {
-            const Icon = item.icon;
-            const className = "group relative flex min-h-[112px] items-center gap-4 overflow-hidden rounded-[1.5rem] border border-emerald-300/25 bg-[#0d1718]/95 p-5 shadow-[0_20px_55px_rgba(16,185,129,.14)] backdrop-blur transition duration-300 hover:-translate-y-1 hover:border-cyan-300/45 hover:shadow-[0_24px_70px_rgba(34,211,238,.2)]";
-            const content = <>
-              <span aria-hidden="true" className={`absolute inset-0 bg-gradient-to-r ${item.accent} opacity-80 transition group-hover:opacity-100`} />
-              <span aria-hidden="true" className="absolute -right-10 -top-10 h-32 w-32 rounded-full border border-cyan-300/15 bg-cyan-300/10 blur-[1px] transition duration-500 group-hover:scale-125" />
-              <span aria-hidden="true" className="absolute right-8 top-4 h-2 w-2 animate-pulse rounded-full bg-emerald-300 shadow-[0_0_16px_rgba(110,231,183,.9)]" />
-              <span className="relative grid h-16 w-16 shrink-0 place-items-center rounded-2xl border border-emerald-200/25 bg-gradient-to-br from-emerald-400/30 via-cyan-400/15 to-black/50 text-white shadow-[inset_0_1px_0_rgba(255,255,255,.15),0_0_30px_rgba(16,185,129,.18)]">
-                <Icon className="h-7 w-7" />
-              </span>
-              <span className="relative min-w-0 flex-1 text-left">
-                <span className="flex items-center gap-2">
-                  <strong className="font-display text-lg font-black leading-tight sm:text-xl">{item.title}</strong>
-                </span>
-                <span className="mt-1.5 block text-xs leading-5 text-zinc-300">{item.detail}</span>
-                <span className="mt-2 flex flex-wrap gap-2">
-                  <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-2.5 py-1 text-[8px] font-black uppercase tracking-[.14em] text-emerald-200">{item.badge}</span>
-                  <span className="rounded-full border border-white/10 bg-black/25 px-2.5 py-1 text-[8px] font-black uppercase tracking-[.14em] text-zinc-400">Telegram</span>
-                </span>
-                <span className="mt-3 flex items-center gap-2">
-                  <span className="flex -space-x-2">
-                    {['DA','ES','NQ'].map((label, index) => <span key={label} className={`grid h-7 w-7 place-items-center rounded-full border-2 border-[#0d1718] text-[7px] font-black text-white ${index === 0 ? 'bg-red-500' : index === 1 ? 'bg-emerald-500' : 'bg-sky-500'}`}>{label}</span>)}
-                  </span>
-                  <span className="text-[9px] font-black uppercase tracking-wider text-emerald-100/70">Community chart room</span>
-                </span>
-              </span>
-              <span aria-hidden="true" className="absolute right-12 top-4 hidden rotate-3 rounded-lg border border-white/10 bg-black/35 px-2.5 py-1.5 text-[8px] font-bold text-cyan-100/60 sm:block">Who&apos;s trading ES? 📈</span>
-              <span className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[.06] text-zinc-300 transition group-hover:rotate-12 group-hover:border-cyan-300/30 group-hover:bg-cyan-300/15 group-hover:text-white"><ArrowUpRight className="h-4 w-4" /></span>
-            </>;
-
-            if ("external" in item && item.external) {
-              return <a key={item.title} href={item.href} target="_blank" rel="noreferrer" className={className}>{content}</a>;
-            }
-            if ("externalRoute" in item && item.externalRoute) {
-              return <a key={item.title} href={item.href} className={className}>{content}</a>;
-            }
-            return <Link key={item.title} href={item.href} className={className}>{content}</Link>;
-          })}
+        <section aria-label="Join the Darth Algo community" className="relative mt-8 overflow-hidden rounded-[1.75rem] border border-emerald-300/30 bg-[#081314] shadow-[0_28px_80px_rgba(16,185,129,.18)]">
+          <div className="relative aspect-video overflow-hidden border-b border-white/10 bg-black">
+            <Image src="/darth-algo-community-banner.svg" alt="Darth Algo traders sharing charts in the community trading room" fill sizes="(max-width: 640px) 100vw, 576px" className="object-cover transition duration-700 hover:scale-105" />
+            <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#081314] via-transparent to-transparent" />
+            <span className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-emerald-300/30 bg-black/65 px-3 py-1.5 text-[9px] font-black uppercase tracking-[.16em] text-emerald-200 backdrop-blur"><span className="h-2 w-2 animate-pulse rounded-full bg-emerald-300 shadow-[0_0_14px_#6ee7b7]" /> Community live</span>
+            <span className="absolute bottom-3 left-3 rounded-lg border border-white/10 bg-black/65 px-3 py-2 text-[9px] font-bold text-white/75 backdrop-blur">Charts • Education • Indicator help</span>
+          </div>
+          <div className="relative p-5 sm:p-6">
+            <span aria-hidden="true" className="absolute -right-12 -top-10 h-40 w-40 rounded-full bg-cyan-400/15 blur-3xl" />
+            <div className="relative flex items-start gap-3">
+              <span className="flex -space-x-2 pt-1">{['DA','ES','NQ','GC'].map((label, index) => <span key={label} className={`grid h-8 w-8 place-items-center rounded-full border-2 border-[#081314] text-[7px] font-black text-white ${['bg-red-500','bg-emerald-500','bg-sky-500','bg-amber-500'][index]}`}>{label}</span>)}</span>
+              <div><p className="text-[9px] font-black uppercase tracking-[.18em] text-emerald-300">Free Telegram community</p><h2 className="font-display mt-1 text-2xl font-black">Trade with the Darth Algo community.</h2></div>
+            </div>
+            <p className="relative mt-3 text-sm leading-6 text-zinc-400">Share charts, learn the indicators, discuss futures setups, and get company updates alongside other traders.</p>
+            <a href="/go/community?source=direct&campaign=links" className="relative mt-5 flex min-h-16 w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400 px-5 text-base font-black text-[#031211] shadow-[0_16px_45px_rgba(16,185,129,.35)] transition duration-300 hover:-translate-y-1 hover:brightness-110">
+              Join the Community — Free <ArrowUpRight className="h-5 w-5" />
+            </a>
+            <p className="relative mt-3 text-center text-[9px] font-black uppercase tracking-[.15em] text-zinc-600">Opens instantly in Telegram</p>
+          </div>
         </section>
 
         <section aria-labelledby="social-heading" className="mt-8">
