@@ -102,6 +102,19 @@ summary {
   letter-spacing: 0;
 }
 
+.darth-wordmark {
+  font-family: "Arial Black", "Eurostile Extended", "Bank Gothic", var(--font-display);
+  font-style: italic;
+  font-stretch: expanded;
+  letter-spacing: -0.075em;
+  line-height: 0.92;
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.85), 0 0 28px rgba(239, 68, 68, 0.22);
+}
+
+.darth-wordmark > span:last-child {
+  letter-spacing: -0.09em;
+}
+
 .text-balance {
   text-wrap: balance;
 }
