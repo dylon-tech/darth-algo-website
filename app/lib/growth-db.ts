@@ -95,6 +95,7 @@ export async function saveGrowthInvite(source: GrowthSource, inviteLink: string)
   `;
 }
 
+// Reuse active routes when Telegram retries an earlier setup update.
 export async function getConfiguredGrowthSources() {
   await ensureGrowthSchema();
   const rows = await db()`select source from community_growth_sources where active=true`;
