@@ -44,10 +44,11 @@ export default function LinksPage() {
         <div className="absolute left-1/2 top-[-16rem] h-[34rem] w-[34rem] -translate-x-1/2 rounded-full bg-red-600/15 blur-[110px]" />
         <div className="absolute bottom-[-12rem] right-[-10rem] h-[28rem] w-[28rem] rounded-full bg-emerald-400/10 blur-[120px]" />
         <div className="absolute inset-0 opacity-[0.16] [background-image:linear-gradient(rgba(255,255,255,.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.08)_1px,transparent_1px)] [background-size:36px_36px] [mask-image:linear-gradient(to_bottom,black,transparent_70%)]" />
-        <div className="absolute inset-x-0 top-0 h-[47rem] overflow-hidden [mask-image:linear-gradient(to_bottom,black_4%,black_58%,transparent_100%)]">
-          <Image src="/indicators/swing-overview.png" alt="" fill priority sizes="100vw" className="market-hero-chart object-cover object-center opacity-[.24] saturate-[1.2]" />
-          <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(7,9,13,.22),rgba(7,9,13,.5)_50%,#07090d),radial-gradient(circle_at_50%_30%,transparent_5%,rgba(7,9,13,.62)_78%)]" />
-          <div className="absolute inset-0 bg-red-950/10 mix-blend-color" />
+        <div className="absolute inset-x-[-18%] top-0 h-[45rem] overflow-hidden [mask-image:linear-gradient(to_bottom,black_2%,black_66%,transparent_100%)]">
+          <Image src="/indicators/swing-overview.png" alt="" fill priority sizes="136vw" className="market-hero-chart object-cover object-center saturate-[1.35] contrast-110" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(7,9,13,.08),rgba(7,9,13,.28)_52%,#07090d),radial-gradient(circle_at_50%_28%,transparent_8%,rgba(7,9,13,.46)_84%)]" />
+          <div className="market-hero-scan absolute inset-y-0 w-28 bg-gradient-to-r from-transparent via-sky-300/10 to-transparent blur-xl" />
+          <div className="absolute inset-0 bg-red-950/[.06] mix-blend-color" />
         </div>
         <svg viewBox="0 0 1200 1100" preserveAspectRatio="xMidYMin slice" className="market-chart-drift absolute inset-x-0 top-[43rem] h-[68rem] w-full opacity-[.26]">
           <defs>
@@ -97,7 +98,7 @@ export default function LinksPage() {
             </span>
           </div>
           <h1 className="mx-auto mt-3 max-w-[19rem] sm:max-w-[23rem]">
-            <Image src="/darth-algo-wordmark.svg" alt="Darth Algo" width={880} height={184} priority className="h-auto w-full mix-blend-screen brightness-110 contrast-125 drop-shadow-[0_8px_28px_rgba(239,68,68,.3)]" />
+            <Image src="/darth-algo-wordmark-clean.svg" alt="Darth Algo" width={830} height={100} priority className="h-auto w-full drop-shadow-[0_8px_28px_rgba(239,68,68,.34)]" />
           </h1>
           <p className="mx-auto mt-2 max-w-md text-sm leading-5 text-zinc-400 sm:text-base">
             Indicators, education, community, and support—all in one place.
