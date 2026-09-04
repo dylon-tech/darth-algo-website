@@ -47,9 +47,9 @@ export default async function CommunityPage({ searchParams }: { searchParams: Pr
               <h1 className="mt-7 max-w-3xl text-4xl font-black leading-[1.02] sm:text-6xl lg:text-7xl">Trade with more <span className="text-ember">structure.</span> Learn with other traders.</h1>
               <p className="mt-6 max-w-2xl text-lg leading-8 text-zinc-300">Join the official Darth Algo community for concise futures education, chart breakdowns, TradingView setup help, product updates, and real conversations with other traders.</p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Link href={joinHref} className="inline-flex min-h-14 items-center justify-center gap-2 rounded-md bg-ember px-7 text-base font-black shadow-glow transition hover:bg-red-500">
+                <a href={joinHref} className="inline-flex min-h-14 items-center justify-center gap-2 rounded-md bg-ember px-7 text-base font-black shadow-glow transition hover:bg-red-500">
                   Join the Free Community <ArrowRight className="h-5 w-5" />
-                </Link>
+                </a>
                 <Link href="/#pricing" className="inline-flex min-h-14 items-center justify-center rounded-md border border-white/15 bg-white/[.04] px-7 text-base font-bold transition hover:bg-white/[.08]">View Indicator Plans</Link>
               </div>
               <p className="mt-4 text-xs leading-5 text-zinc-500">Free to join. No profit promises or personalized financial advice. Trading involves risk.</p>
@@ -65,7 +65,7 @@ export default async function CommunityPage({ searchParams }: { searchParams: Pr
                   <div key={item} className="flex items-center gap-3 rounded-lg border border-white/10 bg-black/20 p-4 text-sm font-semibold text-zinc-200"><span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-emerald-400/10 text-emerald-300"><Check className="h-4 w-4" /></span>{item}</div>
                 ))}
               </div>
-              <Link href={joinHref} className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-white font-black text-black transition hover:bg-zinc-200">Open Telegram <ArrowRight className="h-4 w-4" /></Link>
+              <a href={joinHref} className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-white font-black text-black transition hover:bg-zinc-200">Open Telegram <ArrowRight className="h-4 w-4" /></a>
             </div>
           </div>
         </section>
@@ -80,7 +80,7 @@ export default async function CommunityPage({ searchParams }: { searchParams: Pr
         <section className="border-y border-white/10 bg-black/20">
           <div className="section-shell grid gap-8 py-16 lg:grid-cols-[1fr_auto] lg:items-center">
             <div><div className="flex items-center gap-3 text-emerald-300"><ShieldCheck className="h-6 w-6" /><span className="text-sm font-black uppercase tracking-[.18em]">Moderated and risk-aware</span></div><h2 className="mt-4 text-3xl font-black sm:text-4xl">Ready to enter the community?</h2><p className="mt-3 max-w-2xl text-zinc-400">Start with free education and discussion. If you later want the indicator, the assistant can help you compare every plan without pressure.</p></div>
-            <Link href={joinHref} className="inline-flex min-h-14 items-center justify-center gap-2 rounded-md bg-ember px-8 font-black shadow-glow transition hover:bg-red-500">Join Darth Algo <ArrowRight className="h-5 w-5" /></Link>
+            <a href={joinHref} className="inline-flex min-h-14 items-center justify-center gap-2 rounded-md bg-ember px-8 font-black shadow-glow transition hover:bg-red-500">Join Darth Algo <ArrowRight className="h-5 w-5" /></a>
           </div>
         </section>
       </main>
