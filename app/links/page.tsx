@@ -44,7 +44,7 @@ export default function LinksPage() {
         <div className="absolute left-1/2 top-[-16rem] h-[34rem] w-[34rem] -translate-x-1/2 rounded-full bg-red-600/15 blur-[110px]" />
         <div className="absolute bottom-[-12rem] right-[-10rem] h-[28rem] w-[28rem] rounded-full bg-emerald-400/10 blur-[120px]" />
         <div className="absolute inset-0 opacity-[0.16] [background-image:linear-gradient(rgba(255,255,255,.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.08)_1px,transparent_1px)] [background-size:36px_36px] [mask-image:linear-gradient(to_bottom,black,transparent_70%)]" />
-        <svg viewBox="0 0 1200 1100" preserveAspectRatio="xMidYMin slice" className="absolute inset-x-0 top-24 h-[68rem] w-full opacity-[.24]">
+        <svg viewBox="0 0 1200 1100" preserveAspectRatio="xMidYMin slice" className="market-chart-drift absolute inset-x-0 top-24 h-[68rem] w-full opacity-[.32]">
           <defs>
             <linearGradient id="market-line" x1="0" x2="1"><stop stopColor="#ef4444"/><stop offset=".5" stopColor="#a855f7"/><stop offset="1" stopColor="#34d399"/></linearGradient>
             <filter id="market-glow"><feGaussianBlur stdDeviation="5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
@@ -61,16 +61,11 @@ export default function LinksPage() {
           </g>
           <g fill="#ffffff" fontFamily="monospace" fontSize="19" fontWeight="700" opacity=".4"><text x="45" y="545">SELL</text><text x="178" y="215">BUY</text><text x="955" y="770">SELL</text><text x="1080" y="400">BUY</text></g>
         </svg>
-        <div className="absolute inset-x-0 top-[28rem] -rotate-2 overflow-hidden border-y border-emerald-300/10 bg-black/30 py-2 opacity-40 backdrop-blur-sm">
-          <div className="market-ticker-track flex w-max items-center gap-10 whitespace-nowrap font-mono text-[10px] font-black uppercase tracking-[.14em] text-zinc-400">
-            {[0,1].map((copy) => <span key={copy} className="flex items-center gap-10"><span className="text-zinc-600">Sample market feed</span><span className="text-emerald-300">ES +0.62%</span><span className="text-red-300">NQ −0.18%</span><span className="text-emerald-300">GC +0.41%</span><span>Trend momentum rising</span><span>Risk levels mapped</span><span>Market pulse active</span></span>)}
+        {[18,42,72,108,145,185,228].map((top,index)=><div key={top} style={{top:`${top}rem`,transform:`rotate(${index % 2 ? 1.2 : -1.2}deg)`}} className="absolute inset-x-[-8%] overflow-hidden border-y border-white/[.055] bg-gradient-to-r from-red-500/[.055] via-transparent to-emerald-400/[.06] py-2.5 opacity-55 [mask-image:linear-gradient(90deg,transparent,black_8%,black_92%,transparent)]">
+          <div style={{animationDuration:`${24 + index * 3}s`}} className={`market-ticker-track flex w-max items-center gap-10 whitespace-nowrap font-mono text-[10px] font-black uppercase tracking-[.16em] ${index % 2 ? 'market-ticker-reverse' : ''}`}>
+            {[0,1].map(copy=><span key={copy} className="flex items-center gap-10"><span className="text-red-300/70">DARTH ALGO WIRE</span><span className="text-emerald-300/80">ES +0.62%</span><span className="text-red-300/75">NQ −0.18%</span><span className="text-emerald-300/80">GC +0.41%</span><span className="text-sky-200/65">SIGNAL CONTEXT ONLINE</span><span className="text-zinc-400/60">RISK LEVELS MAPPED</span><span className="text-violet-200/65">COMMUNITY ROOM OPEN</span></span>)}
           </div>
-        </div>
-        <div className="absolute inset-x-0 top-[92rem] rotate-2 overflow-hidden border-y border-red-300/10 bg-black/30 py-2 opacity-35 backdrop-blur-sm">
-          <div className="market-ticker-track market-ticker-reverse flex w-max items-center gap-10 whitespace-nowrap font-mono text-[10px] font-black uppercase tracking-[.14em] text-zinc-400">
-            {[0,1].map((copy) => <span key={copy} className="flex items-center gap-10"><span className="text-zinc-600">Darth Algo wire</span><span>Futures session watch</span><span className="text-sky-300">Signal context online</span><span>New education posted</span><span className="text-emerald-300">Community room open</span><span>TradingView ready</span></span>)}
-          </div>
-        </div>
+        </div>)}
         <div className="absolute left-[max(1.5rem,calc(50%-31rem))] top-[45rem] hidden w-44 rotate-[-4deg] rounded-xl border border-emerald-300/15 bg-[#0a1212]/65 p-3 font-mono shadow-[0_20px_50px_rgba(0,0,0,.3)] backdrop-blur md:block">
           <p className="text-[8px] font-black uppercase tracking-wider text-zinc-600">Market pulse</p><p className="mt-2 text-lg font-black text-emerald-300">+0.62%</p><div className="mt-2 flex h-7 items-end gap-1">{[35,55,42,70,62,88,76].map((height,index)=><span key={index} className="w-2 rounded-t-sm bg-emerald-400/50" style={{height:`${height}%`}} />)}</div>
         </div>
@@ -96,23 +91,15 @@ export default function LinksPage() {
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-300" /> Official link hub
             </span>
           </div>
-          <h1 className="darth-wordmark mt-3 text-4xl font-black uppercase sm:text-5xl">
-            <span className="text-red-500">Darth</span> <span className="text-white">Algo</span>
+          <h1 className="mx-auto mt-3 max-w-[19rem] sm:max-w-[23rem]">
+            <Image src="/darth-algo-wordmark.svg" alt="Darth Algo" width={880} height={184} priority className="h-auto w-full drop-shadow-[0_8px_28px_rgba(239,68,68,.24)]" />
           </h1>
           <p className="mx-auto mt-2 max-w-md text-sm leading-5 text-zinc-400 sm:text-base">
             Indicators, education, community, and support—all in one place.
           </p>
         </section>
 
-        <section aria-label="Animated market data" className="mt-4 space-y-1.5 overflow-hidden rounded-2xl border border-white/10 bg-black/45 py-2 shadow-[0_15px_45px_rgba(0,0,0,.25)] backdrop-blur">
-          {[
-            ["Market pulse", "ES +0.62%", "NQ −0.18%", "GC +0.41%", "Futures focused", "Trend engine active"],
-            ["Darth Algo wire", "Buy + sell context", "Risk levels mapped", "TradingView ready", "NY PM watch", "Alerts online"],
-            ["Community feed", "New chart shared", "Education updated", "Market discussion live", "Indicator setup", "Join free"],
-          ].map((rail,index)=><div key={rail[0]} className="overflow-hidden border-y border-white/[.04] py-1.5"><div style={{animationDuration:`${22 + index * 7}s`}} className={`market-ticker-track flex w-max items-center gap-7 whitespace-nowrap font-mono text-[9px] font-black uppercase tracking-[.14em] ${index === 1 ? 'market-ticker-reverse' : ''}`}>{[0,1].map(copy=><span key={copy} className="flex items-center gap-7">{rail.map((item,itemIndex)=><span key={item} className={itemIndex === 0 ? 'text-zinc-600' : item.includes('+') || item.includes('active') || item.includes('online') || item.includes('free') ? 'text-emerald-300' : item.includes('−') ? 'text-red-300' : index === 1 ? 'text-sky-200' : 'text-zinc-300'}>{item}</span>)}</span>)}</div></div>)}
-        </section>
-
-        <section aria-label="Featured Darth Algo Swing Tool trial" className="relative mt-5 overflow-hidden rounded-[1.75rem] border border-sky-400/35 bg-[#0c131d] shadow-[0_24px_80px_rgba(14,165,233,.22)]">
+        <section aria-label="Featured Darth Algo Swing Tool trial" className="relative mt-4 overflow-hidden rounded-[1.75rem] border border-sky-400/35 bg-[#0c131d]/95 shadow-[0_24px_80px_rgba(14,165,233,.22)] backdrop-blur">
           <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_82%_8%,rgba(14,165,233,.32),transparent_34%),radial-gradient(circle_at_5%_92%,rgba(59,130,246,.2),transparent_38%)]" />
           <div className="relative border-b border-white/10 bg-black/25 px-5 py-3">
             <div className="flex items-center justify-between gap-3">
@@ -151,7 +138,7 @@ export default function LinksPage() {
           </div>
         </section>
 
-        <section aria-label="Join the Darth Algo community" className="relative mt-5 overflow-hidden rounded-[1.75rem] border border-emerald-300/30 bg-[#081314] shadow-[0_28px_80px_rgba(16,185,129,.18)]">
+        <section aria-label="Join the Darth Algo community" className="relative mt-5 overflow-hidden rounded-[1.75rem] border border-emerald-300/30 bg-[#081314]/92 shadow-[0_28px_80px_rgba(16,185,129,.18)] backdrop-blur-sm">
           <div className="relative aspect-video overflow-hidden border-b border-white/10 bg-black">
             <Image src="/darth-algo-community-banner.svg" alt="Darth Algo traders sharing charts in the community trading room" fill sizes="(max-width: 640px) 100vw, 576px" className="object-cover transition duration-700 hover:scale-105" />
             <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#081314] via-transparent to-transparent" />
@@ -178,7 +165,7 @@ export default function LinksPage() {
             <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-600">Official socials</span>
           </div>
 
-          <article className="overflow-hidden rounded-[1.5rem] border border-red-500/25 bg-[#11151d] shadow-[0_20px_50px_rgba(0,0,0,.3)]">
+          <article className="overflow-hidden rounded-[1.5rem] border border-red-500/25 bg-[#11151d]/92 shadow-[0_20px_50px_rgba(0,0,0,.3)] backdrop-blur-sm">
             <div className="relative aspect-video overflow-hidden bg-black">
               <iframe
                 src="https://www.youtube-nocookie.com/embed/YGhU7kgd8h0?rel=0"
@@ -195,7 +182,7 @@ export default function LinksPage() {
             </a>
           </article>
 
-          <article className="mt-3 overflow-hidden rounded-[1.5rem] border border-fuchsia-400/25 bg-[#11151d] shadow-[0_20px_50px_rgba(0,0,0,.25)]">
+          <article className="mt-3 overflow-hidden rounded-[1.5rem] border border-fuchsia-400/25 bg-[#11151d]/92 shadow-[0_20px_50px_rgba(0,0,0,.25)] backdrop-blur-sm">
             <div className="grid grid-cols-3 gap-1 bg-black p-1">
               {[
                 ["/indicators/signal-context-alt.png", "Darth Algo signal chart post"],
@@ -210,7 +197,7 @@ export default function LinksPage() {
             </a>
           </article>
 
-          <article className="mt-3 overflow-hidden rounded-[1.5rem] border border-cyan-300/25 bg-[#0c1118] shadow-[0_20px_50px_rgba(0,0,0,.25)]">
+          <article className="mt-3 overflow-hidden rounded-[1.5rem] border border-cyan-300/25 bg-[#0c1118]/92 shadow-[0_20px_50px_rgba(0,0,0,.25)] backdrop-blur-sm">
             <div className="relative grid h-48 grid-cols-3 gap-1 overflow-hidden bg-black p-1">
               {[
                 ["/indicator-examples/darth-algo-feature-map-01.png", "Darth Algo Pro Tool TikTok preview"],
@@ -233,7 +220,7 @@ export default function LinksPage() {
             {[
               {name:'Scalper Tool',eyebrow:'Fast session signals',price:'$18.99',image:'/indicators/scalper-execution.png',href:'https://buy.stripe.com/14AfZi4T5fRidqS2oc6kg03',product:'/products/scalper',accent:'from-orange-500 to-red-500',border:'border-orange-400/25',text:'text-orange-300'},
               {name:'Pro Tool',eyebrow:'Scalper + Swing',price:'$29',image:'/indicator-examples/darth-algo-feature-map-01.png',href:'https://buy.stripe.com/4gM8wQfxJ6gI1IabYM6kg05',product:'/products/pro',accent:'from-violet-600 to-fuchsia-500',border:'border-violet-400/25',text:'text-violet-300'},
-            ].map(tool=><article key={tool.name} className={`group overflow-hidden rounded-[1.35rem] border bg-[#0d1118] ${tool.border} shadow-[0_18px_45px_rgba(0,0,0,.22)]`}>
+            ].map(tool=><article key={tool.name} className={`group overflow-hidden rounded-[1.35rem] border bg-[#0d1118]/92 backdrop-blur-sm ${tool.border} shadow-[0_18px_45px_rgba(0,0,0,.22)]`}>
               <Link href={tool.product} className="relative block aspect-[16/8] overflow-hidden bg-black"><Image src={tool.image} alt={`Darth Algo ${tool.name} chart preview`} fill sizes="(max-width: 640px) 100vw, 288px" className="object-cover transition duration-500 group-hover:scale-105"/><span className="absolute inset-0 bg-gradient-to-t from-[#0d1118] to-transparent"/><span className={`absolute bottom-2 left-3 text-[8px] font-black uppercase tracking-[.15em] ${tool.text}`}>{tool.eyebrow}</span></Link>
               <div className="p-4"><div className="flex items-start justify-between gap-3"><h3 className="font-display text-lg font-black">Darth Algo {tool.name}</h3><div className="shrink-0 text-right"><strong className="text-lg font-black">{tool.price}</strong><span className="block text-[8px] uppercase text-zinc-600">/ month</span></div></div><a href={tool.href} className={`mt-3 flex min-h-11 items-center justify-center gap-2 rounded-xl bg-gradient-to-r px-4 text-xs font-black text-white shadow-lg transition hover:-translate-y-0.5 hover:brightness-110 ${tool.accent}`}>Get {tool.name} <ArrowUpRight className="h-3.5 w-3.5"/></a></div>
             </article>)}
