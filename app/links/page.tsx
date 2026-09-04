@@ -9,6 +9,7 @@ import {
   Instagram,
   LifeBuoy,
   MessageCircle,
+  Music2,
   Play,
   ShieldCheck,
   Sparkles,
@@ -169,7 +170,14 @@ export default function LinksPage() {
                   <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-2.5 py-1 text-[8px] font-black uppercase tracking-[.14em] text-emerald-200">{item.badge}</span>
                   <span className="rounded-full border border-white/10 bg-black/25 px-2.5 py-1 text-[8px] font-black uppercase tracking-[.14em] text-zinc-400">Telegram</span>
                 </span>
+                <span className="mt-3 flex items-center gap-2">
+                  <span className="flex -space-x-2">
+                    {['DA','ES','NQ'].map((label, index) => <span key={label} className={`grid h-7 w-7 place-items-center rounded-full border-2 border-[#0d1718] text-[7px] font-black text-white ${index === 0 ? 'bg-red-500' : index === 1 ? 'bg-emerald-500' : 'bg-sky-500'}`}>{label}</span>)}
+                  </span>
+                  <span className="text-[9px] font-black uppercase tracking-wider text-emerald-100/70">Community chart room</span>
+                </span>
               </span>
+              <span aria-hidden="true" className="absolute right-12 top-4 hidden rotate-3 rounded-lg border border-white/10 bg-black/35 px-2.5 py-1.5 text-[8px] font-bold text-cyan-100/60 sm:block">Who&apos;s trading ES? 📈</span>
               <span className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[.06] text-zinc-300 transition group-hover:rotate-12 group-hover:border-cyan-300/30 group-hover:bg-cyan-300/15 group-hover:text-white"><ArrowUpRight className="h-4 w-4" /></span>
             </>;
 
@@ -206,15 +214,36 @@ export default function LinksPage() {
             </a>
           </article>
 
-          <a href="https://www.instagram.com/darth.algo/" target="_blank" rel="noreferrer" className="group relative mt-3 flex min-h-[150px] items-end overflow-hidden rounded-[1.5rem] border border-fuchsia-400/25 bg-[#11151d] p-5 shadow-[0_20px_50px_rgba(0,0,0,.25)]">
-            <Image src="/indicators/signal-context-alt.png" alt="Darth Algo indicator chart content featured on Instagram" fill sizes="(max-width: 640px) 100vw, 576px" className="object-cover opacity-50 transition duration-500 group-hover:scale-105 group-hover:opacity-65" />
-            <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-fuchsia-700/70 via-purple-900/45 to-black/30" />
-            <span className="relative flex w-full items-center gap-4">
+          <article className="mt-3 overflow-hidden rounded-[1.5rem] border border-fuchsia-400/25 bg-[#11151d] shadow-[0_20px_50px_rgba(0,0,0,.25)]">
+            <div className="grid grid-cols-3 gap-1 bg-black p-1">
+              {[
+                ["/indicators/signal-context-alt.png", "Darth Algo signal chart post"],
+                ["/indicator-examples/darth-algo-feature-map-03.png", "Darth Algo risk plan post"],
+                ["/indicators/swing-trend-cloud.png", "Darth Algo trend cloud post"],
+              ].map(([src, alt]) => <div key={src} className="group relative aspect-square overflow-hidden bg-zinc-950"><Image src={src} alt={alt} fill sizes="(max-width: 640px) 33vw, 190px" className="object-cover transition duration-500 group-hover:scale-110" /><span className="absolute inset-0 bg-gradient-to-t from-fuchsia-700/30 to-transparent" /></div>)}
+            </div>
+            <a href="https://www.instagram.com/darth.algo/" target="_blank" rel="noreferrer" className="group flex items-center gap-4 bg-gradient-to-r from-fuchsia-700/25 via-purple-700/10 to-transparent p-4 transition hover:from-fuchsia-700/35">
               <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-fuchsia-500 via-red-500 to-amber-400 text-white shadow-lg"><Instagram className="h-6 w-6" /></span>
-              <span className="min-w-0 flex-1"><strong className="font-display block text-xl font-black">Follow @darth.algo</strong><span className="mt-1 block text-xs font-bold text-white/70">Trading content, product clips, and company updates</span></span>
+              <span className="min-w-0 flex-1"><strong className="font-display block text-xl font-black">See us on Instagram</strong><span className="mt-1 block text-xs font-bold text-white/60">Posts, chart clips, and updates · @darth.algo</span></span>
               <ArrowUpRight className="h-5 w-5 shrink-0 transition group-hover:-translate-y-1 group-hover:translate-x-1" />
-            </span>
-          </a>
+            </a>
+          </article>
+
+          <article className="mt-3 overflow-hidden rounded-[1.5rem] border border-cyan-300/25 bg-[#0c1118] shadow-[0_20px_50px_rgba(0,0,0,.25)]">
+            <div className="relative grid h-48 grid-cols-3 gap-1 overflow-hidden bg-black p-1">
+              {[
+                ["/indicator-examples/darth-algo-feature-map-01.png", "Darth Algo Pro Tool TikTok preview"],
+                ["/indicators/scalper-execution.png", "Darth Algo Scalper TikTok preview"],
+                ["/indicators/swing-overview.png", "Darth Algo Swing TikTok preview"],
+              ].map(([src, alt], index) => <div key={src} className="group relative overflow-hidden rounded-sm bg-zinc-950"><Image src={src} alt={alt} fill sizes="(max-width: 640px) 33vw, 190px" className="object-cover transition duration-500 group-hover:scale-110" /><span className={`absolute inset-0 ${index === 1 ? 'bg-cyan-400/10' : 'bg-red-500/10'}`} /><span className="absolute inset-0 grid place-items-center"><span className="grid h-9 w-9 place-items-center rounded-full border border-white/25 bg-black/55 text-white backdrop-blur"><Play className="h-3.5 w-3.5 fill-current" /></span></span></div>)}
+              <span aria-hidden="true" className="absolute left-1/2 top-2 -translate-x-1/2 rounded-full border border-white/15 bg-black/70 px-3 py-1 text-[8px] font-black uppercase tracking-[.15em] text-white backdrop-blur">Darth Algo clips</span>
+            </div>
+            <a href="https://www.tiktok.com/@darth.algo" target="_blank" rel="noreferrer" className="group flex items-center gap-4 bg-gradient-to-r from-cyan-400/15 via-transparent to-red-500/15 p-4 transition hover:from-cyan-400/25 hover:to-red-500/25">
+              <span className="relative grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-black text-white shadow-[-4px_0_0_#22d3ee,4px_0_0_#f43f5e]"><Music2 className="h-6 w-6" /></span>
+              <span className="min-w-0 flex-1"><strong className="font-display block text-xl font-black">Watch us on TikTok</strong><span className="mt-1 block text-xs font-bold text-white/60">Signals, demos, and trading lives · @darth.algo</span></span>
+              <ArrowUpRight className="h-5 w-5 shrink-0 transition group-hover:-translate-y-1 group-hover:translate-x-1" />
+            </a>
+          </article>
         </section>
 
         <section aria-label="Darth Algo Pro Tool" className="group relative mt-6 overflow-hidden rounded-[1.5rem] border border-violet-400/25 bg-gradient-to-br from-violet-500/[.13] via-[#11131a] to-red-500/[.08] p-5 shadow-[0_18px_50px_rgba(109,40,217,.12)] transition duration-300 hover:border-violet-300/40">
