@@ -44,7 +44,12 @@ export default function LinksPage() {
         <div className="absolute left-1/2 top-[-16rem] h-[34rem] w-[34rem] -translate-x-1/2 rounded-full bg-red-600/15 blur-[110px]" />
         <div className="absolute bottom-[-12rem] right-[-10rem] h-[28rem] w-[28rem] rounded-full bg-emerald-400/10 blur-[120px]" />
         <div className="absolute inset-0 opacity-[0.16] [background-image:linear-gradient(rgba(255,255,255,.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.08)_1px,transparent_1px)] [background-size:36px_36px] [mask-image:linear-gradient(to_bottom,black,transparent_70%)]" />
-        <svg viewBox="0 0 1200 1100" preserveAspectRatio="xMidYMin slice" className="market-chart-drift absolute inset-x-0 top-24 h-[68rem] w-full opacity-[.32]">
+        <div className="absolute inset-x-0 top-0 h-[47rem] overflow-hidden [mask-image:linear-gradient(to_bottom,black_4%,black_58%,transparent_100%)]">
+          <Image src="/indicators/swing-overview.png" alt="" fill priority sizes="100vw" className="market-hero-chart object-cover object-center opacity-[.24] saturate-[1.2]" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(7,9,13,.22),rgba(7,9,13,.5)_50%,#07090d),radial-gradient(circle_at_50%_30%,transparent_5%,rgba(7,9,13,.62)_78%)]" />
+          <div className="absolute inset-0 bg-red-950/10 mix-blend-color" />
+        </div>
+        <svg viewBox="0 0 1200 1100" preserveAspectRatio="xMidYMin slice" className="market-chart-drift absolute inset-x-0 top-[43rem] h-[68rem] w-full opacity-[.26]">
           <defs>
             <linearGradient id="market-line" x1="0" x2="1"><stop stopColor="#ef4444"/><stop offset=".5" stopColor="#a855f7"/><stop offset="1" stopColor="#34d399"/></linearGradient>
             <filter id="market-glow"><feGaussianBlur stdDeviation="5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
@@ -61,7 +66,7 @@ export default function LinksPage() {
           </g>
           <g fill="#ffffff" fontFamily="monospace" fontSize="19" fontWeight="700" opacity=".4"><text x="45" y="545">SELL</text><text x="178" y="215">BUY</text><text x="955" y="770">SELL</text><text x="1080" y="400">BUY</text></g>
         </svg>
-        {[18,42,72,108,145,185,228].map((top,index)=><div key={top} style={{top:`${top}rem`,transform:`rotate(${index % 2 ? 1.2 : -1.2}deg)`}} className="absolute inset-x-[-8%] overflow-hidden border-y border-white/[.055] bg-gradient-to-r from-red-500/[.055] via-transparent to-emerald-400/[.06] py-2.5 opacity-55 [mask-image:linear-gradient(90deg,transparent,black_8%,black_92%,transparent)]">
+        {[50,78,110,145,185,228].map((top,index)=><div key={top} style={{top:`${top}rem`,transform:`rotate(${index % 2 ? 1.2 : -1.2}deg)`}} className="absolute inset-x-[-8%] overflow-hidden border-y border-white/[.055] bg-gradient-to-r from-red-500/[.055] via-transparent to-emerald-400/[.06] py-2.5 opacity-45 [mask-image:linear-gradient(90deg,transparent,black_8%,black_92%,transparent)]">
           <div style={{animationDuration:`${24 + index * 3}s`}} className={`market-ticker-track flex w-max items-center gap-10 whitespace-nowrap font-mono text-[10px] font-black uppercase tracking-[.16em] ${index % 2 ? 'market-ticker-reverse' : ''}`}>
             {[0,1].map(copy=><span key={copy} className="flex items-center gap-10"><span className="text-red-300/70">DARTH ALGO WIRE</span><span className="text-emerald-300/80">ES +0.62%</span><span className="text-red-300/75">NQ −0.18%</span><span className="text-emerald-300/80">GC +0.41%</span><span className="text-sky-200/65">SIGNAL CONTEXT ONLINE</span><span className="text-zinc-400/60">RISK LEVELS MAPPED</span><span className="text-violet-200/65">COMMUNITY ROOM OPEN</span></span>)}
           </div>
@@ -92,7 +97,7 @@ export default function LinksPage() {
             </span>
           </div>
           <h1 className="mx-auto mt-3 max-w-[19rem] sm:max-w-[23rem]">
-            <Image src="/darth-algo-wordmark.svg" alt="Darth Algo" width={880} height={184} priority className="h-auto w-full drop-shadow-[0_8px_28px_rgba(239,68,68,.24)]" />
+            <Image src="/darth-algo-wordmark.svg" alt="Darth Algo" width={880} height={184} priority className="h-auto w-full mix-blend-screen brightness-110 contrast-125 drop-shadow-[0_8px_28px_rgba(239,68,68,.3)]" />
           </h1>
           <p className="mx-auto mt-2 max-w-md text-sm leading-5 text-zinc-400 sm:text-base">
             Indicators, education, community, and support—all in one place.
