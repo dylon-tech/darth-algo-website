@@ -20,13 +20,25 @@
 }
 
 @keyframes market-hero-breathe {
-  0%, 100% { transform: scale(1.04) translate3d(-0.5%, 0, 0); opacity: 0.2; }
-  50% { transform: scale(1.09) translate3d(0.5%, -0.75%, 0); opacity: 0.28; }
+  0%, 100% { transform: scale(1.04) translate3d(-0.75%, 0, 0); opacity: 0.36; }
+  50% { transform: scale(1.1) translate3d(0.75%, -1%, 0); opacity: 0.5; }
+}
+
+@keyframes market-hero-scan {
+  0% { left: -25%; opacity: 0; }
+  18% { opacity: 0.7; }
+  72% { opacity: 0.45; }
+  100% { left: 115%; opacity: 0; }
 }
 
 .market-hero-chart {
   animation: market-hero-breathe 18s ease-in-out infinite;
   will-change: transform, opacity;
+}
+
+.market-hero-scan {
+  animation: market-hero-scan 8s ease-in-out infinite;
+  will-change: left, opacity;
 }
 
 .market-chart-drift {
@@ -54,7 +66,8 @@
     animation: none;
   }
 
-  .market-hero-chart {
+  .market-hero-chart,
+  .market-hero-scan {
     animation: none;
   }
 }
