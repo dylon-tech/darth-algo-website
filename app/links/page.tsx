@@ -57,6 +57,23 @@ export default function LinksPage() {
         <div className="absolute left-1/2 top-[-16rem] h-[34rem] w-[34rem] -translate-x-1/2 rounded-full bg-red-600/15 blur-[110px]" />
         <div className="absolute bottom-[-12rem] right-[-10rem] h-[28rem] w-[28rem] rounded-full bg-emerald-400/10 blur-[120px]" />
         <div className="absolute inset-0 opacity-[0.16] [background-image:linear-gradient(rgba(255,255,255,.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.08)_1px,transparent_1px)] [background-size:36px_36px] [mask-image:linear-gradient(to_bottom,black,transparent_70%)]" />
+        <svg viewBox="0 0 1200 1100" preserveAspectRatio="xMidYMin slice" className="absolute inset-x-0 top-24 h-[68rem] w-full opacity-[.24]">
+          <defs>
+            <linearGradient id="market-line" x1="0" x2="1"><stop stopColor="#ef4444"/><stop offset=".5" stopColor="#a855f7"/><stop offset="1" stopColor="#34d399"/></linearGradient>
+            <filter id="market-glow"><feGaussianBlur stdDeviation="5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          </defs>
+          <path d="M0 650 C120 620 145 700 250 625 S430 520 520 590 S690 690 775 530 S955 430 1200 300" fill="none" stroke="url(#market-line)" strokeWidth="5" filter="url(#market-glow)" />
+          <path d="M0 665 C120 635 145 715 250 640 S430 535 520 605 S690 705 775 545 S955 445 1200 315 L1200 1100 L0 1100Z" fill="url(#market-line)" opacity=".07" />
+          <g strokeWidth="4">
+            <g stroke="#ef4444" fill="#ef4444"><path d="M82 380v135"/><rect x="66" y="410" width="32" height="70" rx="3"/></g>
+            <g stroke="#34d399" fill="#34d399"><path d="M145 300v150"/><rect x="129" y="330" width="32" height="78" rx="3"/></g>
+            <g stroke="#34d399" fill="#34d399"><path d="M208 230v155"/><rect x="192" y="260" width="32" height="86" rx="3"/></g>
+            <g stroke="#ef4444" fill="#ef4444"><path d="M995 585v155"/><rect x="979" y="610" width="32" height="84" rx="3"/></g>
+            <g stroke="#34d399" fill="#34d399"><path d="M1058 500v160"/><rect x="1042" y="535" width="32" height="82" rx="3"/></g>
+            <g stroke="#34d399" fill="#34d399"><path d="M1121 420v155"/><rect x="1105" y="450" width="32" height="85" rx="3"/></g>
+          </g>
+          <g fill="#ffffff" fontFamily="monospace" fontSize="19" fontWeight="700" opacity=".4"><text x="45" y="545">SELL</text><text x="178" y="215">BUY</text><text x="955" y="770">SELL</text><text x="1080" y="400">BUY</text></g>
+        </svg>
       </div>
 
       <div className="relative mx-auto w-full max-w-xl">
@@ -66,8 +83,9 @@ export default function LinksPage() {
 
         <section className="mt-5 text-center">
           <Link href="/" aria-label="Go to the Darth Algo website" className="inline-flex justify-center">
-            <span className="grid h-24 w-24 place-items-center rounded-[1.8rem] border border-red-500/30 bg-gradient-to-br from-red-500/20 via-[#12151c] to-black shadow-[0_0_55px_rgba(239,68,68,.22)]">
-              <Image src="/darth-algo-icon.svg" alt="Darth Algo" width={68} height={68} priority className="h-[68px] w-[68px] drop-shadow-[0_0_18px_rgba(239,68,68,.45)]" />
+            <span className="relative grid h-40 w-40 place-items-center overflow-hidden rounded-[2rem] border border-red-400/40 bg-black shadow-[0_0_70px_rgba(239,68,68,.3)] ring-1 ring-white/10 sm:h-44 sm:w-44">
+              <Image src="/darth-algo-link-logo.svg" alt="Darth Algo trading logo" fill priority sizes="176px" className="object-cover transition duration-500 hover:scale-105" />
+              <span className="absolute inset-0 rounded-[2rem] ring-1 ring-inset ring-white/15" />
             </span>
           </Link>
           <div className="mt-6 flex justify-center">
