@@ -460,6 +460,14 @@ async function handleOwnerCommand(message: TelegramMessage) {
   }
 
   if (command === "/setupgrowth") {
+    const webhookSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
+    if (!webhookSecret) throw new Error("TELEGRAM_WEBHOOK_SECRET is not configured");
+    await telegram("setWebhook", {
+      url: `${SITE_URL}/api/telegram/webhook`,
+      secret_token: webhookSecret,
+      allowed_updates: ["message", "callback_query", "chat_member"],
+      drop_pending_updates: false,
+    });
     const sources = await createGrowthInviteLinks(message.chat.id);
     await sendMessage(message.chat.id, `<b>✅ COMMUNITY GROWTH TRACKING IS LIVE</b>\n\n${sources.length} source-specific invitation routes were created. New verified joins will now appear in the private growth dashboard.`, undefined, message.message_thread_id);
     return true;
