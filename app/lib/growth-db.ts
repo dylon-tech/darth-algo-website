@@ -95,6 +95,17 @@ export async function saveGrowthInvite(source: GrowthSource, inviteLink: string)
   `;
 }
 
+// Setup is intentionally idempotent because Telegram may retry webhook updates.
+export async function getConfiguredGrowthSources() {
+  await ensureGrowthSchema();
+  const rows = await db()`select source from community_growth_sources where active=true`;
+  return new Set(
+    rows
+      .map((row) => typeof row.source === "string" ? normalizeGrowthSource(row.source) : null)
+      .filter((source): source is GrowthSource => source !== null),
+  );
+}
+
 export async function getGrowthInvite(sourceValue: string | null | undefined) {
   await ensureGrowthSchema();
   const source = normalizeGrowthSource(sourceValue);

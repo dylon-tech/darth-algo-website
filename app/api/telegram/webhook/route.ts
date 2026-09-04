@@ -1,5 +1,5 @@
 import { configureEducationDestination, publishEducationPost } from "../../../lib/community-education";
-import { growthSources, saveGrowthInvite, sourceFromInvite, trackGrowthEvent } from "../../../lib/growth-db";
+import { getConfiguredGrowthSources, growthSources, saveGrowthInvite, sourceFromInvite, trackGrowthEvent } from "../../../lib/growth-db";
 
 type TelegramUser = {
   id: number;
@@ -131,8 +131,13 @@ async function telegram(method: string, payload: Record<string, unknown>) {
 }
 
 async function createGrowthInviteLinks(chatId: number) {
+  const configured = await getConfiguredGrowthSources();
   const created: string[] = [];
   for (const source of growthSources) {
+    if (configured.has(source)) {
+      created.push(source);
+      continue;
+    }
     const result = await telegram("createChatInviteLink", {
       chat_id: chatId,
       name: `Darth Algo — ${source}`.slice(0, 32),
