@@ -4,7 +4,6 @@ import Link from "next/link";
 import {
   ArrowUpRight,
   BookOpen,
-  Bot,
   CheckCircle2,
   CreditCard,
   Instagram,
@@ -34,22 +33,13 @@ export const metadata: Metadata = {
 
 const primaryLinks = [
   {
-    title: "Join the Free Community",
-    detail: "Education, chart talk, setup help, and updates",
+    title: "Enter the Darth Algo Community",
+    detail: "Free trading education • live chart talk • indicator help",
     href: "/go/community?source=direct&campaign=links",
     icon: Users,
-    accent: "from-emerald-400/25 via-emerald-400/10 to-transparent",
-    badge: "TELEGRAM",
+    accent: "from-emerald-400/40 via-cyan-400/15 to-violet-500/10",
+    badge: "JOIN FREE",
     externalRoute: true,
-  },
-  {
-    title: "Message D.A. Assistant",
-    detail: "Fast help with plans, access, and TradingView setup",
-    href: "https://t.me/DarthAlgoAssistantBot",
-    icon: Bot,
-    accent: "from-sky-400/25 via-sky-400/10 to-transparent",
-    badge: "24/7 HELP",
-    external: true,
   },
 ] as const;
 
@@ -143,20 +133,25 @@ export default function LinksPage() {
         <section aria-label="Main Darth Algo links" className="mt-8 space-y-3">
           {primaryLinks.map((item) => {
             const Icon = item.icon;
-            const className = "group relative flex min-h-[78px] items-center gap-4 overflow-hidden rounded-2xl border border-white/10 bg-[#11151d]/90 p-4 shadow-[0_14px_35px_rgba(0,0,0,.28)] backdrop-blur transition duration-200 hover:-translate-y-0.5 hover:border-white/25 hover:bg-[#151a24]";
+            const className = "group relative flex min-h-[112px] items-center gap-4 overflow-hidden rounded-[1.5rem] border border-emerald-300/25 bg-[#0d1718]/95 p-5 shadow-[0_20px_55px_rgba(16,185,129,.14)] backdrop-blur transition duration-300 hover:-translate-y-1 hover:border-cyan-300/45 hover:shadow-[0_24px_70px_rgba(34,211,238,.2)]";
             const content = <>
               <span aria-hidden="true" className={`absolute inset-0 bg-gradient-to-r ${item.accent} opacity-80 transition group-hover:opacity-100`} />
-              <span className="relative grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-white/10 bg-black/35 text-white shadow-inner">
-                <Icon className="h-5 w-5" />
+              <span aria-hidden="true" className="absolute -right-10 -top-10 h-32 w-32 rounded-full border border-cyan-300/15 bg-cyan-300/10 blur-[1px] transition duration-500 group-hover:scale-125" />
+              <span aria-hidden="true" className="absolute right-8 top-4 h-2 w-2 animate-pulse rounded-full bg-emerald-300 shadow-[0_0_16px_rgba(110,231,183,.9)]" />
+              <span className="relative grid h-16 w-16 shrink-0 place-items-center rounded-2xl border border-emerald-200/25 bg-gradient-to-br from-emerald-400/30 via-cyan-400/15 to-black/50 text-white shadow-[inset_0_1px_0_rgba(255,255,255,.15),0_0_30px_rgba(16,185,129,.18)]">
+                <Icon className="h-7 w-7" />
               </span>
               <span className="relative min-w-0 flex-1 text-left">
                 <span className="flex items-center gap-2">
-                  <strong className="font-display text-[17px] font-black">{item.title}</strong>
-                  <span className="hidden rounded-full border border-white/10 bg-black/25 px-2 py-0.5 text-[8px] font-black tracking-[.12em] text-zinc-400 sm:inline">{item.badge}</span>
+                  <strong className="font-display text-lg font-black leading-tight sm:text-xl">{item.title}</strong>
                 </span>
-                <span className="mt-1 block text-xs leading-5 text-zinc-400">{item.detail}</span>
+                <span className="mt-1.5 block text-xs leading-5 text-zinc-300">{item.detail}</span>
+                <span className="mt-2 flex flex-wrap gap-2">
+                  <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-2.5 py-1 text-[8px] font-black uppercase tracking-[.14em] text-emerald-200">{item.badge}</span>
+                  <span className="rounded-full border border-white/10 bg-black/25 px-2.5 py-1 text-[8px] font-black uppercase tracking-[.14em] text-zinc-400">Telegram</span>
+                </span>
               </span>
-              <ArrowUpRight className="relative h-5 w-5 shrink-0 text-zinc-600 transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-white" />
+              <span className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[.06] text-zinc-300 transition group-hover:rotate-12 group-hover:border-cyan-300/30 group-hover:bg-cyan-300/15 group-hover:text-white"><ArrowUpRight className="h-4 w-4" /></span>
             </>;
 
             if ("external" in item && item.external) {
@@ -207,8 +202,9 @@ export default function LinksPage() {
           {secondaryLinks.map((item) => {
             const Icon = item.icon;
             return (
-              <Link key={item.title} href={item.href} className="group flex min-h-[92px] flex-col justify-between rounded-2xl border border-white/10 bg-white/[.035] p-4 transition hover:border-red-500/35 hover:bg-red-500/[.07]">
-                <Icon className="h-5 w-5 text-red-400 transition group-hover:scale-110" />
+              <Link key={item.title} href={item.href} className="group relative flex min-h-[100px] flex-col justify-between overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/[.06] to-white/[.015] p-4 shadow-[0_12px_30px_rgba(0,0,0,.18)] transition duration-300 hover:-translate-y-1 hover:border-red-500/35 hover:shadow-[0_18px_45px_rgba(239,68,68,.12)]">
+                <span aria-hidden="true" className="absolute -right-6 -top-6 h-16 w-16 rounded-full bg-red-500/10 blur-2xl transition group-hover:bg-red-500/25" />
+                <Icon className="relative h-5 w-5 text-red-400 transition group-hover:scale-110" />
                 <span className="flex items-end justify-between gap-2 text-sm font-black">
                   {item.title}<ArrowUpRight className="h-4 w-4 text-zinc-600 group-hover:text-white" />
                 </span>
