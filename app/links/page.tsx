@@ -12,6 +12,7 @@ import {
   ShoppingBag,
   Sparkles,
   Users,
+  Youtube,
   Zap,
 } from "lucide-react";
 import LinkActions from "./link-actions";
@@ -62,6 +63,15 @@ const primaryLinks = [
     icon: Instagram,
     accent: "from-fuchsia-500/25 via-orange-400/10 to-transparent",
     badge: "SOCIAL",
+    external: true,
+  },
+  {
+    title: "Watch on YouTube",
+    detail: "Indicator demos, trading clips, and tutorials · @DarthAlgoTools",
+    href: "https://www.youtube.com/@DarthAlgoTools",
+    icon: Youtube,
+    accent: "from-red-600/30 via-red-500/10 to-transparent",
+    badge: "VIDEOS",
     external: true,
   },
 ] as const;
