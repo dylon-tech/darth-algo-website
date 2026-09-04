@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="830" height="100" viewBox="0 0 830 100">
+  <defs>
+    <filter id="lift" color-interpolation-filters="sRGB">
+      <feComponentTransfer>
+        <feFuncR type="linear" slope="4" intercept="-.15"/>
+        <feFuncG type="linear" slope="4" intercept="-.15"/>
+        <feFuncB type="linear" slope="4" intercept="-.15"/>
+      </feComponentTransfer>
+    </filter>
+    <mask id="letters" maskUnits="userSpaceOnUse" x="0" y="0" width="830" height="100" style="mask-type:luminance">
+      <rect width="830" height="100" fill="black"/>
+      <image href="/darth-algo-link-logo.svg" x="-81" y="-536" width="991" height="991" filter="url(#lift)"/>
+    </mask>
+  </defs>
+  <image href="/darth-algo-link-logo.svg" x="-81" y="-536" width="991" height="991" mask="url(#letters)"/>
+</svg>
