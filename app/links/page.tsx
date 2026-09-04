@@ -106,17 +106,17 @@ export default function LinksPage() {
           </div>
         </section>
 
-        <section aria-label="Featured Darth Algo Pro Tool" className="relative mt-8 overflow-hidden rounded-[1.75rem] border border-violet-400/30 bg-[#11121a] shadow-[0_24px_80px_rgba(109,40,217,.22)]">
-          <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_82%_8%,rgba(168,85,247,.32),transparent_34%),radial-gradient(circle_at_5%_92%,rgba(239,68,68,.22),transparent_38%)]" />
+        <section aria-label="Featured Darth Algo Swing Tool trial" className="relative mt-8 overflow-hidden rounded-[1.75rem] border border-sky-400/35 bg-[#0c131d] shadow-[0_24px_80px_rgba(14,165,233,.22)]">
+          <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_82%_8%,rgba(14,165,233,.32),transparent_34%),radial-gradient(circle_at_5%_92%,rgba(59,130,246,.2),transparent_38%)]" />
           <div className="relative border-b border-white/10 bg-black/25 px-5 py-3">
             <div className="flex items-center justify-between gap-3">
-              <span className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[.2em] text-violet-200"><span className="h-2 w-2 animate-pulse rounded-full bg-violet-400" /> Featured indicator</span>
-              <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-emerald-200">TradingView</span>
+              <span className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[.2em] text-sky-200"><span className="h-2 w-2 animate-pulse rounded-full bg-sky-400" /> Start here</span>
+              <span className="rounded-full border border-sky-300/25 bg-sky-300/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-sky-100">2 days free</span>
             </div>
           </div>
 
           <div className="relative aspect-[16/9] overflow-hidden border-b border-white/10 bg-black">
-            <Image src="/indicator-examples/darth-algo-feature-map-01.png" alt="Darth Algo Pro Tool showing signals and trading levels on a futures chart" fill priority sizes="(max-width: 640px) 100vw, 576px" className="object-cover object-left" />
+            <Image src="/indicators/swing-overview.png" alt="Darth Algo Swing Tool showing signals and market trends on a futures chart" fill priority sizes="(max-width: 640px) 100vw, 576px" className="object-cover object-left" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#0b0c12] via-transparent to-transparent" />
             <div className="absolute bottom-3 left-3 flex gap-2">
               <span className="rounded-md border border-white/15 bg-black/70 px-2.5 py-1.5 text-[9px] font-black uppercase tracking-wider text-white backdrop-blur">Buy + sell signals</span>
@@ -127,19 +127,20 @@ export default function LinksPage() {
           <div className="relative p-5 sm:p-6">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[.18em] text-violet-300">Scalper + Swing</p>
-                <h2 className="font-display mt-2 text-2xl font-black leading-tight sm:text-3xl">Buy the Darth Algo Pro Tool</h2>
+                <p className="text-[10px] font-black uppercase tracking-[.18em] text-sky-300">Swing trading intelligence</p>
+                <h2 className="font-display mt-2 text-2xl font-black leading-tight sm:text-3xl">Try the Darth Algo Swing Tool</h2>
               </div>
-              <div className="shrink-0 text-right"><strong className="text-2xl font-black">$29</strong><span className="block text-[10px] font-bold uppercase text-zinc-500">per month</span></div>
+              <div className="shrink-0 text-right"><span className="block text-sm font-black text-zinc-600 line-through">$14.99</span><strong className="text-2xl font-black text-sky-300">$0</strong><span className="block text-[9px] font-bold uppercase text-zinc-500">for 2 days</span></div>
             </div>
-            <p className="mt-3 text-sm leading-6 text-zinc-400">The complete monthly indicator bundle with real-time alerts, trade levels, trend confirmation, and risk tools.</p>
+            <p className="mt-3 text-sm leading-6 text-zinc-400">Start free with swing-focused buy and sell signals, market trend confirmation, alerts, and structured trade levels.</p>
             <div className="mt-4 grid grid-cols-2 gap-2 text-[11px] font-bold text-zinc-300">
               <span className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-300" /> Instant checkout</span>
               <span className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-300" /> Invite-only access</span>
             </div>
-            <a href="https://buy.stripe.com/4gM8wQfxJ6gI1IabYM6kg05" className="mt-5 flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 via-fuchsia-600 to-red-500 px-5 text-sm font-black text-white shadow-[0_12px_35px_rgba(168,85,247,.35)] transition hover:-translate-y-0.5 hover:brightness-110">
-              <CreditCard className="h-4 w-4" /> Get Pro Access <ArrowUpRight className="h-4 w-4" />
+            <a href="https://buy.stripe.com/28EcN699l8oQ9aC5Ao6kg02" className="mt-5 flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 via-sky-500 to-cyan-400 px-5 text-sm font-black text-white shadow-[0_12px_35px_rgba(14,165,233,.35)] transition hover:-translate-y-0.5 hover:brightness-110">
+              <CreditCard className="h-4 w-4" /> Start My 2-Day Free Trial <ArrowUpRight className="h-4 w-4" />
             </a>
+            <p className="mt-3 text-center text-[10px] font-bold text-zinc-500">Then $14.99/month. Cancel anytime.</p>
             <Link href="/#pricing" className="mt-3 flex min-h-11 items-center justify-center text-xs font-black text-zinc-400 transition hover:text-white">Compare every indicator plan</Link>
           </div>
         </section>
@@ -214,6 +215,22 @@ export default function LinksPage() {
               <ArrowUpRight className="h-5 w-5 shrink-0 transition group-hover:-translate-y-1 group-hover:translate-x-1" />
             </span>
           </a>
+        </section>
+
+        <section aria-label="Darth Algo Pro Tool" className="group relative mt-6 overflow-hidden rounded-[1.5rem] border border-violet-400/25 bg-gradient-to-br from-violet-500/[.13] via-[#11131a] to-red-500/[.08] p-5 shadow-[0_18px_50px_rgba(109,40,217,.12)] transition duration-300 hover:border-violet-300/40">
+          <span aria-hidden="true" className="absolute -right-12 -top-12 h-36 w-36 rounded-full bg-violet-500/20 blur-3xl transition group-hover:bg-violet-500/30" />
+          <div className="relative flex items-start justify-between gap-4">
+            <div>
+              <span className="rounded-full border border-violet-300/20 bg-violet-300/10 px-2.5 py-1 text-[8px] font-black uppercase tracking-[.15em] text-violet-200">Complete monthly bundle</span>
+              <h2 className="font-display mt-3 text-xl font-black">Ready for more? Go Pro.</h2>
+              <p className="mt-2 max-w-sm text-xs leading-5 text-zinc-400">Combine the Scalper and Swing tools with real-time alerts, structured risk levels, and future indicator updates.</p>
+            </div>
+            <div className="shrink-0 text-right"><strong className="text-xl font-black">$29</strong><span className="block text-[9px] font-bold uppercase text-zinc-500">per month</span></div>
+          </div>
+          <div className="relative mt-4 flex flex-col gap-2 sm:flex-row">
+            <a href="https://buy.stripe.com/4gM8wQfxJ6gI1IabYM6kg05" className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 text-xs font-black text-white shadow-[0_10px_28px_rgba(147,51,234,.25)] transition hover:-translate-y-0.5 hover:brightness-110">Get Pro Access <ArrowUpRight className="h-4 w-4" /></a>
+            <Link href="/products/pro" className="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/10 bg-white/[.04] px-5 text-xs font-black text-zinc-300 transition hover:border-white/25 hover:text-white">Explore Pro</Link>
+          </div>
         </section>
 
         <section aria-label="More Darth Algo links" className="mt-4 grid grid-cols-2 gap-3">
