@@ -13,7 +13,6 @@ import {
   Play,
   ShieldCheck,
   Sparkles,
-  TrendingUp,
   Youtube,
   Zap,
 } from "lucide-react";
@@ -40,7 +39,7 @@ const secondaryLinks = [
 
 export default function LinksPage() {
   return (
-    <main id="main-content" className="relative min-h-screen overflow-hidden bg-[#07090d] px-4 py-8 text-white sm:py-12">
+    <main id="main-content" className="relative min-h-screen overflow-hidden bg-[#07090d] px-4 py-4 text-white sm:py-8">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <div className="absolute left-1/2 top-[-16rem] h-[34rem] w-[34rem] -translate-x-1/2 rounded-full bg-red-600/15 blur-[110px]" />
         <div className="absolute bottom-[-12rem] right-[-10rem] h-[28rem] w-[28rem] rounded-full bg-emerald-400/10 blur-[120px]" />
@@ -81,36 +80,39 @@ export default function LinksPage() {
       </div>
 
       <div className="relative mx-auto w-full max-w-xl">
-        <div className="flex justify-end">
+        <div className="absolute right-0 top-0 z-20">
           <LinkActions />
         </div>
 
-        <section className="mt-5 text-center">
+        <section className="pt-3 text-center">
           <Link href="/" aria-label="Go to the Darth Algo website" className="inline-flex justify-center">
-            <span className="relative grid h-40 w-40 place-items-center overflow-hidden rounded-[2rem] border border-red-400/40 bg-black shadow-[0_0_70px_rgba(239,68,68,.3)] ring-1 ring-white/10 sm:h-44 sm:w-44">
-              <Image src="/darth-algo-link-logo.svg" alt="Darth Algo trading logo" fill priority sizes="176px" className="object-cover transition duration-500 hover:scale-105" />
+            <span className="relative grid h-28 w-28 place-items-center overflow-hidden rounded-[1.6rem] border border-red-400/40 bg-black shadow-[0_0_55px_rgba(239,68,68,.28)] ring-1 ring-white/10 sm:h-36 sm:w-36">
+              <Image src="/darth-algo-link-logo.svg" alt="Darth Algo trading logo" fill priority sizes="144px" className="object-cover transition duration-500 hover:scale-105" />
               <span className="absolute inset-0 rounded-[2rem] ring-1 ring-inset ring-white/15" />
             </span>
           </Link>
-          <div className="mt-6 flex justify-center">
+          <div className="mt-3 flex justify-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[11px] font-black uppercase tracking-[.18em] text-emerald-300">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-300" /> Official link hub
             </span>
           </div>
-          <h1 className="font-display mt-4 text-4xl font-black uppercase tracking-tight sm:text-5xl">
-            <span className="text-red-500">Darth</span> Algo
+          <h1 className="darth-wordmark mt-3 text-4xl font-black uppercase sm:text-5xl">
+            <span className="text-red-500">Darth</span> <span className="text-white">Algo</span>
           </h1>
-          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-zinc-400 sm:text-base">
-            TradingView indicators, trader education, community access, and real support—all in one place.
+          <p className="mx-auto mt-2 max-w-md text-sm leading-5 text-zinc-400 sm:text-base">
+            Indicators, education, community, and support—all in one place.
           </p>
-          <div className="mt-4 flex flex-wrap justify-center gap-2 text-[10px] font-black uppercase tracking-[.12em] text-zinc-400">
-            <span className="rounded-full border border-white/10 bg-white/[.04] px-3 py-1.5">Futures focused</span>
-            <span className="rounded-full border border-white/10 bg-white/[.04] px-3 py-1.5">TradingView ready</span>
-            <span className="rounded-full border border-white/10 bg-white/[.04] px-3 py-1.5">Stripe checkout</span>
-          </div>
         </section>
 
-        <section aria-label="Featured Darth Algo Swing Tool trial" className="relative mt-8 overflow-hidden rounded-[1.75rem] border border-sky-400/35 bg-[#0c131d] shadow-[0_24px_80px_rgba(14,165,233,.22)]">
+        <section aria-label="Animated market data" className="mt-4 space-y-1.5 overflow-hidden rounded-2xl border border-white/10 bg-black/45 py-2 shadow-[0_15px_45px_rgba(0,0,0,.25)] backdrop-blur">
+          {[
+            ["Market pulse", "ES +0.62%", "NQ −0.18%", "GC +0.41%", "Futures focused", "Trend engine active"],
+            ["Darth Algo wire", "Buy + sell context", "Risk levels mapped", "TradingView ready", "NY PM watch", "Alerts online"],
+            ["Community feed", "New chart shared", "Education updated", "Market discussion live", "Indicator setup", "Join free"],
+          ].map((rail,index)=><div key={rail[0]} className="overflow-hidden border-y border-white/[.04] py-1.5"><div style={{animationDuration:`${22 + index * 7}s`}} className={`market-ticker-track flex w-max items-center gap-7 whitespace-nowrap font-mono text-[9px] font-black uppercase tracking-[.14em] ${index === 1 ? 'market-ticker-reverse' : ''}`}>{[0,1].map(copy=><span key={copy} className="flex items-center gap-7">{rail.map((item,itemIndex)=><span key={item} className={itemIndex === 0 ? 'text-zinc-600' : item.includes('+') || item.includes('active') || item.includes('online') || item.includes('free') ? 'text-emerald-300' : item.includes('−') ? 'text-red-300' : index === 1 ? 'text-sky-200' : 'text-zinc-300'}>{item}</span>)}</span>)}</div></div>)}
+        </section>
+
+        <section aria-label="Featured Darth Algo Swing Tool trial" className="relative mt-5 overflow-hidden rounded-[1.75rem] border border-sky-400/35 bg-[#0c131d] shadow-[0_24px_80px_rgba(14,165,233,.22)]">
           <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_82%_8%,rgba(14,165,233,.32),transparent_34%),radial-gradient(circle_at_5%_92%,rgba(59,130,246,.2),transparent_38%)]" />
           <div className="relative border-b border-white/10 bg-black/25 px-5 py-3">
             <div className="flex items-center justify-between gap-3">
@@ -149,25 +151,21 @@ export default function LinksPage() {
           </div>
         </section>
 
-        <div aria-hidden="true" className="mt-5 flex items-center justify-between overflow-hidden rounded-xl border border-white/10 bg-black/30 px-4 py-2.5 font-mono text-[9px] font-black uppercase tracking-wider text-zinc-500">
-          <span className="flex items-center gap-1.5 text-emerald-300"><TrendingUp className="h-3.5 w-3.5" /> Futures focused</span><span>ES</span><span>NQ</span><span>GC</span><span className="text-red-300">Live signals</span>
-        </div>
-
-        <section aria-label="Join the Darth Algo community" className="relative mt-8 overflow-hidden rounded-[1.75rem] border border-emerald-300/30 bg-[#081314] shadow-[0_28px_80px_rgba(16,185,129,.18)]">
+        <section aria-label="Join the Darth Algo community" className="relative mt-5 overflow-hidden rounded-[1.75rem] border border-emerald-300/30 bg-[#081314] shadow-[0_28px_80px_rgba(16,185,129,.18)]">
           <div className="relative aspect-video overflow-hidden border-b border-white/10 bg-black">
             <Image src="/darth-algo-community-banner.svg" alt="Darth Algo traders sharing charts in the community trading room" fill sizes="(max-width: 640px) 100vw, 576px" className="object-cover transition duration-700 hover:scale-105" />
             <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#081314] via-transparent to-transparent" />
             <span className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-emerald-300/30 bg-black/65 px-3 py-1.5 text-[9px] font-black uppercase tracking-[.16em] text-emerald-200 backdrop-blur"><span className="h-2 w-2 animate-pulse rounded-full bg-emerald-300 shadow-[0_0_14px_#6ee7b7]" /> Community live</span>
             <span className="absolute bottom-3 left-3 rounded-lg border border-white/10 bg-black/65 px-3 py-2 text-[9px] font-bold text-white/75 backdrop-blur">Charts • Education • Indicator help</span>
           </div>
-          <div className="relative p-5 sm:p-6">
+          <div className="relative p-4 sm:p-5">
             <span aria-hidden="true" className="absolute -right-12 -top-10 h-40 w-40 rounded-full bg-cyan-400/15 blur-3xl" />
-            <div className="relative flex items-start gap-3">
-              <span className="flex -space-x-2 pt-1">{['DA','ES','NQ','GC'].map((label, index) => <span key={label} className={`grid h-8 w-8 place-items-center rounded-full border-2 border-[#081314] text-[7px] font-black text-white ${['bg-red-500','bg-emerald-500','bg-sky-500','bg-amber-500'][index]}`}>{label}</span>)}</span>
-              <div><p className="text-[9px] font-black uppercase tracking-[.18em] text-emerald-300">Free Telegram community</p><h2 className="font-display mt-1 text-2xl font-black">Trade with the Darth Algo community.</h2></div>
+            <div className="relative flex items-center justify-between gap-3">
+              <div><p className="text-[9px] font-black uppercase tracking-[.18em] text-emerald-300">Free Telegram community</p><h2 className="font-display mt-1 text-2xl font-black">Join the trading room.</h2></div>
+              <span className="flex shrink-0 -space-x-2">{['DA','ES','NQ','GC'].map((label, index) => <span key={label} className={`grid h-8 w-8 place-items-center rounded-full border-2 border-[#081314] text-[7px] font-black text-white ${['bg-red-500','bg-emerald-500','bg-sky-500','bg-amber-500'][index]}`}>{label}</span>)}</span>
             </div>
-            <p className="relative mt-3 text-sm leading-6 text-zinc-400">Share charts, learn the indicators, discuss futures setups, and get company updates alongside other traders.</p>
-            <a href="/go/community?source=direct&campaign=links" className="relative mt-5 flex min-h-16 w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400 px-5 text-base font-black text-[#031211] shadow-[0_16px_45px_rgba(16,185,129,.35)] transition duration-300 hover:-translate-y-1 hover:brightness-110">
+            <p className="relative mt-2 text-sm leading-5 text-zinc-400">Share charts, learn the indicators, discuss futures setups, and get Darth Algo updates.</p>
+            <a href="/go/community?source=direct&campaign=links" className="relative mt-4 flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400 px-5 text-sm font-black text-[#031211] shadow-[0_16px_45px_rgba(16,185,129,.35)] transition duration-300 hover:-translate-y-1 hover:brightness-110">
               Join the Community — Free <ArrowUpRight className="h-5 w-5" />
             </a>
             <p className="relative mt-3 text-center text-[9px] font-black uppercase tracking-[.15em] text-zinc-600">Opens instantly in Telegram</p>
@@ -229,19 +227,16 @@ export default function LinksPage() {
           </article>
         </section>
 
-        <section aria-label="Darth Algo Pro Tool" className="group relative mt-6 overflow-hidden rounded-[1.5rem] border border-violet-400/25 bg-gradient-to-br from-violet-500/[.13] via-[#11131a] to-red-500/[.08] p-5 shadow-[0_18px_50px_rgba(109,40,217,.12)] transition duration-300 hover:border-violet-300/40">
-          <span aria-hidden="true" className="absolute -right-12 -top-12 h-36 w-36 rounded-full bg-violet-500/20 blur-3xl transition group-hover:bg-violet-500/30" />
-          <div className="relative flex items-start justify-between gap-4">
-            <div>
-              <span className="rounded-full border border-violet-300/20 bg-violet-300/10 px-2.5 py-1 text-[8px] font-black uppercase tracking-[.15em] text-violet-200">Complete monthly bundle</span>
-              <h2 className="font-display mt-3 text-xl font-black">Ready for more? Go Pro.</h2>
-              <p className="mt-2 max-w-sm text-xs leading-5 text-zinc-400">Combine the Scalper and Swing tools with real-time alerts, structured risk levels, and future indicator updates.</p>
-            </div>
-            <div className="shrink-0 text-right"><strong className="text-xl font-black">$29</strong><span className="block text-[9px] font-bold uppercase text-zinc-500">per month</span></div>
-          </div>
-          <div className="relative mt-4 flex flex-col gap-2 sm:flex-row">
-            <a href="https://buy.stripe.com/4gM8wQfxJ6gI1IabYM6kg05" className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 text-xs font-black text-white shadow-[0_10px_28px_rgba(147,51,234,.25)] transition hover:-translate-y-0.5 hover:brightness-110">Get Pro Access <ArrowUpRight className="h-4 w-4" /></a>
-            <Link href="/products/pro" className="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/10 bg-white/[.04] px-5 text-xs font-black text-zinc-300 transition hover:border-white/25 hover:text-white">Explore Pro</Link>
+        <section aria-labelledby="more-tools-heading" className="mt-6">
+          <div className="mb-3 flex items-end justify-between"><div><p className="text-[9px] font-black uppercase tracking-[.18em] text-violet-300">More indicator access</p><h2 id="more-tools-heading" className="font-display mt-1 text-2xl font-black">Choose your next tool.</h2></div><Link href="/#pricing" className="text-[9px] font-black uppercase tracking-wider text-zinc-500 hover:text-white">Compare all</Link></div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {[
+              {name:'Scalper Tool',eyebrow:'Fast session signals',price:'$18.99',image:'/indicators/scalper-execution.png',href:'https://buy.stripe.com/14AfZi4T5fRidqS2oc6kg03',product:'/products/scalper',accent:'from-orange-500 to-red-500',border:'border-orange-400/25',text:'text-orange-300'},
+              {name:'Pro Tool',eyebrow:'Scalper + Swing',price:'$29',image:'/indicator-examples/darth-algo-feature-map-01.png',href:'https://buy.stripe.com/4gM8wQfxJ6gI1IabYM6kg05',product:'/products/pro',accent:'from-violet-600 to-fuchsia-500',border:'border-violet-400/25',text:'text-violet-300'},
+            ].map(tool=><article key={tool.name} className={`group overflow-hidden rounded-[1.35rem] border bg-[#0d1118] ${tool.border} shadow-[0_18px_45px_rgba(0,0,0,.22)]`}>
+              <Link href={tool.product} className="relative block aspect-[16/8] overflow-hidden bg-black"><Image src={tool.image} alt={`Darth Algo ${tool.name} chart preview`} fill sizes="(max-width: 640px) 100vw, 288px" className="object-cover transition duration-500 group-hover:scale-105"/><span className="absolute inset-0 bg-gradient-to-t from-[#0d1118] to-transparent"/><span className={`absolute bottom-2 left-3 text-[8px] font-black uppercase tracking-[.15em] ${tool.text}`}>{tool.eyebrow}</span></Link>
+              <div className="p-4"><div className="flex items-start justify-between gap-3"><h3 className="font-display text-lg font-black">Darth Algo {tool.name}</h3><div className="shrink-0 text-right"><strong className="text-lg font-black">{tool.price}</strong><span className="block text-[8px] uppercase text-zinc-600">/ month</span></div></div><a href={tool.href} className={`mt-3 flex min-h-11 items-center justify-center gap-2 rounded-xl bg-gradient-to-r px-4 text-xs font-black text-white shadow-lg transition hover:-translate-y-0.5 hover:brightness-110 ${tool.accent}`}>Get {tool.name} <ArrowUpRight className="h-3.5 w-3.5"/></a></div>
+            </article>)}
           </div>
         </section>
 
