@@ -1,0 +1,40 @@
+import { readFile, mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { randomUUID } from "node:crypto";
+import assert from "node:assert/strict";
+import { pathToFileURL } from "node:url";
+
+if (!process.env.OS_TEST_PGLITE_MODULE) throw new Error("Set OS_TEST_PGLITE_MODULE to the test-only PGlite module path");
+const { PGlite } = await import(pathToFileURL(process.env.OS_TEST_PGLITE_MODULE).href);
+const directory = await mkdtemp(join(tmpdir(), "darth-os-test-"));
+const sql = new PGlite(directory);
+const source = await readFile(new URL("../app/lib/business-os/schema.ts", import.meta.url), "utf8");
+const migration = source.match(/export const schema = `([\s\S]*?)`;/)[1];
+await sql.exec(migration);
+await sql.exec(migration); // idempotent and no source-table dependencies
+const run = randomUUID();
+await sql.query("insert into os_runs(id,request_key,status) values($1,'first-run','running')", [run]);
+await assert.rejects(sql.query("insert into os_runs(id,request_key,status) values($1,'second-run','running')", [randomUUID()]));
+await sql.query("update os_runs set status='completed' where id=$1", [run]);
+await assert.rejects(sql.query("insert into os_runs(id,request_key,status) values($1,'first-run','completed')", [randomUUID()]));
+const task = randomUUID();
+await sql.query("insert into os_tasks(id,department,title,priority,dedupe_key,evidence) values($1,'growth','Attribution',1,'same-task','[]')", [task]);
+await assert.rejects(sql.query("insert into os_tasks(id,department,title,priority,dedupe_key,evidence) values($1,'growth','Attribution',1,'same-task','[]')", [randomUUID()]));
+const approval = randomUUID();
+await sql.query("insert into os_approvals(id,payload,payload_hash,expires_at) values($1,'{}','fingerprint',now()+interval '1 day')", [approval]);
+await assert.rejects(sql.query("update os_approvals set status='executed' where id=$1", [approval]));
+// Same conditional update used by future delivery workers must claim once.
+const first = await sql.query("update os_approvals set status='approved' where id=$1 and status='pending' and expires_at>now() returning id", [approval]);
+const replay = await sql.query("update os_approvals set status='approved' where id=$1 and status='pending' and expires_at>now() returning id", [approval]);
+assert.equal(first.rows.length, 1); assert.equal(replay.rows.length, 0);
+await sql.query("insert into os_activity(actor,event,details) values('ceo','test','{}')");
+assert.equal((await sql.query("select count(*)::int n from os_activity")).rows[0].n, 1);
+assert.equal((await sql.query("select count(*)::int n from information_schema.tables where table_name like 'affiliate_%'")).rows[0].n, 0);
+await sql.close();
+const reopened = new PGlite(directory);
+assert.equal((await reopened.query("select count(*)::int n from os_activity")).rows[0].n, 1);
+assert.equal((await reopened.query("select status from os_approvals where id=$1", [approval])).rows[0].status, "approved");
+await reopened.close();
+await rm(directory, { recursive: true });
+console.log("PASS: additive/idempotent schema, unique active run, request dedupe, task dedupe, approval states, replay prevention, restart persistence; no legacy table mutations.");
