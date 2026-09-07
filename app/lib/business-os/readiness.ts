@@ -1,7 +1,7 @@
 import { db } from "../affiliate-db";
 import { collectEvidence } from "./sources";
 
-const requiredTables = ["os_runs", "os_tasks", "os_approvals", "os_activity", "os_messages", "os_control", "os_jobs", "os_telegram_updates", "os_telegram_state", "os_outbox", "os_callback_actions", "os_briefs"];
+const requiredTables = ["os_device_links", "os_runs", "os_tasks", "os_approvals", "os_activity", "os_messages", "os_control", "os_jobs", "os_telegram_updates", "os_telegram_state", "os_outbox", "os_callback_actions", "os_briefs"];
 
 // Read-only preflight: no schema initialization, AI request, or external action.
 // Configuration presence is deliberately separate from verified connectivity.

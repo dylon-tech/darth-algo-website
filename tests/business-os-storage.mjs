@@ -13,6 +13,15 @@ const source = await readFile(new URL("../app/lib/business-os/schema.ts", import
 const migration = source.match(/export const schema = `([\s\S]*?)`;/)[1];
 await sql.exec(migration);
 await sql.exec(migration); // idempotent and no source-table dependencies
+const link=randomUUID();
+await sql.query("insert into os_device_links(id,token_hash,expires_at) values($1,'one-use',now()+interval '1 day')",[link]);
+const claim="update os_device_links set used_at=now() where token_hash=$1 and used_at is null and revoked_at is null and expires_at>now() returning id";
+assert.equal((await sql.query(claim,['one-use'])).rows.length,1);
+assert.equal((await sql.query(claim,['one-use'])).rows.length,0);
+await sql.query("insert into os_device_links(id,token_hash,expires_at) values($1,'expired',now()-interval '1 second')",[randomUUID()]);
+assert.equal((await sql.query(claim,['expired'])).rows.length,0);
+await sql.query("insert into os_device_links(id,token_hash,expires_at,revoked_at) values($1,'revoked',now()+interval '1 day',now())",[randomUUID()]);
+assert.equal((await sql.query(claim,['revoked'])).rows.length,0);
 const job=randomUUID();
 await sql.query("insert into os_jobs(id,request_key,department,message,source) values($1,'owner-request','growth','Draft a measurement plan','owner')",[job]);
 await assert.rejects(sql.query("insert into os_jobs(id,request_key,department,message,source) values($1,'owner-request','growth','Duplicate','owner')",[randomUUID()]));

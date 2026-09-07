@@ -3,6 +3,12 @@ import { db } from "../affiliate-db";
 // Additive, explicitly initialized through the owner-only init operation.
 // Existing affiliate/growth schemas are not altered or initialized here.
 export const schema = `
+create table if not exists os_device_links (
+ id uuid primary key, token_hash text not null unique,
+ created_at timestamptz not null default now(), expires_at timestamptz not null,
+ used_at timestamptz, revoked_at timestamptz
+);
+
 create table if not exists os_runs (
  id uuid primary key, request_key text not null unique,
  status text not null check(status in ('running','completed','failed')),

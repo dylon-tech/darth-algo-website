@@ -52,7 +52,7 @@ below default off. Never use `NEXT_PUBLIC_` for secrets.
 | `CRON_SECRET` | Reuse existing cron authorization secret |
 
 1. Set owner access only on the intended preview branch. Open `/owner` and sign
-   in. The owner key creates an HttpOnly, same-site-strict eight-hour cookie;
+   in via a one-use private device setup link. It creates an HttpOnly, same-site-strict 180-day cookie, renewed when the app opens;
    the browser never stores it in local storage. Rotation invalidates sessions.
 2. Connections checks are read-only and work before schema initialization. Use
    Initialize OS tables to create additive `os_*` records in this deployment's
@@ -122,3 +122,32 @@ cryptographic audit system. Use existing database backups and restricted roles.
 Primary platform references: [Telegram Bot API](https://core.telegram.org/bots/api),
 [Vercel cron limits](https://vercel.com/docs/cron-jobs/usage-and-pricing),
 [cron behavior](https://vercel.com/docs/cron-jobs/manage-cron-jobs).
+
+
+## Phone app and remembered device access
+
+The owner UI no longer asks for a key, passcode or passkey. An authenticated
+administrator can POST `{"operation":"device_link"}` to `/api/owner/ceo` with
+its existing bearer credential after initializing the schema. The returned
+private setup URL grants owner access once, expires after 24 hours, and replaces
+any previously unused setup link. Never publish or log its token. Post the
+fragment token to `/api/owner/session` with `operation: connect` on the same
+origin after the owner taps Connect this device. Consumption is atomic; expired,
+used, revoked, malformed and key-rotated links cannot authenticate.
+
+The device cookie lasts 180 days and renews on authenticated session checks.
+Signing out, clearing browser data, expiry after inactivity, or rotating the
+server owner key requires reconnecting. Rotation also invalidates outstanding
+setup links. The legacy bearer/key API remains for secure administration.
+Use a stable deployment origin: cookies are scoped to that host. Moving from
+preview to production will require connecting once on the production host.
+
+The `/owner` manifest and PNG icons enable a standalone Home Screen web app.
+Connect in Safari first, then Share → Add to Home Screen → Open as Web App → Add.
+Modern iOS copies cookies during installation. No private data is cached offline
+and background agents/notifications are not enabled by installing the app.
+This is a web app, not an App Store distribution. Installation must be performed
+on the owner's phone. The browser install prompt is used where available.
+
+References: [Apple Home Screen web apps](https://support.apple.com/guide/iphone/open-as-web-app-iphea86e5236/ios),
+[WebKit cookie transfer](https://webkit.org/blog/14787/webkit-features-in-safari-17-2/).

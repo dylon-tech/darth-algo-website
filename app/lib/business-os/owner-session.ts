@@ -2,7 +2,7 @@ import { createHmac, randomBytes } from "node:crypto";
 import { secretMatches } from "./policy";
 
 export const ownerCookie = "darth_os_owner";
-export const sessionSeconds = 8 * 60 * 60;
+export const sessionSeconds = 180 * 24 * 60 * 60;
 export const privateHeaders = { "Cache-Control": "no-store", "X-Robots-Tag": "noindex, nofollow" };
 
 function sign(value: string, key: string) {

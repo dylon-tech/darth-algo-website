@@ -7,16 +7,21 @@ import assert from "node:assert/strict";
 
 const dir=mkdtempSync(join(tmpdir(),"darth-os-security-"));
 try {
-  execFileSync("node_modules/.bin/tsc",["--target","ES2020","--module","commonjs","--moduleResolution","node","--esModuleInterop","--skipLibCheck","--outDir",dir,"app/lib/business-os/owner-session.ts","app/lib/business-os/telegram-policy.ts"],{stdio:"pipe"});
+  execFileSync("node_modules/.bin/tsc",["--target","ES2020","--module","commonjs","--moduleResolution","node","--esModuleInterop","--skipLibCheck","--outDir",dir,"app/lib/business-os/owner-session.ts","app/lib/business-os/telegram-policy.ts","app/lib/business-os/device-link-policy.ts"],{stdio:"pipe"});
   const require=createRequire(import.meta.url);
   const {createOwnerSession,validOwnerSession,sameOrigin,ownerSessionFromRequest}=require(join(dir,"owner-session.js"));
+  const {deviceLinkDigest}=require(join(dir,"device-link-policy.js"));
   const {isPrivateOwnerUpdate}=require(join(dir,"telegram-policy.js"));
   const key="test-only-"+"a".repeat(48),now=Date.now();
   const token=createOwnerSession(key,now);
   assert.equal(validOwnerSession(token,key,now),true);
   assert.equal(validOwnerSession(token,key+"changed",now),false);
   assert.equal(validOwnerSession(token.slice(0,-1)+(token.endsWith("a")?"b":"a"),key,now),false);
-  assert.equal(validOwnerSession(token,key,now+8*3600*1000),false);
+  assert.equal(validOwnerSession(token,key,now+180*24*3600*1000),false);
+  assert.equal(validOwnerSession(token,key,now+30*24*3600*1000),true);
+  assert.notEqual(deviceLinkDigest("a".repeat(64),key),deviceLinkDigest("a".repeat(64),key+"rotated"));
+  assert.throws(()=>deviceLinkDigest("bad",key));
+  assert.throws(()=>deviceLinkDigest("a".repeat(64),"short"));
   assert.equal(validOwnerSession("invalid",key,now),false);
   assert.throws(()=>createOwnerSession("short"));
   const url="https://owner.example/api/owner/command";
