@@ -1,98 +1,124 @@
-# Darth Algo business OS — Phase 1
+# Darth Algo owner operating system
 
-This is an additive CEO orchestration layer in the existing Next.js application.
-It reuses `app/lib/affiliate-db.ts`, the existing Stripe connection, and the
-existing direct OpenAI / Vercel AI Gateway authentication pattern. There are no
-new production dependencies. The public site, existing Telegram webhook,
-affiliate logic, customer access bot and cron configuration are unchanged.
+An additive private workspace in the existing Next.js application. It reuses the
+existing Postgres client, Neon database, aggregate growth/affiliate tables, and
+existing OpenAI / Vercel Gateway request pattern. No new runtime dependency.
 
 ## Implemented
 
-- Owner-only, disabled-by-default API: `/api/owner/ceo`.
-- CEO reads source snapshots, produces an evidence-referenced brief, queues work
-  by department, and records concrete approval proposals.
-- Eight department definitions. Only CEO has a runnable reasoning loop in Phase 1;
-  specialist definitions are **registered, not running workers**.
-- Postgres tasks, conversations, runs, snapshots, activity and approval records.
-- Read-only aggregate adapters for existing growth events, affiliate records and
-  current Stripe subscriptions. Missing/error/test/incomplete sources are unknown,
-  never synthetic values. No raw customer identities are passed to the model.
-- Exact-payload approval fingerprints, owner-only decisions, 24-hour expiry,
-  deduplication, transaction locking, idempotent runs and bounded AI work.
-- No external action executor. Approval records **do not** spend, publish, refund,
-  change access or send messages. Future executors must validate scope, latest
-  state, exact approved payload, expiry, revocation and provider idempotency.
+- `/owner`: cookie-authenticated Command Center with overview, departments,
+  conversations, immutable proposal decisions, activity, and connection checks.
+- CEO and seven specialist reasoning workers: Growth, Content, Support,
+  Affiliates, Analytics, Research, Operations. Each receives a scoped mandate,
+  actual aggregate evidence and recent conversation. Workers create internal
+  deliverables, evidence-linked task assignments, and action proposals.
+- Durable Postgres jobs, tasks, runs, conversations, briefs, approvals, private
+  Telegram inbox/outbox, owner routing state and application activity records.
+- One model run at a time, up to 12 attempted calls per rolling 24 hours,
+  35-second provider timeout and 2,500 output-token limit. These bounds are not
+  a monetary budget. AI is disabled until provider/model and usage are authorized.
+- Private Telegram command routing to every department, statuses, pause/resume,
+  cancellation, briefs, and exact-proposal Approve/Revise/Decline buttons.
+- Deterministic daily CEO source briefs from real connected sources, without AI.
+- Owner-triggered processing and optional daily production cron processing.
+  Jobs persist through restarts; uncertain delivery/run outcomes require review
+  before retry. No blind retry of potentially accepted provider calls.
 
-## Enable only after a private deployment review
+A completed task means its internal deliverable was saved. No external business
+executor is connected: approval does not publish, spend, refund, change accounts,
+fulfil TradingView access, or message customers. Research has no browsing tool;
+Content has no media-generation tool. Departments cannot claim those actions ran.
 
-Reuse the existing deployment's `DATABASE_URL` and AI credentials. New settings:
+## Access and setup
+
+Use the existing database and a dedicated private deployment first. All flags
+below default off. Never use `NEXT_PUBLIC_` for secrets.
 
 | Setting | Purpose |
 |---|---|
-| `AI_OS_ENABLED=true` | Enables the owner API; absent/false returns 404 |
-| `AI_OS_OWNER_KEY` | Separate random owner secret, at least 32 characters; never a public/client variable |
-| `AI_OS_AI_ENABLED=true` | Allows explicit owner-triggered model runs; keep off until AI usage is authorized |
-| `AI_OS_MODEL` | Required model verified in the existing provider account; use `provider/model` for Gateway |
+| `AI_OS_ENABLED=true` | Enable private owner access |
+| `AI_OS_OWNER_KEY` | Random secret, at least 32 characters |
+| `AI_OS_AI_ENABLED=true` | Permit bounded AI requests after usage authorization |
+| `AI_OS_MODEL` | Account-verified model; provider/model for Gateway |
+| `OPENAI_API_KEY` / `AI_GATEWAY_API_KEY` | Existing supported provider credentials; Vercel OIDC is also supported but access must be verified |
+| `AI_OS_AUTONOMY_ENABLED=true` | Permit one scheduled internal job per day |
+| `AI_OS_DAILY_BRIEF_ENABLED=true` | Enable daily source brief cron |
+| `AI_OS_TELEGRAM_ENABLED=true` | Enable private Telegram ingress/delivery |
+| `AI_OS_TELEGRAM_TOKEN` | Dedicated private BotFather bot token |
+| `AI_OS_TELEGRAM_OWNER_ID` | Owner's numeric Telegram user ID |
+| `AI_OS_COMMUNITY_BOT_ID` | Existing customer bot's numeric ID; must differ |
+| `AI_OS_TELEGRAM_WEBHOOK_SECRET` | Random 32–256 character Telegram webhook secret |
+| `AI_OS_PUBLIC_URL` | Stable HTTPS origin reachable by Telegram |
+| `CRON_SECRET` | Reuse existing cron authorization secret |
 
-No credentials are created or included. Local verification does not call paid AI.
-Owner requests require `Authorization: Bearer <owner secret>` and JSON.
-Before initialization, GET `/api/owner/ceo?view=readiness` checks the actual
-read-only source adapters and OS table existence. It works with AI disabled and
-does not create tables or call a model. It reports missing connections separately
-from verified empty results, and credential presence separately from AI
-connectivity. HTTP 200 means the report was collected, not that the CEO is live.
-This endpoint uses the same owner authentication and no-cache headers as status.
-POST `{ "operation": "initialize" }` creates only `os_*` tables in the existing
-database under a transaction. Read-only adapters never create or alter source
-tables. Use an existing private database; do not expose it publicly.
+1. Set owner access only on the intended preview branch. Open `/owner` and sign
+   in. The owner key creates an HttpOnly, same-site-strict eight-hour cookie;
+   the browser never stores it in local storage. Rotation invalidates sessions.
+2. Connections checks are read-only and work before schema initialization. Use
+   Initialize OS tables to create additive `os_*` records in this deployment's
+   database. No source tables are created or altered by these adapters.
+3. Verify aggregates, real queue persistence, decision boundaries and logout
+   before enabling AI. Preview Neon branches are snapshots, not continuous
+   production feeds. Missing sources are unavailable, never synthetic zeroes.
+4. Configure the separate private bot and check it. Connect private bot webhook
+   validates the bot ID and refuses to replace a different existing webhook.
+   Telegram must reach the endpoint without Vercel platform authentication;
+   the webhook independently requires its secret and exact private owner ID.
+   Send `/start` from the owner account before delivery can succeed.
+5. Authorize and verify one bounded real model run, then enable AI and review
+   the saved output. Enable daily work/briefs only on the reviewed production
+   configuration. Keep the existing customer webhook and cron separate.
 
-GET returns actual stored statuses/history. POST
-`{ "operation": "run", "message": "Review the business and prioritize today's work" }`
-requires a new `Idempotency-Key` (8–120 letters, digits, underscores or hyphens).
-Retry with the same key to inspect/reuse the original attempt. Failed attempts
-require a new key for a deliberate retry. A running request is not completion.
-At most one run is active and 12 attempts are allowed per rolling 24 hours.
-Each run makes one bounded AI request. This is not a monetary budget guarantee.
+`/api/owner/command` uses owner sessions; mutations require same-origin JSON.
+The existing `/api/owner/ceo` interface remains available for bearer-authenticated
+CEO status, readiness, initialization, bounded runs and exact-hash decisions.
+There is no external execute endpoint. Approval expiry is 24 hours; revised
+proposals need new approval. An approval is not reusable for another payload.
 
-POST `{ "operation": "decide", "id": "<approval UUID>", "payloadHash": "<hash returned by GET>", "decision": "approved", "note": "Owner decision" }`
-records a decision. Alternatives are `declined` and `revision_requested`.
-Revisions require a new proposal and approval; the original payload is immutable
-through this API. There is intentionally no execute endpoint.
+## Scheduling and Telegram
 
-## Phases and acceptance gates
+The existing customer cron remains at 14:00 UTC. New owner source brief and work
+crons are at 13:00 and 14:00 UTC, respectively, behind separate flags. Current
+Hobby scheduling runs daily, may occur within the selected hour and does not run
+on preview deployments. This is not a continuous worker service. Each scheduled
+work invocation processes one queued job (or assigns one queued task / CEO
+review). Owner requests and Telegram updates also trigger bounded processing.
+Large notice queues can require more invocations to drain; unconfirmed sends are
+shown for manual review. Source briefs use America/New_York calendar dates.
 
-1. **CEO foundation (this change):** run against a private database, verify
-   unavailable-source handling, source aggregates, restart persistence and owner
-   auth; authorize a real model smoke run before calling it live.
-2. **Specialist workers:** add bounded department tools and job leases, evidence
-   of completed work, cancellation/recovery and per-department access. Reuse the
-   content Make scenarios and existing support workflows. Queue assignment is
-   not proof of execution.
-3. **Integrations:** reconcile Stripe with the running Windows TradingView bot.
-   Use a private authenticated bridge; do not expose localhost access-control
-   endpoints on the internet. Reuse the actual deployed bot version, not an old
-   archive. Connect support and Make records; review attribution gaps.
-4. **Private Telegram:** separate BotFather bot/token/webhook, owner numeric-ID
-   allowlist and private-chat-only checks. Never reuse the customer bot token or
-   replace its webhook. Add agent routing, exact-version Approve/Revise/Decline,
-   deduplicated alerts and a daily America/New_York CEO brief after one verified
-   owner delivery. The current customer `/api/telegram/webhook` is separate.
-5. **Controlled executors:** provider-specific approved actions, spend limits,
-   scope validation, cancellation, retry reconciliation and emergency stop.
-6. **Command Center:** private visual layer over these same real records and
-   source adapters. No fabricated agents-working animations or seed revenue.
+Telegram commands: `/agents`, `/ceo`, `/growth`, `/content`, `/support`,
+`/affiliates`, `/analytics`, `/research`, `/operations`, `/status`, `/approvals`,
+`/brief`, `/pause`, `/resume`, `/cancel <job-id>`, `/help`.
+Private ingress is `/api/owner/telegram/webhook`; customer ingress remains
+`/api/telegram/webhook`. Both bot identity and chat identity must be distinct
+from the community routing. Updates, callbacks and owner notices are deduplicated.
+
+## Remaining integration gates
+
+Stripe requires a valid account credential to verify subscriptions. Windows
+TradingView fulfillment needs a private authenticated bridge to the actually
+running version. Existing Make content workflows and support/retention records
+need authenticated source adapters. None is represented as connected yet.
+Provider-specific external executors still require exact approved scope,
+provider idempotency, reconciliation, cancellation and spend limits before use.
+
+Before production activation, review the preview, connect the missing providers,
+verify one real private Telegram delivery and AI run, and authorize production
+promotion. No paid upgrade, customer action or public launch is implied by setup.
+Database administrators can edit activity; it is application-append-only, not a
+cryptographic audit system. Use existing database backups and restricted roles.
 
 ## Verification
 
-`npm ci --ignore-scripts`, `npx tsc --noEmit`, `npm run build`.
-`node --experimental-strip-types --test tests/business-os-policy.test.ts` checks
-the authorization boundary, evidence validation and execution prohibition.
-`tests/business-os-storage.mjs` verifies schema/state constraints against a
-temporary Postgres-compatible PGlite database when that test-only package is
-installed outside this repository. Production uses the existing Postgres client.
+- `npx tsc --noEmit` and `npm run build`.
+- `node --experimental-strip-types --test tests/business-os-policy.test.ts`.
+- `node tests/business-os-security.mjs`: signed-session tampering, expiry,
+  key rotation, origin checks, private-owner Telegram acceptance/rejection.
+- `OS_TEST_PGLITE_MODULE=<external-pglite-module> node tests/business-os-storage.mjs`:
+  additive schema, restart persistence, active-job uniqueness, deduplication,
+  outbox ordering and approval state constraints. Test dependency stays outside
+  this repository; production retains the existing Postgres client.
 
-Current limits: no deployed private command bot, specialist workers, scheduler,
-external executor, durable customer-support adapter, or verified fulfillment
-bridge. Activity is application-append-only; database administrators can edit it.
-Use database role restrictions and backups before production. A conversation
-with Codex is not a continuously running hosted agent.
+Primary platform references: [Telegram Bot API](https://core.telegram.org/bots/api),
+[Vercel cron limits](https://vercel.com/docs/cron-jobs/usage-and-pricing),
+[cron behavior](https://vercel.com/docs/cron-jobs/manage-cron-jobs).

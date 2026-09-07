@@ -1,7 +1,7 @@
 import { db } from "../affiliate-db";
 import { collectEvidence } from "./sources";
 
-const requiredTables = ["os_runs", "os_tasks", "os_approvals", "os_activity", "os_messages"];
+const requiredTables = ["os_runs", "os_tasks", "os_approvals", "os_activity", "os_messages", "os_control", "os_jobs", "os_telegram_updates", "os_telegram_state", "os_outbox", "os_callback_actions", "os_briefs"];
 
 // Read-only preflight: no schema initialization, AI request, or external action.
 // Configuration presence is deliberately separate from verified connectivity.
@@ -30,8 +30,14 @@ export async function readiness() {
   };
   return {
     checkedAt: new Date().toISOString(), mode: "read_only_preflight",
+    environment: process.env.VERCEL_ENV || "local",
+    dataScope: process.env.VERCEL_ENV === "preview" ? "Preview database branch copy; not a continuous production feed." : "Configured database and Stripe account; source-specific scopes apply.",
     evidence, store, ai,
-    configuration: { databaseUrlPresent: Boolean(process.env.DATABASE_URL), stripeKeyPresent: Boolean(process.env.STRIPE_SECRET_KEY) },
+    configuration: { databaseUrlPresent: Boolean(process.env.DATABASE_URL), stripeKeyPresent: Boolean(process.env.STRIPE_SECRET_KEY),
+      privateTelegramTokenPresent: Boolean(process.env.AI_OS_TELEGRAM_TOKEN), ownerTelegramIdPresent: Boolean(process.env.AI_OS_TELEGRAM_OWNER_ID),
+      communityBotIdPresent: Boolean(process.env.AI_OS_COMMUNITY_BOT_ID), privateWebhookSecretPresent: Boolean(process.env.AI_OS_TELEGRAM_WEBHOOK_SECRET),
+      privatePublicUrlPresent: Boolean(process.env.AI_OS_PUBLIC_URL), autonomyEnabled: process.env.AI_OS_AUTONOMY_ENABLED === "true",
+      privateTelegramEnabled: process.env.AI_OS_TELEGRAM_ENABLED === "true", dailyBriefEnabled: process.env.AI_OS_DAILY_BRIEF_ENABLED === "true" },
     blockers: [
       ...(store.status === "unavailable" ? ["OS_STORE_UNAVAILABLE"] : store.tablesPresent ? [] : ["OS_TABLES_MISSING"]),
       ...evidence.filter(source => source.status === "unavailable").map(source => `SOURCE_UNAVAILABLE:${source.id}`),

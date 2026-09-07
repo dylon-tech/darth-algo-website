@@ -35,6 +35,50 @@ create table if not exists os_messages (
  id uuid primary key, department text not null, role text not null check(role in ('owner','agent')),
  body text not null, run_id uuid references os_runs(id), created_at timestamptz not null default now()
 );
+alter table os_runs add column if not exists department text not null default 'ceo';
+alter table os_runs add column if not exists task_id uuid references os_tasks(id);
+alter table os_tasks add column if not exists result text;
+alter table os_tasks add column if not exists result_kind text;
+create table if not exists os_control (
+ id integer primary key check(id=1), paused boolean not null default false,
+ updated_at timestamptz not null default now()
+);
+insert into os_control(id) values(1) on conflict do nothing;
+create table if not exists os_jobs (
+ id uuid primary key, request_key text not null unique, department text not null,
+ message text not null, source text not null check(source in ('owner','telegram','schedule')),
+ task_id uuid references os_tasks(id),
+ status text not null default 'queued' check(status in ('queued','running','succeeded','failed','cancelled','unknown')),
+ created_at timestamptz not null default now(), started_at timestamptz, finished_at timestamptz,
+ run_id uuid references os_runs(id), error_code text
+);
+create unique index if not exists os_one_job_running on os_jobs((status)) where status='running';
+create unique index if not exists os_one_task_job on os_jobs(task_id) where status in ('queued','running');
+create index if not exists os_jobs_queue on os_jobs(created_at) where status='queued';
+create table if not exists os_telegram_updates (
+ update_id bigint primary key, created_at timestamptz not null default now(),
+ payload jsonb not null, status text not null default 'queued', processed_at timestamptz
+);
+create table if not exists os_telegram_state (
+ owner_id bigint primary key, department text not null default 'ceo',
+ revision_id uuid references os_approvals(id), revision_hash text
+);
+create table if not exists os_outbox (
+ id uuid primary key, sequence bigserial, dedupe_key text not null unique,
+ body text not null, buttons jsonb,
+ status text not null default 'queued' check(status in ('queued','sending','sent','failed','unknown')),
+ created_at timestamptz not null default now(), claimed_at timestamptz,
+ sent_at timestamptz, provider_message_id bigint, error_code text
+);
+create table if not exists os_callback_actions (
+ id text primary key, approval_id uuid not null references os_approvals(id),
+ payload_hash text not null, decision text not null check(decision in ('approved','declined','revision_requested')),
+ expires_at timestamptz not null
+);
+create table if not exists os_briefs (
+ day date primary key, created_at timestamptz not null default now(),
+ body text not null, evidence jsonb not null
+);
 `;
 
 export async function initializeOS() {

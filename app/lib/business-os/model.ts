@@ -1,4 +1,4 @@
-import { actionKinds, departments, registry, validatePlan } from "./policy";
+import { actionKinds, departments, registry, validatePlan, type Department } from "./policy";
 import type { Evidence } from "./sources";
 
 const instructions = `You are the Darth Algo CEO Agent, accountable to its owner.
@@ -22,7 +22,7 @@ and rollback/recovery; say what is unknown. A vague proposal is for revision.
 Brief format: verified findings, problems/unknowns, next priorities, owner decisions.
 Department definitions: ${JSON.stringify(registry)}.`;
 
-export async function generatePlan(message: string, evidence: Evidence[], openTasks: unknown, history: unknown) {
+export async function generatePlan(message: string, evidence: Evidence[], openTasks: unknown, history: unknown, department: Department = "ceo") {
   if (process.env.AI_OS_AI_ENABLED !== "true") throw new Error("AI_DISABLED");
   const direct = process.env.OPENAI_API_KEY;
   const key = direct || process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN;
@@ -32,11 +32,14 @@ export async function generatePlan(message: string, evidence: Evidence[], openTa
   if (!model) throw new Error("AI_MODEL_NOT_CONFIGURED");
   const string = { type: "string" };
   const evidenceSchema = { type: "array", items: { type: "string", enum: evidence.map(x => x.id) } };
+  const input = JSON.stringify({ message, evidence, openTasks, history });
+  if (Buffer.byteLength(input) > 60000) throw new Error("AI_INPUT_LIMIT");
+  const departmentInstructions = department === "ceo" ? instructions : `${instructions}\nFor this run you are the ${department} specialist, reporting to the CEO. Focus on this mandate: ${registry.find(a => a.id === department)!.mandate}\nDeliver the requested internal analysis, draft, or operating procedure in the brief. State evidence, missing inputs and acceptance criteria. You have read-only snapshots and no external tools. Do not claim to browse, contact customers, make a video, publish, spend, refund, or change a system. External work can only be an owner approval proposal. Propose follow-up tasks only when necessary. A completed response means an internal deliverable, not execution of external work.`;
   const response = await fetch(endpoint, {
     method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
     signal: AbortSignal.timeout(35000), cache: "no-store",
-    body: JSON.stringify({ model, store: false, instructions, max_output_tokens: 2500,
-      input: [{ role: "user", content: JSON.stringify({ message, evidence, openTasks, history }) }],
+    body: JSON.stringify({ model, store: false, instructions: departmentInstructions, max_output_tokens: 2500,
+      input: [{ role: "user", content: input }],
       text: { format: { type: "json_schema", name: "ceo_plan", strict: true, schema: {
         type: "object", additionalProperties: false, required: ["brief", "tasks", "proposals"],
         properties: {

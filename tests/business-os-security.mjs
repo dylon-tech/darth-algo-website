@@ -1,0 +1,43 @@
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { createRequire } from "node:module";
+import assert from "node:assert/strict";
+
+const dir=mkdtempSync(join(tmpdir(),"darth-os-security-"));
+try {
+  execFileSync("node_modules/.bin/tsc",["--target","ES2020","--module","commonjs","--moduleResolution","node","--esModuleInterop","--skipLibCheck","--outDir",dir,"app/lib/business-os/owner-session.ts","app/lib/business-os/telegram-policy.ts"],{stdio:"pipe"});
+  const require=createRequire(import.meta.url);
+  const {createOwnerSession,validOwnerSession,sameOrigin,ownerSessionFromRequest}=require(join(dir,"owner-session.js"));
+  const {isPrivateOwnerUpdate}=require(join(dir,"telegram-policy.js"));
+  const key="test-only-"+"a".repeat(48),now=Date.now();
+  const token=createOwnerSession(key,now);
+  assert.equal(validOwnerSession(token,key,now),true);
+  assert.equal(validOwnerSession(token,key+"changed",now),false);
+  assert.equal(validOwnerSession(token.slice(0,-1)+(token.endsWith("a")?"b":"a"),key,now),false);
+  assert.equal(validOwnerSession(token,key,now+8*3600*1000),false);
+  assert.equal(validOwnerSession("invalid",key,now),false);
+  assert.throws(()=>createOwnerSession("short"));
+  const url="https://owner.example/api/owner/command";
+  assert.equal(sameOrigin(new Request(url,{headers:{origin:"https://owner.example","sec-fetch-site":"same-origin"}})),true);
+  assert.equal(sameOrigin(new Request(url,{headers:{origin:"https://attacker.example"}})),false);
+  assert.equal(sameOrigin(new Request(url,{headers:{origin:"https://owner.example","sec-fetch-site":"cross-site"}})),false);
+  assert.equal(sameOrigin(new Request(url)),false);
+  process.env.AI_OS_OWNER_KEY=key;process.env.AI_OS_ENABLED="true";
+  assert.equal(ownerSessionFromRequest(new Request(url,{headers:{cookie:`darth_os_owner=${token}`}})),true);
+  process.env.AI_OS_ENABLED="false";
+  assert.equal(ownerSessionFromRequest(new Request(url,{headers:{cookie:`darth_os_owner=${token}`}})),false);
+  const message={from:{id:123},chat:{id:123,type:"private"},text:"/status"};
+  assert.equal(isPrivateOwnerUpdate({update_id:1,message},"123"),true);
+  assert.equal(isPrivateOwnerUpdate({update_id:1,message:{...message,chat:{id:-123,type:"supergroup"}}},"123"),false);
+  assert.equal(isPrivateOwnerUpdate({update_id:1,message:{...message,from:{id:456}}},"123"),false);
+  assert.equal(isPrivateOwnerUpdate({update_id:1,message:{...message,from:{id:123,is_bot:true}}},"123"),false);
+  assert.equal(isPrivateOwnerUpdate({update_id:1,callback_query:{from:{id:123},message}},"123"),true);
+  assert.equal(isPrivateOwnerUpdate({update_id:1,callback_query:{from:{id:456},message}},"123"),false);
+  assert.equal(isPrivateOwnerUpdate({update_id:1,message},undefined),false);
+  assert.equal(isPrivateOwnerUpdate(null,"123"),false);
+  assert.equal(sameOrigin(new Request("http://localhost:3117/api/owner/command", {headers:{host:"127.0.0.1:3117",origin:"http://127.0.0.1:3117"}})),true);
+  assert.equal(sameOrigin(new Request("http://localhost:3117/api/owner/command", {headers:{host:"127.0.0.1:3117",origin:"https://other.example","x-forwarded-host":"other.example"}})),false);
+  console.log("PASS: owner-session tampering, expiration, key rotation, default-off access, cross-origin mutation rejection, private-owner Telegram messages and callbacks.");
+} finally {rmSync(dir,{recursive:true,force:true});}

@@ -13,6 +13,18 @@ const source = await readFile(new URL("../app/lib/business-os/schema.ts", import
 const migration = source.match(/export const schema = `([\s\S]*?)`;/)[1];
 await sql.exec(migration);
 await sql.exec(migration); // idempotent and no source-table dependencies
+const job=randomUUID();
+await sql.query("insert into os_jobs(id,request_key,department,message,source) values($1,'owner-request','growth','Draft a measurement plan','owner')",[job]);
+await assert.rejects(sql.query("insert into os_jobs(id,request_key,department,message,source) values($1,'owner-request','growth','Duplicate','owner')",[randomUUID()]));
+await sql.query("update os_jobs set status='running',started_at=now() where id=$1",[job]);
+await assert.rejects(sql.query("insert into os_jobs(id,request_key,department,message,source,status) values($1,'parallel-request','growth','Duplicate','owner','running')",[randomUUID()]));
+await sql.query("update os_jobs set status='unknown' where id=$1",[job]);
+await sql.query("insert into os_telegram_updates(update_id,payload) values(1,'{}')");
+await assert.rejects(sql.query("insert into os_telegram_updates(update_id,payload) values(1,'{}')"));
+await sql.query("insert into os_outbox(id,dedupe_key,body) values($1,'notice:0','First part')",[randomUUID()]);
+await sql.query("insert into os_outbox(id,dedupe_key,body) values($1,'notice:1','Second part')",[randomUUID()]);
+await assert.rejects(sql.query("insert into os_outbox(id,dedupe_key,body) values($1,'notice:0','Duplicate')",[randomUUID()]));
+assert.deepEqual((await sql.query("select body from os_outbox order by sequence")).rows.map(r=>r.body),['First part','Second part']);
 const run = randomUUID();
 await sql.query("insert into os_runs(id,request_key,status) values($1,'first-run','running')", [run]);
 await assert.rejects(sql.query("insert into os_runs(id,request_key,status) values($1,'second-run','running')", [randomUUID()]));
@@ -35,6 +47,7 @@ await sql.close();
 const reopened = new PGlite(directory);
 assert.equal((await reopened.query("select count(*)::int n from os_activity")).rows[0].n, 1);
 assert.equal((await reopened.query("select status from os_approvals where id=$1", [approval])).rows[0].status, "approved");
+assert.equal((await reopened.query("select status from os_jobs where id=$1", [job])).rows[0].status, "unknown");
 await reopened.close();
 await rm(directory, { recursive: true });
 console.log("PASS: additive/idempotent schema, unique active run, request dedupe, task dedupe, approval states, replay prevention, restart persistence; no legacy table mutations.");
