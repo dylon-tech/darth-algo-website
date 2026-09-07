@@ -53,13 +53,17 @@ export async function runAgent(department: Department, requestKey: string, messa
   });
   if (created.duplicate) return created;
   try {
+    await sql`insert into os_activity(actor,event,entity_id,details) values(${department},'agent_reading_sources',${id},'{}'::jsonb)`;
     const [evidence, tasks, history] = await Promise.all([
       collectEvidence(),
       sql`select department,title,priority,status from os_tasks where status in ('queued','in_progress','blocked') order by priority,created_at limit 50`,
       sql`select role,left(body,3000) as body from (select role,body,created_at from os_messages where department=${department} and run_id<>${id} order by created_at desc limit 4) h order by created_at`,
     ]);
     await sql`update os_runs set snapshot=${sql.json(JSON.parse(JSON.stringify(evidence)))} where id=${id} and status='running'`;
+    await sql`insert into os_activity(actor,event,entity_id,details) values(${department},'agent_sources_checked',${id},${sql.json({verifiedSources:evidence.filter(s=>s.status==="verified").length,unavailableSources:evidence.filter(s=>s.status==="unavailable").length})})`;
+    await sql`insert into os_activity(actor,event,entity_id,details) values(${department},'agent_preparing_response',${id},'{}'::jsonb)`;
     const { plan, model, usage } = await generatePlan(message, evidence, tasks, history, department);
+    await sql`insert into os_activity(actor,event,entity_id,details) values(${department},'agent_response_ready',${id},'{}'::jsonb)`;
     await sql.begin(async tx => {
       const [run] = await tx`select status from os_runs where id=${id} for update`;
       const [control] = await tx`select paused from os_control where id=1`;

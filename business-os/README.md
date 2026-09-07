@@ -151,3 +151,33 @@ on the owner's phone. The browser install prompt is used where available.
 
 References: [Apple Home Screen web apps](https://support.apple.com/guide/iphone/open-as-web-app-iphea86e5236/ios),
 [WebKit cookie transfer](https://webkit.org/blog/14787/webkit-features-in-safari-17-2/).
+
+## Pixel owner headquarters
+
+The owner UI has Home, My agents, Messages, Approvals and Results. Each of the
+8 roles has a distinct pixel character, a separate conversation and local draft,
+role-specific suggested messages, and a Give work board. The 24 assignment
+presets live in `app/owner/work-assignments.ts`. Assigning one sends its full
+instructions through the existing durable message queue and requests the worker.
+An already queued/running identical preset is disabled in the current UI.
+
+Watch work displays persisted per-department events: source checks, preparation,
+validated response, saved tasks, approval proposals, completion and failures.
+It refreshes every five seconds while the Messages page is visible. These are
+observable workflow events, not simulated activity, screen streaming, or model
+reasoning. The UI never treats registration/configuration as a successful run;
+it drops the Working label for stale runs or stale dashboard updates.
+
+AI access remains a runtime prerequisite. Requests saved with AI off or work
+paused wait in the queue. A busy worker may leave requests queued until a later
+worker invocation; this is not a continuous background fleet. Existing Hobby
+cron cadence has not been changed. No production or paid AI activation is
+included in this UI update.
+
+The owner requests OpenAI-powered agents with business editing capabilities.
+They do not inherit ChatGPT connector credentials or this assistant's tool
+runtime. No external write executor is connected today. Future business tools
+must use dedicated runtime credentials, durable exact-action approvals for
+spending/publishing/customer-sensitive changes/refunds/account changes, and
+logged execution outcomes. A saved approval is not a completed business edit.
+Customer-facing Telegram and private owner access remain separate.
