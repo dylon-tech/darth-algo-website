@@ -4,7 +4,9 @@
 Attract ES/NQ/MES/MNQ traders who struggle with late entries, chart clutter, and undefined risk. Send them to the free Darth Algo Telegram community.
 
 Primary CTA: "Join the free Darth Algo community and use the Plan Finder."
-Link destination: https://www.darthalgo.com/?utm_source={source}&utm_medium=organic_social&utm_campaign=stop_trading_blind&utm_content={asset}#pricing
+Link destination: https://www.darthalgo.com/community?source={source}&campaign=stop_trading_blind
+
+Tracking note: use the source/campaign parameters consumed by the community page. An outbound click is not a verified Telegram join. Do not advertise a checklist or Plan Finder until its destination has been checked. The newer interactive walkthrough campaign is documented in CHART-CLARITY-LAUNCH.md.
 
 ## Video 1 — Entry Without a Plan
 Hook: "If you enter ES before you know your stop and targets, you do not have a trade plan."
