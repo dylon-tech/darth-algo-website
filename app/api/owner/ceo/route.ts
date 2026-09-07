@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { secretMatches } from "../../../lib/business-os/policy";
 import { initializeOS } from "../../../lib/business-os/schema";
 import { decide, runCEO, status } from "../../../lib/business-os/service";
+import { readiness } from "../../../lib/business-os/readiness";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -16,7 +17,11 @@ function denied(request: Request) {
 
 export async function GET(request: Request) {
   const error = denied(request); if (error) return error;
-  try { return NextResponse.json(await status(), { headers }); }
+  try {
+    const view = new URL(request.url).searchParams.get("view");
+    if (view && view !== "readiness") return NextResponse.json({ error: "Unknown view" }, { status: 400, headers });
+    return NextResponse.json(view === "readiness" ? await readiness() : await status(), { headers });
+  }
   catch { return NextResponse.json({ error: "OS_STORE_UNAVAILABLE", message: "Verify the existing database and initialize the additive OS schema." }, { status: 503, headers }); }
 }
 

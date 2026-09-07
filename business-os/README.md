@@ -36,6 +36,12 @@ Reuse the existing deployment's `DATABASE_URL` and AI credentials. New settings:
 
 No credentials are created or included. Local verification does not call paid AI.
 Owner requests require `Authorization: Bearer <owner secret>` and JSON.
+Before initialization, GET `/api/owner/ceo?view=readiness` checks the actual
+read-only source adapters and OS table existence. It works with AI disabled and
+does not create tables or call a model. It reports missing connections separately
+from verified empty results, and credential presence separately from AI
+connectivity. HTTP 200 means the report was collected, not that the CEO is live.
+This endpoint uses the same owner authentication and no-cache headers as status.
 POST `{ "operation": "initialize" }` creates only `os_*` tables in the existing
 database under a transaction. Read-only adapters never create or alter source
 tables. Use an existing private database; do not expose it publicly.
