@@ -39,6 +39,7 @@ export async function generatePlan(message: string, evidence: Evidence[], openTa
   if (Buffer.byteLength(input) > 60000) throw new Error("AI_INPUT_LIMIT");
   const departmentInstructions = department === "ceo" ? instructions : `${instructions}\nFor this run you are the ${department} specialist, reporting to the CEO. Focus on this mandate: ${registry.find(a => a.id === department)!.mandate}\nDeliver the requested internal analysis, draft, or operating procedure in the brief. State evidence, missing inputs and acceptance criteria. You have read-only snapshots and no external tools. Do not claim to browse, contact customers, make a video, publish, spend, refund, or change a system. External work can only be an owner approval proposal. Propose follow-up tasks only when necessary. A completed response means an internal deliverable, not execution of external work.`;
   const bodyText = JSON.stringify({ model, store: false, instructions: departmentInstructions, max_output_tokens: pilot.maxOutputTokens,
+      ...(approvedPilot ? { reasoning: { effort: "none" } } : {}),
       input: [{ role: "user", content: input }],
       text: { format: { type: "json_schema", name: "ceo_plan", strict: true, schema: {
         type: "object", additionalProperties: false, required: ["brief", "tasks", "proposals"],
