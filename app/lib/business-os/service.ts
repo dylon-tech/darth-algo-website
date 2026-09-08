@@ -3,6 +3,7 @@ import { db } from "../affiliate-db";
 import { fingerprint, registry, type Department } from "./policy";
 import { collectEvidence } from "./sources";
 import { generatePlan } from "./model";
+import { pilot, pilotJobKeys } from "./pilot-policy";
 
 export async function status() {
   const sql = db();
@@ -24,8 +25,9 @@ export async function runCEO(requestKey: string, message: string) {
   return runAgent("ceo", requestKey, message);
 }
 
-export async function runAgent(department: Department, requestKey: string, message: string, taskId?: string) {
-  if (process.env.AI_OS_AI_ENABLED !== "true") throw new Error("AI_DISABLED");
+export async function runAgent(department: Department, requestKey: string, message: string, taskId?: string, approvedPilot = false) {
+  if (approvedPilot && process.env.VERCEL_ENV !== "preview") throw new Error("PILOT_PREVIEW_ONLY");
+  if (!approvedPilot && process.env.AI_OS_AI_ENABLED !== "true") throw new Error("AI_DISABLED");
   const sql = db();
   const id = randomUUID();
   const created = await sql.begin(async tx => {
@@ -38,6 +40,13 @@ export async function runAgent(department: Department, requestKey: string, messa
     for (const row of stale) await tx`insert into os_activity(actor,event,entity_id,details) values('system','run_lease_expired',${row.id},'{}'::jsonb)`;
     const [existing] = await tx`select id,status,result from os_runs where request_key=${requestKey}`;
     if (existing) return { duplicate: true as const, id: String(existing.id), status: String(existing.status), result: existing.result };
+    if (approvedPilot) {
+      const [job] = await tx`select request_key from os_jobs where 'job_' || id::text=${requestKey} and department=${department} and message=${message} and status='running'`;
+      if (!job || !pilotJobKeys.includes(job.request_key)) throw new Error("PILOT_JOB_NOT_AUTHORIZED");
+      const [reserved] = await tx`select count(*)::int as n from os_activity where event='pilot_budget_reserved' and details->>'pilotId'=${pilot.id}`;
+      if (reserved.n >= pilot.maxAttempts) throw new Error("PILOT_BUDGET_EXHAUSTED");
+      await tx`insert into os_activity(actor,event,entity_id,details) values('owner','pilot_budget_reserved',${id},${tx.json({pilotId:pilot.id,jobKey:job.request_key,reservedUsd:pilot.reservationUsd,totalLimitUsd:pilot.totalUsd,model:pilot.model})})`;
+    }
     // Max 12 attempted AI runs per rolling day. Owner invocation is still
     // required; enabling the flag is not a recurring-spend authorization.
     const [count] = await tx`select count(*)::int as n from os_runs where created_at>now()-interval '24 hours'`;
@@ -51,7 +60,7 @@ export async function runAgent(department: Department, requestKey: string, messa
     await tx`insert into os_activity(actor,event,entity_id,details) values('owner','agent_run_started',${id},${tx.json({department})})`;
     return { duplicate: false as const, id };
   });
-  if (created.duplicate) return created;
+    if (created.duplicate) return created;
   try {
     await sql`insert into os_activity(actor,event,entity_id,details) values(${department},'agent_reading_sources',${id},'{}'::jsonb)`;
     const [evidence, tasks, history] = await Promise.all([
@@ -62,7 +71,7 @@ export async function runAgent(department: Department, requestKey: string, messa
     await sql`update os_runs set snapshot=${sql.json(JSON.parse(JSON.stringify(evidence)))} where id=${id} and status='running'`;
     await sql`insert into os_activity(actor,event,entity_id,details) values(${department},'agent_sources_checked',${id},${sql.json({verifiedSources:evidence.filter(s=>s.status==="verified").length,unavailableSources:evidence.filter(s=>s.status==="unavailable").length})})`;
     await sql`insert into os_activity(actor,event,entity_id,details) values(${department},'agent_preparing_response',${id},'{}'::jsonb)`;
-    const { plan, model, usage } = await generatePlan(message, evidence, tasks, history, department);
+    const { plan, model, usage } = await generatePlan(message, evidence, tasks, history, department, approvedPilot);
     await sql`insert into os_activity(actor,event,entity_id,details) values(${department},'agent_response_ready',${id},'{}'::jsonb)`;
     await sql.begin(async tx => {
       const [run] = await tx`select status from os_runs where id=${id} for update`;
@@ -88,9 +97,10 @@ export async function runAgent(department: Department, requestKey: string, messa
       await tx`insert into os_activity(actor,event,entity_id,details) values(${department},'agent_run_completed',${id},${tx.json({ model, usage, resultKind: 'internal_deliverable' })})`;
     });
     return { id, status: "completed", plan, evidence };
-  } catch {
+  } catch (error) {
+    const errorCode = error instanceof Error && /^AI_PROVIDER_(401|403|429|400|404|500|502|503)(_(insufficient_quota|invalid_api_key|model_not_found|unsupported_parameter|rate_limit_exceeded))?$/.test(error.message) ? error.message : "CEO_RUN_FAILED";
     await sql.begin(async tx => {
-      await tx`update os_runs set status='failed',finished_at=now(),error_code='CEO_RUN_FAILED' where id=${id} and status='running'`;
+      await tx`update os_runs set status='failed',finished_at=now(),error_code=${errorCode} where id=${id} and status='running'`;
       if (taskId) await tx`update os_tasks set status='blocked',updated_at=now() where id=${taskId} and status='in_progress'`;
       await tx`insert into os_activity(actor,event,entity_id,details) values(${department},'agent_run_failed',${id},'{"message":"Run failed; inspect source availability and AI configuration. No external action executed."}'::jsonb)`;
     });

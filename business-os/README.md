@@ -181,3 +181,21 @@ must use dedicated runtime credentials, durable exact-action approvals for
 spending/publishing/customer-sensitive changes/refunds/account changes, and
 logged execution outcomes. A saved approval is not a completed business edit.
 Customer-facing Telegram and private owner access remain separate.
+# One-time owner-approved pilot (September 8, 2026)
+
+The owner approved $1 total for the eight already queued internal starter jobs.
+Owner-bearer POST `operation: pilot_run` executes at most one eligible job per
+request, only in Preview. It uses GPT-5.6 Luna directly, keeps general AI/autonomy
+flags off, respects pause and existing single-job/single-run locks, and records
+a permanent $0.125 budget reservation before each of at most eight attempts.
+Only the original `darth-starter-20260907-<department>` job keys are eligible.
+Replays do not create a new run. Failed or uncertain attempts are not refunded
+or automatically retried. Nothing schedules this operation. No external editing
+tools are attached.
+
+The full serialized provider request is limited to 100,000 bytes and output to
+2,500 tokens. At verified Luna standard rates ($0.20/$1.20 per million input/output
+tokens), a conservative byte-as-token bound plus 25,000 input framing tokens is
+$0.028 per attempt, below the $0.125 reservation. These reservations are a local
+spending guard for this pilot, not a provider account-wide billing limit. Stop
+after the eight jobs or any provider failure and review before further spending.

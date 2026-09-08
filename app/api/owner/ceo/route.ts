@@ -5,6 +5,7 @@ import { decide, runCEO, status } from "../../../lib/business-os/service";
 import { createDeviceLink } from "../../../lib/business-os/device-links";
 import { readiness } from "../../../lib/business-os/readiness";
 import { checkAIConnection } from "../../../lib/business-os/ai-connection";
+import { workOneJob } from "../../../lib/business-os/jobs";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -39,6 +40,7 @@ export async function POST(request: Request) {
   if (!body || typeof body !== "object") return NextResponse.json({ error: "Invalid request" }, { status: 400, headers });
   try {
     if (body.operation === "device_link") return NextResponse.json(await createDeviceLink(new URL(request.url).origin), { headers });
+    if (body.operation === "pilot_run") return NextResponse.json(await workOneJob(true), { headers });
     if (body.operation === "initialize") { await initializeOS(); return NextResponse.json({ initialized: true }, { headers }); }
     if (body.operation === "run") {
       const key = request.headers.get("idempotency-key");

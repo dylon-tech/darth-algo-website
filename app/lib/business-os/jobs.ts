@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { db } from "../affiliate-db";
 import { departments, type Department } from "./policy";
 import { runAgent } from "./service";
+import { pilotJobKeys } from "./pilot-policy";
 
 export async function queueJob(department: Department, message: string, requestKey: string, source: "owner" | "telegram" | "schedule", taskId?: string) {
   if (!departments.includes(department) || !message.trim() || message.length > 4000 || !/^[\w:-]{8,150}$/.test(requestKey)) throw new Error("INVALID_JOB");
@@ -18,8 +19,9 @@ export async function queueJob(department: Department, message: string, requestK
   });
 }
 
-export async function workOneJob() {
-  if (process.env.AI_OS_ENABLED !== "true" || process.env.AI_OS_AI_ENABLED !== "true") return { status: "ai_disabled" };
+export async function workOneJob(approvedPilot = false) {
+  if (approvedPilot && process.env.VERCEL_ENV !== "preview") throw new Error("PILOT_PREVIEW_ONLY");
+  if (process.env.AI_OS_ENABLED !== "true" || (!approvedPilot && process.env.AI_OS_AI_ENABLED !== "true")) return { status: "ai_disabled" };
   const sql = db();
   const job = await sql.begin(async tx => {
     await tx`select pg_advisory_xact_lock(730916)`;
@@ -32,7 +34,9 @@ export async function workOneJob() {
     }
     const [active] = await tx`select id from os_jobs where status='running' limit 1`;
     if (active) return null;
-    const [next] = await tx`select * from os_jobs where status='queued' order by created_at for update skip locked limit 1`;
+    const [next] = approvedPilot
+      ? await tx`select * from os_jobs where status='queued' and request_key in ${tx(pilotJobKeys)} order by created_at for update skip locked limit 1`
+      : await tx`select * from os_jobs where status='queued' order by created_at for update skip locked limit 1`;
     if (!next) return null;
     await tx`update os_jobs set status='running',started_at=now() where id=${next.id}`;
     await tx`insert into os_activity(actor,event,entity_id,details) values(${next.department},'job_started',${next.id},'{}'::jsonb)`;
@@ -40,7 +44,7 @@ export async function workOneJob() {
   });
   if (!job) return { status: "idle_or_paused" };
   try {
-    const result = await runAgent(job.department as Department, `job_${job.id}`, job.message, job.task_id || undefined);
+    const result = await runAgent(job.department as Department, `job_${job.id}`, job.message, job.task_id || undefined, approvedPilot);
     if (result.status !== "completed") throw new Error("RUN_NOT_COMPLETED");
     await sql.begin(async tx => {
       const updated = await tx`update os_jobs set status='succeeded',finished_at=now(),run_id=${result.id} where id=${job.id} and status='running' returning id`;
