@@ -5,6 +5,8 @@ import { queueJob, setPaused, workOneJob } from "./jobs";
 import { decide } from "./service";
 import { privateTelegramConfiguration, queueOwnerNotice, queueApprovalNotice, deliverOwnerNotices, telegramMethod } from "./delivery";
 import type { OwnerUpdate } from "./telegram-policy";
+import { agentNames, agentMenu, homeMenu, menuAction, naturalCommand, shortReply, budgetMessage, type MenuButtons } from "./telegram-ui";
+import { workAssignments, assignmentMessage } from "../../owner/work-assignments";
 
 export async function recordOwnerUpdate(update: OwnerUpdate) {
   const sql=db();
@@ -18,9 +20,13 @@ export async function recordOwnerUpdate(update: OwnerUpdate) {
 
 async function handleUpdate(update: OwnerUpdate) {
   const sql = db(); const owner=privateTelegramConfiguration().owner!;
-  const notice = (text:string) => queueOwnerNotice(`update:${update.update_id}`,text);
+  const notice = (text:string, buttons:MenuButtons=homeMenu()) => queueOwnerNotice(`update:${update.update_id}`,text,buttons);
   const callback=update.callback_query;
-  if(callback) {
+  const menu=menuAction(callback?.data);
+  if(callback && menu) {
+    try { await telegramMethod("answerCallbackQuery",{callback_query_id:callback.id,text:"Got it"}); } catch {}
+  }
+  if(callback && !menu) {
     const match=callback.data?.match(/^os:([a-f0-9]{32})$/);
     const [action]=match ? await sql`select * from os_callback_actions where id=${match[1]} and expires_at>now()` : [];
     if(!action) { await notice("That decision button has expired. Open /approvals for current proposals."); return; }
@@ -38,9 +44,14 @@ async function handleUpdate(update: OwnerUpdate) {
     if(callback.id) { try { await telegramMethod("answerCallbackQuery",{callback_query_id:callback.id,text:"Owner decision received"}); } catch { /* A late acknowledgement does not replay a decision. */ } }
     return;
   }
-  const text=update.message?.text?.trim();
+  const original=menu?.command || update.message?.text?.trim();
+  let text=original;
   if(!text) { await notice("Send a text message or /help. Attachments are not processed by the private command bot yet."); return; }
   const [state]=await sql`select * from os_telegram_state where owner_id=${owner}`;
+  if(state?.revision_id && menu?.department) {
+    await notice("Finish your approval revision first, or send /cancel to leave it. Then choose an agent."); return;
+  }
+  if(!state?.revision_id) text=naturalCommand(text);
   const command=text.split(/\s+/)[0].split("@")[0].toLowerCase();
   if(command==="/cancel") {
     await sql`update os_telegram_state set revision_id=null,revision_hash=null where owner_id=${owner}`;
@@ -52,26 +63,29 @@ async function handleUpdate(update: OwnerUpdate) {
     await notice("Revision recorded. The original proposal is closed; revised work needs a new exact approval."); return;
   }
   if(command==="/start" || command==="/help") {
-    await notice("DARTH ALGO · OWNER COMMAND\n\n/agents — choose a department\n/status — real queue and connection state\n/approvals — pending owner decisions\n/brief — latest daily brief\n/pause — stop new agent work\n/resume — resume permitted work\n/cancel — cancel revision entry\n\nUse /growth, /content, /support, /affiliates, /analytics, /research, /operations, or /ceo to switch departments. Then send your request. Internal drafts and external actions are tracked separately."); return;
+    await notice("Your Darth Algo crew 👋\n\nTap an agent below, then type what you need or pick a job. You can also say ‘Growth, find our next customers.’"); return;
   }
-  if(command==="/agents") { await notice(departments.map(d=>`/${d}`).join("\n")); return; }
+  if(command==="/agents") { await notice("Who would you like to talk to? 👇"); return; }
+
   if(command==="/pause" || command==="/resume") { const result=await setPaused(command==="/pause"); await notice(result.paused ? "New agent work is paused. An already-started provider request may finish; external execution is disabled." : "Work resumed within configured AI limits. AI must be enabled before queued work can run."); return; }
   if(command==="/status") {
     const budget = await recurringBudgetAvailability();
     const jobs=await sql`select status,count(*)::int as count from os_jobs group by status`;
     const [pending]=await sql`select count(*)::int as count from os_approvals where status='pending' and expires_at>now()`;
     const [control]=await sql`select paused from os_control where id=1`;
-    await notice(`AI: ${process.env.AI_OS_AI_ENABLED==="true" ? "enabled" : "disabled"}\nWork allowance: ${budget.available ? "available" : "waiting — " + budget.reason}\nPaused: ${control?.paused ? "yes" : "no"}\nJobs: ${jobs.map(x=>`${x.status} ${x.count}`).join(", ") || "none"}\nPending decisions: ${pending.count}\nExternal execution: disabled`); return;
+    const count=(status:string)=>jobs.find(j=>j.status===status)?.count || 0;
+    const mode=control?.paused ? "⏸ Work is paused" : process.env.AI_OS_AI_ENABLED!=="true" ? "⏸ Agents are switched off" : !budget.available ? `⏳ ${budgetMessage(budget.reason)}` : "🟢 Ready for work";
+    await notice(`${mode}\n\nWorking: ${count("running")}\nWaiting: ${count("queued")}\nFinished: ${count("succeeded")}\nNeeds a check: ${count("failed")+count("unknown")}\nYour decisions: ${pending.count}\n\nCounts include saved work history.`); return;
   }
   if(command==="/approvals") {
     const approvals=await sql`select id from os_approvals where status='pending' and expires_at>now() order by created_at limit 5`;
-    if(!approvals.length) await notice("No pending owner decisions.");
+    if(!approvals.length) { await notice("You’re all caught up ✅ No decisions waiting."); return; }
     for(const a of approvals) await queueApprovalNotice(a.id);
     await notice("Current proposals are available in the Command Center. Up to five new Telegram decision cards are queued; previously delivered cards remain valid until their displayed expiry."); return;
   }
   if(command==="/brief") {
     const [brief]=await sql`select day,body from os_briefs order by day desc limit 1`;
-    await notice(brief ? `${brief.day}\n${brief.body}` : "No daily brief has been recorded yet. Open the Command Center to collect one from current source data."); return;
+    await notice(brief ? `☀️ Your daily brief · ${brief.day}\n\n${shortReply(brief.body)}` : "No daily brief has been recorded yet. Open the Command Center to collect one from current source data."); return;
   }
   const selected=command.startsWith("/") ? command.slice(1) : "";
   let department=(state?.department || "ceo") as Department;
@@ -80,11 +94,16 @@ async function handleUpdate(update: OwnerUpdate) {
     department=selected as Department;
     await sql`insert into os_telegram_state(owner_id,department) values(${owner},${department}) on conflict(owner_id) do update set department=excluded.department`;
     message=text.slice(text.split(/\s+/)[0].length).trim();
-    if(!message) { await notice(`You’re talking to ${department}. Send your request.`); return; }
+    if(menu?.assignmentId) message=assignmentMessage(workAssignments[department].find(a=>a.id===menu.assignmentId)!);
+    if(!message) { await notice(`${agentNames[department]} here. What can I help with?\n\nType your own request, or tap a job to start an internal draft.`,agentMenu(department)); return; }
   } else if(text.startsWith("/")) { await notice("Unknown command. Use /help."); return; }
-  const job=await queueJob(department,message,`telegram:${update.update_id}`,"telegram");
+  if(menu?.assignmentId) {
+    const [pending]=await sql`select id from os_jobs where department=${department} and message=${message} and status in ('queued','running') limit 1`;
+    if(pending) { await notice("That job is already on the list. I’ll send the result here when it’s ready.",agentMenu(department)); return; }
+  }
+  await queueJob(department,message,`telegram:${update.update_id}`,"telegram");
   const budget = await recurringBudgetAvailability();
-  await notice(`Saved for ${department}. ${process.env.AI_OS_AI_ENABLED!=="true" ? "AI is switched off; your request is waiting." : !budget.available ? "Your request is waiting for the AI work allowance. It stays in the queue; you do not need to resend it." : "The agent will work on it when its turn comes."}`);
+  await notice(`📬 Saved for ${agentNames[department]}. ${process.env.AI_OS_AI_ENABLED!=="true" ? "AI is switched off; your request is waiting." : !budget.available ? "Your request is waiting for the AI work allowance. It stays in the queue; you do not need to resend it." : "I’ll send the result here. You can leave this chat."}`,agentMenu(department));
 }
 
 export async function processOwnerUpdates() {
@@ -118,7 +137,11 @@ export async function workAndNotify() {
   const result=await workOneJob();
   if(result.jobId) {
     const [run]=result.runId ? await db()`select result from os_runs where id=${result.runId}` : [];
-    await queueOwnerNotice(`job-result:${result.jobId}`,`${result.department}: ${result.status}\n\n${run?.result?.brief || "Open the Command Center to inspect the recorded failure. No automatic retry was made."}`);
+    const department=result.department as Department;
+    const response=run?.result?.brief
+      ? `✅ ${agentNames[department]} finished\n\n${shortReply(run.result.brief)}`
+      : `⚠️ ${agentNames[department]} needs a check\n\n${result.status==="budget_blocked" ? budgetMessage(result.reason) : "This job couldn’t finish. Its details are saved in the dashboard."}`;
+    await queueOwnerNotice(`job-result:${result.jobId}`,response,agentMenu(department));
     if(result.runId) {
       const approvals=await db()`select id from os_approvals where run_id=${result.runId} and status='pending'`;
       for(const a of approvals) await queueApprovalNotice(a.id);

@@ -326,3 +326,19 @@ Offline PGlite regression covers over 12 historical attempts followed by a
 successful approved recurring job, budget-exhausted Telegram requests staying
 queued without a provider call, and missing approval still preventing calls.
 No dollar limit or provider credential is changed by this repair.
+
+## Simple Telegram conversations
+
+Private owner replies now include buttons for eight agents, current work,
+owner decisions and the dashboard. Each agent offers the same three internal
+assignment presets as the dashboard. A preset starts only a queued internal job;
+repeat taps while that assignment is queued/running do not duplicate it.
+Typing `menu`, `Who's working?`, or `Growth, find our next customers` works without
+memorizing slash commands. Existing slash commands remain supported.
+
+Completed-work notifications contain a short, explicitly labeled preview and a
+button to read the complete saved result. Full deliverables and approval details
+are retained. Role/work callbacks are validated separately from approval tokens;
+unknown callbacks cannot approve actions. Agent switching during an approval
+revision asks the owner to finish or cancel that revision first. All menus remain
+behind the existing private-owner Telegram check.
