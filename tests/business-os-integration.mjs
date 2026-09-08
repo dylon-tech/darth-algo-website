@@ -168,11 +168,26 @@ try {
   await sql`update os_handoffs set status='delivered' where task_id=${nextTask.id}`;
   await assert.rejects(runAgent('ceo','direct-while-worker-running','Do not overlap worker'),/OS_WORKER_BUSY/);
   await sql`update os_jobs set started_at=now()-interval '6 minutes' where id=${staleCandidate.id}`;
-  assert.equal((await workOneJob()).status,'idle_or_paused');
+  assert.equal((await workOneJob()).status,'budget_blocked');
   const [expired]=await sql`select j.status as job_status,t.status as task_status,h.status as handoff_status
     from os_jobs j join os_tasks t on t.id=j.task_id join os_handoffs h on h.task_id=t.id where j.id=${staleCandidate.id}`;
   assert.deepEqual(expired,{job_status:'unknown',task_status:'blocked',handoff_status:'blocked'});
   assert.equal(providerInputs.length,2,'Cancellation, stale lease handling and busy guards do not call provider');
+  // A Telegram request stays queued without a provider call when funds are held.
+  const waiting=await queueJob('growth','Grow my business','integration-budget-wait','telegram');
+  assert.equal((await workOneJob()).status,'budget_blocked');
+  assert.equal((await sql`select status from os_jobs where id=${waiting.id}`)[0].status,'queued');
+  assert.equal(providerInputs.length,2);
+  // More than 12 historical attempts must not override approved dollar limits.
+  for(let i=0;i<12;i++) await sql`insert into os_runs(id,request_key,status,department)
+    values(${randomUUID()},${'historic-'+i},'failed','ceo')`;
+  process.env.AI_OS_DAILY_BUDGET_USD='0.25';
+  assert.equal((await workOneJob()).status,'succeeded');
+  assert.equal(providerInputs.length,3);
+  delete process.env.AI_OS_RECURRING_SPEND_APPROVED;
+  await queueJob('growth','Another request','integration-no-consent','telegram');
+  assert.equal((await workOneJob()).status,'budget_blocked');
+  assert.equal(providerInputs.length,3,'Recurring consent still required after legacy cap removal');
   console.log('PASS: real PGlite schema + queue + service + model + persisted content→operations handoff; recipient sees sender deliverable; idempotent replays; budget preserves queue; active-run/worker guards, cancellation and stale lease handoff status. Provider mocked; advisory locks no-op, multi-connection isolation not tested.');
 } finally {
   globalThis.fetch=originalFetch;

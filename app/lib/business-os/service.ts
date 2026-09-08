@@ -4,6 +4,7 @@ import { fingerprint, registry, type Department } from "./policy";
 import { collectEvidence } from "./sources";
 import { generatePlan } from "./model";
 import { pilot, pilotJobKeys } from "./pilot-policy";
+import { recurringBudgetPolicy } from "./budget-policy";
 import { coordinationStatus, teamEvidence } from "./coordination";
 import { coordinationEnabled, handoffAllowed, reviewTarget } from "./coordination-policy";
 
@@ -72,10 +73,14 @@ export async function runAgent(department: Department, requestKey: string, messa
       if (reserved.n >= pilot.maxAttempts) throw new Error("PILOT_BUDGET_EXHAUSTED");
       await tx`insert into os_activity(actor,event,entity_id,details) values('owner','pilot_budget_reserved',${id},${tx.json({pilotId:pilot.id,jobKey:job.request_key,reservedUsd:pilot.reservationUsd,totalLimitUsd:pilot.totalUsd,model:pilot.model})})`;
     }
-    // Max 12 attempted AI runs per rolling day. Owner invocation is still
-    // required; enabling the flag is not a recurring-spend authorization.
-    const [count] = await tx`select count(*)::int as n from os_runs where created_at>now()-interval '24 hours'`;
-    if (count.n >= 12) throw new Error("DAILY_RUN_LIMIT");
+    // The legacy pilot cap must not override explicitly approved recurring
+    // dollar limits. Every recurring provider call still reserves atomically.
+    if (approvedPilot) {
+      const [count] = await tx`select count(*)::int as n from os_runs where created_at>now()-interval '24 hours'`;
+      if (count.n >= 12) throw new Error("DAILY_RUN_LIMIT");
+    } else {
+      recurringBudgetPolicy(); // Fail closed without priced, bounded recurring consent.
+    }
     if (taskId) {
       const changed = await tx`update os_tasks set status='in_progress',updated_at=now() where id=${taskId} and department=${department} and status in ('queued','blocked') returning id`;
       if (!changed.length) throw new Error("TASK_NOT_AVAILABLE");

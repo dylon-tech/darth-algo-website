@@ -3,6 +3,7 @@ import { db } from "../affiliate-db";
 import { departments, type Department } from "./policy";
 import { runAgent } from "./service";
 import { pilotJobKeys } from "./pilot-policy";
+import { recurringBudgetAvailability } from "./budget";
 import { coordinationEnabled } from "./coordination-policy";
 
 export async function queueJob(department: Department, message: string, requestKey: string, source: "owner" | "telegram" | "schedule", taskId?: string) {
@@ -23,6 +24,7 @@ export async function queueJob(department: Department, message: string, requestK
 export async function workOneJob(approvedPilot = false) {
   if (approvedPilot && process.env.VERCEL_ENV !== "preview") throw new Error("PILOT_PREVIEW_ONLY");
   if (process.env.AI_OS_ENABLED !== "true" || (!approvedPilot && process.env.AI_OS_AI_ENABLED !== "true")) return { status: "ai_disabled" };
+  const budget = approvedPilot ? { available: true, reason: undefined } : await recurringBudgetAvailability();
   const sql = db();
   const job = await sql.begin(async tx => {
     await tx`select pg_advisory_xact_lock(730916)`;
@@ -39,6 +41,7 @@ export async function workOneJob(approvedPilot = false) {
     if (active) return null;
     const [directRun] = await tx`select id from os_runs where status='running' and created_at>=now()-interval '5 minutes' limit 1`;
     if (directRun) return null;
+    if (!budget.available) return null;
     const [next] = approvedPilot
       ? await tx`select * from os_jobs where status='queued' and request_key in ${tx(pilotJobKeys)} order by created_at for update skip locked limit 1`
       : await tx`select * from os_jobs where status='queued' order by created_at for update skip locked limit 1`;
@@ -48,7 +51,7 @@ export async function workOneJob(approvedPilot = false) {
     await tx`insert into os_activity(actor,event,entity_id,details) values(${next.department},'job_started',${next.id},'{}'::jsonb)`;
     return next;
   });
-  if (!job) return { status: "idle_or_paused" };
+  if (!job) return budget.available ? { status: "idle_or_paused" } : { status: "budget_blocked", reason: budget.reason };
   try {
     const result = await runAgent(job.department as Department, `job_${job.id}`, job.message, job.task_id || undefined, approvedPilot);
     if (result.status !== "completed") throw new Error("RUN_NOT_COMPLETED");
@@ -60,12 +63,13 @@ export async function workOneJob(approvedPilot = false) {
     return { status: "succeeded", jobId: job.id, runId: result.id, department: job.department };
   } catch (error) {
     const budgetBlocked = error instanceof Error && /^(AI_(BUDGET|DAILY_BUDGET|MONTHLY_BUDGET|RECURRING_SPEND)_|DAILY_RUN_LIMIT)/.test(error.message);
+    const reason = budgetBlocked && error instanceof Error ? error.message : "AGENT_RUN_FAILED_REVIEW_REQUIRED";
     await sql.begin(async tx => {
-      await tx`update os_jobs set status='failed',finished_at=now(),error_code='AGENT_RUN_FAILED_REVIEW_REQUIRED' where id=${job.id} and status='running'`;
+      await tx`update os_jobs set status='failed',finished_at=now(),error_code=${reason} where id=${job.id} and status='running'`;
       if (coordinationEnabled() && job.task_id) await tx`update os_handoffs set status='blocked',updated_at=now() where task_id=${job.task_id}`;
       await tx`insert into os_activity(actor,event,entity_id,details) values(${job.department},'job_failed',${job.id},'{"automaticRetry":false}'::jsonb)`;
     });
-    return { status: budgetBlocked ? "budget_blocked" : "failed", jobId: job.id, department: job.department };
+    return { status: budgetBlocked ? "budget_blocked" : "failed", jobId: job.id, department: job.department, reason };
   }
 }
 

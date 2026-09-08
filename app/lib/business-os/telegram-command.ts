@@ -1,4 +1,5 @@
 import { db } from "../affiliate-db";
+import { recurringBudgetAvailability } from "./budget";
 import { departments, fingerprint, type Department } from "./policy";
 import { queueJob, setPaused, workOneJob } from "./jobs";
 import { decide } from "./service";
@@ -56,10 +57,11 @@ async function handleUpdate(update: OwnerUpdate) {
   if(command==="/agents") { await notice(departments.map(d=>`/${d}`).join("\n")); return; }
   if(command==="/pause" || command==="/resume") { const result=await setPaused(command==="/pause"); await notice(result.paused ? "New agent work is paused. An already-started provider request may finish; external execution is disabled." : "Work resumed within configured AI limits. AI must be enabled before queued work can run."); return; }
   if(command==="/status") {
+    const budget = await recurringBudgetAvailability();
     const jobs=await sql`select status,count(*)::int as count from os_jobs group by status`;
     const [pending]=await sql`select count(*)::int as count from os_approvals where status='pending' and expires_at>now()`;
     const [control]=await sql`select paused from os_control where id=1`;
-    await notice(`AI: ${process.env.AI_OS_AI_ENABLED==="true" ? "enabled" : "disabled"}\nPaused: ${control?.paused ? "yes" : "no"}\nJobs: ${jobs.map(x=>`${x.status} ${x.count}`).join(", ") || "none"}\nPending decisions: ${pending.count}\nExternal execution: disabled`); return;
+    await notice(`AI: ${process.env.AI_OS_AI_ENABLED==="true" ? "enabled" : "disabled"}\nWork allowance: ${budget.available ? "available" : "waiting — " + budget.reason}\nPaused: ${control?.paused ? "yes" : "no"}\nJobs: ${jobs.map(x=>`${x.status} ${x.count}`).join(", ") || "none"}\nPending decisions: ${pending.count}\nExternal execution: disabled`); return;
   }
   if(command==="/approvals") {
     const approvals=await sql`select id from os_approvals where status='pending' and expires_at>now() order by created_at limit 5`;
@@ -81,7 +83,8 @@ async function handleUpdate(update: OwnerUpdate) {
     if(!message) { await notice(`You’re talking to ${department}. Send your request.`); return; }
   } else if(text.startsWith("/")) { await notice("Unknown command. Use /help."); return; }
   const job=await queueJob(department,message,`telegram:${update.update_id}`,"telegram");
-  await notice(`Queued for ${department}. Job ${job.id}. ${process.env.AI_OS_AI_ENABLED==="true" ? "A worker will attempt this request." : "AI is disabled; the request is saved and waiting."}`);
+  const budget = await recurringBudgetAvailability();
+  await notice(`Saved for ${department}. ${process.env.AI_OS_AI_ENABLED!=="true" ? "AI is switched off; your request is waiting." : !budget.available ? "Your request is waiting for the AI work allowance. It stays in the queue; you do not need to resend it." : "The agent will work on it when its turn comes."}`);
 }
 
 export async function processOwnerUpdates() {
