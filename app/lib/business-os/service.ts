@@ -18,7 +18,7 @@ export async function status() {
       exists(select 1 from os_activity a where a.entity_id=os_runs.id::text and a.event='pilot_budget_reserved' and a.details->>'pilotId'=${pilot.id}) as approved_pilot
       ,(select a.details from os_activity a where a.entity_id=os_runs.id::text and a.event='agent_output_reviewed' order by a.id desc limit 1) as output_review
       from os_runs order by created_at desc limit 20`,
-    sql`select * from os_jobs order by created_at desc limit 50`,
+    sql`select * from os_jobs where status in ('running','queued') or id in (select distinct on (department) id from os_jobs order by department,created_at desc) or id in (select id from os_jobs order by created_at desc limit 50) order by created_at desc`,
     sql`select paused from os_control where id=1`,
     sql`select id,department,role,body,created_at from os_messages order by created_at desc limit 100`,
     sql`select day,created_at,body from os_briefs order by day desc limit 7`,

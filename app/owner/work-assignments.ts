@@ -43,4 +43,6 @@ export const workAssignments:Record<Department,WorkAssignment[]>={
     {id:"access-checklist",title:"Plan a customer access check",outcome:"A fulfillment check plan with failure and escalation steps.",instruction:"Prepare an operational checklist for purchase-to-access fulfillment, including how to verify payment, entitlement, delivery, failures, and support escalation. Use verified facts only and flag unconnected systems. Do not grant or revoke customer access."}
   ]
 };
-export function assignmentMessage(assignment:WorkAssignment){return `${assignment.title}\n\n${assignment.instruction}\n\nExpected deliverable: ${assignment.outcome}\n\n${safety}`;}
+import { revenueFocus } from "../lib/business-os/business-focus";
+
+export function assignmentMessage(assignment:WorkAssignment){return `${assignment.title}\n\n${assignment.instruction}\n\nExpected deliverable: ${assignment.outcome}\n\n${safety}\n\n${revenueFocus}`;}

@@ -121,6 +121,11 @@ try {
   assert.equal(second.department,'operations');
   assert.equal(providerInputs.length,2);
   assert.match(providerInputs[1].request.instructions,/operations specialist/);
+  for (const call of providerInputs) {
+    assert.match(call.request.instructions,/more paying customers and more sustainable revenue/);
+    assert.match(call.request.instructions,/do not create tasks or handoffs/);
+    assert.match(call.request.instructions,/does not authorize spending or external actions/);
+  }
   const team=providerInputs[1].input.evidence.find(item=>item.id==='team_deliverables');
   assert.equal(team.data.handoffs.length,1);
   assert.equal(team.data.handoffs[0].body,contentBrief,'Receiver gets sender actual persisted deliverable');
