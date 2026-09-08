@@ -311,3 +311,18 @@ OpenAI; configure platform spend management before activating this option.
 Pro is currently listed at $20/month, taxes and usage beyond included credits
 may apply: https://vercel.com/pricing . Cron support is documented at
 https://vercel.com/docs/cron-jobs/usage-and-pricing . No upgrade was purchased.
+
+## Telegram work allowance repair (2026-09-08)
+
+Recurring runs validate the explicit recurring-spend policy and retain atomic
+per-request reservations, daily/monthly dollar limits and unresolved-charge holds.
+The old 12-attempt rolling-day cap applies only to the separately bounded pilot;
+it must not silently override approved recurring operation. Queue workers check
+budget availability before claiming a job. When funds or consent are unavailable,
+requests remain queued, lease housekeeping continues, and Telegram acknowledges
+that the request is waiting. Genuine failures retain their audit history.
+
+Offline PGlite regression covers over 12 historical attempts followed by a
+successful approved recurring job, budget-exhausted Telegram requests staying
+queued without a provider call, and missing approval still preventing calls.
+No dollar limit or provider credential is changed by this repair.
