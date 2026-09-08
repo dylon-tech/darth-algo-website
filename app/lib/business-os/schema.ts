@@ -1,4 +1,6 @@
 import { db } from "../affiliate-db";
+import { coordinationSchema } from "./coordination";
+import { budgetSchema } from "./budget";
 
 // Additive, explicitly initialized through the owner-only init operation.
 // Existing affiliate/growth schemas are not altered or initialized here.
@@ -91,6 +93,8 @@ export async function initializeOS() {
   await db().begin(async sql => {
     await sql`select pg_advisory_xact_lock(730914)`;
     await sql.unsafe(schema);
+    await sql.unsafe(coordinationSchema);
+    await sql.unsafe(budgetSchema);
     await sql`insert into os_activity(actor,event,details) values('owner','schema_initialized','{}'::jsonb)`;
   });
 }

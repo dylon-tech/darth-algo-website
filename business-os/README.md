@@ -216,3 +216,97 @@ Remaining activation dependencies: separate private Telegram bot token and owner
 ID, verified community bot ID for separation, production owner runtime configuration,
 and an explicit recurring AI spending ceiling backed by durable budget enforcement.
 Routine AI remains disabled. No external write executor is connected.
+
+
+## Coordinated runtime — September 8 integration
+
+The new optional coordinator turns persisted agent results into durable handoffs.
+When enabled, each successful specialist response can assign another department;
+the receiving job gets the sending agent's actual deliverable plus recent team
+outputs as labeled internal evidence. A specialist with no requested follow-up
+gets a bounded default review route (for example Content → Operations, Research
+→ Growth). Maximum depth is three and maximum workflow tasks is sixteen. Same-
+department handoffs are rejected. Shared drafts never constitute owner approval.
+
+The coordinator dispatches queued tasks and daily department assignments with
+stable keys, then performs at most one bounded job per tick. Database locks and
+unique keys prevent duplicate claims. Failed/unknown calls are not automatically
+retried. Existing 12-attempt rolling-day limit remains. Pausing stops new work;
+an in-flight provider request may finish, but the result commit rechecks pause.
+
+`POST /api/owner/worker` is dedicated bearer authenticated with AI_OS_WORKER_KEY.
+`scripts/owner-worker.mjs` is a continuous supervisor client: it waits 30 seconds
+between bounded ticks and requires no browser to stay open. Start with
+`node scripts/owner-worker.mjs` on an approved always-on host; `--once` verifies
+one tick. The supplied `business-os/Dockerfile.worker` supports a restart-managed
+container. Build from the repository root. Do not run duplicate supervisors.
+The worker's only secrets are its dedicated worker key and any platform access
+mechanism; the OpenAI/database keys remain on the application deployment.
+Vercel Preview authentication may separately prevent supervisor access. Use an
+approved stable private host with reachable independently protected API routes.
+
+The existing Vercel Hobby daily cron was not increased and is not a continuous
+worker. A daemon running only in a temporary Codex workspace is not a production
+host. No long-lived external host, production promotion or recurring paid run
+was enabled during this implementation.
+
+### Budget activation contract
+
+All flags default off. Reuse the owner's already configured OpenAI key. Set
+AI_OS_MODEL to the existing verified gpt-5.6-luna model. Only after explicit
+recurring-spend approval set AI_OS_RECURRING_SPEND_APPROVED=true and both
+AI_OS_DAILY_BUDGET_USD / AI_OS_MONTHLY_BUDGET_USD. Daily/monthly periods are UTC.
+Every direct Responses request gets an atomic $0.125 reservation before network
+access. This conservative capacity is held even when actual completed usage is
+lower. Unknown charges carry into later periods; anomalous usage blocks further
+spend. Limits bound this runtime's reservations, not the whole OpenAI account or
+hosting bills. The existing one-time $1 pilot grants no recurring allowance.
+
+The guard accepts only the bounded existing text-only request envelope and priced
+model. No images, browsing/tool fees, gateway costs or extra paid services are
+silently added. Worker checks fail closed before dequeue when budget cannot be
+verified. The authoritative reservation is inside a database transaction.
+
+### Actual tool coverage
+
+- Existing database aggregate and website-knowledge adapters remain available.
+- Existing live Stripe adapter still requires STRIPE_SECRET_KEY on the deployment.
+- ChatGPT-connected Gmail, Metricool, web and rendering tools are not runtime
+  credentials. Seven scheduled ChatGPT specialists were not migrated or paused.
+- This integration provides automatic internal collaboration, not external
+  publishing, support sending, web browsing or finished media generation.
+- Existing approval proposals remain non-executable until dedicated provider
+  adapters and exact-action execution/reconciliation are implemented and tested.
+- Private Telegram remains separately configured and disabled until verified.
+
+Owner Home and Messages show persisted handoffs and a fresh worker heartbeat.
+Enabled alone never earns a healthy/live label. Old deployments without the new
+schema show setup pending. Initialize the additive OS schema on an isolated
+preview before activation; never assume a successful build has done this.
+
+### Integration verification
+
+`node tests/business-os-budget.test.mjs` verifies fail-closed limits, duplicate
+keys, concurrent reservation contracts, unknown-cost holds and anomaly handling.
+`OS_TEST_PGLITE_MODULE=<path> node tests/business-os-coordination.mjs` checks real
+local Postgres-compatible schema/deduplication, handoff payloads and persistence.
+`node tests/business-os-worker.mjs` exercises the actual daemon against a local
+HTTP fixture. These offline tests do not prove live model quality, production
+Postgres locking, external publishing, private Telegram or always-on deployment.
+
+
+### Existing-host activation option
+
+The verified Vercel team is Hobby. Its cron limit is daily, so the current
+vercel.json remains unchanged. The existing authenticated owner-work route now
+uses coordinationTick when the new coordination flag is on. After explicit
+approval of Vercel Pro pricing and recurring model budget, the reviewed
+business-os/vercel.continuous.example.json can replace vercel.json to trigger
+one coordinator tick per minute on production. This reuses the existing host
+and CRON_SECRET; it does not need the standalone daemon or Telegram to run.
+Do not run both transports. The model remains idle between queued jobs and
+stops at durable capacity limits. Hosting usage is billed independently of
+OpenAI; configure platform spend management before activating this option.
+Pro is currently listed at $20/month, taxes and usage beyond included credits
+may apply: https://vercel.com/pricing . Cron support is documented at
+https://vercel.com/docs/cron-jobs/usage-and-pricing . No upgrade was purchased.

@@ -1,5 +1,6 @@
 import { db } from "../affiliate-db";
 import { collectEvidence } from "./sources";
+import { coordinationStatus } from "./coordination";
 
 const requiredTables = ["os_device_links", "os_runs", "os_tasks", "os_approvals", "os_activity", "os_messages", "os_control", "os_jobs", "os_telegram_updates", "os_telegram_state", "os_outbox", "os_callback_actions", "os_briefs"];
 
@@ -32,7 +33,7 @@ export async function readiness() {
     checkedAt: new Date().toISOString(), mode: "read_only_preflight",
     environment: process.env.VERCEL_ENV || "local",
     dataScope: process.env.VERCEL_ENV === "preview" ? "Preview database branch copy; not a continuous production feed." : "Configured database and Stripe account; source-specific scopes apply.",
-    evidence, store, ai,
+    evidence, store, ai, coordination: await coordinationStatus(),
     configuration: { databaseUrlPresent: Boolean(process.env.DATABASE_URL), stripeKeyPresent: Boolean(process.env.STRIPE_SECRET_KEY),
       privateTelegramTokenPresent: Boolean(process.env.AI_OS_TELEGRAM_TOKEN), ownerTelegramIdPresent: Boolean(process.env.AI_OS_TELEGRAM_OWNER_ID),
       communityBotIdPresent: Boolean(process.env.AI_OS_COMMUNITY_BOT_ID), privateWebhookSecretPresent: Boolean(process.env.AI_OS_TELEGRAM_WEBHOOK_SECRET),

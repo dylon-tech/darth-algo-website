@@ -1,6 +1,7 @@
 import { actionKinds, departments, registry, validatePlan, type Department } from "./policy";
 import type { Evidence } from "./sources";
 import { pilot, assertPilotRequest } from "./pilot-policy";
+import { reserveRecurringBudget, recordRecurringUsage, holdRecurringReservation } from "./budget";
 
 const instructions = `You are the Darth Algo CEO Agent, accountable to its owner.
 Coordinate customer acquisition, conversion, activation, retention, referrals,
@@ -27,7 +28,7 @@ and rollback/recovery; say what is unknown. A vague proposal is for revision.
 Brief format: verified findings, problems/unknowns, next priorities, owner decisions.
 Department definitions: ${JSON.stringify(registry)}.`;
 
-export async function generatePlan(message: string, evidence: Evidence[], openTasks: unknown, history: unknown, department: Department = "ceo", approvedPilot = false) {
+export async function generatePlan(message: string, evidence: Evidence[], openTasks: unknown, history: unknown, department: Department = "ceo", approvedPilot = false, requestKey = "") {
   if (approvedPilot && process.env.VERCEL_ENV !== "preview") throw new Error("PILOT_PREVIEW_ONLY");
   if (!approvedPilot && process.env.AI_OS_AI_ENABLED !== "true") throw new Error("AI_DISABLED");
   const direct = process.env.OPENAI_API_KEY;
@@ -46,7 +47,7 @@ export async function generatePlan(message: string, evidence: Evidence[], openTa
   const departmentInstructions = department === "ceo" ? instructions : `${instructions}\nFor this run you are the ${department} specialist, reporting to the CEO. Focus on this mandate: ${registry.find(a => a.id === department)!.mandate}\nDeliver the requested internal analysis, draft, or operating procedure in the brief. State evidence, missing inputs and acceptance criteria. You have read-only snapshots and no external tools. Do not claim to browse, contact customers, make a video, publish, spend, refund, or change a system. External work can only be an owner approval proposal. Propose follow-up tasks only when necessary. A completed response means an internal deliverable, not execution of external work.`;
   const deliveryRules = "\nQuality rules: Use supplied verifiedCalculations for totals. The brief must include the actual deliverable requested, not only findings or a plan to create it. A requested post requires the complete draft text; a checklist requires its actual numbered checks; a research matrix requires explicit hypotheses and validation questions. Never say 'below' unless that content is included in the brief. Put the deliverable before a short evidence/limitations note. When product facts are missing, deliver the useful general portion and label any assumptions. Propose at most two genuinely new tasks; do not paraphrase or reopen an existing task. Do not request owner approval for vague ideas or missing facts: only propose an execution-ready external action with exact content, target, known cost and scope; otherwise state what needs preparing.";
   const bodyText = JSON.stringify({ model, store: false, instructions: departmentInstructions + deliveryRules, max_output_tokens: pilot.maxOutputTokens,
-      ...(approvedPilot ? { reasoning: { effort: "none" } } : {}),
+      reasoning: { effort: "none" },
       input: [{ role: "user", content: input }],
       text: { format: { type: "json_schema", name: "ceo_plan", strict: true, schema: {
         type: "object", additionalProperties: false, required: ["brief", "tasks", "proposals"],
@@ -58,6 +59,8 @@ export async function generatePlan(message: string, evidence: Evidence[], openTa
       } } },
     });
   if (approvedPilot) assertPilotRequest(bodyText);
+  if (!approvedPilot) await reserveRecurringBudget(requestKey, bodyText, direct ? "openai" : "gateway");
+  try {
   const response = await fetch(endpoint, {
     method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
     signal: AbortSignal.timeout(35000), cache: "no-store", redirect: "error", body: bodyText,
@@ -69,9 +72,14 @@ export async function generatePlan(message: string, evidence: Evidence[], openTa
     throw new Error(`AI_PROVIDER_${response.status}${known}`);
   }
   const body = await response.json();
+  if (!approvedPilot) await recordRecurringUsage(requestKey, { inputTokens: body.usage?.input_tokens, outputTokens: body.usage?.output_tokens });
   if (body.status !== "completed") throw new Error("AI_INCOMPLETE");
   const output = body.output?.flatMap((x: { content?: { type: string; text?: string }[] }) => x.content || []).filter((x: { type: string }) => x.type === "output_text").map((x: { text: string }) => x.text).join("");
   if (!output) throw new Error("AI_EMPTY_OUTPUT");
   return { plan: validatePlan(JSON.parse(output), evidence.map(x => x.id)), model,
     usage: { inputTokens: body.usage?.input_tokens ?? null, outputTokens: body.usage?.output_tokens ?? null } };
+  } catch (error) {
+    if (!approvedPilot) await holdRecurringReservation(requestKey);
+    throw error;
+  }
 }

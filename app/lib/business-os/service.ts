@@ -4,6 +4,8 @@ import { fingerprint, registry, type Department } from "./policy";
 import { collectEvidence } from "./sources";
 import { generatePlan } from "./model";
 import { pilot, pilotJobKeys } from "./pilot-policy";
+import { coordinationStatus, teamEvidence } from "./coordination";
+import { coordinationEnabled, handoffAllowed, reviewTarget } from "./coordination-policy";
 
 export async function status() {
   const sql = db();
@@ -30,7 +32,7 @@ export async function status() {
     reservedUsd: pilotAttempts * pilot.reservationUsd,
     estimatedCompletedCostUsd: pilotCompleted.reduce((sum, e) => sum + (Number(e.details.usage?.inputTokens || 0) * pilot.inputUsdPerMillion + Number(e.details.usage?.outputTokens || 0) * pilot.outputUsdPerMillion) / 1000000, 0),
     costScope: "Estimate for completed runs using reported tokens; excludes unknown failed-call costs and ignores cache discounts. Reservations remain held for all attempts." };
-  return { pilot: pilotSummary, agents: registry.map(a => ({ ...a, state: runs.some(r => r.department === a.id && r.status === "running") ? "working" : jobs.some(j => j.department === a.id && j.status === "queued") ? "queued" : process.env.AI_OS_AI_ENABLED === "true" ? "on_demand" : "ai_disabled" })), tasks, approvals, activity, runs, jobs, messages, briefs, outbox, paused: control[0]?.paused ?? true, externalExecutionEnabled: false };
+  return { coordination: await coordinationStatus(), pilot: pilotSummary, agents: registry.map(a => ({ ...a, state: runs.some(r => r.department === a.id && r.status === "running") ? "working" : jobs.some(j => j.department === a.id && j.status === "queued") ? "queued" : process.env.AI_OS_AI_ENABLED === "true" ? "on_demand" : "ai_disabled" })), tasks, approvals, activity, runs, jobs, messages, briefs, outbox, paused: control[0]?.paused ?? true, externalExecutionEnabled: false };
 }
 
 export async function runCEO(requestKey: string, message: string) {
@@ -61,6 +63,8 @@ export async function runAgent(department: Department, requestKey: string, messa
     for (const row of stale) await tx`insert into os_activity(actor,event,entity_id,details) values('system','run_lease_expired',${row.id},'{}'::jsonb)`;
     const [existing] = await tx`select id,status,result from os_runs where request_key=${requestKey}`;
     if (existing) return { duplicate: true as const, id: String(existing.id), status: String(existing.status), result: existing.result };
+    const [queuedWorker] = await tx`select id,department,message from os_jobs where status='running' limit 1`;
+    if (queuedWorker && (requestKey !== `job_${queuedWorker.id}` || department !== queuedWorker.department || message !== queuedWorker.message)) throw new Error("OS_WORKER_BUSY");
     if (approvedPilot) {
       const [job] = await tx`select request_key from os_jobs where 'job_' || id::text=${requestKey} and department=${department} and message=${message} and status='running'`;
       if (!job || !pilotJobKeys.includes(job.request_key)) throw new Error("PILOT_JOB_NOT_AUTHORIZED");
@@ -89,21 +93,44 @@ export async function runAgent(department: Department, requestKey: string, messa
       sql`select department,title,priority,status from os_tasks where status in ('queued','in_progress','blocked') order by priority,created_at limit 50`,
       sql`select role,left(body,3000) as body from (select role,body,created_at from os_messages where department=${department} and run_id<>${id} order by created_at desc limit 4) h order by created_at`,
     ]);
+    if (coordinationEnabled() && !approvedPilot) evidence.push(...await teamEvidence(taskId));
     await sql`update os_runs set snapshot=${sql.json(JSON.parse(JSON.stringify(evidence)))} where id=${id} and status='running'`;
     await sql`insert into os_activity(actor,event,entity_id,details) values(${department},'agent_sources_checked',${id},${sql.json({verifiedSources:evidence.filter(s=>s.status==="verified").length,unavailableSources:evidence.filter(s=>s.status==="unavailable").length})})`;
     await sql`insert into os_activity(actor,event,entity_id,details) values(${department},'agent_preparing_response',${id},'{}'::jsonb)`;
-    const { plan, model, usage } = await generatePlan(message, evidence, tasks, history, department, approvedPilot);
+    const { plan, model, usage } = await generatePlan(message, evidence, tasks, history, department, approvedPilot, requestKey);
     await sql`insert into os_activity(actor,event,entity_id,details) values(${department},'agent_response_ready',${id},'{}'::jsonb)`;
     await sql.begin(async tx => {
       const [run] = await tx`select status from os_runs where id=${id} for update`;
       const [control] = await tx`select paused from os_control where id=1`;
       if (run?.status !== "running" || control?.paused) throw new Error("RUN_LEASE_EXPIRED_OR_PAUSED");
       await tx`update os_approvals set status='expired' where status='pending' and expires_at<=now()`;
-      for (const task of plan.tasks) {
+      const coordinating = coordinationEnabled() && !approvedPilot;
+      const [parentTask] = coordinating && taskId ? await tx`select root_run_id,handoff_depth from os_tasks where id=${taskId}` : [];
+      const rootRun = parentTask?.root_run_id || id;
+      const depth = parentTask?.handoff_depth || 0;
+      const [rootCount] = coordinating ? await tx`select count(*)::int as n from os_tasks where root_run_id=${rootRun}` : [];
+      let workflowCount = rootCount?.n || 0;
+      const assignedTasks = [...plan.tasks];
+      const target = reviewTarget[department];
+      if (coordinating && target && !assignedTasks.length && handoffAllowed(department, target, depth, workflowCount)) {
+        assignedTasks.push({ department: target, title: `Review and build on ${department}'s deliverable`, priority: 3, evidence: ["team_deliverables"] });
+      }
+      for (const task of assignedTasks) {
+        if (coordinating && !handoffAllowed(department, task.department, depth, workflowCount)) {
+          await tx`insert into os_activity(actor,event,entity_id,details) values(${department},'handoff_limit_reached',${id},${tx.json({target:task.department,depth})})`;
+          continue;
+        }
         const taskId = randomUUID();
         const inserted = await tx`insert into os_tasks(id,department,title,priority,dedupe_key,evidence,run_id)
           values(${taskId},${task.department},${task.title},${task.priority},${fingerprint([task.department, task.title.trim().toLowerCase()])},${tx.json(task.evidence)},${id}) on conflict do nothing returning id`;
         if (inserted.length) await tx`insert into os_activity(actor,event,entity_id,details) values(${department},'task_queued',${taskId},${tx.json({ department: task.department, runId: id })})`;
+        if (inserted.length && coordinating) {
+          workflowCount++;
+          await tx`update os_tasks set root_run_id=${rootRun},handoff_depth=${depth+1} where id=${taskId}`;
+          await tx`insert into os_handoffs(id,task_id,parent_run_id,root_run_id,from_department,to_department,body)
+            values(${randomUUID()},${taskId},${id},${rootRun},${department},${task.department},${plan.brief})`;
+          await tx`insert into os_activity(actor,event,entity_id,details) values(${department},'agent_handoff_created',${taskId},${tx.json({to:task.department,rootRun,depth:depth+1})})`;
+        }
       }
       for (const proposal of plan.proposals) {
         const approvalId = randomUUID();
@@ -113,19 +140,20 @@ export async function runAgent(department: Department, requestKey: string, messa
         if (inserted.length) await tx`insert into os_activity(actor,event,entity_id,details) values(${department},'approval_requested',${approvalId},${tx.json({ kind: proposal.kind, runId: id })})`;
       }
       if (taskId) await tx`update os_tasks set status='completed',result=${plan.brief},result_kind='internal_deliverable',updated_at=now() where id=${taskId} and status='in_progress'`;
+      if (coordinating && taskId) await tx`update os_handoffs set status='completed',updated_at=now() where task_id=${taskId}`;
       await tx`insert into os_messages(id,department,role,body,run_id) values(${randomUUID()},${department},'agent',${plan.brief},${id})`;
       await tx`update os_runs set status='completed',finished_at=now(),result=${tx.json(plan)} where id=${id}`;
       await tx`insert into os_activity(actor,event,entity_id,details) values(${department},'agent_run_completed',${id},${tx.json({ model, usage, resultKind: 'internal_deliverable' })})`;
     });
     return { id, status: "completed", plan, evidence };
   } catch (error) {
-    const errorCode = error instanceof Error && /^AI_PROVIDER_(401|403|429|400|404|500|502|503)(_(insufficient_quota|invalid_api_key|model_not_found|unsupported_parameter|rate_limit_exceeded))?$/.test(error.message) ? error.message : "CEO_RUN_FAILED";
+    const errorCode = error instanceof Error && /^(AI_(BUDGET|DAILY_BUDGET|MONTHLY_BUDGET|RECURRING_SPEND)_|DAILY_RUN_LIMIT)/.test(error.message) ? error.message : error instanceof Error && /^AI_PROVIDER_(401|403|429|400|404|500|502|503)(_(insufficient_quota|invalid_api_key|model_not_found|unsupported_parameter|rate_limit_exceeded))?$/.test(error.message) ? error.message : "CEO_RUN_FAILED";
     await sql.begin(async tx => {
       await tx`update os_runs set status='failed',finished_at=now(),error_code=${errorCode} where id=${id} and status='running'`;
       if (taskId) await tx`update os_tasks set status='blocked',updated_at=now() where id=${taskId} and status='in_progress'`;
       await tx`insert into os_activity(actor,event,entity_id,details) values(${department},'agent_run_failed',${id},'{"message":"Run failed; inspect source availability and AI configuration. No external action executed."}'::jsonb)`;
     });
-    throw new Error("CEO_RUN_FAILED");
+    throw new Error(errorCode);
   }
 }
 

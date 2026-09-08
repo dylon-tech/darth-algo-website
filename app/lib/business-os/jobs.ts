@@ -3,6 +3,7 @@ import { db } from "../affiliate-db";
 import { departments, type Department } from "./policy";
 import { runAgent } from "./service";
 import { pilotJobKeys } from "./pilot-policy";
+import { coordinationEnabled } from "./coordination-policy";
 
 export async function queueJob(department: Department, message: string, requestKey: string, source: "owner" | "telegram" | "schedule", taskId?: string) {
   if (!departments.includes(department) || !message.trim() || message.length > 4000 || !/^[\w:-]{8,150}$/.test(requestKey)) throw new Error("INVALID_JOB");
@@ -25,20 +26,25 @@ export async function workOneJob(approvedPilot = false) {
   const sql = db();
   const job = await sql.begin(async tx => {
     await tx`select pg_advisory_xact_lock(730916)`;
+    await tx`select pg_advisory_xact_lock(730915)`;
     const [control] = await tx`select paused from os_control where id=1`;
     if (!control || control.paused) return null;
     const stale = await tx`update os_jobs set status='unknown',finished_at=now(),error_code='LEASE_EXPIRED_REVIEW_BEFORE_RETRY' where status='running' and started_at < now()-interval '5 minutes' returning id,task_id`;
     for (const item of stale) {
       await tx`insert into os_activity(actor,event,entity_id,details) values('operations','job_lease_expired',${item.id},'{"automaticRetry":false}'::jsonb)`;
       if (item.task_id) await tx`update os_tasks set status='blocked',updated_at=now() where id=${item.task_id} and status='in_progress'`;
+      if (coordinationEnabled() && item.task_id) await tx`update os_handoffs set status='blocked',updated_at=now() where task_id=${item.task_id}`;
     }
     const [active] = await tx`select id from os_jobs where status='running' limit 1`;
     if (active) return null;
+    const [directRun] = await tx`select id from os_runs where status='running' and created_at>=now()-interval '5 minutes' limit 1`;
+    if (directRun) return null;
     const [next] = approvedPilot
       ? await tx`select * from os_jobs where status='queued' and request_key in ${tx(pilotJobKeys)} order by created_at for update skip locked limit 1`
       : await tx`select * from os_jobs where status='queued' order by created_at for update skip locked limit 1`;
     if (!next) return null;
     await tx`update os_jobs set status='running',started_at=now() where id=${next.id}`;
+    if (coordinationEnabled() && next.task_id) await tx`update os_handoffs set status='delivered',updated_at=now() where task_id=${next.task_id}`;
     await tx`insert into os_activity(actor,event,entity_id,details) values(${next.department},'job_started',${next.id},'{}'::jsonb)`;
     return next;
   });
@@ -52,12 +58,14 @@ export async function workOneJob(approvedPilot = false) {
       await tx`insert into os_activity(actor,event,entity_id,details) values(${job.department},'job_completed',${job.id},${tx.json({runId:result.id,externalActionExecuted:false})})`;
     });
     return { status: "succeeded", jobId: job.id, runId: result.id, department: job.department };
-  } catch {
+  } catch (error) {
+    const budgetBlocked = error instanceof Error && /^(AI_(BUDGET|DAILY_BUDGET|MONTHLY_BUDGET|RECURRING_SPEND)_|DAILY_RUN_LIMIT)/.test(error.message);
     await sql.begin(async tx => {
       await tx`update os_jobs set status='failed',finished_at=now(),error_code='AGENT_RUN_FAILED_REVIEW_REQUIRED' where id=${job.id} and status='running'`;
+      if (coordinationEnabled() && job.task_id) await tx`update os_handoffs set status='blocked',updated_at=now() where task_id=${job.task_id}`;
       await tx`insert into os_activity(actor,event,entity_id,details) values(${job.department},'job_failed',${job.id},'{"automaticRetry":false}'::jsonb)`;
     });
-    return { status: "failed", jobId: job.id, department: job.department };
+    return { status: budgetBlocked ? "budget_blocked" : "failed", jobId: job.id, department: job.department };
   }
 }
 
@@ -71,8 +79,12 @@ export async function setPaused(paused: boolean) {
 
 export async function cancelJob(id: string) {
   return db().begin(async tx => {
-    const [job] = await tx`update os_jobs set status='cancelled',finished_at=now() where id=${id} and status='queued' returning id`;
+    const [job] = await tx`update os_jobs set status='cancelled',finished_at=now() where id=${id} and status='queued' returning id,task_id`;
     if (!job) throw new Error("ONLY_QUEUED_JOBS_CAN_BE_CANCELLED");
+    if (coordinationEnabled() && job.task_id) {
+      await tx`update os_handoffs set status='blocked',updated_at=now() where task_id=${job.task_id}`;
+      await tx`update os_tasks set status='blocked',updated_at=now() where id=${job.task_id} and status='queued'`;
+    }
     await tx`insert into os_activity(actor,event,entity_id,details) values('owner','job_cancelled',${id},'{}'::jsonb)`;
     return job;
   });

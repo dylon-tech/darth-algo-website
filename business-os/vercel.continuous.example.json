@@ -1,0 +1,16 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/owner-work",
+      "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/cron/owner-brief",
+      "schedule": "0 13 * * *"
+    },
+    {
+      "path": "/api/cron/community-education",
+      "schedule": "0 14 * * *"
+    }
+  ]
+}
