@@ -58,6 +58,19 @@ try {
   const {recurringBudgetAvailability}=require(modulePath('business-os/budget.js'));
   const {pilot}=require(modulePath('business-os/pilot-policy.js'));
   await initializeOS();
+  // Exercise upgrade from the prior deployed constraint with historical rows.
+  await pg.exec(`alter table os_ai_budget_reservations drop constraint os_ai_budget_charged_nonnegative;
+    alter table os_ai_budget_reservations add constraint prior_generated_charge_check check(charged_micros >= reserved_micros);
+    insert into os_ai_budget_reservations(request_key,request_hash,model,budget_day,budget_month,reserved_micros,charged_micros,daily_limit_micros,monthly_limit_micros,input_usd_per_million,output_usd_per_million,status,actual_micros,anomaly)
+    values ('migration-known','hash','fixture',current_date,current_date,125000,125000,1000000,10000000,0.2,1.2,'recorded',320,false),
+      ('migration-held','hash','fixture',current_date,current_date,125000,125000,1000000,10000000,0.2,1.2,'held',null,false),
+      ('migration-anomaly','hash','fixture',current_date,current_date,125000,125000,1000000,10000000,0.2,1.2,'recorded',320,true);`);
+  await initializeOS();
+  await initializeOS(); // Migration is idempotent.
+  const upgraded=await pg.query('select request_key,charged_micros::int from os_ai_budget_reservations order by request_key');
+  assert.deepEqual(upgraded.rows,[{request_key:'migration-anomaly',charged_micros:125000},{request_key:'migration-held',charged_micros:125000},{request_key:'migration-known',charged_micros:320}]);
+  await assert.rejects(pg.query("update os_ai_budget_reservations set charged_micros=-1 where request_key='migration-known'"),/check constraint/);
+  await pg.exec('delete from os_ai_budget_reservations');
   const providerInputs=[];
   const contentBrief='Finished content draft: Start with one clear setup. Review the chart context before a signal. Educational use only.';
   const reviewBrief='Completed operations review: The supplied post is an internal draft; check original chart evidence and request owner approval before publishing.';
@@ -126,13 +139,15 @@ try {
   assert.equal(replayRun.id,first.runId);
   assert.equal(providerInputs.length,2,'Queue and completed-run replays cannot call the model again');
 
+  assert.equal((await recurringBudgetAvailability()).available,true,'Verified settlement leaves capacity for more handoffs');
+  process.env.AI_OS_DAILY_BUDGET_USD='0.125639';
   const availability=await recurringBudgetAvailability();
   assert.equal(availability.available,false);
   assert.equal(availability.reason,'AI_DAILY_BUDGET_EXHAUSTED');
   for(let i=0;i<3;i++) assert.equal((await coordinationTick('offline-test-worker')).status,'budget_blocked');
   assert.equal(providerInputs.length,2,'Exhausted budget cannot make additional calls');
   const [counts]=await sql`select (select count(*)::int from os_runs) as runs,(select count(*)::int from os_jobs) as jobs,(select count(*)::int from os_ai_budget_reservations) as reservations,(select sum(charged_micros)::int from os_ai_budget_reservations) as charged`;
-  assert.deepEqual(counts,{runs:2,jobs:10,reservations:2,charged:250000});
+  assert.deepEqual(counts,{runs:2,jobs:10,reservations:2,charged:640});
   const [pending]=await sql`select count(*)::int as n from os_tasks where status='queued'`;
   assert.equal(pending.n,1,'Next CEO handoff stays queued while budget is exhausted');
   assert.equal(evidenceReads,2);

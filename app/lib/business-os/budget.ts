@@ -10,13 +10,32 @@ create table if not exists os_ai_budget_reservations (
  created_at timestamptz not null default now(), recorded_at timestamptz,
  budget_day date not null, budget_month date not null,
  reserved_micros bigint not null check(reserved_micros > 0),
- charged_micros bigint not null check(charged_micros >= reserved_micros),
+ charged_micros bigint not null constraint os_ai_budget_charged_nonnegative check(charged_micros >= 0),
  daily_limit_micros bigint not null, monthly_limit_micros bigint not null,
  input_usd_per_million numeric not null, output_usd_per_million numeric not null,
  status text not null default 'reserved' check(status in ('reserved','recorded','held')),
  input_tokens bigint, output_tokens bigint, actual_micros bigint,
  anomaly boolean not null default false, error_code text
 );
+-- Earlier versions retained the full reservation even after verified usage.
+-- Discover the generated constraint name so this is safe for existing databases.
+do $$
+declare old_constraint record;
+begin
+ for old_constraint in select conname from pg_constraint
+  where conrelid='os_ai_budget_reservations'::regclass and contype='c'
+   and pg_get_constraintdef(oid) ~ 'charged_micros.*>=.*reserved_micros'
+ loop
+  execute format('alter table os_ai_budget_reservations drop constraint %I',old_constraint.conname);
+ end loop;
+ if not exists(select 1 from pg_constraint where conrelid='os_ai_budget_reservations'::regclass
+  and conname='os_ai_budget_charged_nonnegative') then
+  alter table os_ai_budget_reservations add constraint os_ai_budget_charged_nonnegative check(charged_micros >= 0);
+ end if;
+end $$;
+update os_ai_budget_reservations set charged_micros=actual_micros
+ where status='recorded' and not anomaly and actual_micros>=0
+  and actual_micros<=reserved_micros and charged_micros=reserved_micros;
 create index if not exists os_ai_budget_periods on os_ai_budget_reservations(budget_month,budget_day);
 `;
 
@@ -106,12 +125,12 @@ export async function recordRecurringUsage(requestKey: string, usage: { inputTok
     if (row.status === "recorded") {
       if (Number(row.input_tokens) === usage.inputTokens && Number(row.output_tokens) === usage.outputTokens) return;
       await sql`update os_ai_budget_reservations set anomaly=true,error_code='AI_BUDGET_USAGE_CONFLICT',
-        charged_micros=greatest(charged_micros,${actual}) where request_key=${requestKey}`;
+        charged_micros=greatest(charged_micros,reserved_micros,${actual}) where request_key=${requestKey}`;
       return;
     }
     await sql`update os_ai_budget_reservations set status='recorded',recorded_at=now(),
       input_tokens=${Number(usage.inputTokens)},output_tokens=${Number(usage.outputTokens)},actual_micros=${actual},
-      charged_micros=greatest(charged_micros,${actual}),anomaly=anomaly or ${actual > Number(row.reserved_micros)},
+      charged_micros=${actual},anomaly=anomaly or ${actual > Number(row.reserved_micros)},
       error_code=case when ${actual > Number(row.reserved_micros)} then 'AI_BUDGET_USAGE_EXCEEDS_RESERVATION' else null end
       where request_key=${requestKey}`;
   });

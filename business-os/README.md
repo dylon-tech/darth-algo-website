@@ -257,9 +257,10 @@ AI_OS_MODEL to the existing verified gpt-5.6-luna model. Only after explicit
 recurring-spend approval set AI_OS_RECURRING_SPEND_APPROVED=true and both
 AI_OS_DAILY_BUDGET_USD / AI_OS_MONTHLY_BUDGET_USD. Daily/monthly periods are UTC.
 Every direct Responses request gets an atomic $0.125 reservation before network
-access. This conservative capacity is held even when actual completed usage is
-lower. Unknown charges carry into later periods; anomalous usage blocks further
-spend. Limits bound this runtime's reservations, not the whole OpenAI account or
+access. Verified token usage settles that reservation to the calculated cost;
+unused capacity becomes available for handoffs. Unknown charges retain the full
+reservation across later periods; conflicting or anomalous usage blocks further
+spend. Limits bound this runtime's recorded usage and unresolved holds, not the whole OpenAI account or
 hosting bills. The existing one-time $1 pilot grants no recurring allowance.
 
 The guard accepts only the bounded existing text-only request envelope and priced

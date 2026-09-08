@@ -92,6 +92,7 @@ create table if not exists os_briefs (
 export async function initializeOS() {
   await db().begin(async sql => {
     await sql`select pg_advisory_xact_lock(730914)`;
+    await sql`select pg_advisory_xact_lock(730915)`;
     await sql.unsafe(schema);
     await sql.unsafe(coordinationSchema);
     await sql.unsafe(budgetSchema);

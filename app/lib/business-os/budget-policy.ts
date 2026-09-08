@@ -1,7 +1,7 @@
 import { pilot } from "./pilot-policy";
 
 // Operator configuration is required; the previous $1 pilot is not recurring consent.
-// UTC limits account for conservative request reservations, not provider invoices.
+// UTC limits count verified usage plus conservative unresolved request holds.
 export type RecurringBudgetPolicy = {
   model: string; dailyMicros: number; monthlyMicros: number;
   reservationMicros: number; inputUsdPerMillion: number; outputUsdPerMillion: number;

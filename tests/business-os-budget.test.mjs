@@ -57,10 +57,10 @@ try {
       if(q.startsWith('select *')) return rows.has(v[0])?[{...rows.get(v[0])}]:[];
       if(q.includes("set status='held',error_code='AI_BUDGET_UNKNOWN_USAGE'")) {rows.get(v[0]).status='held';return [];}
       if(q.includes("set status='held'")) {const r=rows.get(v[1]);if(r&&r.status!=='recorded')r.status='held';return [];}
-      if(q.includes('set anomaly=true')) {const r=rows.get(v[1]);r.anomaly=true;r.charged_micros=Math.max(r.charged_micros,v[0]);return [];}
+      if(q.includes('set anomaly=true')) {const r=rows.get(v[1]);r.anomaly=true;r.charged_micros=Math.max(r.charged_micros,r.reserved_micros,v[0]);return [];}
       if(q.includes("set status='recorded'")) {
         const [input,output,actual,charged,anomaly,,key]=v;const r=rows.get(key);
-        Object.assign(r,{status:'recorded',input_tokens:input,output_tokens:output,actual_micros:actual,charged_micros:Math.max(r.charged_micros,charged),anomaly:r.anomaly||anomaly});return [];
+        Object.assign(r,{status:'recorded',input_tokens:input,output_tokens:output,actual_micros:actual,charged_micros:charged,anomaly:r.anomaly||anomaly});return [];
       }
       throw new Error(`Unhandled test query: ${q}`);
     };
@@ -82,7 +82,14 @@ try {
   await budget.recordRecurringUsage('job-0',{inputTokens:1000,outputTokens:1000});
   await budget.recordRecurringUsage('job-0',{inputTokens:null,outputTokens:null});
   assert.equal(rows.get('job-0').status,'recorded','Malformed replay preserves known usage');
-  assert.equal(rows.get('job-0').charged_micros,125000,'Actual usage never frees capacity');
+  assert.equal(rows.get('job-0').charged_micros,1400,'Verified usage releases unused reservation');
+  process.env.AI_OS_DAILY_BUDGET_USD='0.2514';
+  assert.equal((await budget.recurringBudgetAvailability()).available,true,'Settled capacity funds a subsequent handoff');
+  await budget.reserveRecurringBudget('handoff',body);
+  assert.equal((await budget.recurringBudgetAvailability()).available,false);
+  await budget.recordRecurringUsage('handoff',{inputTokens:0,outputTokens:0});
+  assert.equal(rows.get('handoff').charged_micros,0);
+  process.env.AI_OS_DAILY_BUDGET_USD='0.25';
   await budget.recordRecurringUsage('job-0',{inputTokens:1000,outputTokens:1000});
   await budget.holdRecurringReservation('job-1','TIMEOUT');
   day='2026-09-09';
@@ -102,8 +109,9 @@ try {
   await budget.recordRecurringUsage('monthly',{inputTokens:11,outputTokens:10});
   await assert.rejects(budget.reserveRecurringBudget('conflict-stop',body),/USAGE_ANOMALY/);
   assert.match(budget.budgetSchema,/request_key text primary key/);
-  assert.match(budget.budgetSchema,/charged_micros >= reserved_micros/);
-  console.log('PASS: fail-closed config, priced text envelope, exact currency parsing, concurrent reservation contract, daily/monthly limits, duplicate request protection, unknown holds and immutable conservative charges. No provider or live database calls.');
+  assert.match(budget.budgetSchema,/charged_micros >= 0/);
+  assert.equal(rows.get('monthly').charged_micros,125000,'Conflicting settlement restores the full conservative hold');
+  console.log('PASS: fail-closed config, priced text envelope, exact currency parsing, concurrent reservation contract, daily/monthly limits, duplicate request protection, unknown holds and verified cost settlement and conservative unresolved/conflicting holds. No provider or live database calls.');
 } finally {
   for(const key of Object.keys(process.env)) if(!(key in savedEnv)) delete process.env[key];
   Object.assign(process.env,savedEnv);
