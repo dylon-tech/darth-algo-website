@@ -1,5 +1,6 @@
 import { randomBytes, randomUUID } from "node:crypto";
 import { db } from "../affiliate-db";
+import type { MenuButtons } from "./telegram-ui";
 
 export function privateTelegramConfiguration() {
   const token = process.env.AI_OS_TELEGRAM_TOKEN;
@@ -33,7 +34,7 @@ export async function configurePrivateWebhook() {
   await db()`insert into os_activity(actor,event,details) values('owner','private_telegram_webhook_configured',${db().json({botId:bot.id,url:webhook})})`;
   return {configured:true,bot:{id:bot.id,username:bot.username},webhook};
 }
-type Buttons = Array<Array<{ text: string; callback_data: string }>>;
+type Buttons = MenuButtons;
 export async function queueOwnerNotice(key: string, text: string, buttons?: Buttons) {
   // All notices are addressed at send time to the configured owner, never to
   // a chat_id supplied in model output or an unauthenticated update.
