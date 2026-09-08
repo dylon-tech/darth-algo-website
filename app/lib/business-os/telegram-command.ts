@@ -6,6 +6,8 @@ import { decide } from "./service";
 import { privateTelegramConfiguration, queueOwnerNotice, queueApprovalNotice, deliverOwnerNotices, telegramMethod } from "./delivery";
 import type { OwnerUpdate } from "./telegram-policy";
 import { agentNames, agentMenu, homeMenu, menuAction, naturalCommand, shortReply, budgetMessage, type MenuButtons } from "./telegram-ui";
+import { workSummary } from "./work-summary";
+import { revenueGoals } from "./business-focus";
 import { workAssignments, assignmentMessage } from "../../owner/work-assignments";
 
 export async function recordOwnerUpdate(update: OwnerUpdate) {
@@ -74,8 +76,10 @@ async function handleUpdate(update: OwnerUpdate) {
     const [pending]=await sql`select count(*)::int as count from os_approvals where status='pending' and expires_at>now()`;
     const [control]=await sql`select paused from os_control where id=1`;
     const count=(status:string)=>jobs.find(j=>j.status===status)?.count || 0;
+    const current = await sql`select * from os_jobs where status in ('running','queued') or id in (select distinct on (department) id from os_jobs order by department,created_at desc) or id in (select id from os_jobs order by created_at desc limit 50) order by created_at desc`;
+    const crew = departments.map(id => { const work = workSummary(id, current as unknown as import("./work-summary").WorkJob[], true); return `${agentNames[id]} · ${work.label}\n${work.title}\nGoal: ${revenueGoals[id]}`; }).join("\n\n");
     const mode=control?.paused ? "⏸ Work is paused" : process.env.AI_OS_AI_ENABLED!=="true" ? "⏸ Agents are switched off" : !budget.available ? `⏳ ${budgetMessage(budget.reason)}` : "🟢 Ready for work";
-    await notice(`${mode}\n\nWorking: ${count("running")}\nWaiting: ${count("queued")}\nFinished: ${count("succeeded")}\nNeeds a check: ${count("failed")+count("unknown")}\nYour decisions: ${pending.count}\n\nCounts include saved work history.`); return;
+    await notice(`${mode}\n\nWorking: ${count("running")}\nWaiting: ${count("queued")}\nFinished: ${count("succeeded")}\nNeeds a check: ${count("failed")+count("unknown")}\nYour decisions: ${pending.count}\n\n${crew}\n\nGoals are intended benefits, not measured results. Counts include saved history. Tap an agent to talk.`); return;
   }
   if(command==="/approvals") {
     const approvals=await sql`select id from os_approvals where status='pending' and expires_at>now() order by created_at limit 5`;
