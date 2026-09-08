@@ -41,8 +41,8 @@ export async function coordinationStatus() {
       sql`select id,from_department,to_department,status,created_at from os_handoffs order by created_at desc limit 12`,
     ]);
     const { recurringBudgetPolicy } = await import("./budget-policy");
-    let budget: { configured: boolean; dailyLimitUsd?: number; monthlyLimitUsd?: number } = { configured: false };
-    try { const c = recurringBudgetPolicy(); budget = { configured: true, dailyLimitUsd: c.dailyMicros / 1e6, monthlyLimitUsd: c.monthlyMicros / 1e6 }; } catch {}
+    let budget: { configured: boolean; dailyLimitUsd?: number; monthlyLimitUsd?: number; available?: boolean; reason?: string | null; dailyCommittedUsd?: number; monthlyCommittedUsd?: number } = { configured: false };
+    try { const c = recurringBudgetPolicy(); const { recurringBudgetAvailability } = await import("./budget"); const usage = await recurringBudgetAvailability(); budget = { configured: true, dailyLimitUsd: c.dailyMicros / 1e6, monthlyLimitUsd: c.monthlyMicros / 1e6, available: usage.available, reason: usage.reason, dailyCommittedUsd: usage.dailyMicros === undefined ? undefined : usage.dailyMicros/1e6, monthlyCommittedUsd: usage.monthlyMicros === undefined ? undefined : usage.monthlyMicros/1e6 }; } catch {}
     return { enabled: coordinationEnabled(), runtime: "event_worker", heartbeat: heartbeats[0] || null,
       pendingHandoffs: counts[0]?.pending || 0, completedHandoffs: counts[0]?.completed || 0, recentHandoffs, budget };
   } catch { return { enabled: coordinationEnabled(), runtime: "event_worker", heartbeat: null, pendingHandoffs: 0,

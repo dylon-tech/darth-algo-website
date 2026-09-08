@@ -83,7 +83,7 @@ export default function PurchaseSurvey({ sessionId }: { sessionId: string }) {
             <span className="grid h-8 w-8 place-items-center border border-ember/60 bg-black font-display text-xs font-black text-ember shadow-glow">DA</span>
             <span className="font-display text-xl font-black uppercase"><span className="text-ember">Darth</span> Algo</span>
           </Link>
-          <span className="font-mono text-[10px] font-bold uppercase text-emerald-400">Purchase complete</span>
+          <span className="font-mono text-[10px] font-bold uppercase text-emerald-400">Your next steps</span>
         </div>
       </header>
 
@@ -91,13 +91,24 @@ export default function PurchaseSurvey({ sessionId }: { sessionId: string }) {
         <div className="section-shell grid gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:items-start">
           <div className="lg:sticky lg:top-28">
             <span className="inline-flex items-center gap-2 border border-emerald-500/25 bg-emerald-500/10 px-3 py-2 text-xs font-black uppercase text-emerald-400">
-              <CircleCheck className="h-4 w-4" /> Order confirmed
+              <CircleCheck className="h-4 w-4" /> TradingView setup
             </span>
             <h1 className="mt-7 text-balance font-display text-5xl font-black leading-[0.96] sm:text-6xl">Welcome to <span className="text-ember">Darth Algo.</span></h1>
-            <p className="mt-5 max-w-xl text-base leading-7 text-zinc-400">Your access request is in motion. Two quick answers will help us understand which channels and product features matter most to traders.</p>
+            <p className="mt-5 max-w-xl text-base leading-7 text-zinc-400">Start with your access and setup. This page does not verify payment or confirm that your indicator is active.</p>
+            <section className="mt-7 rounded-md border border-white/15 bg-white/[0.03] p-6" aria-labelledby="access-next-steps">
+              <h2 id="access-next-steps" className="text-2xl font-bold">Get your tool on the chart</h2>
+              <ol className="mt-5 list-decimal space-y-4 pl-5 text-sm leading-7 text-zinc-300">
+                <li>Check your Stripe confirmation and the TradingView username you entered at checkout.</li>
+                <li>Allow time for manual activation after verification—usually within 24 hours. If your username is wrong or access is missing, contact support.</li>
+                <li>After activation, open TradingView → Indicators → Invite-only scripts. Add your Darth Algo tool.</li>
+              </ol>
+              <p className="mt-4 text-sm leading-6 text-zinc-400">If you chose the Swing trial, its two days start at checkout, not at activation. Check the timing in your checkout confirmation.</p>
+              <Link href="/support" className="mt-5 inline-flex min-h-12 items-center justify-center rounded-md bg-ember px-5 font-bold text-white">Get help with my access <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              <Link href="/start#setup-title-details" className="mt-3 block text-sm font-semibold text-white underline underline-offset-4">Open the setup guide</Link>
+            </section>
             <div className="mt-8 flex items-start gap-3 border-t border-white/10 pt-6 text-sm leading-6 text-zinc-600">
               <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-ember" />
-              Your answers are saved privately with your Stripe purchase and are used only to improve Darth Algo marketing and product decisions.
+              The survey is optional. It does not activate your tool or affect your access. Answers help improve Darth Algo.
             </div>
           </div>
 
@@ -107,10 +118,11 @@ export default function PurchaseSurvey({ sessionId }: { sessionId: string }) {
                 <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-emerald-500/10 text-emerald-400"><Check className="h-6 w-6" /></span>
                 <h2 className="mt-6 font-display text-4xl font-black">Thank you.</h2>
                 <p className="mx-auto mt-3 max-w-lg text-sm leading-7 text-zinc-500">Your feedback is now attached to your purchase. We will use it to make Darth Algo sharper for the traders who use it.</p>
-                <Link href="/#top" className="mt-8 inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-ember px-6 text-sm font-extrabold text-white shadow-glow">Return to Darth Algo <ArrowRight className="h-4 w-4" /></Link>
+                <Link href="/start#setup-title-details" className="mt-8 inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-ember px-6 text-sm font-extrabold text-white shadow-glow">Open the setup guide <ArrowRight className="h-4 w-4" /></Link>
               </div>
             ) : (
               <form onSubmit={handleSubmit}>
+                <p className="px-6 pt-6 text-sm font-bold text-zinc-300">Optional · Help us improve</p>
                 <fieldset className="min-w-0 border-0 border-b border-white/10 p-6 sm:p-8">
                   <legend className="sr-only">Where did you hear about Darth Algo?</legend>
                   <p className="font-mono text-[10px] font-bold uppercase text-ember">Question 01 / Discovery</p>
@@ -148,7 +160,7 @@ export default function PurchaseSurvey({ sessionId }: { sessionId: string }) {
                   {errorMessage && <p role="alert" className="mt-5 border-l-2 border-ember bg-ember/[0.06] px-4 py-3 text-sm text-red-200">{errorMessage}</p>}
 
                   <div className="mt-7 flex flex-col-reverse gap-3 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
-                    <Link href="/#top" className="text-center text-sm font-bold text-zinc-600 transition hover:text-white">Skip survey</Link>
+                    <Link href="/start#setup-title-details" className="text-center text-sm font-bold text-zinc-300 transition hover:text-white">Skip to setup</Link>
                     <button type="submit" disabled={status === "submitting"} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-ember px-6 text-sm font-extrabold text-white shadow-glow transition hover:bg-red-500 disabled:cursor-wait disabled:opacity-60">
                       {status === "submitting" ? "Saving response..." : "Send feedback"}<ArrowRight className="h-4 w-4" />
                     </button>
