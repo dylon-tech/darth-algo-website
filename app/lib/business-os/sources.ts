@@ -1,5 +1,6 @@
 import { db } from "../affiliate-db";
 import { stripe } from "../stripe";
+import { businessKnowledge } from "./knowledge";
 
 export type Evidence = { id: string; status: "verified" | "unavailable"; checkedAt: string; scope: string; data: unknown; error?: string };
 
@@ -45,5 +46,6 @@ export async function collectEvidence(): Promise<Evidence[]> {
     id, status: "unavailable" as const, checkedAt: new Date().toISOString(), data: null,
     scope: "No verified read adapter connected in Phase 1. Historical setup and plans are not live evidence.",
   })));
+  sources.push(businessKnowledge());
   return sources;
 }

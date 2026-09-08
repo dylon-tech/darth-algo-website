@@ -199,3 +199,20 @@ tokens), a conservative byte-as-token bound plus 25,000 input framing tokens is
 $0.028 per attempt, below the $0.125 reservation. These reservations are a local
 spending guard for this pilot, not a provider account-wide billing limit. Stop
 after the eight jobs or any provider failure and review before further spending.
+
+## Shared business knowledge
+
+`knowledge.ts` adds `business_knowledge` to every evidence snapshot. Product names,
+prices, cadence, features and workflows come directly from the storefront's
+`products.ts`, avoiding a second catalog. Source-tagged onboarding, acquisition,
+affiliate and billing summaries were reviewed against their repository pages on
+2026-09-08. Re-review those summaries when the referenced pages change. This is
+website-source knowledge, not live checkout verification or customer entitlement.
+No customer identities or credentials are included. Knowledge and delivery prompt
+improvements have passed TypeScript/security checks but have not had another paid
+model evaluation; the original eight-attempt pilot remains exhausted.
+
+Remaining activation dependencies: separate private Telegram bot token and owner
+ID, verified community bot ID for separation, production owner runtime configuration,
+and an explicit recurring AI spending ceiling backed by durable budget enforcement.
+Routine AI remains disabled. No external write executor is connected.
