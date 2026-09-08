@@ -4,6 +4,7 @@ import { initializeOS } from "../../../lib/business-os/schema";
 import { decide, runCEO, status } from "../../../lib/business-os/service";
 import { createDeviceLink } from "../../../lib/business-os/device-links";
 import { readiness } from "../../../lib/business-os/readiness";
+import { checkAIConnection } from "../../../lib/business-os/ai-connection";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,6 +21,7 @@ export async function GET(request: Request) {
   const error = denied(request); if (error) return error;
   try {
     const view = new URL(request.url).searchParams.get("view");
+    if (view === "ai_connection") return NextResponse.json(await checkAIConnection(), { headers });
     if (view && view !== "readiness") return NextResponse.json({ error: "Unknown view" }, { status: 400, headers });
     return NextResponse.json(view === "readiness" ? await readiness() : await status(), { headers });
   }
