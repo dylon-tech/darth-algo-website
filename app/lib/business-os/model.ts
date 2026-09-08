@@ -35,10 +35,13 @@ export async function generatePlan(message: string, evidence: Evidence[], openTa
   if (!model) throw new Error("AI_MODEL_NOT_CONFIGURED");
   const string = { type: "string" };
   const evidenceSchema = { type: "array", items: { type: "string", enum: evidence.map(x => x.id) } };
-  const input = JSON.stringify({ message, evidence, openTasks, history });
+  const growthRows = evidence.find(e => e.id === "growth_30d" && e.status === "verified")?.data;
+  const verifiedCalculations = Array.isArray(growthRows) ? { source: "growth_30d", outboundClickEvents: growthRows.filter(row => row.event_type === "outbound_click").reduce((sum, row) => sum + Number(row.events), 0) } : null;
+  const input = JSON.stringify({ message, evidence, verifiedCalculations, openTasks, history });
   if (Buffer.byteLength(input) > 60000) throw new Error("AI_INPUT_LIMIT");
   const departmentInstructions = department === "ceo" ? instructions : `${instructions}\nFor this run you are the ${department} specialist, reporting to the CEO. Focus on this mandate: ${registry.find(a => a.id === department)!.mandate}\nDeliver the requested internal analysis, draft, or operating procedure in the brief. State evidence, missing inputs and acceptance criteria. You have read-only snapshots and no external tools. Do not claim to browse, contact customers, make a video, publish, spend, refund, or change a system. External work can only be an owner approval proposal. Propose follow-up tasks only when necessary. A completed response means an internal deliverable, not execution of external work.`;
-  const bodyText = JSON.stringify({ model, store: false, instructions: departmentInstructions, max_output_tokens: pilot.maxOutputTokens,
+  const deliveryRules = "\nQuality rules: Use supplied verifiedCalculations for totals. The brief must include the actual deliverable requested, not only findings or a plan to create it. A requested post requires the complete draft text; a checklist requires its actual numbered checks; a research matrix requires explicit hypotheses and validation questions. Never say 'below' unless that content is included in the brief. Put the deliverable before a short evidence/limitations note. When product facts are missing, deliver the useful general portion and label any assumptions. Propose at most two genuinely new tasks; do not paraphrase or reopen an existing task. Do not request owner approval for vague ideas or missing facts: only propose an execution-ready external action with exact content, target, known cost and scope; otherwise state what needs preparing.";
+  const bodyText = JSON.stringify({ model, store: false, instructions: departmentInstructions + deliveryRules, max_output_tokens: pilot.maxOutputTokens,
       ...(approvedPilot ? { reasoning: { effort: "none" } } : {}),
       input: [{ role: "user", content: input }],
       text: { format: { type: "json_schema", name: "ceo_plan", strict: true, schema: {

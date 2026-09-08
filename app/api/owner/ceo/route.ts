@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { secretMatches } from "../../../lib/business-os/policy";
 import { initializeOS } from "../../../lib/business-os/schema";
-import { decide, runCEO, status } from "../../../lib/business-os/service";
+import { decide, runCEO, status, reviewAgentOutput } from "../../../lib/business-os/service";
 import { createDeviceLink } from "../../../lib/business-os/device-links";
 import { readiness } from "../../../lib/business-os/readiness";
 import { checkAIConnection } from "../../../lib/business-os/ai-connection";
@@ -41,6 +41,10 @@ export async function POST(request: Request) {
   try {
     if (body.operation === "device_link") return NextResponse.json(await createDeviceLink(new URL(request.url).origin), { headers });
     if (body.operation === "pilot_run") return NextResponse.json(await workOneJob(true), { headers });
+    if (body.operation === "review_output") {
+      if (!/^[0-9a-f-]{36}$/.test(body.runId || "") || typeof body.notes !== "string" || !body.notes.trim() || body.notes.length > 2000) return NextResponse.json({error:"Invalid review"},{status:400,headers});
+      return NextResponse.json(await reviewAgentOutput(body.runId,body.notes), {headers});
+    }
     if (body.operation === "initialize") { await initializeOS(); return NextResponse.json({ initialized: true }, { headers }); }
     if (body.operation === "run") {
       const key = request.headers.get("idempotency-key");

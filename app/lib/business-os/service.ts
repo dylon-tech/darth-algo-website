@@ -7,22 +7,43 @@ import { pilot, pilotJobKeys } from "./pilot-policy";
 
 export async function status() {
   const sql = db();
-  const [tasks, approvals, activity, runs, jobs, control, messages, briefs, outbox] = await Promise.all([
+  const [tasks, approvals, activity, runs, jobs, control, messages, briefs, outbox, pilotEvents] = await Promise.all([
     sql`select * from os_tasks order by priority,created_at desc limit 100`,
     sql`select *,case when status='pending' and expires_at<=now() then 'expired' else status end as effective_status from os_approvals order by created_at desc limit 50`,
     sql`select * from os_activity order by id desc limit 100`,
-    sql`select id,department,status,created_at,finished_at,error_code,result from os_runs order by created_at desc limit 20`,
+    sql`select id,department,status,created_at,finished_at,error_code,result,
+      exists(select 1 from os_activity a where a.entity_id=os_runs.id::text and a.event='pilot_budget_reserved' and a.details->>'pilotId'=${pilot.id}) as approved_pilot
+      ,(select a.details from os_activity a where a.entity_id=os_runs.id::text and a.event='agent_output_reviewed' order by a.id desc limit 1) as output_review
+      from os_runs order by created_at desc limit 20`,
     sql`select * from os_jobs order by created_at desc limit 50`,
     sql`select paused from os_control where id=1`,
     sql`select id,department,role,body,created_at from os_messages order by created_at desc limit 100`,
     sql`select day,created_at,body from os_briefs order by day desc limit 7`,
     sql`select id,status,error_code,created_at,sent_at from os_outbox order by created_at desc limit 20`,
+    sql`select event,details from os_activity a where
+      (event='pilot_budget_reserved' and details->>'pilotId'=${pilot.id}) or
+      (event='agent_run_completed' and exists(select 1 from os_activity p where p.entity_id=a.entity_id and p.event='pilot_budget_reserved' and p.details->>'pilotId'=${pilot.id}))`,
   ]);
-  return { agents: registry.map(a => ({ ...a, state: runs.some(r => r.department === a.id && r.status === "running") ? "working" : jobs.some(j => j.department === a.id && j.status === "queued") ? "queued" : process.env.AI_OS_AI_ENABLED === "true" ? "on_demand" : "ai_disabled" })), tasks, approvals, activity, runs, jobs, messages, briefs, outbox, paused: control[0]?.paused ?? true, externalExecutionEnabled: false };
+  const pilotAttempts = pilotEvents.filter(e => e.event === "pilot_budget_reserved").length;
+  const pilotCompleted = pilotEvents.filter(e => e.event === "agent_run_completed");
+  const pilotSummary = { attempts: pilotAttempts, completed: pilotCompleted.length, maxUsd: pilot.totalUsd,
+    reservedUsd: pilotAttempts * pilot.reservationUsd,
+    estimatedCompletedCostUsd: pilotCompleted.reduce((sum, e) => sum + (Number(e.details.usage?.inputTokens || 0) * pilot.inputUsdPerMillion + Number(e.details.usage?.outputTokens || 0) * pilot.outputUsdPerMillion) / 1000000, 0),
+    costScope: "Estimate for completed runs using reported tokens; excludes unknown failed-call costs and ignores cache discounts. Reservations remain held for all attempts." };
+  return { pilot: pilotSummary, agents: registry.map(a => ({ ...a, state: runs.some(r => r.department === a.id && r.status === "running") ? "working" : jobs.some(j => j.department === a.id && j.status === "queued") ? "queued" : process.env.AI_OS_AI_ENABLED === "true" ? "on_demand" : "ai_disabled" })), tasks, approvals, activity, runs, jobs, messages, briefs, outbox, paused: control[0]?.paused ?? true, externalExecutionEnabled: false };
 }
 
 export async function runCEO(requestKey: string, message: string) {
   return runAgent("ceo", requestKey, message);
+}
+
+export async function reviewAgentOutput(runId: string, notes: string) {
+  return db().begin(async tx => {
+    const [run] = await tx`select id from os_runs where id=${runId} and status='completed' for update`;
+    if (!run) throw new Error("COMPLETED_RUN_REQUIRED");
+    await tx`insert into os_activity(actor,event,entity_id,details) values('owner_assistant','agent_output_reviewed',${runId},${tx.json({verdict:'needs_revision',notes})})`;
+    return {runId,verdict:'needs_revision',executed:false};
+  });
 }
 
 export async function runAgent(department: Department, requestKey: string, message: string, taskId?: string, approvedPilot = false) {
