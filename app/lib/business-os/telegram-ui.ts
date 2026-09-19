@@ -7,6 +7,7 @@ export const agentNames: Record<Department,string> = {
   affiliates:"🤝 Affiliates", analytics:"📊 Analytics", research:"🔎 Research + Audience", operations:"🛠 Operations",
 };
 export const centerLink = {text:"🏠 Open dashboard",url:"https://www.darthalgo.com/owner"};
+export const connectButton = {text:"🔑 Connect dashboard",callback_data:"ui:nav:connect"};
 export function homeMenu(): MenuButtons {
   return [
     ...Array.from({length:4},(_,i)=>departments.slice(i*2,i*2+2).map(d=>({text:agentNames[d],callback_data:`ui:agent:${d}`}))),
@@ -14,22 +15,22 @@ export function homeMenu(): MenuButtons {
     [{text:"🌐 Community scout",callback_data:"ui:work:research:community-scout"},{text:"🕵️ Competitor intel",callback_data:"ui:work:research:competitor-intelligence"}],
     [{text:"👀 Who’s working?",callback_data:"ui:nav:status"},{text:"✅ My decisions",callback_data:"ui:nav:approvals"}],
     [{text:"☀️ Daily brief",callback_data:"ui:nav:brief"},{text:"𝕏 Connection",callback_data:"ui:nav:buffer"}],
-    [centerLink],
+    [centerLink,connectButton],
   ];
 }
 export function agentMenu(department: Department): MenuButtons {
   return [
     ...workAssignments[department].map(a=>[{text:`▶ ${a.title}`,callback_data:`ui:work:${department}:${a.id}`}]),
     [{text:"👀 Who’s working?",callback_data:"ui:nav:status"},{text:"👥 Change agent",callback_data:"ui:nav:agents"}],
-    [centerLink],
+    [centerLink,connectButton],
   ];
 }
-// Menu callbacks select only a known role, known internal preset or read-only view.
+// Menu callbacks select known roles, presets, views or owner-only device setup.
 // Approval decisions stay on their separate expiring os: token path.
 export function menuAction(data: string | undefined): {command: string; department?: Department; assignmentId?: string} | null {
   const parts=data?.split(":") || [];
   if(parts[0]!=="ui") return null;
-  if(parts.length===3 && parts[1]==="nav" && ["agents","status","approvals","brief","buffer"].includes(parts[2])) return {command:`/${parts[2]}`};
+  if(parts.length===3 && parts[1]==="nav" && ["agents","status","approvals","brief","buffer","connect"].includes(parts[2])) return {command:`/${parts[2]}`};
   const department=parts[2] as Department;
   if(!departments.includes(department)) return null;
   if(parts.length===3 && parts[1]==="agent") return {command:`/${department}`,department};
@@ -43,6 +44,7 @@ export function naturalCommand(text:string) {
   if(["approvals","my decisions"].includes(normalized)) return "/approvals";
   if(["buffer","x connection"].includes(normalized)) return "/buffer";
   if(["brief","daily brief"].includes(normalized)) return "/brief";
+  if(["connect dashboard","connect my phone"].includes(normalized)) return "/connect";
   const match=text.trim().match(/^(ceo|growth|content|support|affiliates|analytics|research|operations)(?:\s*[:,]\s*|\s+|$)(.*)$/i);
   return match ? `/${match[1].toLowerCase()}${match[2] ? ' '+match[2] : ''}` : text;
 }
