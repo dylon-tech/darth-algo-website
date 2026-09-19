@@ -69,9 +69,11 @@ export async function coordinationTick(workerId: string) {
   if (!process.env.OPENAI_API_KEY) { await heartbeat(workerId, "ai_disabled"); return { status: "ai_disabled", reason: "DIRECT_AI_CREDENTIAL_MISSING" }; }
   const { recurringBudgetAvailability } = await import("./budget");
   const availability = await recurringBudgetAvailability();
-  const [attempts] = await sql`select count(*)::int as n from os_runs where created_at>now()-interval '24 hours'`;
-  if (!availability.available || attempts.n >= 12) {
-    await heartbeat(workerId, "budget_blocked"); return { status: "budget_blocked", reason: availability.reason || "DAILY_RUN_LIMIT", attemptsLast24Hours: attempts.n };
+  // Recurring work uses the owner's approved dollar limits. The old Phase-1
+  // attempt count must not override them; workOneJob/runAgent still serialize
+  // each call and reserve its maximum charge atomically before using the model.
+  if (!availability.available) {
+    await heartbeat(workerId, "budget_blocked"); return { status: "budget_blocked", reason: availability.reason || "AI_BUDGET_UNAVAILABLE" };
   }
   const { queueJob } = await import("./jobs");
   await heartbeat(workerId, "working");
