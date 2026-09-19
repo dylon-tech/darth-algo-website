@@ -64,6 +64,8 @@ export async function workOneJob(approvedPilot = false) {
   } catch (error) {
     const budgetBlocked = error instanceof Error && /^(AI_(BUDGET|DAILY_BUDGET|MONTHLY_BUDGET|RECURRING_SPEND)_|DAILY_RUN_LIMIT)/.test(error.message);
     const reason = budgetBlocked && error instanceof Error ? error.message : "AGENT_RUN_FAILED_REVIEW_REQUIRED";
+    const safeReason = error instanceof Error && /^(AI_[A-Z0-9_]+|OS_[A-Z_]+|JOB_LEASE_EXPIRED|RUN_NOT_COMPLETED|DAILY_RUN_LIMIT)$/.test(error.message) ? error.message : reason;
+    console.warn(JSON.stringify({event:"agent_job_failed",department:job.department,reason:safeReason}));
     await sql.begin(async tx => {
       await tx`update os_jobs set status='failed',finished_at=now(),error_code=${reason} where id=${job.id} and status='running'`;
       if (coordinationEnabled() && job.task_id) await tx`update os_handoffs set status='blocked',updated_at=now() where task_id=${job.task_id}`;
