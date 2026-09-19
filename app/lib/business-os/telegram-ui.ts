@@ -3,8 +3,8 @@ import { workAssignments } from "../../owner/work-assignments";
 
 export type MenuButtons = Array<Array<{ text: string; callback_data: string } | { text: string; url: string }>>;
 export const agentNames: Record<Department,string> = {
-  ceo:"👑 CEO", growth:"🚀 Growth", content:"🎨 Content", support:"💚 Support",
-  affiliates:"🤝 Affiliates", analytics:"📊 Analytics", research:"🔎 Research", operations:"🛠 Operations",
+  ceo:"👑 CEO", growth:"🚀 Growth", content:"🎨 Content + Media", support:"💚 Support",
+  affiliates:"🤝 Affiliates", analytics:"📊 Analytics", research:"🔎 Research + Audience", operations:"🛠 Operations",
 };
 export const centerLink = {text:"🏠 Open dashboard",url:"https://www.darthalgo.com/owner"};
 export function homeMenu(): MenuButtons {
