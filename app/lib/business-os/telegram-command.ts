@@ -1,5 +1,6 @@
 import { db } from "../affiliate-db";
 import { bufferStatus } from "./buffer";
+import { syncContentApprovals } from "./content-handoff";
 import { recurringBudgetAvailability } from "./budget";
 import { departments, fingerprint, type Department } from "./policy";
 import { queueJob, setPaused, workOneJob } from "./jobs";
@@ -61,9 +62,9 @@ async function handleUpdate(update: OwnerUpdate) {
     await notice("Revision entry cancelled."); return;
   }
   if(state?.revision_id && !text.startsWith("/")) {
-    await decide(state.revision_id,state.revision_hash,"revision_requested",text);
+    const result=await decide(state.revision_id,state.revision_hash,"revision_requested",text);
     await sql`update os_telegram_state set revision_id=null,revision_hash=null where owner_id=${owner}`;
-    await notice("Revision recorded. The original proposal is closed; revised work needs a new exact approval."); return;
+    await notice(result.message); return;
   }
   if(command==="/start" || command==="/help") {
     await notice("Your Darth Algo crew 👋\n\nTap an agent below, then type what you need or pick a job. You can also say ‘Growth, find our next customers.’"); return;
@@ -148,6 +149,7 @@ export async function workAndNotify() {
   await processOwnerUpdates();
   await deliverOwnerNotices(1);
   const result=await workOneJob();
+  try { await syncContentApprovals(); } catch { /* Completed work and owner inbox delivery continue; the cron recovers the handoff. */ }
   if(result.jobId) {
     const [run]=result.runId ? await db()`select result from os_runs where id=${result.runId}` : [];
     const department=result.department as Department;

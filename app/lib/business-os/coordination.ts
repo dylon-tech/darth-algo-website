@@ -73,7 +73,7 @@ export async function coordinationTick(workerId: string) {
   if (!availability.available || attempts.n >= 12) {
     await heartbeat(workerId, "budget_blocked"); return { status: "budget_blocked" };
   }
-  const { queueJob, workOneJob } = await import("./jobs");
+  const { queueJob } = await import("./jobs");
   await heartbeat(workerId, "working");
   try {
     const day = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
@@ -89,7 +89,8 @@ export async function coordinationTick(workerId: string) {
       const t = pending[0];
       await queueJob(t.department as Department, `Complete this internal assignment: ${t.title}. Use team_deliverables for the sending agent's work. No external execution.`, `handoff:${t.id}`, "schedule", t.id);
     }
-    const result = await workOneJob();
+    const { workAndNotify } = await import("./telegram-command");
+    const result = await workAndNotify();
     const [active] = await sql`select id from os_runs where status='running' and created_at>=now()-interval '5 minutes'
       union all select id from os_jobs where status='running' and started_at>=now()-interval '5 minutes' limit 1`;
     const [currentControl] = await sql`select paused from os_control where id=1`;

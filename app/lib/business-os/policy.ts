@@ -32,6 +32,7 @@ export function fingerprint(value: unknown): string {
 }
 
 export type Plan = {
+  xDraft?: { text: string; evidence: string[] } | null;
   brief: string;
   tasks: Array<{ department: Department; title: string; priority: number; evidence: string[] }>;
   proposals: Array<{ kind: ActionKind; summary: string; details: string; evidence: string[] }>;
@@ -43,6 +44,7 @@ export function validatePlan(raw: unknown, sourceIds: string[]): Plan {
   const validText = (s: unknown, max: number) => typeof s === "string" && s.trim().length > 0 && s.length <= max;
   const validEvidence = (v: unknown) => Array.isArray(v) && v.length > 0 && v.length <= 8 && v.every(x => typeof x === "string" && sourceIds.includes(x));
   if (!validText(p.brief, 6000) || !Array.isArray(p.tasks) || p.tasks.length > 5 || !Array.isArray(p.proposals) || p.proposals.length > 5) throw new Error("Invalid CEO output");
+  if (p.xDraft != null && (typeof p.xDraft !== "object" || !validText(p.xDraft.text,280) || p.xDraft.text !== p.xDraft.text.trim() || !validEvidence(p.xDraft.evidence) || Object.keys(p.xDraft).some(k=>!["text","evidence"].includes(k)))) throw new Error("Invalid X draft");
   for (const t of p.tasks) {
     if (!t || !departments.includes(t.department) || !validText(t.title, 240) || !Number.isInteger(t.priority) || t.priority < 1 || t.priority > 5 || !validEvidence(t.evidence)) throw new Error("Invalid task or evidence");
   }

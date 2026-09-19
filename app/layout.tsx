@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import CampaignAttribution from "./components/campaign-attribution";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://darthalgo.com";
 
@@ -60,6 +61,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <CampaignAttribution />
         <a className="skip-link" href="#main-content">Skip to main content</a>
         {children}
       </body>

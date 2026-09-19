@@ -2,6 +2,7 @@ import { db } from "../affiliate-db";
 import { stripe } from "../stripe";
 import { summarizePayments, type PaymentRow } from "./payment-summary";
 import { businessKnowledge } from "./knowledge";
+import { checkoutConversions } from "./conversions";
 
 export type Evidence = { id: string; status: "verified" | "unavailable"; checkedAt: string; scope: string; data: unknown; error?: string };
 
@@ -12,6 +13,7 @@ async function readSource(id: string, scope: string, read: () => Promise<unknown
 
 export async function collectEvidence(): Promise<Evidence[]> {
   const sources = await Promise.all([
+    readSource("paid_conversion", "Live Stripe checkout sessions created in the last 30 days. Campaign-tagged initial paid checkouts and trial starts are separate. Coverage includes untagged sessions; no unique-customer count, click conversion rate, renewals or causation is inferred.", checkoutConversions),
     readSource("growth_30d", "Existing community tracking, last 30 days. Clicks are not purchases; no paid conversion attribution is inferred.", async () => {
       return await db()`select source,event_type,count(*)::int as events from community_growth_events where created_at >= now()-interval '30 days' group by source,event_type order by source,event_type`;
     }),
@@ -76,7 +78,7 @@ export async function collectEvidence(): Promise<Evidence[]> {
       throw new Error("Pagination incomplete");
     }),
   ]);
-  sources.push(...["tradingview_fulfillment", "content_workflows", "support_cases", "retention", "paid_conversion"].map(id => ({
+  sources.push(...["tradingview_fulfillment", "content_workflows", "support_cases", "retention"].map(id => ({
     id, status: "unavailable" as const, checkedAt: new Date().toISOString(), data: null,
     scope: "No verified read adapter connected in Phase 1. Historical setup and plans are not live evidence.",
   })));

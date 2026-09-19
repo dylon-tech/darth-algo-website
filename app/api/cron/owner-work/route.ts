@@ -1,4 +1,5 @@
 import { coordinationTick } from "../../../lib/business-os/coordination";
+import { syncContentApprovals } from "../../../lib/business-os/content-handoff";
 import { db } from "../../../lib/affiliate-db";
 import { queueJob } from "../../../lib/business-os/jobs";
 import { workAndNotify } from "../../../lib/business-os/telegram-command";
@@ -10,6 +11,7 @@ export async function GET(request:Request) {
   if(process.env.AI_OS_ENABLED!=="true" || process.env.AI_OS_AI_ENABLED!=="true" || process.env.AI_OS_AUTONOMY_ENABLED!=="true") return Response.json({error:"Not available"},{status:404});
   if(!secretMatches(request.headers.get("authorization"),process.env.CRON_SECRET ? `Bearer ${process.env.CRON_SECRET}` : undefined)) return Response.json({error:"Unauthorized"},{status:401});
   try {
+    await syncContentApprovals();
     if (process.env.AI_OS_COORDINATION_ENABLED === "true") return Response.json(await coordinationTick("vercel-cron"), {headers:{"Cache-Control":"no-store"}});
     const [control]=await db()`select paused from os_control where id=1`;
     if(!control || control.paused) return Response.json({status:"paused"});
