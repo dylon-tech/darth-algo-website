@@ -2,11 +2,11 @@ import { randomUUID } from "node:crypto";
 import { db } from "../affiliate-db";
 import { bufferStatus, createBufferXPost, getBufferPost } from "./buffer";
 import { bufferPublicationPayload, isBufferPublication, type BufferPublication } from "./buffer-publication-policy";
-import { fingerprint } from "./policy";
+import { fingerprint, validatePlan } from "./policy";
 
 // Existing durable approval/activity tables avoid an activation-time migration.
 // Every writer locks the approval row before recording its single attempt.
-export async function prepareBufferPublication(text: string) {
+export async function prepareBufferPublication(text: string, sourceRunId?: string) {
   if (process.env.VERCEL_ENV !== "production") throw new Error("BUFFER_PUBLISH_PRODUCTION_ONLY");
   if (typeof text !== "string") throw new Error("BUFFER_PUBLICATION_TEXT_INVALID");
   const connection = await bufferStatus();
@@ -17,16 +17,38 @@ export async function prepareBufferPublication(text: string) {
   const sql = db();
   return sql.begin(async tx => {
     await tx`select pg_advisory_xact_lock(730919)`;
+    if (sourceRunId) {
+      const [run] = await tx`select * from os_runs where id=${sourceRunId} for update`;
+      if (!run || run.status !== "completed" || run.department !== "content" || !Array.isArray(run.snapshot)) throw new Error("CONTENT_DRAFT_RUN_INVALID");
+      const verifiedIds = run.snapshot.filter((e: {status:string})=>e.status==="verified").map((e: {id:string})=>e.id);
+      // Validate the stored draft again, not caller/model supplied destinations.
+      const plan = validatePlan(run.result,run.snapshot.map((e: {id:string})=>e.id));
+      if (!plan.xDraft || plan.xDraft.text !== text || !plan.xDraft.evidence.every(id=>verifiedIds.includes(id))) throw new Error("CONTENT_DRAFT_EVIDENCE_INVALID");
+      const [done] = await tx`select details from os_activity where entity_id=${sourceRunId} and event='content_x_handoff_completed' limit 1`;
+      if (done) return {id:String(done.details.approvalId),message:"This draft already has an approval record."};
+      const [control] = await tx`select paused from os_control where id=1 for share`;
+      if (!control || control.paused) throw new Error("OS_PAUSED");
+      const [waiting] = await tx`select count(*)::int as n from os_approvals where payload->>'executor'='buffer_x_v1' and status='pending' and expires_at>now()`;
+      if (waiting.n >= 3) throw new Error("CONTENT_APPROVAL_QUEUE_FULL");
+    }
     const [verified] = await tx`select id from os_activity where event='buffer_draft_test_verified' and details->>'channelId'=${channel.id} limit 1`;
     if (!verified) throw new Error("BUFFER_DRAFT_TEST_REQUIRED");
     // Even a new approval cannot silently retry an uncertain earlier delivery.
     const [previous] = await tx`select id,status,expires_at from os_approvals where payload->>'executor'='buffer_x_v1' and payload->>'channelId'=${channel.id} and payload->>'text'=${payload.text} and status in ('pending','approved') order by created_at desc limit 1`;
-    if (previous?.status === "approved") throw new Error("BUFFER_PUBLICATION_ALREADY_APPROVED");
-    if (previous && new Date(previous.expires_at).getTime() > Date.now()) return { id: String(previous.id), message: "This exact post is already waiting in Approvals." };
+    if (previous?.status === "approved" || (previous && new Date(previous.expires_at).getTime() > Date.now())) {
+      if(sourceRunId) await tx`insert into os_activity(actor,event,entity_id,details) values('content','content_x_handoff_completed',${sourceRunId},${tx.json({approvalId:previous.id,reused:true})})`;
+      else if(previous.status === "approved") throw new Error("BUFFER_PUBLICATION_ALREADY_APPROVED");
+      return { id: String(previous.id), message: "This exact post already has an approval record." };
+    }
     await tx`update os_approvals set status='expired' where status='pending' and expires_at<=now()`;
     const id = randomUUID();
     await tx`insert into os_approvals(id,payload,payload_hash,expires_at) values(${id},${tx.json(payload)},${hash},now()+interval '24 hours')`;
-    await tx`insert into os_activity(actor,event,entity_id,details) values('owner','buffer_publication_prepared',${id},${tx.json({payloadHash:hash,channelId:channel.id})})`;
+    if (sourceRunId) {
+      await tx`update os_approvals set run_id=${sourceRunId} where id=${id}`;
+      await tx`insert into os_activity(actor,event,entity_id,details) values('content','content_x_handoff_completed',${sourceRunId},${tx.json({approvalId:id})})`;
+    }
+    if(sourceRunId) await tx`insert into os_activity(actor,event,entity_id,details) values('content','buffer_publication_prepared',${id},${tx.json({payloadHash:hash,channelId:channel.id,sourceRunId})})`;
+    else await tx`insert into os_activity(actor,event,entity_id,details) values('owner','buffer_publication_prepared',${id},${tx.json({payloadHash:hash,channelId:channel.id})})`;
     return { id, message: "Post saved for review. Open Approvals to approve the exact text and publish it on X." };
   });
 }

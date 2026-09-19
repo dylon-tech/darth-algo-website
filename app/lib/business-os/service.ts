@@ -173,7 +173,7 @@ export async function decide(id: string, hash: string, decision: "approved" | "d
     if (hash !== row.payload_hash || fingerprint(row.payload) !== hash) throw new Error("APPROVAL_VERSION_CHANGED");
     await tx`update os_approvals set status=${decision},decided_at=now(),decided_by='owner',decision_note=${note} where id=${id}`;
     await tx`insert into os_activity(actor,event,entity_id,details) values('owner',${`approval_${decision}`},${id},${tx.json({ payloadHash: hash, note, executed: false })})`;
-    return { id, status: decision, executed: false, publish: decision === "approved" && isBufferPublication(row.payload), message: "Decision recorded. This proposal did not execute an external action." };
+    return { id, status: decision, executed: false, publish: decision === "approved" && isBufferPublication(row.payload), message: decision === "revision_requested" && isBufferPublication(row.payload) ? "Revision saved. Content will prepare a fresh X draft for approval while work is resumed." : "Decision recorded. This proposal did not execute an external action." };
   });
   if (!result.publish) return result;
   try { return { id, status: decision, ...await executeBufferPublication(id, hash) }; }

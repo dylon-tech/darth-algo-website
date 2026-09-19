@@ -421,3 +421,45 @@ approval/retry, accepted-but-lost responses, failed receipt persistence, indepen
 readback, destination changes, same-content replay prevention, and generic proposal
 non-execution. This is not a live PostgreSQL isolation test or a public X test.
 A real public post still needs the owner's exact content approval.
+
+## Content handoff and campaign checkout observations (September 19, 2026)
+
+Content can return one `xDraft` with exact text and evidence IDs. Other agents must
+return null. The handoff re-reads the completed Content run, validates its persisted
+output and verified evidence, resolves the live Buffer destination, and prepares the
+same exact-payload approval contract used by the owner composer. It cannot publish.
+At most three X approvals may wait at once. Each run is handed off once; declined
+or expired approvals are not resurrected from the same run. Blocked drafts remain
+saved, with a 15-minute retry backoff and a 24-hour freshness cutoff.
+
+The minute cron recovers missing X approval notices before checking the AI budget.
+Scheduled coordination also uses the regular work-and-notify path, fixing the gap
+where scheduled jobs skipped owner updates. Telegram outbox dedupe and unknown
+outcome protections still apply. One `launch:x-approval-v1` assignment is queued
+idempotently when production autonomy/AI are enabled and work is resumed; execution
+uses existing budget and worker limits. No extra spend limit or public approval is
+created. New daily Content seeds request a finished X draft for review.
+
+Campaign labels from `source`/`campaign` or UTMs are retained within the current
+browser tab, for at most 30 days, and added to the existing allowlisted Stripe
+Payment Links as a bounded `client_reference_id`. Existing references, promotion
+codes, pricing URLs and navigation continue to work. No customer identity or new
+visitor cookie is created. JavaScript-disabled and cross-device journeys remain
+unattributed. Source labels are client-controlled observations, not proof of cause.
+
+A read-only live Stripe adapter scans up to 500 Checkout Sessions from the last
+30 days, fails closed if pagination is incomplete or the account is in test mode,
+and returns aggregated campaign/currency results only. Paid initial checkout,
+zero-payment completion and observed subscription trial start are separate.
+No click-to-purchase rate, unique-customer count, renewal attribution, net revenue
+or historical tag backfill is inferred. The existing Stripe SDK/checkout integration
+is reused; no account, price, webhook, subscription or billing setting changes.
+
+Validation includes a PGlite PostgreSQL-engine handoff test with real table queries
+and private Telegram card generation (provider mocked), restart recovery and
+launch-job dedupe; separate campaign and conversion-summary edge cases; existing
+publishing/security/Telegram tests; and the production build. Multi-connection
+PostgreSQL lock semantics, the first real public post, and a real tagged purchase
+remain live verification gates. No purchase or public post is made by these tests.
+
+Reference: https://docs.stripe.com/payment-links/url-parameters

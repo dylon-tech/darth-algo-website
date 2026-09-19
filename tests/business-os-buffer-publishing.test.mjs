@@ -9,10 +9,10 @@ const dir = mkdtempSync(join(tmpdir(), 'darth-publish-'));
 const savedEnv = { ...process.env };
 const originalFetch = globalThis.fetch;
 try {
-  execFileSync('node_modules/.bin/tsc', ['--target', 'ES2020', '--module', 'commonjs', '--moduleResolution', 'node', '--esModuleInterop', '--skipLibCheck', '--outDir', dir, 'app/lib/business-os/buffer-publishing.ts', 'app/lib/business-os/service.ts'], { stdio: 'pipe' });
+  execFileSync('node_modules/.bin/tsc', ['--target', 'ES2020', '--module', 'commonjs', '--moduleResolution', 'node', '--esModuleInterop', '--skipLibCheck', '--outDir', dir, '--rootDir', 'app', 'app/lib/business-os/buffer-publishing.ts', 'app/lib/business-os/service.ts'], { stdio: 'pipe' });
   const require = createRequire(import.meta.url);
-  const { fingerprint } = require(join(dir, 'business-os/policy.js'));
-  const { bufferPublicationPayload, isBufferPublication } = require(join(dir, 'business-os/buffer-publication-policy.js'));
+  const { fingerprint } = require(join(dir, 'lib/business-os/policy.js'));
+  const { bufferPublicationPayload, isBufferPublication } = require(join(dir, 'lib/business-os/buffer-publication-policy.js'));
   let events, approvals, paused, verified, failReceiptWrite, failRead, dropResponse, createCount, posts, tail, channel;
   const reset = () => {
     events = []; approvals = []; paused = false; verified = true; failReceiptWrite = false; failRead = false; dropResponse = false;
@@ -56,9 +56,9 @@ try {
     catch (error) { events = saved.events; approvals = saved.approvals; throw error; }
     finally { release(); }
   };
-  const dbPath = join(dir, 'affiliate-db.js');
+  const dbPath = join(dir, 'lib/affiliate-db.js');
   require.cache[dbPath] = { id: dbPath, filename: dbPath, loaded: true, exports: { db: () => sql } };
-  const { prepareBufferPublication, executeBufferPublication, checkBufferPublication } = require(join(dir, 'business-os/buffer-publishing.js'));
+  const { prepareBufferPublication, executeBufferPublication, checkBufferPublication } = require(join(dir, 'lib/business-os/buffer-publishing.js'));
   process.env.VERCEL_ENV = 'production'; process.env.BUFFER_API_KEY = 'offline-test-key'; delete process.env.BUFFER_X_CHANNEL_ID;
   globalThis.fetch = async (_url, options) => {
     const { query, variables } = JSON.parse(options.body);
@@ -142,10 +142,10 @@ try {
   assert.equal(createCount, 0, 'A fabricated typed proposal without owner preparation cannot execute');
   // Exercise the actual decision dispatcher, with unrelated AI/source modules isolated.
   for (const name of ['sources', 'model', 'coordination', 'coordination-policy', 'pilot-policy', 'budget-policy']) {
-    const path = join(dir, `business-os/${name}.js`);
+    const path = join(dir, `lib/business-os/${name}.js`);
     require.cache[path] = { id: path, filename: path, loaded: true, exports: {} };
   }
-  const { decide } = require(join(dir, 'business-os/service.js'));
+  const { decide } = require(join(dir, 'lib/business-os/service.js'));
   reset();
   const decisionPost = await prepareBufferPublication('Owner approves this exact post.');
   row = approvals[0];

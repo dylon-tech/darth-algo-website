@@ -60,7 +60,7 @@ export async function queueApprovalNotice(id: string) {
     await sql`insert into os_callback_actions(id,approval_id,payload_hash,decision,expires_at) values(${token},${id},${approval.payload_hash},${decision},${approval.expires_at})`;
     buttons[0].push({text:publication && decision==="approved" ? "Approve & publish on X" : label,callback_data:`os:${token}`});
   }
-  await queueOwnerNotice(`approval:${id}`, `OWNER DECISION\n${approval.payload.summary}\n\n${approval.payload.details}\n\nEvidence: ${(approval.payload.evidence || []).join(", ")}\nExpires: ${new Date(approval.expires_at).toISOString()}\n${publication ? "Approving sends this exact text publicly on the displayed X account now." : "Approval records your decision; this proposal does not execute an external action."}`, buttons);
+  await queueOwnerNotice(`approval:${id}`, `OWNER DECISION\n${approval.payload.summary}\n${publication && approval.run_id ? "Prepared by Content. Review the wording and product facts before approving.\n" : ""}\n${approval.payload.details}\n\nEvidence: ${(approval.payload.evidence || []).join(", ")}\nExpires: ${new Date(approval.expires_at).toISOString()}\n${publication ? "Approving sends this exact text publicly on the displayed X account now." : "Approval records your decision; this proposal does not execute an external action."}`, buttons);
 }
 export async function deliverOwnerNotices(limit=4) {
   const config = privateTelegramConfiguration();
