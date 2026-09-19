@@ -13,7 +13,8 @@ export function homeMenu(): MenuButtons {
     [{text:"📸 Fresh media",callback_data:"ui:work:content:media-scout"},{text:"🗓 Today’s posts",callback_data:"ui:work:content:daily-content-engine"}],
     [{text:"🌐 Community scout",callback_data:"ui:work:research:community-scout"},{text:"🕵️ Competitor intel",callback_data:"ui:work:research:competitor-intelligence"}],
     [{text:"👀 Who’s working?",callback_data:"ui:nav:status"},{text:"✅ My decisions",callback_data:"ui:nav:approvals"}],
-    [{text:"☀️ Daily brief",callback_data:"ui:nav:brief"},centerLink],
+    [{text:"☀️ Daily brief",callback_data:"ui:nav:brief"},{text:"𝕏 Connection",callback_data:"ui:nav:buffer"}],
+    [centerLink],
   ];
 }
 export function agentMenu(department: Department): MenuButtons {
@@ -28,7 +29,7 @@ export function agentMenu(department: Department): MenuButtons {
 export function menuAction(data: string | undefined): {command: string; department?: Department; assignmentId?: string} | null {
   const parts=data?.split(":") || [];
   if(parts[0]!=="ui") return null;
-  if(parts.length===3 && parts[1]==="nav" && ["agents","status","approvals","brief"].includes(parts[2])) return {command:`/${parts[2]}`};
+  if(parts.length===3 && parts[1]==="nav" && ["agents","status","approvals","brief","buffer"].includes(parts[2])) return {command:`/${parts[2]}`};
   const department=parts[2] as Department;
   if(!departments.includes(department)) return null;
   if(parts.length===3 && parts[1]==="agent") return {command:`/${department}`,department};
@@ -40,6 +41,7 @@ export function naturalCommand(text:string) {
   if(["hi","hello","hey","help","menu","agents","home"].includes(normalized)) return "/agents";
   if(["status","who's working","who’s working","what's happening","what’s happening"].includes(normalized)) return "/status";
   if(["approvals","my decisions"].includes(normalized)) return "/approvals";
+  if(["buffer","x connection"].includes(normalized)) return "/buffer";
   if(["brief","daily brief"].includes(normalized)) return "/brief";
   const match=text.trim().match(/^(ceo|growth|content|support|affiliates|analytics|research|operations)(?:\s*[:,]\s*|\s+|$)(.*)$/i);
   return match ? `/${match[1].toLowerCase()}${match[2] ? ' '+match[2] : ''}` : text;

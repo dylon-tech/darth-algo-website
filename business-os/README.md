@@ -342,3 +342,37 @@ are retained. Role/work callbacks are validated separately from approval tokens;
 unknown callbacks cannot approve actions. Agent switching during an approval
 revision asks the owner to finish or cancel that revision first. All menus remain
 behind the existing private-owner Telegram check.
+
+## Buffer X connection and draft verification — September 19, 2026
+
+`BUFFER_API_KEY` is server-only. `BUFFER_X_CHANNEL_ID` optionally pins the
+verified destination; multiple X accounts without a pin fail closed. Connection
+checks use the current `ChannelsInput` schema, inspect every accessible
+organization (up to ten), and distinguish a valid key from a disconnected,
+locked or paused X channel. Requests never expose provider error text or keys.
+
+Owner Settings now shows X connection health and **Test with a private draft**.
+The authenticated, same-origin `buffer_draft_test` operation writes only fixed,
+clearly labeled test text using `saveToDraft: true`; it then reads the provider
+post back and verifies text, channel, ID, draft status and absence of `sentAt`.
+The existing `os_activity` table records the attempt before mutation and the
+receipt before readback. Transaction locking prevents concurrent/replayed tests
+from creating a second post. If the provider's reply or receipt persistence is
+lost, creation stays blocked; inspect Buffer rather than blindly retrying.
+Repeating a test with a saved receipt reads the same post. Test drafts remain
+in Buffer for inspection. This proves draft delivery only, not public delivery.
+
+Private Telegram has an **X Connection** button and `/buffer` read-only check.
+No key, public post, new subscription, or customer message is sent by that check.
+
+Local verification: `node tests/business-os-buffer.test.mjs`,
+`node tests/business-os-telegram-ui.test.mjs`,
+`node tests/business-os-security.mjs`, `npx tsc --noEmit`, changed-file ESLint,
+and `npm run build`. Buffer tests use offline provider and transaction-contract
+fixtures; they do not prove production PostgreSQL isolation or live API access.
+
+Remaining execution work: exact-payload approved publication and durable
+reconciliation/cancellation, Metricool runtime credentials/adapters, media
+creation and research tools, conversion attribution and performance learning.
+The generic approval workflow remains non-executing. Do not advertise an
+unattended publisher until an approved real delivery is verified.

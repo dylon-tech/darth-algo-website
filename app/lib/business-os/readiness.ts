@@ -23,7 +23,7 @@ export async function readiness() {
           scope: "Database schema could not be inspected; no schema changes attempted." };
       }
     })(),
-    (async()=>{ try { return await bufferStatus(); } catch { return { configured:Boolean(process.env.BUFFER_API_KEY), connected:false, xChannel:null, error:"BUFFER_CHECK_FAILED" }; } })(),
+    (async()=>{ try { return await bufferStatus(); } catch { return { configured:Boolean(process.env.BUFFER_API_KEY?.trim()), connected:false, ready:false, xChannel:null, error:"BUFFER_CHECK_FAILED" }; } })(),
   ]);
   const ai = {
     enabled: process.env.AI_OS_AI_ENABLED === "true",
@@ -47,7 +47,7 @@ export async function readiness() {
       ...(!ai.enabled ? ["AI_DISABLED"] : []),
       ...(!ai.credentialPresent ? ["AI_CREDENTIAL_MISSING"] : []),
       ...(!ai.modelConfigured ? ["AI_MODEL_MISSING"] : []),
-      ...(!buffer.configured ? ["BUFFER_API_KEY_MISSING"] : !buffer.connected ? ["BUFFER_CONNECTION_UNVERIFIED"] : !buffer.xChannel ? ["BUFFER_X_CHANNEL_MISSING"] : []),
+      ...(!buffer.ready ? [buffer.error || "BUFFER_CONNECTION_UNVERIFIED"] : []),
       "AI_CONNECTIVITY_NOT_TESTED",
     ],
   };
