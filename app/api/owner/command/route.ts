@@ -11,6 +11,7 @@ import { createDailyBrief } from "../../../lib/business-os/brief";
 import { configurePrivateWebhook, deliverOwnerNotices, privateTelegramConfiguration, telegramMethod } from "../../../lib/business-os/delivery";
 import { bufferStatus } from "../../../lib/business-os/buffer";
 import { testBufferDraft } from "../../../lib/business-os/buffer-test";
+import { prepareBufferPublication, checkBufferPublication, executeBufferPublication } from "../../../lib/business-os/buffer-publishing";
 
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
@@ -56,6 +57,14 @@ export async function POST(request:Request) {
     }
     if(body.operation==="buffer_check") return json(await bufferStatus());
     if(body.operation==="buffer_draft_test") return json(await testBufferDraft());
+    if(body.operation==="buffer_prepare") {
+      if(typeof body.text!=="string" || !body.text.trim() || body.text.length>280) return json({error:"Use 1–280 characters for this text post."},400);
+      return json(await prepareBufferPublication(body.text));
+    }
+    if(body.operation==="buffer_receipt" || body.operation==="buffer_publish_approved") {
+      if(!/^[0-9a-f-]{36}$/.test(body.id || "") || !/^[a-f0-9]{64}$/.test(body.payloadHash || "")) return json({error:"Invalid approval"},400);
+      return json(await (body.operation==="buffer_receipt" ? checkBufferPublication(body.id,body.payloadHash) : executeBufferPublication(body.id,body.payloadHash)));
+    }
     if(body.operation==="telegram_check") {
       const config=privateTelegramConfiguration(); if(!config.ready) return json({error:"PRIVATE_TELEGRAM_NOT_CONFIGURED"},409);
       const [bot,webhook]=await Promise.all([telegramMethod("getMe",{}),telegramMethod("getWebhookInfo",{})]);
@@ -64,5 +73,9 @@ export async function POST(request:Request) {
     if(body.operation==="telegram_connect") return json(await configurePrivateWebhook());
     if(body.operation==="deliver") return json(await deliverOwnerNotices());
     return json({error:"Unknown operation"},400);
-  } catch {return json({error:"OPERATION_NOT_COMPLETED",message:"Inspect activity and configuration before retrying. No external business executor is connected."},409);}
+  } catch (error) {
+    const code=error instanceof Error ? error.message : "";
+    const messages: Record<string,string>={BUFFER_DRAFT_TEST_REQUIRED:"Run the private Buffer draft test first.",BUFFER_PUBLICATION_ALREADY_APPROVED:"This exact post already has an approval. Check its saved receipt in Approvals; do not create a duplicate.",BUFFER_X_NOT_READY:"Check the X connection in Settings before preparing a post.",OS_PAUSED:"Work is paused. Resume it in Settings before sending an approved post.",BUFFER_APPROVAL_EXPIRED:"This approval expired before publishing started. It cannot send a new post."};
+    return json({error:"OPERATION_NOT_COMPLETED",message:messages[code] || "The operation could not be confirmed. Check Approvals, activity and any saved Buffer receipt before retrying."},409);
+  }
 }

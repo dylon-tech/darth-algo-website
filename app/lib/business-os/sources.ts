@@ -15,6 +15,22 @@ export async function collectEvidence(): Promise<Evidence[]> {
     readSource("growth_30d", "Existing community tracking, last 30 days. Clicks are not purchases; no paid conversion attribution is inferred.", async () => {
       return await db()`select source,event_type,count(*)::int as events from community_growth_events where created_at >= now()-interval '30 days' group by source,event_type order by source,event_type`;
     }),
+    readSource("buffer_publications_30d", "App-prepared X approvals created in the last 30 days, with their latest saved Buffer delivery observation. Counts are per approval, not per polling event. No live provider refresh, impressions, clicks, conversions or revenue are inferred. Unknown outcomes may have published; do not automatically repost them.", async () => {
+      return await db()`with publications as (
+        select a.id,a.status,a.expires_at,
+          (select details from os_activity where entity_id=a.id::text and event in ('buffer_publish_started','buffer_publish_receipt','buffer_publish_checked','buffer_publish_unknown') order by id desc limit 1) as receipt
+        from os_approvals a where a.payload->>'executor'='buffer_x_v1' and a.created_at>=now()-interval '30 days'
+      ) select case when receipt->>'published'='true' then 'confirmed_published'
+          when receipt is not null then coalesce(receipt->>'state','unknown')
+          when status='pending' and expires_at<=now() then 'expired'
+          else status end as state,count(*)::int as approvals,
+          max(receipt->>'checkedAt') as last_provider_check
+        from publications group by 1 order by 1`;
+    }),
+    readSource("x_campaign_events_30d", "Recorded X community event counts by campaign in the last 30 days. At most 100 campaign/event groups shown. Repeat events are not unique people; source/campaign are URL labels, not proof of attribution. No link between a Buffer post and a payment is verified.", async () => {
+      const rows = await db()`select campaign,event_type,count(*)::int as events from community_growth_events where source='x' and created_at>=now()-interval '30 days' group by campaign,event_type order by campaign,event_type limit 101`;
+      return { rows: rows.slice(0,100), truncated: rows.length>100, conversionAttribution: "unavailable" };
+    }),
     readSource("affiliate_ledger", "Existing recorded commissions by currency/status, all time; not total business revenue or current payout authorization.", async () => {
       return await db()`select currency,status,count(*)::int as commissions,sum(commission_cents)::text as commission_cents from affiliate_commissions group by currency,status`;
     }),

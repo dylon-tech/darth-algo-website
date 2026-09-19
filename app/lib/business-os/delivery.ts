@@ -1,6 +1,7 @@
 import { randomBytes, randomUUID } from "node:crypto";
 import { db } from "../affiliate-db";
 import type { MenuButtons } from "./telegram-ui";
+import { isBufferPublication } from "./buffer-publication-policy";
 
 export function privateTelegramConfiguration() {
   const token = process.env.AI_OS_TELEGRAM_TOKEN;
@@ -53,12 +54,13 @@ export async function queueApprovalNotice(id: string) {
   const [approval] = await sql`select * from os_approvals where id=${id} and status='pending' and expires_at>now()`;
   if (!approval) return;
   const buttons: Buttons = [[]];
+  const publication = isBufferPublication(approval.payload);
   for (const [decision,label] of [["approved","Approve"],["revision_requested","Revise"],["declined","Decline"]] as const) {
     const token = randomBytes(16).toString("hex");
     await sql`insert into os_callback_actions(id,approval_id,payload_hash,decision,expires_at) values(${token},${id},${approval.payload_hash},${decision},${approval.expires_at})`;
-    buttons[0].push({text:label,callback_data:`os:${token}`});
+    buttons[0].push({text:publication && decision==="approved" ? "Approve & publish on X" : label,callback_data:`os:${token}`});
   }
-  await queueOwnerNotice(`approval:${id}`, `OWNER DECISION\n${approval.payload.summary}\n\n${approval.payload.details}\n\nEvidence: ${(approval.payload.evidence || []).join(", ")}\nExpires: ${new Date(approval.expires_at).toISOString()}\nApproval records your decision. No external executor is connected.`, buttons);
+  await queueOwnerNotice(`approval:${id}`, `OWNER DECISION\n${approval.payload.summary}\n\n${approval.payload.details}\n\nEvidence: ${(approval.payload.evidence || []).join(", ")}\nExpires: ${new Date(approval.expires_at).toISOString()}\n${publication ? "Approving sends this exact text publicly on the displayed X account now." : "Approval records your decision; this proposal does not execute an external action."}`, buttons);
 }
 export async function deliverOwnerNotices(limit=4) {
   const config = privateTelegramConfiguration();
