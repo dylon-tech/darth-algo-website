@@ -62,16 +62,16 @@ export async function coordinationTick(workerId: string) {
   const [control] = await sql`select paused from os_control where id=1`;
   if (!control || control.paused) { await heartbeat(workerId, "paused"); return { status: "paused" }; }
   if (process.env.AI_OS_ENABLED !== "true" || process.env.AI_OS_AI_ENABLED !== "true" || process.env.AI_OS_AUTONOMY_ENABLED !== "true") {
-    await heartbeat(workerId, "ai_disabled"); return { status: "ai_disabled" };
+    await heartbeat(workerId, "ai_disabled"); return { status: "ai_disabled", reason: "REQUIRED_AI_FLAGS_DISABLED" };
   }
   const { recurringBudgetPolicy } = await import("./budget-policy");
-  try { recurringBudgetPolicy(); } catch { await heartbeat(workerId, "budget_blocked"); return { status: "budget_blocked" }; }
-  if (!process.env.OPENAI_API_KEY) { await heartbeat(workerId, "ai_disabled"); return { status: "ai_disabled" }; }
+  try { recurringBudgetPolicy(); } catch { await heartbeat(workerId, "budget_blocked"); return { status: "budget_blocked", reason: "RECURRING_BUDGET_NOT_CONFIGURED" }; }
+  if (!process.env.OPENAI_API_KEY) { await heartbeat(workerId, "ai_disabled"); return { status: "ai_disabled", reason: "DIRECT_AI_CREDENTIAL_MISSING" }; }
   const { recurringBudgetAvailability } = await import("./budget");
   const availability = await recurringBudgetAvailability();
   const [attempts] = await sql`select count(*)::int as n from os_runs where created_at>now()-interval '24 hours'`;
   if (!availability.available || attempts.n >= 12) {
-    await heartbeat(workerId, "budget_blocked"); return { status: "budget_blocked" };
+    await heartbeat(workerId, "budget_blocked"); return { status: "budget_blocked", reason: availability.reason || "DAILY_RUN_LIMIT", attemptsLast24Hours: attempts.n };
   }
   const { queueJob } = await import("./jobs");
   await heartbeat(workerId, "working");

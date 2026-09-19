@@ -12,7 +12,11 @@ export async function GET(request:Request) {
   if(!secretMatches(request.headers.get("authorization"),process.env.CRON_SECRET ? `Bearer ${process.env.CRON_SECRET}` : undefined)) return Response.json({error:"Unauthorized"},{status:401});
   try {
     await syncContentApprovals();
-    if (process.env.AI_OS_COORDINATION_ENABLED === "true") return Response.json(await coordinationTick("vercel-cron"), {headers:{"Cache-Control":"no-store"}});
+    if (process.env.AI_OS_COORDINATION_ENABLED === "true") {
+      const result=await coordinationTick("vercel-cron");
+      console.info(JSON.stringify({event:"owner_work_tick",status:result.status,reason:"reason" in result ? result.reason : null}));
+      return Response.json(result, {headers:{"Cache-Control":"no-store"}});
+    }
     const [control]=await db()`select paused from os_control where id=1`;
     if(!control || control.paused) return Response.json({status:"paused"});
     const [queued]=await db()`select id from os_jobs where status in ('queued','running') limit 1`;
