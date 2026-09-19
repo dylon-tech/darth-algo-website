@@ -10,6 +10,7 @@ import { departments, type Department } from "../../../lib/business-os/policy";
 import { createDailyBrief } from "../../../lib/business-os/brief";
 import { configurePrivateWebhook, deliverOwnerNotices, privateTelegramConfiguration, telegramMethod } from "../../../lib/business-os/delivery";
 import { bufferStatus } from "../../../lib/business-os/buffer";
+import { testBufferDraft } from "../../../lib/business-os/buffer-test";
 
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
@@ -54,6 +55,7 @@ export async function POST(request:Request) {
       return json(await decide(body.id,body.payloadHash,body.decision,body.note));
     }
     if(body.operation==="buffer_check") return json(await bufferStatus());
+    if(body.operation==="buffer_draft_test") return json(await testBufferDraft());
     if(body.operation==="telegram_check") {
       const config=privateTelegramConfiguration(); if(!config.ready) return json({error:"PRIVATE_TELEGRAM_NOT_CONFIGURED"},409);
       const [bot,webhook]=await Promise.all([telegramMethod("getMe",{}),telegramMethod("getWebhookInfo",{})]);

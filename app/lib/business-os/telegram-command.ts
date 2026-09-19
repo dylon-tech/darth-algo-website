@@ -1,4 +1,5 @@
 import { db } from "../affiliate-db";
+import { bufferStatus } from "./buffer";
 import { recurringBudgetAvailability } from "./budget";
 import { departments, fingerprint, type Department } from "./policy";
 import { queueJob, setPaused, workOneJob } from "./jobs";
@@ -80,6 +81,14 @@ async function handleUpdate(update: OwnerUpdate) {
     const crew = departments.map(id => { const work = workSummary(id, current as unknown as import("./work-summary").WorkJob[], true); return `${agentNames[id]} · ${work.label}\n${work.title}\nGoal: ${revenueGoals[id]}`; }).join("\n\n");
     const mode=control?.paused ? "⏸ Work is paused" : process.env.AI_OS_AI_ENABLED!=="true" ? "⏸ Agents are switched off" : !budget.available ? `⏳ ${budgetMessage(budget.reason)}` : "🟢 Ready for work";
     await notice(`${mode}\n\nWorking: ${count("running")}\nWaiting: ${count("queued")}\nFinished: ${count("succeeded")}\nNeeds a check: ${count("failed")+count("unknown")}\nYour decisions: ${pending.count}\n\n${crew}\n\nGoals are intended benefits, not measured results. Counts include saved history. Tap an agent to talk.`); return;
+  }
+  if(command==="/buffer") {
+    try {
+      const connection=await bufferStatus();
+      const name=connection.xChannel?.displayName || connection.xChannel?.name || "X";
+      await notice(connection.ready ? `${name}: Buffer API connection verified. Public publishing is not activated. Open Settings in the dashboard to test a private Buffer draft.` : `Buffer needs attention: ${connection.error || "Connection unverified"}. Open Settings in the dashboard.`);
+    } catch { await notice("Buffer connection could not be verified. Check the API key and channel in dashboard Settings."); }
+    return;
   }
   if(command==="/approvals") {
     const approvals=await sql`select id from os_approvals where status='pending' and expires_at>now() order by created_at limit 5`;
