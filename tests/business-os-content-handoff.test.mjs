@@ -73,6 +73,9 @@ try {
  process.env.AI_OS_AI_ENABLED='true';process.env.AI_OS_AUTONOMY_ENABLED='true';
  await syncContentApprovals();await syncContentApprovals();
  assert.equal((await database.query("select * from os_jobs where request_key='launch:x-approval-v1'")).rows.length,1,'Launch assignment dedupes across restarts');
+ const promotions=(await database.query("select * from os_jobs where request_key='launch:x-links-v1'")).rows;
+ assert.equal(promotions.length,1,'Links-page promotion dedupes across restarts');
+ assert.match(promotions[0].message,/supplied linksUrl/);
  await database.query("update os_approvals set status='revision_requested',decided_at=now(),decision_note='Make it shorter' where id=$1",[a.id]);
  await syncContentApprovals();await syncContentApprovals();
  assert.equal((await database.query("select * from os_jobs where request_key=$1",['revision:x:'+a.id])).rows.length,1,'Revision request queues one fresh Content job');
