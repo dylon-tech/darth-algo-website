@@ -10,6 +10,8 @@ export const centerLink = {text:"🏠 Open dashboard",url:"https://www.darthalgo
 export function homeMenu(): MenuButtons {
   return [
     ...Array.from({length:4},(_,i)=>departments.slice(i*2,i*2+2).map(d=>({text:agentNames[d],callback_data:`ui:agent:${d}`}))),
+    [{text:"📸 Fresh media",callback_data:"ui:work:content:media-scout"},{text:"🗓 Today’s posts",callback_data:"ui:work:content:daily-content-engine"}],
+    [{text:"🌐 Community scout",callback_data:"ui:work:research:community-scout"},{text:"🕵️ Competitor intel",callback_data:"ui:work:research:competitor-intelligence"}],
     [{text:"👀 Who’s working?",callback_data:"ui:nav:status"},{text:"✅ My decisions",callback_data:"ui:nav:approvals"}],
     [{text:"☀️ Daily brief",callback_data:"ui:nav:brief"},centerLink],
   ];
