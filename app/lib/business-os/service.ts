@@ -157,6 +157,10 @@ export async function runAgent(department: Department, requestKey: string, messa
     return { id, status: "completed", plan, evidence };
   } catch (error) {
     const errorCode = error instanceof Error && /^(AI_(BUDGET|DAILY_BUDGET|MONTHLY_BUDGET|RECURRING_SPEND)_|DAILY_RUN_LIMIT)/.test(error.message) ? error.message : error instanceof Error && /^AI_PROVIDER_(401|403|429|400|404|500|502|503)(_(insufficient_quota|invalid_api_key|model_not_found|unsupported_parameter|rate_limit_exceeded))?$/.test(error.message) ? error.message : "CEO_RUN_FAILED";
+    const knownFailures = ["Invalid X draft","Invalid CEO output","Invalid task or evidence","Invalid proposal or evidence","AI_INPUT_LIMIT","AI_INCOMPLETE","AI_EMPTY_OUTPUT","X_DRAFT_CONTENT_ONLY","RUN_LEASE_EXPIRED_OR_PAUSED"];
+    const failure = error instanceof Error && knownFailures.includes(error.message) ? error.message : errorCode;
+    const databaseCode = error && typeof error === "object" && "code" in error && typeof error.code === "string" && /^[A-Z0-9]{5}$/.test(error.code) ? error.code : undefined;
+    console.warn(JSON.stringify({event:"agent_run_failed",department,runId:id,failure,databaseCode}));
     await sql.begin(async tx => {
       await tx`update os_runs set status='failed',finished_at=now(),error_code=${errorCode} where id=${id} and status='running'`;
       if (taskId) await tx`update os_tasks set status='blocked',updated_at=now() where id=${taskId} and status='in_progress'`;
