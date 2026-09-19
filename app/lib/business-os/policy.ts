@@ -52,6 +52,7 @@ export function validatePlan(raw: unknown, sourceIds: string[]): Plan {
   return p;
 }
 
-// No external executor is exposed in Phase 1. Approval records are decisions,
-// never permission for an agent to call arbitrary URLs, send messages or spend.
+// Generic model approvals remain decisions, never permission for arbitrary
+// external actions. The separate Buffer executor requires its exact typed payload
+// and an owner-prepared approval record.
 export function canExecuteExternalAction(): false { return false; }

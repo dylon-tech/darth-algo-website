@@ -376,3 +376,48 @@ reconciliation/cancellation, Metricool runtime credentials/adapters, media
 creation and research tools, conversion attribution and performance learning.
 The generic approval workflow remains non-executing. Do not advertise an
 unattended publisher until an approved real delivery is verified.
+
+
+## Exact X publishing approvals (September 19, 2026)
+
+The live private-draft bridge was verified by the owner on the production dashboard.
+The next execution slice is text-only X publishing, prepared separately in Settings:
+
+- `buffer_prepare` reads the live X destination and requires the saved successful
+  draft-test event. It creates a canonical, fingerprinted approval with exact text,
+  channel, and `shareNow` action. It does not create a public Buffer post.
+- Only that typed approval, plus its owner-preparation event, can execute. Existing
+  model-generated approvals retain `executor: not_connected` and cannot publish.
+- Both dashboard and private Telegram use the explicit **Approve & publish on X**
+  label. Approval expires after 24 hours. Preview/local deployments cannot submit.
+- The approved row is locked and checked for exact hash, owner decision, expiry,
+  verified draft, and pause state before recording a durable `buffer_publish_started`
+  event. The provider mutation runs once after commit; it rechecks the live channel.
+- The first receipt is saved before readback. Retrying an attempted approval reads
+  its saved post or refuses to resubmit an unknown outcome. A second approval for
+  the same text/account is blocked after approval, even after an uncertain response.
+- **Check receipt** is read-only, including when paused or expired. Only exact post
+  text/channel/id with `sent` plus `sentAt` is reported as confirmed published.
+  A receipt or `sending`/`scheduled` state alone is not publication confirmation.
+- If approval was saved but the execution never started, **Send approved post** can
+  start it while unexpired and unpaused. No cron publishes previously approved posts.
+- An in-flight provider call can finish after Pause. Unknown outcomes, provider
+  rejection, and receipt-storage failure are deliberately not automatically retried.
+  Inspect Buffer and X manually; this release has no administrative reset/repost.
+- No new schema or credential is required. The production key expires October 19,
+  2026 and needs rotation in Buffer and Vercel before then.
+
+The evidence layer now reports saved publishing states once per approval and the
+existing X community events by campaign. These are observed operations and event
+counts, not paid attribution, unique users, impressions, or conversion lift.
+Community links use `https://www.darthalgo.com/community?source=x&campaign=NAME`.
+No link is silently added to approved content. Paid-conversion and retention
+adapters remain unverified; autonomous optimization and scaling remain incomplete.
+
+Validation: `node tests/business-os-buffer-publishing.test.mjs` exercises the actual
+adapter, executor, and decision dispatcher with serialized transaction/API fixtures:
+production/owner/preparation gates, expired/paused/tampered payloads, concurrent
+approval/retry, accepted-but-lost responses, failed receipt persistence, independent
+readback, destination changes, same-content replay prevention, and generic proposal
+non-execution. This is not a live PostgreSQL isolation test or a public X test.
+A real public post still needs the owner's exact content approval.

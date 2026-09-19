@@ -41,8 +41,8 @@ async function handleUpdate(update: OwnerUpdate) {
       await sql`insert into os_telegram_state(owner_id,revision_id,revision_hash) values(${owner},${approval.id},${approval.payload_hash}) on conflict(owner_id) do update set revision_id=excluded.revision_id,revision_hash=excluded.revision_hash`;
       await notice(`What should change in: ${approval.payload.summary}?\nReply with your revision instructions, or /cancel.`);
     } else {
-      await decide(approval.id,action.payload_hash,action.decision,"Owner Telegram decision");
-      await notice(`Decision recorded: ${action.decision}. No external action was executed.`);
+      const result=await decide(approval.id,action.payload_hash,action.decision,"Owner Telegram decision");
+      await notice(result.message);
     }
     if(callback.id) { try { await telegramMethod("answerCallbackQuery",{callback_query_id:callback.id,text:"Owner decision received"}); } catch { /* A late acknowledgement does not replay a decision. */ } }
     return;
@@ -70,7 +70,7 @@ async function handleUpdate(update: OwnerUpdate) {
   }
   if(command==="/agents") { await notice("Who would you like to talk to? 👇"); return; }
 
-  if(command==="/pause" || command==="/resume") { const result=await setPaused(command==="/pause"); await notice(result.paused ? "New agent work is paused. An already-started provider request may finish; external execution is disabled." : "Work resumed within configured AI limits. AI must be enabled before queued work can run."); return; }
+  if(command==="/pause" || command==="/resume") { const result=await setPaused(command==="/pause"); await notice(result.paused ? "New work and new X submissions are paused. An already-started provider request may finish." : "Work resumed within configured AI limits. Public X posts still require exact approval."); return; }
   if(command==="/status") {
     const budget = await recurringBudgetAvailability();
     const jobs=await sql`select status,count(*)::int as count from os_jobs group by status`;
@@ -86,7 +86,7 @@ async function handleUpdate(update: OwnerUpdate) {
     try {
       const connection=await bufferStatus();
       const name=connection.xChannel?.displayName || connection.xChannel?.name || "X";
-      await notice(connection.ready ? `${name}: Buffer API connection verified. Public publishing is not activated. Open Settings in the dashboard to test a private Buffer draft.` : `Buffer needs attention: ${connection.error || "Connection unverified"}. Open Settings in the dashboard.`);
+      await notice(connection.ready ? `${name}: Buffer API connection verified. Prepare a text post in dashboard Settings, then review its exact public-publishing approval. Saved delivery receipts are in Approvals.` : `Buffer needs attention: ${connection.error || "Connection unverified"}. Open Settings in the dashboard.`);
     } catch { await notice("Buffer connection could not be verified. Check the API key and channel in dashboard Settings."); }
     return;
   }
