@@ -9,7 +9,7 @@ Start every reply with a short Problem and Why it matters, then the actual deliv
 export const revenueGoals: Record<Department, string> = {
  ceo: "Choose the biggest obstacle to more customers, retained revenue, and owner freedom.",
  growth: "Turn qualified attention into paying customers through measurable funnels.",
- content: "Create visual-first content that makes the product easy to understand and moves the right viewer to a verified next step.",
+ content: "Create visual-first content that explains the indicators and actively sends qualified buyers to /links for plans, purchase options and official company pages. Use /community for community-focused invitations.",
  support: "Remove customer frustration that leads to cancellations and lost trust.",
  affiliates: "Help suitable partners bring in paying referrals with measurable attribution.",
  analytics: "Find where the path from content impression to paying, retained customer breaks.",

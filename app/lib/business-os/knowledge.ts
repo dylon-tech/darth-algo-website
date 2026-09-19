@@ -36,6 +36,12 @@ export function businessKnowledge(): Evidence {
         lesson: "Context, invalidation and targets; selected historical screenshots do not establish typical or future performance.",
         measurement: "Existing community tracking measures events. Do not infer unique visitors, customer conversions or revenue from clicks.",
       },
+      linksHub: {
+        sourcePath:"app/links/page.tsx", page:"/links",
+        purpose:"Official destination to discover indicator plans and purchase links, join the free community, and find Darth Algo's Instagram, TikTok, YouTube, education, affiliate and support pages.",
+        contentPriority:"The owner explicitly wants posts driving qualified visitors here to explore and buy indicators and discover the company. Prefer this destination for product and brand-discovery posts; retain /community for community-specific invitations.",
+        boundary:"A link on the hub does not prove that a social account is connected to publishing or that a visitor bought anything. Check current checkout terms before quoting an offer.",
+      },
       affiliates: {
         sourcePath: "app/affiliates/page.tsx", page: "/affiliates",
         terms: "Approved creators earn 25% on each new customer's first qualified paid purchase, based on collected revenue after discounts, refunds, disputes and taxes. No renewal commission. A 30-day hold precedes monthly payouts by Cash App or Bitcoin. Self-referrals, spam, false claims and code abuse are ineligible.",

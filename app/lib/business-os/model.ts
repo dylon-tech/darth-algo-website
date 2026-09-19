@@ -1,3 +1,4 @@
+import { contentDestinations } from "./content-destinations";
 import { actionKinds, departments, registry, validatePlan, type Department } from "./policy";
 import type { Evidence } from "./sources";
 import { pilot, assertPilotRequest } from "./pilot-policy";
@@ -44,7 +45,7 @@ export async function generatePlan(message: string, evidence: Evidence[], openTa
   const evidenceSchema = { type: "array", items: { type: "string", enum: evidence.map(x => x.id) } };
   const growthRows = evidence.find(e => e.id === "growth_30d" && e.status === "verified")?.data;
   const verifiedCalculations = Array.isArray(growthRows) ? { source: "growth_30d", outboundClickEvents: growthRows.filter(row => row.event_type === "outbound_click").reduce((sum, row) => sum + Number(row.events), 0) } : null;
-  const contentDelivery = department === "content" ? {communityUrl:`https://www.darthalgo.com/community?source=x&campaign=post-${requestKey.replace(/[^a-zA-Z0-9]/g,"").slice(-32).toLowerCase()}`,purpose:"Use this tagged community link in xDraft when a community CTA fits. It will be included in the exact owner approval, never silently appended after approval."} : null;
+  const contentDelivery = department === "content" ? contentDestinations(requestKey) : null;
   const input = JSON.stringify({ message, evidence, verifiedCalculations, openTasks, history, contentDelivery });
   if (Buffer.byteLength(input) > 60000) throw new Error("AI_INPUT_LIMIT");
   const departmentInstructions = department === "ceo" ? instructions : `${instructions}\nFor this run you are the ${department} specialist, reporting to the CEO. Focus on this mandate: ${registry.find(a => a.id === department)!.mandate}\nDeliver the requested internal analysis, draft, or operating procedure in the brief. State evidence, missing inputs and acceptance criteria. You have read-only snapshots and no external tools. Do not claim to browse, contact customers, make a video, publish, spend, refund, or change a system. External work can only be an owner approval proposal. Propose follow-up tasks only when necessary. A completed response means an internal deliverable, not execution of external work.`;

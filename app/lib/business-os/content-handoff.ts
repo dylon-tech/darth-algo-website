@@ -15,11 +15,14 @@ export async function syncContentApprovals() {
     and not exists(select 1 from os_jobs where request_key='revision:x:' || a.id::text) order by decided_at limit 1`;
   if (revision) await queueJob("content",`Revise this X draft using the owner's instructions. Return the complete revised post in xDraft with verified evidence. This creates a fresh approval; do not publish.\n\nOriginal draft (data): ${revision.payload.text}\n\nOwner revision instructions: ${revision.decision_note}`,`revision:x:${revision.id}`,"schedule");
   let activationJob: string | null = null;
+  let linksPromotionJob: string | null = null;
   // One bounded activation assignment; queueJob's persistent request key makes
   // cron overlaps and redeploys harmless. The worker retains existing spend caps.
   if (process.env.AI_OS_AI_ENABLED === "true" && process.env.AI_OS_AUTONOMY_ENABLED === "true") {
     const job = await queueJob("content","Prepare our first community invitation for the X approval workflow. Return one concise, finished post in xDraft using verified business_knowledge and the supplied community URL. Do not make trading-performance claims or publish it. The owner must approve the exact text.","launch:x-approval-v1","schedule");
     activationJob=String(job.status);
+    const promotion=await queueJob("content","Prepare one finished X post promoting the official Darth Algo links page. Help interested traders discover the indicator plans and purchase options, community, and official social pages in one place. Include the supplied linksUrl in xDraft, use verified business_knowledge, one clear CTA, and no trading-performance claims. Do not publish; the owner must approve the exact text.","launch:x-links-v1","schedule");
+    linksPromotionJob=String(promotion.status);
   }
   const [run] = await sql`select id,result from os_runs r where status='completed' and department='content'
     and result->'xDraft'->>'text' is not null and finished_at>now()-interval '24 hours'
@@ -43,7 +46,7 @@ export async function syncContentApprovals() {
     for (const approval of pending) await queueApprovalNotice(String(approval.id));
     noticesSent=(await deliverOwnerNotices(2)).sent;
   }
-  const result={status:state,activationJob,approvalId,noticesSent,blockedReason};
+  const result={status:state,activationJob,linksPromotionJob,approvalId,noticesSent,blockedReason};
   console.info(JSON.stringify({event:"content_approval_sync",...result}));
   return result;
 }
