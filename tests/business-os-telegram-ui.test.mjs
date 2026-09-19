@@ -25,6 +25,10 @@ try {
   assert.equal(ui.naturalCommand('Growth, find our next customers'),'/growth find our next customers');
   assert.equal(ui.naturalCommand('CONTENT: Write a post'),'/content Write a post');
   assert.equal(ui.naturalCommand('menu'),'/agents');
+  assert.equal(ui.naturalCommand('connect dashboard'),'/connect');
+  assert.deepEqual(ui.menuAction('ui:nav:connect'),{command:'/connect'});
+  assert.ok(ui.homeMenu().flat().some(b=>b.callback_data==='ui:nav:connect'));
+  assert.equal(isPrivateOwnerUpdate({update_id:2,message:{from:{id:456},chat:{id:456,type:'private'},text:'/connect'}},'123'),false);
   assert.equal(ui.naturalCommand('Who’s working?'),'/status');
   assert.equal(ui.naturalCommand('Please revise the draft'), 'Please revise the draft');
   const full='A complete draft. '.repeat(100);

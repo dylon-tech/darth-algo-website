@@ -1,5 +1,6 @@
 import { db } from "../affiliate-db";
 import { bufferStatus } from "./buffer";
+import { createDeviceLink } from "./device-links";
 import { syncContentApprovals } from "./content-handoff";
 import { recurringBudgetAvailability } from "./budget";
 import { departments, fingerprint, type Department } from "./policy";
@@ -67,7 +68,16 @@ async function handleUpdate(update: OwnerUpdate) {
     await notice(result.message); return;
   }
   if(command==="/start" || command==="/help") {
-    await notice("Your Darth Algo crew 👋\n\nTap an agent below, then type what you need or pick a job. You can also say ‘Growth, find our next customers.’"); return;
+    await notice("Your Darth Algo crew 👋\n\nTap an agent below, then type what you need or pick a job. You can also say ‘Growth, find our next customers.’\n\nDashboard asking for a setup link? Tap Connect dashboard, or send /connect."); return;
+  }
+  if(command==="/connect") {
+    // This inbox accepts only webhook-authenticated private owner updates.
+    // Deliver the bearer link directly, never to the persisted notice outbox.
+    const link=await createDeviceLink("https://www.darthalgo.com");
+    await telegramMethod("sendMessage",{chat_id:owner,protect_content:true,
+      text:"Connect your dashboard\n\nTap the button below, then Connect this device. This private link works once and expires in 24 hours. Use the same browser when you return.\n\nOn iPhone, open the link in Safari before connecting if you want to add the dashboard to your Home Screen.",
+      reply_markup:{inline_keyboard:[[{text:"🔑 Connect this device",url:link.url}]]}});
+    return;
   }
   if(command==="/agents") { await notice("Who would you like to talk to? 👇"); return; }
 
@@ -153,10 +163,18 @@ export async function workAndNotify() {
   if(result.jobId) {
     const [run]=result.runId ? await db()`select result from os_runs where id=${result.runId}` : [];
     const department=result.department as Department;
+    const [job]=await db()`select source from os_jobs where id=${result.jobId}`;
+    const scheduled=job?.source==="schedule";
     const response=run?.result?.brief
-      ? `✅ ${agentNames[department]} finished\n\n${shortReply(run.result.brief)}`
+      ? `📝 ${agentNames[department]} — reply ready\n\n${shortReply(run.result.brief)}`
       : `⚠️ ${agentNames[department]} needs a check\n\n${result.status==="budget_blocked" ? budgetMessage(result.reason) : "This job couldn’t finish. Its details are saved in the dashboard."}`;
-    await queueOwnerNotice(`job-result:${result.jobId}`,response,agentMenu(department));
+    // Routine scheduled reports stay in Messages. Direct requests still get a
+    // reply; scheduled failures notify once per department/day. Approval cards
+    // retain their own exact-payload delivery regardless of job source.
+    if(!scheduled || !run?.result?.brief) {
+      const key=scheduled ? `scheduled-check:${department}:${new Date().toISOString().slice(0,10)}` : `job-result:${result.jobId}`;
+      await queueOwnerNotice(key,response,agentMenu(department));
+    }
     if(result.runId) {
       const approvals=await db()`select id from os_approvals where run_id=${result.runId} and status='pending'`;
       for(const a of approvals) await queueApprovalNotice(a.id);
