@@ -44,3 +44,10 @@ Home and Pro now use a dedicated animated SVG reconstruction based on the owned 
 The homepage and Pro simulation now autoplay while visible and repeat every 24 seconds. The scripted BUY and SELL examples each confirm a signal and display entry, SL, TP1 and TP2 in the same frame. Targets gain checkmarks only after the visible simulated candle reaches their price; each scripted example reaches both targets before the next setup. The on-chart heading and caption disclose the winning scenario as scripted and say real trades can lose. These examples are not indicator performance evidence.
 
 Pause freezes the current frame; resume continues it. Hidden tabs, offscreen scenes, the final screenshot chapter and reduced-motion settings stop active rendering. A new loop clears prior signals and hit states. Pure timeline tests cover signal/plan synchronization, no future target leakage, long/short level ordering, both target hits, loop reset and pause progress.
+
+## Trading-terminal feature views
+The Pro tour now has five feature views: Chart (full overview), Trend (cloud with subdued candles), Signals (markers and candles), Risk (only the current plan and price context), and Dashboard (the panel alone). Each uses an animated SVG viewBox crop; unrelated overlays and chart chrome are hidden in close-ups. The fifth view remains interactive rather than switching to a screenshot. Original chart captures remain in the product galleries.
+
+The flat chart uses symbol/timeframe chrome, drawing-rail motifs, rolling time grid, volume bars and a moving price marker. Each loop takes 14 seconds, and forming candles update through discrete OHLC ticks with intrabar reversals. Hit testing uses only the extremes already revealed by those ticks. New candles move the chart left; the camera follows the selected feature. Pause/resume, hidden-tab suspension and the scripted-example disclosure remain. Reduced-motion users get a static Pro chart with immediate feature zooms.
+
+Validation covers distinct finite feature crops, keeping the dashboard/risk labels inside their crops, tick boundaries and OHLC extremes, target-hit ordering, and the existing navigation/loop tests.

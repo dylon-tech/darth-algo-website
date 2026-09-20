@@ -86,3 +86,14 @@
 .journey-webgl .pro-chart-simulation{position:absolute;inset:0;margin:auto;width:96%;height:auto;max-height:96%;aspect-ratio:1120/540;transform-origin:center;filter:drop-shadow(0 24px 36px #0009);border:1px solid #ffffff1a;border-radius:5px;background:#141923!important;font-family:Arial,sans-serif}
 .chart-journey:has(.pro-chart-simulation) .journey-world-wrap{top:32%}
 @media(max-width:767px){.journey-webgl .pro-chart-simulation{width:97%;max-height:100%}.chart-journey:has(.pro-chart-simulation) .journey-world-wrap{top:225px;left:0;right:0}.chart-journey:has(.pro-chart-simulation) .journey-layer-labels{bottom:0}}
+
+/* Trading-terminal feature explorer. Each view zooms into one indicator layer. */
+.chart-journey[data-pro="true"] .journey-webgl .pro-chart-simulation{width:100%;height:100%;max-height:none;aspect-ratio:auto;inset:0;border-radius:8px;filter:none;background:#131722!important}
+.chart-journey[data-pro="true"] .journey-world-wrap{top:29%;bottom:156px;left:4%;right:4%;perspective:none}
+.chart-journey[data-pro="true"] .journey-heading{top:9%}
+.chart-journey[data-pro="true"] .journey-heading h2{font-size:clamp(32px,3.8vw,56px)}
+.chart-journey[data-pro="true"] .journey-layer-labels,.chart-journey[data-pro="true"] .journey-backdrop-word{display:none}
+.chart-journey[data-pro="true"][data-ready="true"] .journey-proof{display:none}
+.chart-journey[data-pro="true"] .journey-caption{font-size:10px}
+@media(max-width:767px){.chart-journey[data-pro="true"] .journey-world-wrap{top:200px;bottom:151px;left:12px;right:12px}.chart-journey[data-pro="true"] .journey-heading{top:60px}.chart-journey[data-pro="true"] .journey-heading h2{font-size:30px}.chart-journey[data-pro="true"] .journey-caption{font-size:8px}}
+@media(max-height:650px) and (min-width:768px){.chart-journey[data-pro="true"] .journey-world-wrap{top:185px;bottom:143px}.chart-journey[data-pro="true"] .journey-heading{top:45px}.chart-journey[data-pro="true"] .journey-copy{margin-top:6px}}

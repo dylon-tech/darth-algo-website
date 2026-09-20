@@ -9,6 +9,14 @@ import type { EngineScene } from "./immersive-engine";
 
 const colors = { red: "#ff4c65", swing: "#58afff", scalp: "#ffa64e", pro: "#b48aff" };
 const chapters = ["The chart", "Trend", "Signals", "Risk", "Your move"];
+const proChapters = ["Chart", "Trend", "Signals", "Risk", "Dashboard"];
+const proCopy = [
+  {title:"Your chart, in motion.",copy:"Pick a feature below to take a closer look."},
+  {title:"Follow the trend cloud.",copy:"A close-up of the cloud as candles move through it."},
+  {title:"Watch the signals appear.",copy:"BUY and SELL markers in their chart context."},
+  {title:"See the complete risk plan.",copy:"Entry, stop and targets appear together at each signal."},
+  {title:"Read the dashboard.",copy:"Trend, signal, RSI, volatility and risk/reward in one view."},
+];
 const defaultCopy = [
   { title: "Step inside the chart.", copy: "One chart. Three layers of clarity. Scroll to see how they fit together." },
   { title: "Find the direction.", copy: "Trend context comes forward, helping you see beyond the next candle." },
@@ -38,7 +46,7 @@ export default function ChartJourney({ scenes, accent = "red" }: { scenes: Engin
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
   const [nearby, setNearby] = useState(false);
-  const copy = active > 0 && active < 4 && accent !== "red" ? scenes[active - 1] : defaultCopy[active];
+  const copy = isPro ? proCopy[active] : active > 0 && active < 4 ? scenes[active - 1] : defaultCopy[active];
   const proof = accent === "red" ? { image: "/indicator-examples/darth-algo-feature-map-03.png", alt: "Actual Darth Algo Pro reference showing SELL, SL, ENTRY, TP1 and TP2" } : scenes[Math.min(2, Math.max(0, active - 1))];
   useEffect(() => {
     const preference = matchMedia("(prefers-reduced-motion: reduce)");
@@ -49,7 +57,7 @@ export default function ChartJourney({ scenes, accent = "red" }: { scenes: Engin
     return () => { preference.removeEventListener("change", change); observer.disconnect(); };
   }, []);
   useEffect(() => {
-    if (!nearby || !motion || failed || !canvas.current) return;
+    if (!nearby || (!motion && !isPro) || failed || !canvas.current) return;
     const host = canvas.current;
     let cancelled = false;
     let observer: ResizeObserver | undefined;
@@ -60,15 +68,15 @@ export default function ChartJourney({ scenes, accent = "red" }: { scenes: Engin
       if (cancelled) return;
       try {
         world.current = createChartWorld(host, colors[accent], () => { setFailed(true); setReady(false); });
-        world.current.render(current.current, playback.current); setReady(true);
+        world.current.render(current.current, playback.current, !motion); setReady(true);
         observer = new ResizeObserver(() => world.current?.resize()); observer.observe(host);
         requestFrame.current();
       } catch { setFailed(true); setReady(false); }
     }).catch(() => { if (!cancelled) { setFailed(true); setReady(false); } });
     return () => { cancelled = true; observer?.disconnect(); world.current?.dispose(); world.current = null; setReady(false); };
-  }, [nearby, motion, failed, accent]);
+  }, [nearby, motion, failed, accent, isPro]);
   useEffect(() => {
-    if (!motion || failed) { playing.current = false; playback.current = isPro ? 0 : 1; setIsPlaying(false); }
+    if (!motion || failed) { playing.current = false; playback.current = isPro ? .38 : 1; setIsPlaying(false); }
     const section = root.current, viewport = stage.current;
     if (!section || !viewport) return;
     let frame = 0;
@@ -84,7 +92,7 @@ export default function ChartJourney({ scenes, accent = "red" }: { scenes: Engin
       current.current = Math.abs(difference) < .0002 || !motion ? target.current : current.current + difference * (1 - Math.exp(-elapsed / 100));
       const value = current.current;
       if (isPro) {
-        const run = !!(motion && world.current && !paused.current && value < .81);
+        const run = !!(motion && world.current && !paused.current);
         if (playing.current !== run) { playing.current = run; setIsPlaying(run); }
         if (run) playback.current = advanceProLoop(playback.current, elapsed);
       }
@@ -97,10 +105,10 @@ export default function ChartJourney({ scenes, accent = "red" }: { scenes: Engin
           playing.current = false; playback.current = 1; setIsPlaying(false);
         }
       }
-      world.current?.render(value, playback.current);
+      world.current?.render(value, playback.current, !motion);
       if (playbackStatus.current) playbackStatus.current.textContent = isPro ? proSimulation(playback.current).phase : playing.current ? setupPlayback(playback.current).phase : "Watch a setup unfold";
       section.style.setProperty("--journey-progress", String(value));
-      section.style.setProperty("--proof-reveal", String(smooth(.81, .92, value)));
+      section.style.setProperty("--proof-reveal", String(isPro ? 0 : smooth(.81, .92, value)));
       const next = chapterAt(value);
       if (next !== activeRef.current) { activeRef.current = next; setActive(next); }
       if (Math.abs(target.current - value) > .0002 || playing.current) frame = requestAnimationFrame(paint);
@@ -141,28 +149,28 @@ export default function ChartJourney({ scenes, accent = "red" }: { scenes: Engin
   };
   return (
     <>
-    <section ref={root} id="inside-the-engine" className={`chart-journey immersion-${accent}`} data-animated={motion && !failed} data-ready={ready} data-chapter={active} aria-label="Darth Algo 3D product tour">
+    <section ref={root} id="inside-the-engine" className={`chart-journey immersion-${accent}`} data-pro={isPro} data-animated={motion && !failed} data-ready={ready} data-chapter={active} aria-label="Darth Algo 3D product tour">
       <div ref={stage} className="chart-journey-stage">
         <div className="journey-topline"><span>DARTH ALGO / THE INTERACTIVE TOUR</span><a href="#journey-finish">Skip to the tools ↗</a></div>
         <div className="journey-heading" key={active}>
-          <p className="journey-kicker">0{active + 1} <span>/</span> {chapters[active]}</p>
-          <h2>{copy.title}</h2><p className="journey-copy">{active === 0 && (!motion || failed) ? "Tap a chapter to explore the actual indicator charts." : copy.copy}</p>
+          <p className="journey-kicker">0{active + 1} <span>/</span> {(isPro ? proChapters : chapters)[active]}</p>
+          <h2>{copy.title}</h2><p className="journey-copy">{active === 0 && (!motion || failed) && !isPro ? "Tap a chapter to explore the actual indicator charts." : copy.copy}</p>
         </div>
         <div className="journey-world-wrap">
           <div className="journey-light journey-light-left" aria-hidden="true" /><div className="journey-light journey-light-right" aria-hidden="true" />
           <span className="journey-backdrop-word" aria-hidden="true">{active === 0 ? "CLARITY" : active === 1 ? "CONTEXT" : active === 2 ? "PRECISION" : active === 3 ? "CONTROL" : "DARTH ALGO"}</span>
           <div ref={canvas} className="journey-webgl" aria-hidden="true" />
           <div className="journey-layer-labels" aria-hidden="true"><span data-visible={active >= 1}>01 — Trend context</span><span data-visible={active >= 2}>02 — Signal markers</span><span data-visible={active >= 3}>03 — Risk plan</span></div>
-          <div className="journey-proof" aria-hidden={ready && active !== 4}>
+          <div className="journey-proof" aria-hidden={ready && (isPro || active !== 4)}>
             <div className="journey-proof-bar"><span>DARTH ALGO / ACTUAL PRODUCT</span><span>TRADINGVIEW</span></div>
-            <a href={proof.image} target="_blank" rel="noopener noreferrer" tabIndex={ready && active !== 4 ? -1 : 0} aria-label="Open the actual Darth Algo chart full-size"><Image src={proof.image} alt={proof.alt} fill sizes="(max-width: 768px) 90vw, 950px" className="object-contain" /></a>
+            <a href={proof.image} target="_blank" rel="noopener noreferrer" tabIndex={ready && (isPro || active !== 4) ? -1 : 0} aria-label="Open the actual Darth Algo chart full-size"><Image src={proof.image} alt={proof.alt} fill sizes="(max-width: 768px) 90vw, 950px" className="object-contain" /></a>
             <p>Recorded chart example · Tap to inspect</p>
           </div>
         </div>
         <div className="journey-bottom">
-          {ready && active !== 4 && <div className="journey-playback"><span ref={playbackStatus}>Watch a setup unfold</span><button type="button" onClick={replay} aria-label={isPro ? isPlaying ? "Pause demo animation" : "Resume demo animation" : isPlaying ? "Stop setup animation" : "Replay setup animation"}>{isPro ? isPlaying ? "Ⅱ Pause demo" : "▶ Resume demo" : isPlaying ? "■ Stop demo" : "▶ Replay setup"}</button></div>}
-          <div className="journey-chapters" role="group" aria-label="Tour chapters">{chapters.map((label, index) => <button key={label} type="button" onClick={() => select(index)} aria-pressed={active === index}><span>0{index + 1}</span>{label}<i /></button>)}</div>
-          <div className="journey-caption"><span>{ready && active !== 4 ? isPro ? "Scripted winning example · Real trades can lose" : "Simulated indicator walkthrough · Not live signals" : "Recorded product example · Not typical results"}</span><button type="button" onClick={toggleMotion} aria-pressed={motion && !failed} disabled={failed}>{failed ? "Still view" : motion ? "Motion on" : "Motion off"}</button></div>
+          {ready && (isPro ? motion : active !== 4) && <div className="journey-playback"><span ref={playbackStatus}>Watch a setup unfold</span><button type="button" onClick={replay} aria-label={isPro ? isPlaying ? "Pause demo animation" : "Resume demo animation" : isPlaying ? "Stop setup animation" : "Replay setup animation"}>{isPro ? isPlaying ? "Ⅱ Pause demo" : "▶ Resume demo" : isPlaying ? "■ Stop demo" : "▶ Replay setup"}</button></div>}
+          <div className="journey-chapters" role="group" aria-label="Tour chapters">{(isPro ? proChapters : chapters).map((label, index) => <button key={label} type="button" onClick={() => select(index)} aria-pressed={active === index}><span>0{index + 1}</span>{label}<i /></button>)}</div>
+          <div className="journey-caption"><span>{ready && (isPro || active !== 4) ? isPro ? "Scripted winning example · Real trades can lose" : "Simulated indicator walkthrough · Not live signals" : "Recorded product example · Not typical results"}</span><button type="button" onClick={toggleMotion} aria-pressed={motion && !failed} disabled={failed}>{failed ? "Still view" : motion ? "Motion on" : "Motion off"}</button></div>
         </div>
       </div>
     </section>
