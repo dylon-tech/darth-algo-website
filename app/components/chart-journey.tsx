@@ -36,7 +36,7 @@ export default function ChartJourney({ scenes, accent = "red" }: { scenes: Engin
   const [failed, setFailed] = useState(false);
   const [nearby, setNearby] = useState(false);
   const copy = active > 0 && active < 4 && accent !== "red" ? scenes[active - 1] : defaultCopy[active];
-  const proof = scenes[Math.min(2, Math.max(0, active - 1))];
+  const proof = accent === "red" ? { image: "/indicator-examples/darth-algo-feature-map-03.png", alt: "Actual Darth Algo Pro reference showing SELL, SL, ENTRY, TP1 and TP2" } : scenes[Math.min(2, Math.max(0, active - 1))];
   useEffect(() => {
     const preference = matchMedia("(prefers-reduced-motion: reduce)");
     const change = () => setMotion(!preference.matches);
@@ -50,7 +50,10 @@ export default function ChartJourney({ scenes, accent = "red" }: { scenes: Engin
     const host = canvas.current;
     let cancelled = false;
     let observer: ResizeObserver | undefined;
-    import("./chart-world").then(({ createChartWorld }) => {
+    const loader = accent === "red" || accent === "pro"
+      ? import("./pro-chart-world").then(module => module.createProChartWorld)
+      : import("./chart-world").then(module => module.createChartWorld);
+    loader.then(createChartWorld => {
       if (cancelled) return;
       try {
         world.current = createChartWorld(host, colors[accent], () => { setFailed(true); setReady(false); });
@@ -72,7 +75,7 @@ export default function ChartJourney({ scenes, accent = "red" }: { scenes: Engin
       frame = 0;
       if (!visible || document.hidden) return;
       const now = performance.now();
-      const elapsed = lastFrame ? Math.min(250, now - lastFrame) : 16;
+      const elapsed = lastFrame ? Math.max(0, now - lastFrame) : 16;
       lastFrame = now;
       const difference = target.current - current.current;
       current.current = Math.abs(difference) < .0002 || !motion ? target.current : current.current + difference * (1 - Math.exp(-elapsed / 100));
