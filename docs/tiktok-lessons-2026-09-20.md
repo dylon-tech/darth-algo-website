@@ -44,3 +44,15 @@ The initial tests to consider are a trend explanation, a risk-level explanation 
 - Existing PostgreSQL-backed content handoff regression passed with providers mocked; publication dedupe, evidence validation and pause gates remain intact.
 - The shared source contains eleven references (nine caption reviews, two partial) and adds approximately 4.6 KB to evidence. No full transcripts or signed media URLs are embedded in runtime prompts.
 - Cloud Browser cannot reach the local development address. Live browser verification is performed after deployment; this document does not assert an iPhone-device test.
+
+
+## Immersive website follow-up
+
+The owner clarified that actual dimensional scenes and scroll-driven storytelling were central to the references. The initial links-page tabs did not go far enough.
+
+- Replaced the home hero with an original perspective scene: three illuminated orbital rings, stacked chart planes, floating context/risk cards and a ground grid. The chart remains an actual owned product capture and opens full-size.
+- Added reversible, native-scroll chapters for context, signals and risk. Chapter buttons also navigate directly to a view. No scroll interception or opening splash screen.
+- Applied the engine to Scalper, Swing and Pro, preserving their colors, prices and checkout URLs. Product story images follow the relevant workflow.
+- Carried the same depth treatment into the links-page chart explorer.
+- Motion follows reduced-motion preferences, has a scene pause control, runs only on scroll/pointer events and uses no continuous animation loop or added runtime dependency.
+- Competitor reference pages checked: https://www.luxalgo.com/ and https://algoalpha.io/. Product-led hierarchy and clear purchase paths informed the presentation; artwork and scenes are original to Darth Algo.

@@ -4,7 +4,7 @@ import Image from "next/image";
 import {
   Activity,
   ArrowRight,
-  BarChart3,
+  ArrowDown,
   BellRing,
   Check,
   ChevronRight,
@@ -19,7 +19,6 @@ import {
   Maximize2,
   Menu,
   Radio,
-  ScanLine,
   Shield,
   ShieldCheck,
   Sparkles,
@@ -30,6 +29,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import ImmersiveEngine, { ImmersiveStory } from "./components/immersive-engine";
 import SiteFooter from "./components/site-footer";
 import TradingViewUsernameHelp from "./components/tradingview-username-help";
 
@@ -388,13 +388,6 @@ const trustSignals = [
   [Users, "Built for futures traders", "Designed around fast decisions and clean structure"],
 ];
 
-const conversionStats = [
-  ["4", "Indicator access paths"],
-  ["2 days", "Free trial"],
-  ["$14.99", "Lowest monthly entry"],
-  ["24 hrs", "Get access within 24 hours"],
-];
-
 const productComparison = [
   ["Scalper", "Active intraday setups", "$18.99/mo", "Fastest signal profile"],
   ["Swing", "Bigger directional moves", "$14.99/mo", "2-day free trial"],
@@ -419,8 +412,6 @@ const animatedCandles = [
   [1081, 140, 112, 90, 168], [1138, 110, 136, 94, 158], [1195, 134, 92, 70, 150],
   [1252, 90, 64, 42, 118], [1309, 62, 84, 48, 102], [1366, 82, 48, 28, 98],
 ] as const;
-
-const landingIntroKey = "darth-algo-intro-seen";
 
 function AnimatedCandles({ ambient = false }: { ambient?: boolean }) {
   return (
@@ -452,93 +443,6 @@ function AnimatedCandles({ ambient = false }: { ambient?: boolean }) {
         })}
       </g>
     </svg>
-  );
-}
-
-const commandCenterModes = [
-  {
-    id: "swing",
-    label: "Swing",
-    assetLabel: "Micro Gold Futures · 5m",
-    image: "/indicators/swing-overview.png",
-    alt: "Darth Algo Swing Tool chart with uptrend dashboard, buy setup, entry, stop and target levels",
-    accent: "text-swing",
-    badge: "bg-swing",
-    stack: [
-      ["Market", "Uptrend", "text-emerald-400"],
-      ["Guidance", "Look for BUY setups", "text-white"],
-      ["Last Signal", "BUY", "text-emerald-400"],
-      ["Trade Plan", "Target 2 hit", "text-emerald-400"],
-      ["Current Candle", "Hollow - Lower", "text-zinc-400"],
-      ["Risk / Reward", "1:2", "text-emerald-400"],
-      ["Access", "Invite-only", "text-ember"],
-    ],
-  },
-  {
-    id: "scalper",
-    label: "Scalper",
-    assetLabel: "Micro Silver Futures · 3m",
-    image: "/indicators/scalper-overview.png",
-    alt: "Darth Algo Scalper Tool chart with downtrend dashboard, sell setup, entry, stop and target levels",
-    accent: "text-scalp",
-    badge: "bg-scalp",
-    stack: [
-      ["Market", "Downtrend", "text-ember"],
-      ["Guidance", "Look for SELL setups", "text-white"],
-      ["Last Signal", "SELL", "text-ember"],
-      ["Trade Plan", "Target 2 hit", "text-emerald-400"],
-      ["Current Candle", "Hollow - Lower", "text-zinc-400"],
-      ["Risk / Reward", "1:2", "text-ember"],
-      ["Access", "Invite-only", "text-ember"],
-    ],
-  },
-] as const;
-
-function CommandCenterChartShowcase({
-  activeMode,
-  onModeChange,
-}: {
-  activeMode: (typeof commandCenterModes)[number];
-  onModeChange: (modeId: (typeof commandCenterModes)[number]["id"]) => void;
-}) {
-  return (
-    <div className="reference-chart-shell">
-      <div className="reference-chart-toolbar">
-        <span>{activeMode.assetLabel}</span>
-        <strong className={activeMode.badge}>{activeMode.label}</strong>
-      </div>
-      <div className="reference-chart-frame">
-        <Image
-          key={activeMode.id}
-          src={activeMode.image}
-          alt={activeMode.alt}
-          fill
-          className="reference-chart-image object-cover"
-          sizes="(min-width: 1024px) 42vw, 100vw"
-          priority
-        />
-        <div className="reference-chart-glow" />
-        <div className="reference-chart-callout reference-chart-callout-a">
-          <span>Dashboard matches live bias</span>
-        </div>
-        <div className="reference-chart-callout reference-chart-callout-b">
-          <span>Entry, stop, TP1, TP2 mapped</span>
-        </div>
-      </div>
-      <div className="reference-chart-controls">
-        {commandCenterModes.map((mode) => (
-          <button
-            key={mode.id}
-            type="button"
-            onClick={() => onModeChange(mode.id)}
-            className={activeMode.id === mode.id ? "is-active" : ""}
-            aria-pressed={activeMode.id === mode.id}
-          >
-            {mode.label}
-          </button>
-        ))}
-      </div>
-    </div>
   );
 }
 
@@ -637,43 +541,14 @@ function MarketBackdrop() {
 }
 
 export default function Home() {
-  const [landingIntro, setLandingIntro] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeIndicator, setActiveIndicator] = useState<keyof typeof indicatorWalkthroughs>("scalper");
-  const [commandModeId, setCommandModeId] = useState<(typeof commandCenterModes)[number]["id"]>("swing");
   const [activeZone, setActiveZone] = useState("top");
   const [expandedImage, setExpandedImage] = useState<null | { src: string; alt: string; title: string }>(null);
   const lightboxRef = useRef<HTMLDivElement>(null);
   const lightboxCloseRef = useRef<HTMLButtonElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
   const walkthrough = indicatorWalkthroughs[activeIndicator];
-  const commandMode = commandCenterModes.find((mode) => mode.id === commandModeId) ?? commandCenterModes[0];
-
-  const dismissLandingIntro = () => {
-    window.sessionStorage.setItem(landingIntroKey, "true");
-    setLandingIntro(false);
-  };
-
-  useEffect(() => {
-    if (window.sessionStorage.getItem(landingIntroKey)) {
-      setLandingIntro(false);
-      return;
-    }
-
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reducedMotion) {
-      window.sessionStorage.setItem(landingIntroKey, "true");
-      setLandingIntro(false);
-      return;
-    }
-
-    const introDuration = window.matchMedia("(max-width: 767px)").matches ? 1050 : 2400;
-    const introTimer = window.setTimeout(() => {
-      window.sessionStorage.setItem(landingIntroKey, "true");
-      setLandingIntro(false);
-    }, introDuration);
-    return () => window.clearTimeout(introTimer);
-  }, []);
 
   useEffect(() => {
     if (!mobileOpen) return;
@@ -685,19 +560,8 @@ export default function Home() {
   }, [mobileOpen]);
 
   useEffect(() => {
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reducedMotion) return;
-
-    const modeTimer = window.setInterval(() => {
-      setCommandModeId((currentMode) => (currentMode === "swing" ? "scalper" : "swing"));
-    }, 5200);
-
-    return () => window.clearInterval(modeTimer);
-  }, []);
-
-  useEffect(() => {
     const revealTargets = Array.from(
-      document.querySelectorAll<HTMLElement>("main > section, .chart-card, .pricing-card, .stat-panel"),
+      document.querySelectorAll<HTMLElement>("main > section:not(.immersion-story):not(.immersion-hero), .chart-card, .pricing-card, .stat-panel"),
     );
     const revealObserver = new IntersectionObserver(
       (entries) => {
@@ -775,41 +639,6 @@ export default function Home() {
   return (
     <main id="main-content" className="app-shell relative isolate min-h-screen bg-obsidian text-white">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", "@type": "SoftwareApplication", name: "Darth Algo", applicationCategory: "FinanceApplication", operatingSystem: "TradingView", description: "Invite-only TradingView indicators with buy and sell signals, trend confirmation, alerts, and structured risk levels.", offers: [{ "@type": "Offer", price: "14.99", priceCurrency: "USD" }, { "@type": "Offer", price: "18.99", priceCurrency: "USD" }, { "@type": "Offer", price: "29.00", priceCurrency: "USD" }, { "@type": "Offer", price: "134.99", priceCurrency: "USD" }] }) }} />
-      {landingIntro && (
-        <div className="landing-intro fixed inset-0 z-[200] grid place-items-center overflow-hidden bg-black">
-          <div aria-hidden="true" className="landing-intro-grid absolute inset-0" />
-          <div aria-hidden="true" className="landing-market-scene absolute inset-0">
-            <AnimatedCandles />
-            <div className="landing-market-header absolute inset-x-5 top-5 flex items-center justify-between font-mono text-[9px] font-bold uppercase text-zinc-600 sm:inset-x-8 sm:top-7">
-              <span>DA Terminal // Futures Intelligence</span>
-              <span className="text-emerald-400">Market feed connected</span>
-            </div>
-            <div className="landing-market-quotes absolute inset-x-5 bottom-6 flex items-center justify-between font-mono text-[9px] font-bold uppercase sm:inset-x-8">
-              <span><b>ES</b> 6,447.25 <i>+0.38%</i></span>
-              <span className="hidden sm:inline"><b>NQ</b> 23,518.50 <i>+0.62%</i></span>
-              <span><b>GC</b> 4,566.0 <i>+0.06%</i></span>
-            </div>
-            <div className="landing-price-marker absolute right-0 top-[31%] flex items-center"><span className="h-px w-16 bg-emerald-400/70 sm:w-28" /><strong>4,566.0</strong></div>
-          </div>
-          <div aria-hidden="true" className="landing-intro-scan absolute inset-y-0 w-px" />
-          <div aria-hidden="true" className="landing-intro-mark relative text-center">
-            <div className="mb-5 flex items-center justify-center gap-3 font-mono text-[9px] font-black uppercase text-zinc-600">
-              <span className="h-px w-10 bg-ember" />
-              Initializing market intelligence
-              <span className="h-px w-10 bg-ember" />
-            </div>
-            <p className="font-display text-5xl font-black uppercase leading-none sm:text-7xl">
-              <span className="text-ember text-glow">Darth</span> <span className="text-white">Algo</span>
-            </p>
-            <div className="landing-intro-loader mx-auto mt-7 h-[2px] w-56 overflow-hidden bg-white/10"><span /></div>
-          </div>
-          <button type="button" onClick={dismissLandingIntro} className="landing-intro-skip absolute right-5 top-16 z-10 inline-flex min-h-10 items-center gap-2 rounded-md border border-white/10 bg-black/55 px-3 font-mono text-[9px] font-bold uppercase text-zinc-500 backdrop-blur transition hover:border-ember/50 hover:text-white sm:right-8 sm:top-20" aria-label="Skip website introduction">
-            Skip intro <X className="h-3.5 w-3.5" />
-          </button>
-          <div aria-hidden="true" className="landing-intro-shutter landing-intro-shutter-top absolute inset-x-0 top-0 h-1/2 bg-[#030304]" />
-          <div aria-hidden="true" className="landing-intro-shutter landing-intro-shutter-bottom absolute inset-x-0 bottom-0 h-1/2 bg-[#030304]" />
-        </div>
-      )}
       <MarketBackdrop />
 
       <header className="site-header sticky top-0 z-50 border-b border-white/10 bg-black/82 backdrop-blur-xl">
@@ -864,144 +693,21 @@ export default function Home() {
         ))}
       </nav>
 
-      <section id="top" className="hero-stage relative z-10 overflow-hidden border-b border-white/10">
-        <Image
-          src="/hero/darth-algo-before-after.jpg"
-          alt="Darth Algo before and after trading chart comparison"
-          fill
-          priority
-          className="object-cover object-center opacity-25 saturate-[1.15] lg:object-[76%_50%] lg:opacity-35"
-          sizes="100vw"
-        />
-        <div aria-hidden="true" className="hero-red-blade hero-red-blade-a" />
-        <div aria-hidden="true" className="hero-red-blade hero-red-blade-b" />
-        <div className="absolute inset-0 hero-shade" />
-        <div className="absolute inset-0 bg-grid bg-[size:44px_44px] opacity-[0.09]" />
-        <div aria-hidden="true" className="hero-orbit">
-          <span className="hero-orbit-core" />
-        </div>
-        <div aria-hidden="true" className="hero-scanline" />
-        <div aria-hidden="true" className="hero-readout hero-readout-top hidden xl:block">
-          <span>Market state</span>
-          <strong><i /> Trend active</strong>
-        </div>
-        <div aria-hidden="true" className="hero-readout hero-readout-bottom hidden xl:block">
-          <span>Risk engine</span>
-          <strong>Entry / SL / TP</strong>
-        </div>
-
-        <div className="section-shell relative grid min-h-[calc(100svh-264px)] items-center gap-10 py-12 lg:min-h-[calc(100svh-168px)] lg:grid-cols-[0.86fr_0.82fr]">
-          <div className="max-w-3xl">
-            <div className="hero-enter inline-flex items-center gap-2 rounded-md border border-ember/35 bg-black/55 px-3 py-2 text-xs font-extrabold uppercase text-red-100 backdrop-blur">
-              <Radio className="h-3.5 w-3.5 text-ember" />
-              Premium TradingView indicator suite
-            </div>
-            <h1 aria-label="Darth Algo" className="hero-wordmark hero-enter hero-delay-1 mt-7 text-balance font-display text-6xl font-extrabold uppercase leading-[0.88] sm:text-7xl lg:text-[7.4rem]">
-              <span className="block text-ember text-glow">Darth</span>
-              <span className="block text-white">Algo</span>
-            </h1>
-            <p className="hero-enter hero-delay-2 mt-7 max-w-2xl font-display text-2xl font-semibold leading-tight text-white sm:text-3xl">
-              Built for <span className="text-ember">Precision.</span>{" "}
-              <span className="font-normal italic text-zinc-200">Designed for Traders.</span>
-            </p>
-            <p className="hero-enter hero-delay-2 mt-5 max-w-2xl text-base leading-7 text-zinc-300 sm:text-lg">
-              A professional indicator suite for futures traders who want buy/sell signals, market bias, alert-ready setups, and mapped risk levels without chart clutter.
-            </p>
-            <div className="hero-enter hero-delay-3 mt-6 grid max-w-2xl grid-cols-2 gap-px overflow-hidden rounded-md border border-white/10 bg-white/10 sm:grid-cols-4">
-              {conversionStats.map(([value, label]) => (
-                <div key={label} className="bg-black/70 px-4 py-3 backdrop-blur">
-                  <p className="font-display text-2xl font-black text-white">{value}</p>
-                  <p className="mt-1 text-[10px] font-bold uppercase leading-4 text-zinc-500">{label}</p>
-                </div>
-              ))}
-            </div>
-            <div className="ai-powered-badge hero-enter hero-delay-3 mt-6 inline-flex items-center gap-3 border border-white/10 bg-black/65 px-3 py-2.5 backdrop-blur-xl" aria-label="Powered by ChatGPT through continuous AI-assisted product updates">
-              <span className="ai-powered-mark grid h-9 w-9 shrink-0 place-items-center border border-white/15 bg-white/[0.05]">
-                <Sparkles className="h-4 w-4 text-white" />
-              </span>
-              <span className="text-left leading-tight">
-                <span className="block font-mono text-[9px] font-bold uppercase text-zinc-500">Powered by</span>
-                <strong className="mt-0.5 block font-display text-sm font-black text-white">ChatGPT <span className="text-ember">AI</span></strong>
-              </span>
-              <span className="hidden h-8 w-px bg-white/10 sm:block" />
-              <span className="hidden items-center gap-2 font-mono text-[9px] font-bold uppercase text-zinc-500 sm:inline-flex">
-                <i className="ai-update-dot" />
-                Continuous AI-assisted development
-              </span>
-            </div>
-            <div className="hero-enter hero-delay-3 mt-8 flex flex-col gap-3 sm:flex-row">
-              <ButtonLink href="#swing-trial" variant="trial">Try Swing Free</ButtonLink>
-              <ButtonLink href="#pricing">Get Darth Algo Indicators</ButtonLink>
-              <ButtonLink href="#examples" variant="secondary">See It On Chart</ButtonLink>
-            </div>
+      <section id="top" className="immersion-hero immersion-red relative z-10">
+        <div className="section-shell immersion-hero-layout">
+          <div>
+            <p className="immersion-eyebrow">TradingView indicators / Built for futures</p>
+            <h1><span>Darth</span><em>Algo.</em></h1>
+            <p className="immersion-hero-lead">A new dimension<br />of chart clarity.</p>
+            <p className="immersion-hero-copy">See the trend. Find the setup. Map the risk. Your trading decisions, brought into focus.</p>
+            <div className="immersion-hero-actions"><a href="#swing-trial">Try Swing Free ↗</a><a href="#inside-the-engine">Explore the engine ↓</a></div>
+            <div className="immersion-hero-meta"><span>Scalper</span><span>Swing</span><span>Pro</span><span>From $14.99/mo</span></div>
           </div>
-          <aside className="hero-terminal hero-enter hero-delay-3 hidden rounded-md border border-white/10 bg-black/70 p-4 shadow-[0_40px_110px_rgba(0,0,0,0.62),0_0_80px_rgba(255,36,36,0.12)] backdrop-blur-xl lg:block">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <div>
-                <p className="font-mono text-[10px] font-black uppercase text-ember">Darth Algo command center</p>
-                <p className="mt-1 font-display text-2xl font-black text-white">Signal stack active</p>
-              </div>
-              <span className="inline-flex items-center gap-2 rounded border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-1 font-mono text-[9px] font-bold uppercase text-emerald-300"><i className="ai-update-dot" /> Online</span>
-            </div>
-            <div className="mt-5 grid gap-2">
-              {commandMode.stack.map(([label, value, color]) => (
-                <div key={label} className="hero-terminal-row grid grid-cols-[1fr_auto] items-center rounded border border-white/10 bg-white/[0.035] px-4 py-3">
-                  <span className="font-mono text-[10px] font-bold uppercase text-zinc-500">{label}</span>
-                  <strong className={`font-display text-xs font-black uppercase ${color}`}>{value}</strong>
-                </div>
-              ))}
-            </div>
-            <div className="hero-terminal-chart mt-5 overflow-hidden rounded border border-white/10 bg-[#080b11] p-4">
-              <div className="mb-4 flex items-center justify-between font-mono text-[9px] font-bold uppercase text-zinc-600">
-                <span>{commandMode.label} chart reference</span>
-                <span className={commandMode.accent}>Dashboard verified</span>
-              </div>
-              <CommandCenterChartShowcase activeMode={commandMode} onModeChange={setCommandModeId} />
-            </div>
-            <div className="mt-5 grid grid-cols-3 gap-2">
-              {["Alerts", "Targets", "Dashboard"].map((item) => <span key={item} className="rounded border border-ember/20 bg-ember/[0.07] px-3 py-2 text-center font-mono text-[9px] font-bold uppercase text-red-100">{item}</span>)}
-            </div>
-            <div className="mt-5 rounded border border-white/10 bg-white/[0.035] p-4">
-              <p className="font-mono text-[9px] font-bold uppercase text-zinc-500">Buyer path</p>
-              <div className="buyer-path-lanes mt-3 grid grid-cols-4 gap-2">
-                {[
-                  ["Scalper", "bg-scalp", "shadow-[0_0_12px_rgba(235,145,20,0.35)]"],
-                  ["Swing", "bg-swing", "shadow-[0_0_12px_rgba(30,125,220,0.35)]"],
-                  ["Pro", "bg-pro", "shadow-[0_0_12px_rgba(139,92,246,0.35)]"],
-                  ["Lifetime", "bg-ember", "shadow-[0_0_12px_rgba(220,55,65,0.45)]"],
-                ].map(([label, color, shadow]) => (
-                  <span key={label} className="buyer-path-lane">
-                    <i className={`${color} ${shadow}`} />
-                    <b>{label}</b>
-                  </span>
-                ))}
-              </div>
-            </div>
-          </aside>
+          <ImmersiveEngine priority />
         </div>
-
-        <div className="relative border-t border-white/10 bg-black/70 backdrop-blur-md">
-          <div className="section-shell grid grid-cols-2 divide-x divide-white/10 sm:grid-cols-4">
-            {[
-              [ScanLine, "Real-time", "Signal detection"],
-              [ShieldCheck, "Defined", "Risk structure"],
-              [BarChart3, "Multi-market", "TradingView ready"],
-              [LockKeyhole, "Private", "Invite-only access"],
-            ].map(([Icon, value, label]) => {
-              const IconComponent = Icon as typeof Activity;
-              return (
-                <div key={String(label)} className="flex min-h-24 items-center gap-3 px-4 py-5 sm:px-6">
-                  <IconComponent className="h-5 w-5 shrink-0 text-ember" />
-                  <div>
-                    <p className="font-display text-lg font-black text-white">{String(value)}</p>
-                    <p className="text-xs text-zinc-500">{String(label)}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        <div className="section-shell immersion-hero-bottom"><span>Signals / Trend context / Defined risk</span><a href="#inside-the-engine">Scroll to explore <ArrowDown className="h-4 w-4" /></a></div>
       </section>
+      <ImmersiveStory />
 
       <div aria-label="Illustrative market interface" className="relative z-10 overflow-hidden border-b border-white/10 bg-secondary py-3">
         <div className="market-tape">
