@@ -46,7 +46,7 @@ export default function LinksPage() {
       <MarketScene />
 
       <div className="hub-content relative mx-auto w-full max-w-xl">
-        <div className="absolute right-0 top-0 z-20">
+        <div className="hub-share absolute right-0 top-0 z-20">
           <LinkActions />
         </div>
 
