@@ -3,6 +3,7 @@ import {execFileSync} from 'node:child_process';
 import {mkdtempSync,rmSync,readFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
+import {randomUUID} from 'node:crypto';
 import {createRequire} from 'node:module';
 import {pathToFileURL} from 'node:url';
 const dir=mkdtempSync(join(tmpdir(),'darth-shared-social-')),env={...process.env},originalFetch=globalThis.fetch;
@@ -29,7 +30,7 @@ try {
  const {mediaAutopilot}=require(join(dir,'lib/business-os/media-policy.js'));
  const {isDailySocialPayload,socialPostUrl}=require(join(dir,'lib/business-os/daily-social-policy.js'));
  const {syncMediaAutopilot}=require(join(dir,'lib/business-os/media-autopilot.js'));
- process.env.VERCEL_ENV='production';process.env.AI_OS_AUTONOMY_ENABLED='true';process.env.BUFFER_API_KEY='offline';process.env.TELEGRAM_BOT_TOKEN='offline';
+ process.env.AI_OS_AI_ENABLED='false';process.env.VERCEL_ENV='production';process.env.AI_OS_AUTONOMY_ENABLED='true';process.env.BUFFER_API_KEY='offline';process.env.TELEGRAM_BOT_TOKEN='offline';
  const channels=[...Object.entries(mediaAutopilot.channels).map(([service,id])=>({id,service:service==='x'?'twitter':service,name:'darth.algo',isDisconnected:false,isLocked:false,isQueuePaused:false})),{id:'threads123',service:'threads',name:'darth.algo',isDisconnected:false,isLocked:false,isQueuePaused:false}];
  assert.equal(selectSocialChannel(channels,'threads').id,'threads123');
  assert.equal(selectSocialChannel([{...channels[2],name:'someone.else'}],'threads'),null);
@@ -60,7 +61,21 @@ try {
   }
   return Response.json({data:{post:posts.get(variables.input.id)}});
  };
- const [campaign,parallel]=await Promise.all([prepareDailyCampaign(),prepareDailyCampaign()]);assert.deepEqual(campaign,parallel);
+ const {validCreativeHook,dailyCreativeCaption,syncDailyCreative}=require(join(dir,'lib/business-os/daily-creative.js'));
+ assert.ok(validCreativeHook('Read the context before acting on a signal.'));
+ assert.ok(!validCreativeHook('Guaranteed profits every day.'));
+ assert.ok(!validCreativeHook('Visit https://evil.test for setups.'));
+ const creativeDay=new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()),runId=randomUUID(),jobId=randomUUID(),hook='Read the context before acting on a signal.';
+ await database.query("insert into os_runs(id,request_key,status,department,result,snapshot) values($1::uuid,$1::text,'completed','content',$2,$3)",[runId,JSON.stringify({xDraft:{text:hook,evidence:['business_knowledge']}}),JSON.stringify([{id:'business_knowledge',status:'verified'}])]);
+ await database.query("insert into os_jobs(id,request_key,department,message,source,status,run_id) values($1,$2,'content','Daily shared caption','schedule','succeeded',$3)",[jobId,`daily-shared-creative:${creativeDay}`,runId]);
+ assert.ok((await dailyCreativeCaption()).startsWith(hook));
+ await database.query("update os_runs set snapshot='[]'::jsonb where id=$1",[runId]);assert.ok(!(await dailyCreativeCaption()).startsWith(hook));
+ await database.query("update os_runs set snapshot=$1 where id=$2",[JSON.stringify([{id:'business_knowledge',status:'verified'}]),runId]);
+ process.env.AI_OS_AI_ENABLED='true';assert.equal((await syncDailyCreative()).waiting,false);
+ await database.query("update os_jobs set status='queued' where id=$1",[jobId]);assert.equal((await syncDailyCreative()).waiting,true);
+ await database.query("update os_jobs set created_at=now()-interval '31 minutes' where id=$1",[jobId]);assert.equal((await syncDailyCreative()).waiting,false);
+ await database.query("update os_jobs set status='succeeded' where id=$1",[jobId]);
+ const [campaign,parallel]=await Promise.all([prepareDailyCampaign(),prepareDailyCampaign()]);assert.deepEqual(campaign,parallel);assert.ok(campaign.text.startsWith(hook));
  const ids={};
  for(const [network,channelId] of Object.entries({...mediaAutopilot.channels,threads:'threads123'})){
   const [a,b]=await Promise.all([prepareSocialDelivery(campaign,network,channelId),prepareSocialDelivery(campaign,network,channelId)]);assert.equal(a,b);ids[network]=a;
