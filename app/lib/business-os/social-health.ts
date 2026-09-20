@@ -1,8 +1,10 @@
 import {db} from '../affiliate-db';
+import {bufferCooldown} from './buffer';
 export async function socialHealthIssues(now=new Date()){
  const sql=db(),day=new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(now);
  const [status]=await sql`select details from os_activity where event='daily_social_status' and entity_id=${day} order by id desc limit 1`;
  const issues:string[]=[];
+ if(await bufferCooldown())issues.push('Buffer is rate-limiting requests. Publishing is waiting for its cooldown; no reconnection is needed.');
  for(const [network,label] of [['x','X'],['instagram','Instagram'],['threads','Threads']]){
   const state=status?.details.deliveries?.[network];
   if(state==='connection_required')issues.push(`Reconnect ${label} in Buffer.`);

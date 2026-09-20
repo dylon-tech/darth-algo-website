@@ -99,7 +99,7 @@ async function handleUpdate(update: OwnerUpdate) {
     await notice(crew+"\n\nChoose an agent to see its work.",agentsMenu());return;
   }
   if(command==="/buffer"){
-    try{const c=await bufferStatus();await notice(c.channels.map(c=>`${c.service}: ${c.displayName || c.name} · ${c.isDisconnected || c.isLocked || c.isQueuePaused?"needs attention":"connected"}`).join("\n")+"\n\nPublishing enabled: X + Instagram.",[[{text:"‹ Settings",callback_data:"ui:nav:settings"}]]);}
+    try{const c=await bufferStatus();await notice(c.channels.map(c=>`${c.service}: ${c.displayName || c.name} · ${c.isDisconnected || c.isLocked || c.isQueuePaused?"needs attention":"connected"}`).join("\n")+"\n\nPublishing enabled: X + Instagram + Threads.",[[{text:"‹ Settings",callback_data:"ui:nav:settings"}]]);}
     catch{await notice("Social connection needs a check. Open dashboard Settings.",[[centerLink,homeButton]]);}return;
   }
   if(command==="/approvals"){

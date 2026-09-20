@@ -129,4 +129,33 @@ try {
  await database.exec("delete from os_activity where event like 'community_social_%'");dropTelegram=true;
  assert.equal((await publishCommunityPreview()).reason,'delivery_uncertain_check_telegram');await publishCommunityPreview();assert.equal(telegramWrites,2);assert.ok((await socialHealthIssues()).some(s=>s.includes('uncertain')));
  console.log('PASS: shared immutable campaign, three exact accounts, identical images/caption, concurrent dedupe, asset verification, pause, confirmed links, one community preview, legacy education replacement, provider/Telegram lost-response replay protection. Providers mocked; distributed locks need production observation.');
+ // Durable reads reduce cron traffic; publish preflight bypasses cached channel state.
+ const {bufferStatus,bufferGraphQL,bufferCooldown,bufferRetryAt}=require(join(dir,'lib/business-os/buffer.js'));
+ const providerFetch=globalThis.fetch;let calls=0;
+ globalThis.fetch=async(...args)=>{calls++;return providerFetch(...args);};
+ await bufferStatus();await bufferStatus();assert.equal(calls,0);
+ await bufferStatus({fresh:true});assert.equal(calls,2);
+ channels[2].isQueuePaused=true;
+ const threadsPayload=(await database.query('select payload from os_approvals where id=$1',[ids.threads])).rows[0].payload;
+ await assert.rejects(require(join(dir,'lib/business-os/buffer-social.js')).socialPreflight(threadsPayload),/CHANNEL_NOT_READY/);
+ channels[2].isQueuePaused=false;
+ // Failed receipt checks are throttled without losing the original accepted receipt.
+ globalThis.fetch=async()=>{calls++;throw Error('temporary outage');};calls=0;
+ assert.equal((await checkSocialDelivery(ids.x)).published,false);
+ await checkSocialDelivery(ids.x,{scheduled:true});assert.equal(calls,1);
+ assert.ok((await database.query("select id from os_activity where event='buffer_publish_receipt' and entity_id=$1",[ids.x])).rows.length);
+ // A provider 429 persists its Retry-After across calls; never retries reads or writes early.
+ calls=0;globalThis.fetch=async()=>{calls++;return new Response('',{status:429,headers:{'retry-after':'600'}});};
+ await assert.rejects(bufferGraphQL('query Test { account { id } }'),/BUFFER_HTTP_429/);
+ assert.ok(await bufferCooldown());
+ await assert.rejects(bufferGraphQL('query Test { account { id } }'),/COOLDOWN/);
+ await assert.rejects(bufferGraphQL('mutation Test { createPost { id } }'),/COOLDOWN/);assert.equal(calls,1);
+ assert.ok((await socialHealthIssues()).some(s=>s.includes('rate-limiting')));
+ const clock=Date.parse('2026-09-20T18:00:00Z');
+ assert.equal(bufferRetryAt('600',clock),'2026-09-20T18:10:00.000Z');
+ assert.equal(bufferRetryAt('Sun, 20 Sep 2026 19:00:00 GMT',clock),'2026-09-20T19:00:00.000Z');
+ assert.equal(bufferRetryAt(null,clock),'2026-09-20T19:00:00.000Z');
+ await database.exec("update os_activity set details=jsonb_build_object('retryAt',(now()-interval '1 minute')::text) where event='buffer_rate_limited'");
+ globalThis.fetch=providerFetch;assert.equal(await bufferCooldown(),undefined);await bufferStatus({fresh:true});
+ console.log('PASS: persistent discovery cache, fresh publishing preflight, receipt throttle, Retry-After cooldown, health signal and safe recovery.');
 }finally{globalThis.fetch=originalFetch;for(const k of Object.keys(process.env))if(!(k in env))delete process.env[k];Object.assign(process.env,env);if(database)await database.close();rmSync(dir,{recursive:true,force:true});}
