@@ -12,13 +12,14 @@ let ready:Promise<void>|undefined;
 export function ensureVidiqSchema(){return ready??=(async()=>{await db().begin(async tx=>{
   await tx`select pg_advisory_xact_lock(730935)`;
   await tx`create table if not exists os_vidiq_connection(id integer primary key check(id=1),client_id text,generation uuid,tokens text,expires_at timestamptz,connected_at timestamptz)`;
+  await tx`alter table os_vidiq_connection add column if not exists verified_balance jsonb`;
   await tx`create table if not exists os_vidiq_oauth(state_hash text primary key,browser_hash text not null,generation uuid not null,verifier text not null,client_id text not null,expires_at timestamptz not null)`;
   await tx`create table if not exists os_vidiq_discovery(day text primary key,status text not null,credits_reserved integer not null default 0 check(credits_reserved between 0 and 5),balance jsonb,result jsonb,checked_at timestamptz not null default now())`;
   await tx`insert into os_vidiq_connection(id) values(1) on conflict do nothing`;
 });})().catch(e=>{ready=undefined;throw e;});}
 async function providerPost(path:string,body:URLSearchParams|Record<string,unknown>){
   const response=await fetch(`${vidiqResource}/${path}`,{method:"POST",redirect:"error",signal:AbortSignal.timeout(12000),headers:{"Content-Type":body instanceof URLSearchParams?"application/x-www-form-urlencoded":"application/json"},body:body instanceof URLSearchParams?body.toString():JSON.stringify(body),cache:"no-store"});
-  if(!response.ok)throw Error("VIDIQ_CONNECTION_FAILED");
+  if(!response.ok){const detail=await response.json().catch(()=>null);if(path==="register" && detail?.detail==="redirect_uri is not allowed.")throw Error("VIDIQ_REDIRECT_NOT_ALLOWED");throw Error("VIDIQ_CONNECTION_FAILED");}
   const text=await response.text();if(text.length>32000)throw Error("VIDIQ_RESPONSE_INVALID");return JSON.parse(text);
 }
 export async function beginVidiqConnection(){
@@ -47,7 +48,16 @@ export async function finishVidiqConnection(state:string,browser:string,code:str
   const rows=await db()`update os_vidiq_connection set tokens=${sealConnection(tokens)},expires_at=${expiry(tokens)},connected_at=now() where id=1 and generation=${pending.generation} returning id`;
   if(!rows.length)throw Error("VIDIQ_CONNECTION_CANCELLED");
 }
-export async function disconnectVidiq(){await ensureVidiqSchema();await db().begin(async tx=>{await tx`update os_vidiq_connection set tokens=null,expires_at=null,connected_at=null,generation=null where id=1`;await tx`delete from os_vidiq_oauth`;});}
+export async function beginVidiqKeyVerification(){await ensureVidiqSchema();const generation=randomUUID();await db()`update os_vidiq_connection set generation=${generation} where id=1`;return generation;}
+export async function saveVidiqKey(key:string,balance:{totalCredits:number;renewableResetsAt:string|null},generation:string){
+  if(key.length<16 || key.length>4096 || /\s/.test(key))throw Error("VIDIQ_KEY_INVALID");
+  await ensureVidiqSchema();await db().begin(async tx=>{
+    const rows=await tx`update os_vidiq_connection set tokens=${sealConnection({access_token:key,token_type:"Bearer",auth_method:"api_key"})},expires_at=null,connected_at=now(),verified_balance=${tx.json(balance)} where id=1 and generation=${generation} returning id`;
+    if(!rows.length)throw Error("VIDIQ_CONNECTION_CANCELLED");
+    await tx`delete from os_vidiq_oauth`;
+  });
+}
+export async function disconnectVidiq(){await ensureVidiqSchema();await db().begin(async tx=>{await tx`update os_vidiq_connection set tokens=null,expires_at=null,connected_at=null,generation=null,verified_balance=null where id=1`;await tx`delete from os_vidiq_oauth`;});}
 export async function vidiqAccessToken(){
   await ensureVidiqSchema();
   // Serialize refresh and disconnect so rotating refresh tokens cannot race.
@@ -64,4 +74,4 @@ export async function vidiqAccessToken(){
     return tokens.access_token as string;
   });
 }
-export async function vidiqStatus(){await ensureVidiqSchema();const [row]=await db()`select connected_at,tokens is not null as connected from os_vidiq_connection where id=1`;const [latest]=await db()`select day,status,credits_reserved,balance,checked_at from os_vidiq_discovery order by day desc limit 1`;return {connected:!!row?.connected,connectedAt:row?.connected_at||null,dailyCreditCap:5,latest:latest||null};}
+export async function vidiqStatus(){await ensureVidiqSchema();const [row]=await db()`select connected_at,verified_balance,tokens is not null as connected from os_vidiq_connection where id=1`;const [latest]=await db()`select day,status,credits_reserved,balance,checked_at from os_vidiq_discovery order by day desc limit 1`;return {connected:!!row?.connected,connectedAt:row?.connected_at||null,verifiedBalance:row?.verified_balance||null,dailyCreditCap:5,latest:latest||null};}
