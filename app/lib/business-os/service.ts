@@ -111,6 +111,9 @@ export async function runAgent(department: Department, requestKey: string, messa
       const {indicatorIdeaEvidence}=await import("./indicator-ideas");
       const publicEvidence=evidence.filter(e=>["competitor_public_posts","indicator_social"].includes(e.id));
       evidence.splice(0,evidence.length,...publicEvidence,await indicatorIdeaEvidence(),await indicatorMarketEvidence(),await labContext(message.match(/Revision ID: ([a-f0-9-]{36})/)?.[1]));
+      // Dedicated pipeline has explicit handoffs and inventory. Unrelated team
+      // backlog/history duplicates context and can exceed the bounded AI input.
+      tasks.splice(0,tasks.length);history.splice(0,history.length);
     }
     await sql`update os_runs set snapshot=${sql.json(JSON.parse(JSON.stringify(evidence)))} where id=${id} and status='running'`;
     await sql`insert into os_activity(actor,event,entity_id,details) values(${department},'agent_sources_checked',${id},${sql.json({verifiedSources:evidence.filter(s=>s.status==="verified").length,unavailableSources:evidence.filter(s=>s.status==="unavailable").length})})`;

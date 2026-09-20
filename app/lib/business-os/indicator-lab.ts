@@ -71,6 +71,7 @@ export async function syncIndicatorLab(){
   const day=new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
   if(process.env.AI_OS_AI_ENABLED==="true" && process.env.AI_OS_AUTONOMY_ENABLED==="true"){
     const ideaStage=await syncIndicatorIdeas(day);
+    if(ideaStage==="no_supported_idea")await queueOwnerNotice(`indicator-ideas-held:${day}`,"Indicator Lab: Research and Growth completed today's review, but found insufficient supported demand for a new build. No indicator is ready for approval. The Lab will research again tomorrow; broad Instagram/TikTok discovery remains unconnected.");
     const n=Number(process.env.AI_OS_INDICATORS_PER_DAY||"1");const limit=Number.isInteger(n)?Math.max(1,Math.min(3,n)):1;
     const pending=await sql`select id from os_jobs where request_key like 'indicator:%' and status in ('queued','running') limit 1`;
     const [{count}]=await sql`select count(*)::int as count from os_jobs where request_key like ${`indicator:${day}:%`}`;
