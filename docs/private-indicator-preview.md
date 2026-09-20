@@ -19,3 +19,7 @@ The server stamps checkedAt and attestedBy. It rejects incomplete evidence, gene
 The authenticated candidate page shows the saved chart link and screenshot link only when evidence matches the current source hash. Actual captured image embedding remains future work; screenshot URLs here are TradingView viewer pages, not raw image resources. The existing release evidence and approval checks remain unchanged.
 
 No production migration or activation was performed during implementation. Schema addition is idempotent and runs with the existing Lab schema initializer.
+
+## Names and owner-facing explanations
+
+Use Darth Algo plus a recognizable setup or function, such as Opening Range Fakeout. Names must match implemented behavior; do not use unexplained fantasy names or imply order flow/liquidity detection without supporting inputs. Each private candidate preview should pair an actual current-source TradingView capture and saved chart link with a concise walkthrough: what it does, color/marker legend, exact trigger, practical use, supported settings, and limitations. Explain missing-signal conditions and closed-bar timing. Never use a generated chart image as implementation evidence. Only show candidates that actually exist.
