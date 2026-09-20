@@ -19,7 +19,11 @@ async function main(){
  await assert.rejects(b.startBrowser());assert.equal(creates,1);await assert.rejects(b.connectBrowser('private-browser-key'));
  await b.stopBrowser();assert.equal(stops,1);await assert.rejects(b.startBrowser());
  await sql`update os_browser_connection set hold_until=now()-interval '1 minute'`;mismatch=true;await assert.rejects(b.startBrowser(),/profile was not attached/);assert.equal(stops,2);await assert.rejects(b.startBrowser());assert.equal(creates,2);
- await sql`update os_browser_connection set attempts=0,hold_until=null`;mismatch=false;ambiguous=true;await assert.rejects(b.startBrowser());await assert.rejects(b.startBrowser());assert.equal(creates,3);
+ assert.equal((await b.browserStatus()).remainingPilotStarts,1);
+ await sql`update os_browser_connection set hold_until=null`;mismatch=false;await b.startBrowser();assert.equal(creates,3);assert.equal((await b.browserStatus()).remainingPilotStarts,0);
+ await sql`update os_browser_connection set hold_until=null`;await assert.rejects(b.startBrowser());assert.equal(creates,3);
+ await b.ensureBrowserSchema();await b.connectBrowser('private-browser-key');assert.equal((await b.browserStatus()).remainingPilotStarts,0);await assert.rejects(b.startBrowser());
+ await sql`update os_browser_connection set attempts=0,hold_until=null`;mismatch=false;ambiguous=true;await assert.rejects(b.startBrowser());await assert.rejects(b.startBrowser());assert.equal(creates,4);
  assert.throws(()=>b.validateViewer('https://browserbase.com.evil.example/test'));assert.throws(()=>b.validateViewer('http://browserbase.com/test'));assert.throws(()=>b.validateViewer('https://user:password@browserbase.com/test'));
  const route=load('app/api/owner/connections/browser/route.ts'),owner=load('app/lib/business-os/owner-session.ts');
  const url='https://www.darthalgo.com/api/owner/connections/browser';assert.equal((await route.GET(new Request(url))).status,401);
