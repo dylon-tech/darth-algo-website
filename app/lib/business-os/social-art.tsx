@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import type { PhotoPlan } from "./photo-plan";
 // Branded typography template, not a fabricated chart or performance screenshot.
 // Runs on the existing server; no paid image-generation API is introduced.
 export async function renderSocialArt(text:string,style="crimson") {
@@ -22,20 +23,14 @@ export async function renderSocialArt(text:string,style="crimson") {
 
 // A reusable three-slide product lesson, using owned recorded charts.
 // This is a deterministic design renderer; it adds no paid generation dependency.
-export async function renderSocialCarousel(text:string,style="crimson") {
+export async function renderSocialCarousel(plan:PhotoPlan,style="crimson") {
  const accent=style==="clean"?"#E3BD72":style==="minimal"?"#A596FF":"#F34655";
- const note=text.replace(/https?:\/\/\S+/g,"").replace(/#\w+/g,"").trim();
- const excerpt=note.length>150?note.slice(0,147).replace(/\s+\S*$/,"")+"…":note;
- const slides=[
-  {title:"Read the setup.",line:excerpt,image:"swing-overview.png",alt:"Darth Algo Swing recorded chart: signals and trend context. Historical example, not live data."},
-  {title:"Map the risk.",line:"Entry. Stop. Targets. See the plan before deciding whether to take a trade.",image:"swing-risk-plan.png",alt:"Darth Algo recorded risk-plan chart showing entry, stop and target levels. Trading involves risk."},
-  {title:"Find your style.",line:"Swing for broader setups. Scalper for faster setups. Pro brings both modes together.",image:null,alt:"Darth Algo tools: Swing, Scalper and Pro. Explore tools, community and official pages at darthalgo.com/links."},
- ];
+ const slides=plan.slides;
  const output=[];
  for(const [index,slide] of slides.entries()) {
   const response=new ImageResponse(<div style={{display:"flex",flexDirection:"column",justifyContent:"space-between",width:"100%",height:"100%",padding:64,background:"#0C1019",color:"#F5F5F7",fontFamily:"sans-serif",borderTop:`12px solid ${accent}`}}>
    <div style={{display:"flex",justifyContent:"space-between",fontSize:24,letterSpacing:4}}><span>DARTH ALGO</span><span style={{color:accent}}>0{index+1} / 03</span></div>
-   <div style={{display:"flex",flexDirection:"column",gap:30}}><div style={{display:"flex",fontSize:86,fontWeight:800,letterSpacing:-4,lineHeight:1.05}}>{slide.title}</div><div style={{display:"flex",fontSize:34,lineHeight:1.4,color:"#BBC4D4"}}>{slide.line}</div></div>
+   <div style={{display:"flex",flexDirection:"column",gap:30}}><span style={{fontSize:20,letterSpacing:4,color:accent}}>{plan.label}</span><div style={{display:"flex",fontSize:78,fontWeight:800,letterSpacing:-3,lineHeight:1.08}}>{slide.title}</div><div style={{display:"flex",fontSize:34,lineHeight:1.4,color:"#BBC4D4"}}>{slide.line}</div></div>
    {slide.image?<div style={{display:"flex",flexDirection:"column",gap:15,border:"1px solid #303B4F",borderRadius:12,padding:18,background:"#151C29"}}>
     {/* Owned product capture; the exact chart is kept intact. */}
     {/* eslint-disable-next-line @next/next/no-img-element */}

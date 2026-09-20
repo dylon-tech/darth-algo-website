@@ -12,7 +12,7 @@ export async function createDailyBrief() {
  const [brief]=await sql`insert into os_briefs(day,body,evidence) values(${day},${body},${sql.json({customers:score.customers,posts:score.posts,queue:score.queue,checkedAt:new Date().toISOString(),version:2})}) on conflict(day) do update set body=excluded.body,evidence=excluded.evidence returning *`;
  // Exactly one daily notification. Interactive views continue editing their own panel.
  await queueOwnerNotice(`ceo-brief-v2:${day}`,body,homeMenu());
- console.info(JSON.stringify({event:'ceo_daily_brief',day,customersVerified:score.customers.active!==null,postCount:score.posts.x+score.posts.instagram}));
+ console.info(JSON.stringify({event:'ceo_daily_brief',day,customersVerified:score.customers.active!==null,postCount:score.posts.x+score.posts.instagram+score.posts.threads}));
  return brief;
 }
 export async function scheduledDailyBrief(){

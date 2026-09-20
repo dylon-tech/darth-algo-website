@@ -18,13 +18,13 @@ try {
  const {publishingQueueSnapshot,nextContentWindow}=require(join(dir,'lib/business-os/publishing-scorecard.js'));
  const {GET}=require(join(dir,'api/social-media/[id]/[hash]/route.js'));
  const pending=randomUUID(),sending=randomUUID(),unknown=randomUUID(),published=randomUUID();
- for(const [i,status] of [[pending,'pending'],[sending,'approved'],[unknown,'approved'],[published,'approved']])await database.query("insert into os_approvals(id,payload,payload_hash,status,expires_at) values($1,$2,$3,$4,now()+interval '1 day')",[i,JSON.stringify({executor:'buffer_instagram_v1'}),i,status]);
+ for(const [i,status] of [[pending,'pending'],[sending,'approved'],[unknown,'approved'],[published,'approved']])await database.query("insert into os_approvals(id,payload,payload_hash,status,expires_at) values($1,$2,$3,$4,now()+interval '1 day')",[i,JSON.stringify({executor:i===pending?'buffer_social_v2':'buffer_instagram_v1',network:'threads'}),i,status]);
  for(const [i,event,details] of [[sending,'buffer_publish_started',{}],[unknown,'buffer_publish_unknown',{}],[published,'buffer_publish_checked',{published:true}]])await database.query("insert into os_activity(actor,event,entity_id,details) values('test',$1,$2,$3)",[event,i,JSON.stringify(details)]);
  assert.deepEqual(await publishingQueueSnapshot(),{waiting:1,checking:1,attention:1});
  await database.query("update os_approvals set expires_at=now()-interval '1 day' where id=$1",[pending]);
  assert.equal((await publishingQueueSnapshot()).waiting,0);
  assert.equal(nextContentWindow(new Date('2026-09-20T12:00:00Z')),'9 AM ET');
- assert.equal(nextContentWindow(new Date('2026-09-20T18:00:00Z')),'7 PM ET');
+ assert.equal(nextContentWindow(new Date('2026-09-20T18:00:00Z')),'tomorrow at 9 AM ET');
  const assetId=randomUUID(),slides=['first','second','third'].map(text=>({png:Buffer.from(text).toString('base64'),sha256:createHash('sha256').update(text).digest('hex')}));
  await database.query("insert into os_activity(actor,event,entity_id,details) values('content','social_media_asset',$1,$2)",[assetId,JSON.stringify({slides})]);
  const get=hash=>GET(new Request('https://www.darthalgo.com'),{params:Promise.resolve({id:assetId,hash})});

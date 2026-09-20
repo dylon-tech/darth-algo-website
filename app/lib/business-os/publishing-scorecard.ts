@@ -6,7 +6,7 @@ export async function publishingQueueSnapshot() {
   select a.status,a.expires_at,r.event,r.details from os_approvals a
   left join lateral (select event,details from os_activity where entity_id=a.id::text
    and event in ('buffer_publish_started','buffer_publish_receipt','buffer_publish_checked','buffer_publish_unknown') order by id desc limit 1) r on true
-  where a.payload->>'executor' in ('buffer_x_v1','buffer_instagram_v1') and a.created_at>now()-interval '7 days'
+  where a.payload->>'executor' in ('buffer_x_v1','buffer_instagram_v1','buffer_social_v2') and a.created_at>now()-interval '7 days'
  ) select
  count(*) filter(where status in ('pending','approved') and expires_at>now() and event is null)::int as waiting,
  count(*) filter(where status='approved' and event in ('buffer_publish_started','buffer_publish_receipt','buffer_publish_checked') and coalesce(details->>'published','false')<>'true')::int as checking,
@@ -15,5 +15,5 @@ export async function publishingQueueSnapshot() {
 }
 export function nextContentWindow(now=new Date()) {
  const hour=Number(new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',hour:'numeric',hourCycle:'h23'}).format(now));
- return hour<9?'9 AM ET':hour<14?'2 PM ET':hour<19?'7 PM ET':'tomorrow at 9 AM ET';
+ return hour<9?'9 AM ET':'tomorrow at 9 AM ET';
 }
