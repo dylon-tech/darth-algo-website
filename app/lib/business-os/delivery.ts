@@ -2,6 +2,7 @@ import { randomBytes, randomUUID } from "node:crypto";
 import { db } from "../affiliate-db";
 import type { MenuButtons } from "./telegram-ui";
 import { isBufferPublication } from "./buffer-publication-policy";
+import { mediaAutopilot } from "./media-policy";
 import { isInstagramPublication } from "./instagram-policy";
 
 export function privateTelegramConfiguration() {
@@ -58,6 +59,7 @@ export async function queueApprovalNotice(id: string) {
   const instagram = isInstagramPublication(approval.payload);
   const publication = isBufferPublication(approval.payload) || instagram;
   const network = instagram ? "Instagram" : "X";
+  if(mediaAutopilot.enabled && publication)return;
   for (const [decision,label] of [["approved","Approve plan"],["revision_requested","Revise"],["declined","Decline"]] as const) {
     const token = randomBytes(16).toString("hex");
     await sql`insert into os_callback_actions(id,approval_id,payload_hash,decision,expires_at) values(${token},${id},${approval.payload_hash},${decision},${approval.expires_at})`;

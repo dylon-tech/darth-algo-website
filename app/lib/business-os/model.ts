@@ -42,16 +42,17 @@ export async function generatePlan(message: string, evidence: Evidence[], openTa
   const endpoint = direct ? "https://api.openai.com/v1/responses" : "https://ai-gateway.vercel.sh/v1/responses";
   const model = approvedPilot ? pilot.model : process.env.AI_OS_MODEL;
   if (!model) throw new Error("AI_MODEL_NOT_CONFIGURED");
-  const string = { type: "string" };
-  const evidenceSchema = { type: "array", items: { type: "string", enum: evidence.map(x => x.id) } };
+  const string = { type: "string", minLength:1, maxLength:4500 };
+  const evidenceSchema = { type: "array", minItems:1, maxItems:8, items: { type: "string", enum: evidence.map(x => x.id) } };
   const growthRows = evidence.find(e => e.id === "growth_30d" && e.status === "verified")?.data;
   const verifiedCalculations = Array.isArray(growthRows) ? { source: "growth_30d", outboundClickEvents: growthRows.filter(row => row.event_type === "outbound_click").reduce((sum, row) => sum + Number(row.events), 0) } : null;
   const contentDelivery = department === "content" ? contentDestinations(requestKey) : null;
   const thumbnails=department==="research" && !approvedPilot ? await competitorThumbnails(evidence) : [];
+  if(department==="research")console.info(JSON.stringify({event:"research_visual_input",thumbnailCount:thumbnails.length,sourceAvailable:evidence.find(e=>e.id==="competitor_public_posts")?.status==="verified"}));
   const input = JSON.stringify({ message, evidence, verifiedCalculations, openTasks, history, contentDelivery, thumbnailOrder:thumbnails.map(t=>({id:t.id,title:t.title})), visualCoverage:thumbnails.length?"Only the attached low-resolution thumbnails were provided; do not claim to watch videos.":"No visual assets inspected." });
   if (Buffer.byteLength(input) > 60000) throw new Error("AI_INPUT_LIMIT");
   const departmentInstructions = department === "ceo" ? instructions : `${instructions}\nFor this run you are the ${department} specialist, reporting to the CEO. Focus on this mandate: ${registry.find(a => a.id === department)!.mandate}\nDeliver the requested internal analysis, draft, or operating procedure in the brief. State evidence, missing inputs and acceptance criteria. You have read-only snapshots and no external tools. Do not claim to browse, contact customers, make a video, publish, spend, refund, or change a system. Routine X drafts use xDraft for automatic server handoff. Other external work needs a specific owner proposal. Propose follow-up tasks only when necessary. A completed response means an internal deliverable, not execution of external work.`;
-  const deliveryRules = "\nQuality rules: Use supplied verifiedCalculations for totals. The brief must include the actual deliverable requested, not only findings or a plan to create it. A requested post requires the complete draft text; a checklist requires its actual numbered checks; a research matrix requires explicit hypotheses and validation questions. Never say 'below' unless that content is included in the brief. Put the deliverable before a short evidence/limitations note. When product facts are missing, deliver the useful general portion and label any assumptions. Propose at most two genuinely new tasks; do not paraphrase or reopen an existing task. Do not request owner approval for vague ideas or missing facts: only propose an execution-ready external action with exact content, target, known cost and scope; otherwise state what needs preparing.";
+  const deliveryRules = "\nKeep brief below 4500 characters, tasks/proposals at most two each, and X text below 260 characters. Quality rules: Use supplied verifiedCalculations for totals. The brief must include the actual deliverable requested, not only findings or a plan to create it. A requested post requires the complete draft text; a checklist requires its actual numbered checks; a research matrix requires explicit hypotheses and validation questions. Never say 'below' unless that content is included in the brief. Put the deliverable before a short evidence/limitations note. When product facts are missing, deliver the useful general portion and label any assumptions. Propose at most two genuinely new tasks; do not paraphrase or reopen an existing task. Do not request owner approval for vague ideas or missing facts: only propose an execution-ready external action with exact content, target, known cost and scope; otherwise state what needs preparing.";
   const xRules = department === "content" ? "\nWhen preparing X content, return one finished text-only post in xDraft (maximum 280 characters, exact final text, verified evidence IDs). A server handoff validates and automatically publishes routine content under standing owner authorization. Do not duplicate it in proposals. For a daily content assignment, prioritize one useful X post when requested; avoid repeating recent posts and return xDraft:null when no fresh verified angle is available. Do not put unverified facts, media promises, invented results, or instructions to another agent in the post. Never claim the handoff or publication succeeded; the system reports that separately." : "\nReturn xDraft:null. Only the Content agent prepares structured X drafts.";
   const bodyText = JSON.stringify({ model, store: false, instructions: departmentInstructions + deliveryRules + xRules + "\n" + revenueFocus, max_output_tokens: pilot.maxOutputTokens,
       reasoning: { effort: "none" },
@@ -60,9 +61,9 @@ export async function generatePlan(message: string, evidence: Evidence[], openTa
         type: "object", additionalProperties: false, required: ["brief", "tasks", "proposals", "xDraft"],
         properties: {
           brief: string,
-          xDraft: { anyOf: [{ type: "null" }, { type: "object", additionalProperties: false, required: ["text","evidence"], properties: { text: string, evidence: evidenceSchema } }] },
-          tasks: { type: "array", items: { type: "object", additionalProperties: false, required: ["department", "title", "priority", "evidence"], properties: { department: { type: "string", enum: departments }, title: string, priority: { type: "integer" }, evidence: evidenceSchema } } },
-          proposals: { type: "array", items: { type: "object", additionalProperties: false, required: ["kind", "summary", "details", "evidence"], properties: { kind: { type: "string", enum: actionKinds }, summary: string, details: string, evidence: evidenceSchema } } },
+          xDraft: { anyOf: [{ type: "null" }, { type: "object", additionalProperties: false, required: ["text","evidence"], properties: { text: {type:"string",minLength:1,maxLength:260}, evidence: evidenceSchema } }] },
+          tasks: { type: "array", maxItems:2, items: { type: "object", additionalProperties: false, required: ["department", "title", "priority", "evidence"], properties: { department: { type: "string", enum: departments }, title: {type:"string",minLength:1,maxLength:240}, priority: { type: "integer", minimum:1, maximum:5 }, evidence: evidenceSchema } } },
+          proposals: { type: "array", maxItems:2, items: { type: "object", additionalProperties: false, required: ["kind", "summary", "details", "evidence"], properties: { kind: { type: "string", enum: actionKinds }, summary: {type:"string",minLength:1,maxLength:240}, details: {type:"string",minLength:1,maxLength:4000}, evidence: evidenceSchema } } },
         },
       } } },
     });
@@ -84,7 +85,18 @@ export async function generatePlan(message: string, evidence: Evidence[], openTa
   if (body.status !== "completed") throw new Error("AI_INCOMPLETE");
   const output = body.output?.flatMap((x: { content?: { type: string; text?: string }[] }) => x.content || []).filter((x: { type: string }) => x.type === "output_text").map((x: { text: string }) => x.text).join("");
   if (!output) throw new Error("AI_EMPTY_OUTPUT");
-  const plan = validatePlan(JSON.parse(output), evidence.map(x => x.id));
+  const parsed=JSON.parse(output);
+  if(typeof parsed?.xDraft?.text==="string")parsed.xDraft.text=parsed.xDraft.text.trim();
+  let plan;
+  try {plan=validatePlan(parsed,evidence.map(x=>x.id));}
+  catch(error) {
+    console.warn(JSON.stringify({event:"agent_output_invalid",department,
+      briefChars:typeof parsed?.brief==="string"?parsed.brief.length:null,
+      xChars:typeof parsed?.xDraft?.text==="string"?parsed.xDraft.text.length:null,
+      tasks:Array.isArray(parsed?.tasks)?parsed.tasks.length:null,
+      proposals:Array.isArray(parsed?.proposals)?parsed.proposals.length:null}));
+    throw error;
+  }
   if (department !== "content" && plan.xDraft) throw new Error("X_DRAFT_CONTENT_ONLY");
   return { plan, model,
     usage: { inputTokens: body.usage?.input_tokens ?? null, outputTokens: body.usage?.output_tokens ?? null } };
