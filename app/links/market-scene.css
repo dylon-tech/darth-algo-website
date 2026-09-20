@@ -17,8 +17,8 @@
 .hub-quote-track { display:flex; width:max-content; animation:hub-ticker 65s linear infinite; }.hub-quote-reverse .hub-quote-track { animation-direction:reverse; animation-duration:80s; }
 .hub-quote-set { display:flex; }.hub-quote { display:flex; gap:12px; padding:0 24px; border-right:1px solid #ffffff16; white-space:nowrap; }.hub-quote b { color:#c9d0d0; }.hub-quote>span { color:#8b9697; }.hub-quote em { font-style:normal; }
 .hub-market-vignette { position:absolute; z-index:4; inset:150px 0 0; background:linear-gradient(90deg,transparent,transparent calc(50% - 340px),#030405d9 calc(50% - 275px),#030405ed 50%,#030405d9 calc(50% + 275px),transparent calc(50% + 340px)); }
-.hub-market-control { position:absolute; top:21px; left:16px; z-index:20; display:flex; align-items:center; gap:10px; color:#899394; font:8px ui-monospace,SFMono-Regular,monospace; letter-spacing:1px; }
-.hub-market-control button { display:inline-flex; gap:5px; align-items:center; min-height:44px; padding:0 10px; border:1px solid #ffffff18; border-radius:8px; background:#090c0df2; color:#aebabb; font-size:10px; letter-spacing:0; cursor:pointer; }.hub-market-control button:disabled { cursor:default; }.hub-market-control button:focus-visible { outline:2px solid #b6e0d2; outline-offset:3px; }
+
+
 .hub-content { perspective:1400px; }
 .hub-brand-stage { position:relative; padding-top:109px; padding-bottom:12px; }
 .hub-brand-emblem { transform:perspective(800px) rotateX(3deg); border-color:#ffffff26!important; box-shadow:0 3px 0 #1b1c1d,0 8px 0 -2px #090909,0 20px 40px #000a!important; }
@@ -37,10 +37,10 @@
 @media(hover:hover) and (pointer:fine) { .hub-depth-card:hover { transform:translateY(-2px); border-color:#ffffff36!important; } }
 @keyframes hub-ticker { to { transform:translateX(-50%); } }
 @keyframes hub-price-tick { 0%,100%{transform:translateY(0)}35%{transform:translateY(-20px)}70%{transform:translateY(-40px)} }
-@media(min-width:640px) { .hub-market-control { top:32px; left:calc(50% - 288px); }.hub-brand-stage { padding-top:114px; } }
+@media(min-width:640px) { .hub-brand-stage { padding-top:114px; } }
 @media(max-width:1100px) { .hub-exchange-wall { display:none; } }
-@media(max-width:760px) { .hub-ribbon-upper { top:84px; }.hub-ribbon-lower { display:none; }.hub-quote-ribbon { font-size:10px; padding:11px 0; }.hub-quote { gap:9px; padding:0 18px; }.hub-market-candles { opacity:.42; mask-image:linear-gradient(transparent 100px,#000 155px,#000 210px,transparent 280px); }.hub-market-vignette { inset:120px 0 0; background:radial-gradient(ellipse 145px 110px at 50% 50px,#030405f5,transparent),linear-gradient(transparent 80px,#030405ef 190px); }.hub-market-control { flex-direction:row-reverse; gap:8px; font-size:7px; letter-spacing:.6px; }.hub-content { perspective:none; } }
-@media(max-width:360px) { .hub-market-control>span { max-width:58px; line-height:1.5; }.hub-brand-stage>p { font-size:13px; } }
+@media(max-width:760px) { .hub-ribbon-upper { top:84px; }.hub-ribbon-lower { display:none; }.hub-quote-ribbon { font-size:10px; padding:11px 0; }.hub-quote { gap:9px; padding:0 18px; }.hub-market-candles { opacity:.42; mask-image:linear-gradient(transparent 100px,#000 155px,#000 210px,transparent 280px); }.hub-market-vignette { inset:120px 0 0; background:radial-gradient(ellipse 145px 110px at 50% 50px,#030405f5,transparent),linear-gradient(transparent 80px,#030405ef 190px); }.hub-content { perspective:none; } }
+@media(max-width:360px) { .hub-brand-stage>p { font-size:13px; } }
 @media(prefers-reduced-motion:reduce) { .hub-market-scene * { animation:none!important; }.hub-depth-card,.hub-depth-card:hover { transform:none; transition:none; } }
 
 .hub-share button { border-radius:8px; background:#090c0df2; font-size:12px; font-weight:600; }

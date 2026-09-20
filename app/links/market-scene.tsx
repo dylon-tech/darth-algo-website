@@ -1,7 +1,6 @@
 "use client";
 
 import {useEffect,useRef,useState} from "react";
-import {Pause,Play} from "lucide-react";
 
 // Deliberately illustrative values: no market-data request, account or subscription.
 const quotes=[
@@ -18,14 +17,14 @@ function QuoteRibbon({reverse=false}:{reverse?:boolean}) {
 
 export default function MarketScene() {
  const canvas=useRef<HTMLCanvasElement>(null),scene=useRef<HTMLDivElement>(null),time=useRef(0);
- const [paused,setPaused]=useState(false),[reduced,setReduced]=useState(false),[hidden,setHidden]=useState(false);
+ const [reduced,setReduced]=useState(false),[hidden,setHidden]=useState(false);
  useEffect(()=>{
   const media=window.matchMedia("(prefers-reduced-motion: reduce)");
   const preference=()=>setReduced(media.matches),visibility=()=>setHidden(document.hidden);
   preference();visibility();media.addEventListener("change",preference);document.addEventListener("visibilitychange",visibility);
   return ()=>{media.removeEventListener("change",preference);document.removeEventListener("visibilitychange",visibility);};
  },[]);
- const frozen=paused||reduced||hidden;
+ const frozen=reduced||hidden;
  useEffect(()=>{
   const element=canvas.current,root=scene.current;if(!element||!root)return;
   const ctx=element.getContext("2d");if(!ctx)return;
@@ -72,6 +71,5 @@ export default function MarketScene() {
    <div className="hub-ribbon-plane hub-ribbon-lower"><QuoteRibbon reverse /></div>
    <div className="hub-market-vignette" />
   </div>
-  <div className="hub-market-control"><span>SIMULATED MARKET</span><button type="button" aria-label={frozen?"Play market animation":"Pause market animation"} aria-pressed={!frozen} disabled={reduced} onClick={()=>setPaused(p=>!p)} title={reduced?"Reduced motion is enabled on your device":undefined}>{frozen?<Play size={12}/>:<Pause size={12}/>}<span>{reduced?"Still":paused?"Play":"Pause"}</span></button></div>
  </>;
 }
