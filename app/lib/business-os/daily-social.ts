@@ -2,7 +2,8 @@ import {createHash,randomUUID} from 'node:crypto';
 import {db} from '../affiliate-db';
 import {fingerprint} from './policy';
 import {bufferStatus} from './buffer';
-import {photoPlanForDay,photoCaption} from './photo-plan';
+import {photoPlanForDay} from './photo-plan';
+import {syncDailyCreative,dailyCreativeCaption} from './daily-creative';
 import {dailySocialPolicy,dailySocialPayload,isDailySocialPayload,socialPostUrl,type DailyCampaign,type SocialNetwork,type DailySocialPayload} from './daily-social-policy';
 import {selectSocialChannel,socialPreflight,createSocialPost,getSocialPost,socialPostMatches} from './buffer-social';
 const dayFor=(now:Date)=>new Intl.DateTimeFormat('en-CA',{timeZone:dailySocialPolicy.timezone,year:'numeric',month:'2-digit',day:'2-digit'}).format(now);
@@ -10,7 +11,7 @@ export async function prepareDailyCampaign(now=new Date()):Promise<DailyCampaign
  const sql=db(),day=dayFor(now);
  const [saved]=await sql`select details from os_activity where event='daily_social_ready' and entity_id=${day} limit 1`;
  if(saved)return saved.details as DailyCampaign;
- const plan=photoPlanForDay(now),text=photoCaption(plan),assetId=randomUUID();
+ const plan=photoPlanForDay(now),text=await dailyCreativeCaption(now),assetId=randomUUID();
  const [preference]=await sql`select details from os_activity where event='media_style_changed' order by id desc limit 1`;
  const {renderSocialCarousel}=await import('./social-art');
  const images=await renderSocialCarousel(plan,preference?.details.style||'crimson');
@@ -104,8 +105,10 @@ export async function syncDailySocial(now=new Date()){
  // Re-read saved provider receipts; never recreate an accepted post.
  const waiting=await sql`select a.id from os_approvals a where payload->>'executor'='buffer_social_v2' and created_at>now()-interval '7 days' and exists(select 1 from os_activity where entity_id=a.id::text and event='buffer_publish_receipt') and not exists(select 1 from os_activity where entity_id=a.id::text and event='buffer_publish_checked' and (details->>'published'='true' or created_at>now()-interval '5 minutes')) order by created_at limit 3`;
  for(const r of waiting)await checkSocialDelivery(r.id);
+ const creative=await syncDailyCreative(now);
  const hour=Number(new Intl.DateTimeFormat('en-US',{timeZone:dailySocialPolicy.timezone,hour:'numeric',hourCycle:'h23'}).format(now));
- if(hour<dailySocialPolicy.hour)return {status:'waiting_for_daily_window'};
+ if(hour<dailySocialPolicy.hour)return {status:'waiting_for_daily_window',creative:creative.status};
+ if(creative.waiting)return {status:'preparing_daily_caption'};
  const campaign=await prepareDailyCampaign(now),state=await bufferStatus(),deliveries:Record<string,string>={};
  for(const network of ['x','instagram','threads'] as const){
   const channel=selectSocialChannel(state.channels,network);

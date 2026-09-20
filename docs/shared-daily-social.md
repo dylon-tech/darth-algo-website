@@ -5,6 +5,7 @@ Owner instruction, September 20, 2026: include Threads; use the same post on X, 
 ## Result
 
 - One immutable three-image campaign and one caption, shared verbatim across all three networks.
+- The Content agent writes a fresh shared caption hook using current research evidence, recent captions and owner topic/style suggestions. Existing AI budget limits still apply. Unsupported or unavailable output falls back to the recorded-chart lesson caption; a queued job has up to 30 minutes before that fallback.
 - Five rotating owned-chart lessons: context, signals, risk planning, tools and community. Real product screenshots remain unaltered; captions identify recorded examples. Every caption points to the links page.
 - Daily window opens at 9 AM America/New_York. One campaign per platform/day and at least 20 hours between automatic platform submissions. Existing recent posts can delay the first campaign after cutover. Channels publish independently; connecting Threads later can deliver that day's saved campaign without resending X/Instagram.
 - X and Instagram retain their pinned account IDs. Threads must match the exact darth.algo handle, or an explicitly configured BUFFER_THREADS_CHANNEL_ID. Missing, ambiguous, disconnected, locked or paused channels are blocked.
