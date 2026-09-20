@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   reactStrictMode: true,
+  serverExternalPackages: ["playwright-core"],
 };
 
 export default nextConfig;

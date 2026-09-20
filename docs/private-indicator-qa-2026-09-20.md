@@ -19,6 +19,13 @@ The indicator is `Darth Algo Opening Range Fakeout - Private Beta`, saved source
 - TradingView's alert dialog recognized version 2.0, exposed both `Upper range reentry` and `Lower range reentry`, and allowed `Once per bar close`. The lower alert message correctly described a return after a downside break. The dialog was canceled; no alert was created, triggered or sent.
 - Exited replay, returned to AAPL five-minute candles, and reloaded the saved layout. The named indicator and range calculations reopened successfully; the layout reported all changes saved.
 
+## Additional checks later the same day
+
+- AAPL one-minute candles loaded and calculated the same September 18 opening range, 338.49–335.39.
+- Removed this indicator from the dedicated private test layout, then clicked **Add to chart** in its unchanged saved Pine source. TradingView inserted the indicator successfully and calculated its numeric range again. This is a fresh add/compile observation; no source version or signal logic was changed.
+- Replayed AAPL September 14 on five-minute candles, starting at 14:50 UTC and advancing through the upside break and return. The range was 334.99–331.34. An orange FAKEOUT marker appeared after the break and remained visible after additional bars. Actual capture: https://www.tradingview.com/x/KtxJYwT4/ . Intermediate snapshots immediately after Forward can show the newly opened bar rather than the completed bar; do not use those transient OHLC readings as a precise trigger timestamp.
+- Exited replay and restored the saved AAPL five-minute layout, which reported all changes saved. No alert, trade, public script or educational post was submitted.
+
 ## Plain-language explanation
 
 Purple lines mark the high and low of the New York 09:30–09:45 opening range. After the first close beyond either boundary, the script waits up to the configured number of bars for a close back inside. Orange marks a return after an upside break; cyan marks a return after a downside break. It only evaluates confirmed bars, allows one initial break attempt per direction per session, and ends evaluation at 16:00 New York time. An expired first attempt is not rearmed later that day.
@@ -27,7 +34,7 @@ Supported chart intervals in source: 1, 3, 5 and 15 minutes, standard candles, w
 
 ## Still needed for release
 
-Fresh compiler evidence tied to a registered candidate/source hash; a worked upper reentry replay; one-minute and missing-bar/session-boundary cases; live closed-bar alert delivery; verified instruction image and educational package; owner package approval. The current production Lab reports zero registered candidates and `worker_not_connected`. This manually saved prototype must not be treated as an approved database candidate or automatically published. New releases remain free and publicly discoverable on TradingView after their release gates pass.
+Registration of this existing manual prototype with its exact source; missing-bar/session-boundary cases; live closed-bar alert delivery; verified instruction image and educational package; owner package approval. The production Lab had zero registered candidates at the audit. The new hosted runner checks this existing manual prototype’s exact saved source, numeric ranges on four intervals and reopening; it does not implement new-candidate replay or public publication. Its live result must be verified separately. This manually saved prototype must not be treated as an approved database candidate or automatically published. New releases remain free and publicly discoverable on TradingView after their release gates pass.
 
 ## Publishing incident handled during QA
 
