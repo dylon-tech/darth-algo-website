@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import ImmersiveEngine, { ImmersiveStory } from "../../components/immersive-engine";
 import SiteFooter from "../../components/site-footer";
 import SiteHeader from "../../components/site-header";
 import TradingViewUsernameHelp from "../../components/tradingview-username-help";
@@ -57,7 +58,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
       <SiteHeader />
 
-      <section className="relative overflow-hidden border-b border-white/10 pb-16 pt-14 sm:pb-24 sm:pt-20">
+      <section className={`immersion-product-hero immersion-${product.color} relative overflow-hidden border-b border-white/10 pb-16 pt-14 sm:pb-24 sm:pt-20`}>
         <div aria-hidden="true" className="absolute inset-0 bg-grid bg-[size:48px_48px] opacity-[0.12]" />
         <div aria-hidden="true" className={`absolute inset-x-0 top-0 h-px ${styles.bg} opacity-80`} />
         <div className="section-shell relative grid gap-12 xl:grid-cols-[0.78fr_1.22fr] xl:items-center">
@@ -77,16 +78,11 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             {checkout && <TradingViewUsernameHelp className="mt-2 -ml-3" />}
           </div>
 
-          <div className={`relative overflow-hidden rounded-md border bg-[#090d13] ${styles.border} ${styles.glow}`}>
-            <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 font-mono text-[9px] font-bold uppercase text-zinc-500">
-              <span>Darth Algo // {product.shortName}</span><span className={styles.text}>Chart preview</span>
-            </div>
-            <div className="relative aspect-[16/8.5] min-h-[250px]">
-              <Image src={product.overview} alt={product.overviewAlt} fill priority sizes="(min-width: 1280px) 58vw, 100vw" className="object-cover object-left" />
-            </div>
-          </div>
+          <ImmersiveEngine accent={product.color} image={product.overview} alt={product.overviewAlt} priority />
         </div>
       </section>
+
+      <ImmersiveStory accent={product.color} scenes={product.workflow.map((step, index) => ({ label: ["Context", "Setup", "Plan"][index], title: step.title + ".", copy: step.copy, image: index === 0 ? product.overview : index === 1 ? product.gallery[product.gallery.length - 1].src : product.gallery[product.slug === "pro" ? 1 : 0].src, alt: index === 0 ? product.overviewAlt : index === 1 ? product.gallery[product.gallery.length - 1].alt : product.gallery[product.slug === "pro" ? 1 : 0].alt }))} />
 
       <section className="py-20 sm:py-28">
         <div className="section-shell grid gap-12 lg:grid-cols-[0.72fr_1.28fr]">
