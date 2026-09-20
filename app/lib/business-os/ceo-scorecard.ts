@@ -1,4 +1,5 @@
 import { db } from "../affiliate-db";
+import {publishingQueueSnapshot,nextContentWindow} from "./publishing-scorecard";
 import { stripe } from "../stripe";
 export const businessDay=(date=new Date())=>new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).format(date);
 type SubscriptionRow={livemode:boolean;status:string;customer:string|{id:string};cancel_at_period_end?:boolean;cancel_at?:number|null};
@@ -34,15 +35,21 @@ export async function ownerNeeds(){
 }
 export async function ceoScorecard(){
  const sql=db(),day=businessDay();
- const [customers,needs,posts,jobs,controls]=await Promise.all([
+ const [customers,needs,posts,jobs,controls,queue]=await Promise.all([
   customerSnapshot(),ownerNeeds(),
   sql`select a.payload->>'executor' as network,(r.details->>'sentAt')::timestamptz at time zone 'America/New_York' as sent_at from os_approvals a join lateral (select details from os_activity where entity_id=a.id::text and event='buffer_publish_checked' and details->>'published'='true' and details->>'sentAt' is not null order by id desc limit 1) r on true where a.payload->>'executor' in ('buffer_x_v1','buffer_instagram_v1') and ((r.details->>'sentAt')::timestamptz at time zone 'America/New_York')::date=${day}::date`,
   sql`select status,count(*)::int as n from os_jobs where status in ('queued','running') group by status`,
-  sql`select paused from os_control where id=1`,
+  sql`select paused from os_control where id=1`,publishingQueueSnapshot(),
  ]);
  const x=posts.filter(p=>p.network==='buffer_x_v1').length,ig=posts.filter(p=>p.network==='buffer_instagram_v1').length;
  const count=(s:string)=>jobs.find(j=>j.status===s)?.n || 0;
  const attention=[...(needs.approvals.length?[`${needs.approvals.length}${needs.approvals.length===6?'+':''} proposal${needs.approvals.length===1?'':'s'} to review`]:[]),...(needs.failed.length?[`${needs.failed.map(j=>j.department).join(', ')}: last job needs a check`]:[])];
- const body=[`◆ DARTH ALGO · CEO DESK`,`Talking to: CEO`,"",`Active subscribing customers: ${customers.active??'unavailable'}`,`Trials: ${customers.trials??'unavailable'} · Past due: ${customers.pastDue??'unavailable'}`,`Published today: ${x+ig} (${x} X · ${ig} Instagram)`,`Agents: ${count('running')} working · ${count('queued')} waiting`,"",`Needs you: ${attention.length?attention.join('; '):'no pending decisions or recent failed jobs.'}`,needs.blocked?`Blocked tasks: ${needs.blocked} · open Needs me.`:'',`Posting: ${controls[0]?.paused?'paused':'automatic'}`,"",`Stripe subscriptions only; lifetime/access unverified.`,`Updated ${new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'}).format(new Date())} ET · ${day}`].filter((x,i,a)=>x!=='' || a[i-1]!=='').join('\n');
- return {day,body,customers,posts:{x,instagram:ig},needs};
+ if(queue.attention)attention.push(`${queue.attention} post delivery needs checking in Buffer`);
+ if(process.env.AI_OS_INDICATOR_LAB_ENABLED==="true") {
+  const research=await (await import("./vidiq-connection")).vidiqStatus().catch(()=>null);
+  if(research && !research.connected)attention.push("connect vidIQ in Connections");
+  attention.push("TradingView publishing worker needs setup");
+ }
+ const body=[`◆ DARTH ALGO · CEO DESK`,`Talking to: CEO`,"",`Active subscribing customers: ${customers.active??'unavailable'}`,`Trials: ${customers.trials??'unavailable'} · Past due: ${customers.pastDue??'unavailable'}`,`Published today: ${x+ig} (${x} X · ${ig} Instagram)`,`Post queue: ${queue.waiting} ready · ${queue.checking} checking delivery`,`Agents: ${count('running')} working · ${count('queued')} waiting`,"",`Needs you: ${attention.length?attention.join('; '):'no pending decisions or recent failed jobs.'}`,needs.blocked?`Blocked tasks: ${needs.blocked} · open Needs me.`:'',`Posting: ${controls[0]?.paused?'paused':`automatic · next content window ${nextContentWindow()}`}`,"",`Stripe subscriptions only; lifetime/access unverified.`,`Updated ${new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'}).format(new Date())} ET · ${day}`].filter((x,i,a)=>x!=='' || a[i-1]!=='').join('\n');
+ return {day,body,customers,posts:{x,instagram:ig},queue,needs};
 }

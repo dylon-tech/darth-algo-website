@@ -23,5 +23,5 @@ export async function POST(r:Request){
     if(b.action === "prepare_package") return Response.json(await prepareIndicatorPackage(b.id,b.sourceHash,b.education),{headers:privateHeaders});
     if(b.action && b.action !== "record_release") throw Error("UNKNOWN_ACTION");
     return Response.json(await recordIndicatorRelease(b.id,b.sourceHash,b.tradingviewUrl,b.checks),{headers:privateHeaders});
-  }catch{return Response.json({error:"RELEASE_NOT_VERIFIED",message:"Private preview requires current-source compilation, replay, a screenshot and a reopened saved chart. Release additionally requires exact-source approval and a public script URL."},{status:409,headers:privateHeaders});}
+  }catch{return Response.json({error:"RELEASE_NOT_VERIFIED",message:"Private preview requires current-source compilation, replay, a screenshot and a reopened saved chart. Release additionally requires exact-source approval and a public script URL, free protected access, Community search discovery and Add to chart verification."},{status:409,headers:privateHeaders});}
 }

@@ -13,6 +13,7 @@ for(const bad of [pine+'\nx=request.security("X","D",close)',pine+'\nplot(close,
 assert.equal(policy.pineLogicHash(pine),policy.pineLogicHash(pine.replace('Darth Algo Test','Another Name')));
 assert.throws(()=>policy.validateIndicator({...candidate,sourceUrls:['https://unobserved.example','https://elsewhere.example']},candidate.sourceUrls));
 assert.throws(()=>policy.validateIndicator({...candidate,tier:'free',monthlyPriceUsd:10},candidate.sourceUrls));
+assert.throws(()=>policy.validateIndicator({...candidate,tier:'paid',monthlyPriceUsd:9},candidate.sourceUrls));
 assert.equal(policy.validTradingViewRelease('https://www.tradingview.com/script/Abcd-Test/'),true);
 assert.equal(policy.validTradingViewRelease('https://www.tradingview.com.evil.com/script/Test/'),false);
 async function main(){
@@ -57,7 +58,7 @@ async function main(){
  await assert.rejects(lab.recordPrivateIndicatorPreview(row.id,row.source_hash,privatePreview));
  await sql`update os_indicator_candidates set status='pending' where id=${row.id}`;
  await output({...candidate,name:'Darth Algo Renamed',pine:pine.replace('Darth Algo Test','Darth Algo Renamed')});await lab.syncIndicatorLab();assert.equal((await sql`select * from os_indicator_candidates`).length,1);
- const checks={compiled:true,replay:true,notes:'Verified two symbols and three timeframes with closed-bar alert replay.',screenshotUrl:'https://www.tradingview.com/x/Abcd123/',educationUrl:'https://www.tradingview.com/chart/AAPL/Abcd-Educational-example/',packageHash:ready.release_package.hash};
+ const checks={privacy:'public',visibility:'protected',freeToUse:true,inviteRequired:false,communitySearchVerified:true,addToChartVerified:true,compiled:true,replay:true,notes:'Verified two symbols and three timeframes with closed-bar alert replay.',screenshotUrl:'https://www.tradingview.com/x/Abcd123/',educationUrl:'https://www.tradingview.com/chart/AAPL/Abcd-Educational-example/',packageHash:ready.release_package.hash};
  await assert.rejects(lab.recordIndicatorRelease(row.id,row.source_hash,'https://www.tradingview.com/script/Abcd-Test/',checks));
  const [approval]=await sql`select * from os_approvals where id=${row.approval_id}`;
  await assert.rejects(sql.begin(tx=>packages.queueApprovedIndicator(tx,row.approval_id,{...approval.payload,packageHash:'0'.repeat(64)})));
@@ -68,6 +69,7 @@ async function main(){
  await assert.rejects(lab.recordIndicatorRelease(row.id,'0'.repeat(64),'https://www.tradingview.com/script/Abcd-Test/',checks));
  await assert.rejects(lab.recordIndicatorRelease(row.id,row.source_hash,'https://www.tradingview.com/script/Abcd-Test/',{...checks,replay:false}));
  await assert.rejects(lab.recordIndicatorRelease(row.id,row.source_hash,'https://www.tradingview.com/script/Abcd-Test/',{...checks,packageHash:'0'.repeat(64)}));
+ for(const invalid of [{privacy:'private'},{visibility:'invite-only'},{freeToUse:false},{inviteRequired:true},{communitySearchVerified:false},{addToChartVerified:false}])await assert.rejects(lab.recordIndicatorRelease(row.id,row.source_hash,'https://www.tradingview.com/script/Abcd-Test/',{...checks,...invalid}),/FREE_PUBLIC_DISCOVERY_REQUIRED/);
  await lab.recordIndicatorRelease(row.id,row.source_hash,'https://www.tradingview.com/script/Abcd-Test/',checks);
  await lab.recordIndicatorRelease(row.id,row.source_hash,'https://www.tradingview.com/script/Abcd-Test/',checks);
  assert.equal((await sql`select * from os_activity where event='indicator_released'`).length,1);
