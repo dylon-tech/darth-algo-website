@@ -36,14 +36,14 @@ export default function MarketScene() {
    // Two market planes at different depths; deterministic closed bars and a ticking last bar.
    for(let layer=0;layer<2;layer++){
     const step=layer?30:22,count=Math.ceil(width/step)+4,travel=(t*(layer?5:8))%step;
-    const shift=Math.floor(t*(layer?5:8)/step),base=height*(layer?0.73:0.37);
+    const shift=Math.floor(t*(layer?5:8)/step),base=width<761?(layer?205:165):height*(layer?0.73:0.37);
     const center=width/2;
     ctx.lineWidth=1;
     for(let i=0;i<count;i++){
      const n=i+shift,x=i*step-travel-30;
      const wave=(v:number)=>Math.sin(v*.31+layer)*43+Math.sin(v*.79)*21;
      const open=wave(n),close=wave(n+1),tick=i===count-3?Math.sin(t*7)*7:0;
-     const y=base+open+(x-center)*(layer?-.12:.16),end=base+close+(x-center)*(layer?-.12:.16)+tick;
+     const y=base+open,end=base+close+tick;
      const up=end<y,color=up?"57,215,173":"248,76,96";
      const edge=Math.min(1,Math.abs(x-center)/Math.max(1,width*.3));
      ctx.strokeStyle=`rgba(${color},${.22+edge*.3})`;ctx.fillStyle=`rgba(${color},${.18+edge*.22})`;
@@ -52,16 +52,14 @@ export default function MarketScene() {
     }
     // Faint connecting price trace enhances depth without implying product results.
     ctx.strokeStyle=layer?"rgba(104,175,242,.16)":"rgba(86,223,186,.2)";
-    ctx.beginPath();for(let x=0;x<width;x+=8){const y=base+Math.sin(x*.012+t*.16)*44+Math.cos(x*.021)*18+(x-center)*(layer?-.12:.16);if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.stroke();
+    ctx.beginPath();for(let x=0;x<width;x+=8){const y=base+Math.sin(x*.012+t*.16)*44+Math.cos(x*.021)*18;if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.stroke();
    }
   };
   const resize=()=>{width=root.clientWidth;height=root.clientHeight;const dpr=Math.min(window.devicePixelRatio||1,1.5);element.width=Math.round(width*dpr);element.height=Math.round(height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);draw();};
-  const scroll=()=>root.style.setProperty("--market-scroll",`${frozen?0:Math.min(window.scrollY*.035,90)}px`);
   const animate=(now:number)=>{if(!last)last=now;if(now-last>=1000/24){time.current+=Math.min((now-last)/1000,.1);last=now;draw();}frame=requestAnimationFrame(animate);};
-  const observer=new ResizeObserver(resize);observer.observe(root);resize();scroll();
+  const observer=new ResizeObserver(resize);observer.observe(root);resize();
   if(!frozen)frame=requestAnimationFrame(animate);
-  window.addEventListener("scroll",scroll,{passive:true});
-  return ()=>{cancelAnimationFrame(frame);observer.disconnect();window.removeEventListener("scroll",scroll);};
+  return ()=>{cancelAnimationFrame(frame);observer.disconnect();};
  },[frozen]);
  return <>
   <div className="hub-market-scene" ref={scene} aria-hidden="true" data-frozen={frozen}>
