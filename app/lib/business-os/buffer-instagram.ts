@@ -5,7 +5,7 @@ import { isInstagramPublication, type InstagramPublication } from "./instagram-p
 export type InstagramPost = BufferPost & { assets: Array<{ source: string; type: string; image?: { altText: string } }> };
 const postFields = "id text channelId status dueAt sentAt assets { source type ... on ImageAsset { image { altText } } }";
 export async function instagramChannelReady(payload: InstagramPublication) {
-  const state = await bufferStatus();
+  const state = await bufferStatus({fresh:true});
   const channel = state.channels.find(c=>c.id===payload.channelId && c.service?.toLowerCase()==="instagram");
   if (!channel || channel.isDisconnected !== false || channel.isLocked !== false || channel.isQueuePaused !== false) throw new Error("INSTAGRAM_CHANNEL_NOT_READY");
 }

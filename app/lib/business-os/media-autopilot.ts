@@ -23,7 +23,13 @@ export async function syncMediaAutopilot() {
  });
  const receipts=await sql`select a.id,a.payload,a.payload_hash from os_approvals a where status='approved' and payload->>'executor' in ('buffer_x_v1','buffer_instagram_v1') and exists(select 1 from os_activity where entity_id=a.id::text and event='buffer_publish_receipt') and not exists(select 1 from os_activity where entity_id=a.id::text and event='buffer_publish_checked' and (details->>'published'='true' or created_at>now()-interval '5 minutes')) order by created_at limit 2`;
  for(const r of receipts){if(r.payload.executor==='buffer_x_v1')await checkBufferPublication(r.id,r.payload_hash);else await checkInstagramPublication(r.id,r.payload_hash);}
- const social=await syncDailySocial();
+ let social;
+ try{social=await syncDailySocial();}
+ catch(error){
+  const code=error instanceof Error?error.message:'';
+  if(!['BUFFER_HTTP_429','BUFFER_RATE_LIMIT_COOLDOWN'].includes(code))throw error;
+  social={status:'waiting_for_buffer',code};
+ }
  const community=await publishCommunityPreview();
  return {...social,community};
 }

@@ -47,10 +47,14 @@ function authorized(row:Record<string,unknown>|undefined):DailySocialPayload{
  if(!row||row.status!=='approved'||row.decided_by!=='owner_policy'||!isDailySocialPayload(row.payload)||row.payload_hash!==fingerprint(row.payload))throw Error('DAILY_SOCIAL_NOT_AUTHORIZED');
  return row.payload;
 }
-export async function checkSocialDelivery(id:string){
+export async function checkSocialDelivery(id:string,options:{scheduled?:boolean}={}){
  const sql=db(),[row]=await sql`select * from os_approvals where id=${id}`,payload=authorized(row);
  const [receipt]=await sql`select details from os_activity where entity_id=${id} and event='buffer_publish_receipt' order by id desc limit 1`;
  if(!receipt)return {state:'unknown',published:false};
+ if(options.scheduled){
+  const [checked]=await sql`select details from os_activity where entity_id=${id} and event='buffer_publish_checked' and created_at>now()-interval '5 minutes' order by id desc limit 1`;
+  if(checked)return checked.details;
+ }
  try{
   const postId=String(receipt.details.postId),post=await getSocialPost(postId);
   if(post.id!==postId||!socialPostMatches(post,payload))throw Error('BUFFER_RECEIPT_MISMATCH');
@@ -58,7 +62,11 @@ export async function checkSocialDelivery(id:string){
   const details={payloadHash:row.payload_hash,channelId:payload.channelId,network:payload.network,postId,state:post.status,published,sentAt:post.sentAt||null,externalLink,checkedAt:new Date().toISOString()};
   await sql`insert into os_activity(actor,event,entity_id,details) values('operations','buffer_publish_checked',${id},${sql.json(details)})`;
   return details;
- }catch{return {state:'unconfirmed',published:false};}
+ }catch{
+  const details={state:'unconfirmed',published:false,checkedAt:new Date().toISOString()};
+  await sql`insert into os_activity(actor,event,entity_id,details) values('operations','buffer_publish_checked',${id},${sql.json(details)})`;
+  return details;
+ }
 }
 export async function executeSocialDelivery(id:string){
  if(process.env.VERCEL_ENV!=='production'||!dailySocialPolicy.enabled||process.env.AI_OS_AUTONOMY_ENABLED!=='true')throw Error('DAILY_SOCIAL_DISABLED');
@@ -66,7 +74,7 @@ export async function executeSocialDelivery(id:string){
  const [done]=await sql`select details from os_activity where entity_id=${id} and event='buffer_publish_checked' and details->>'published'='true' order by id desc limit 1`;
  if(done)return {...done.details,state:'sent',published:true};
  const [receipt]=await sql`select id from os_activity where entity_id=${id} and event='buffer_publish_receipt' limit 1`;
- if(receipt)return checkSocialDelivery(id);
+ if(receipt)return checkSocialDelivery(id,{scheduled:true});
  const [started]=await sql`select id from os_activity where entity_id=${id} and event='buffer_publish_started' limit 1`;
  if(started)return {state:'unknown',published:false};
  // Avoid downloading the carousel every cron tick while a platform is within its cadence window.
@@ -107,7 +115,7 @@ export async function syncDailySocial(now=new Date()){
  const sql=db(),[control]=await sql`select paused from os_control where id=1`;if(!control||control.paused)return {status:'paused'};
  // Re-read saved provider receipts; never recreate an accepted post.
  const waiting=await sql`select a.id from os_approvals a where payload->>'executor'='buffer_social_v2' and created_at>now()-interval '7 days' and exists(select 1 from os_activity where entity_id=a.id::text and event='buffer_publish_receipt') and not exists(select 1 from os_activity where entity_id=a.id::text and event='buffer_publish_checked' and (details->>'published'='true' or created_at>now()-interval '5 minutes')) order by created_at limit 3`;
- for(const r of waiting)await checkSocialDelivery(r.id);
+ for(const r of waiting)await checkSocialDelivery(r.id,{scheduled:true});
  const creative=await syncDailyCreative(now);
  const hour=Number(new Intl.DateTimeFormat('en-US',{timeZone:dailySocialPolicy.timezone,hour:'numeric',hourCycle:'h23'}).format(now));
  if(creative.waiting)return {status:'preparing_daily_caption'};

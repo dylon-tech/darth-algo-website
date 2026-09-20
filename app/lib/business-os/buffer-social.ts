@@ -14,7 +14,7 @@ export function selectSocialChannel(channels:BufferChannel[],network:SocialNetwo
 }
 export async function socialPreflight(payload:DailySocialPayload){
  if(!isDailySocialPayload(payload))throw Error('DAILY_SOCIAL_PAYLOAD_INVALID');
- const state=await bufferStatus(),channel=selectSocialChannel(state.channels,payload.network);
+ const state=await bufferStatus({fresh:true}),channel=selectSocialChannel(state.channels,payload.network);
  if(!channel||channel.id!==payload.channelId)throw Error('DAILY_SOCIAL_CHANNEL_NOT_READY');
  // Reuse bounded downloads and exact immutable-byte checks for all three networks.
  await verifyInstagramAssets(instagramPublicationPayload({campaignId:`daily-${payload.campaign.day}`,text:payload.text,assets:payload.assets}));
