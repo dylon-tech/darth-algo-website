@@ -41,13 +41,7 @@ const navLinks = [
   { label: "FAQ", href: "#faq" },
 ];
 
-const journeySections = [
-  { label: "Home", href: "#top", id: "top" },
-  { label: "System", href: "#system", id: "system" },
-  { label: "Products", href: "#examples", id: "examples" },
-  { label: "Results", href: "#performance", id: "performance" },
-  { label: "Access", href: "#pricing", id: "pricing" },
-] as const;
+
 
 const systemModules = [
   {
@@ -543,7 +537,6 @@ function MarketBackdrop() {
 export default function Home() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeIndicator, setActiveIndicator] = useState<keyof typeof indicatorWalkthroughs>("scalper");
-  const [activeZone, setActiveZone] = useState("top");
   const [expandedImage, setExpandedImage] = useState<null | { src: string; alt: string; title: string }>(null);
   const lightboxRef = useRef<HTMLDivElement>(null);
   const lightboxCloseRef = useRef<HTMLButtonElement>(null);
@@ -581,24 +574,8 @@ export default function Home() {
       revealObserver.observe(target);
     });
 
-    const zoneObserver = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible?.target.id) setActiveZone(visible.target.id);
-      },
-      { rootMargin: "-30% 0px -55% 0px", threshold: [0, 0.2, 0.5] },
-    );
-
-    journeySections.forEach(({ id }) => {
-      const section = document.getElementById(id);
-      if (section) zoneObserver.observe(section);
-    });
-
     return () => {
       revealObserver.disconnect();
-      zoneObserver.disconnect();
     };
   }, []);
 
@@ -677,21 +654,6 @@ export default function Home() {
           </div>
         )}
       </header>
-
-      <nav className="journey-rail fixed right-5 top-1/2 z-40 hidden -translate-y-1/2 xl:flex" aria-label="Page progress">
-        {journeySections.map((section, index) => (
-          <a
-            key={section.id}
-            href={section.href}
-            className={activeZone === section.id ? "is-active" : ""}
-            aria-label={`Go to ${section.label}`}
-          >
-            <span className="journey-label">{section.label}</span>
-            <span className="journey-bar" />
-            <span className="journey-index">0{index + 1}</span>
-          </a>
-        ))}
-      </nav>
 
       <section id="top" className="immersion-hero immersion-red relative z-10">
         <div className="section-shell immersion-hero-layout">

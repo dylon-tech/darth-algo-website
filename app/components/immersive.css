@@ -73,3 +73,5 @@
 @media(max-height:760px) and (max-width:767px){.chart-journey-stage{min-height:500px}.journey-heading{top:52px}.journey-heading h2{font-size:30px;max-width:330px}.journey-copy{font-size:11px;margin-top:9px}.journey-world-wrap{top:160px;bottom:102px}.journey-bottom{bottom:4px}.journey-chapters button{min-height:44px}.journey-layer-labels{bottom:0}}
 @media(max-height:650px) and (min-width:768px){.chart-journey-stage{min-height:470px}.journey-heading{top:60px}.journey-heading h2{font-size:34px}.journey-copy{margin-top:10px;font-size:12px}.journey-world-wrap{top:130px;bottom:95px}.journey-bottom{bottom:5px}.journey-topline{top:8px}}
 @media(prefers-reduced-motion:reduce){.journey-heading{animation:none}.journey-chapters button,.journey-chapters button i,.journey-layer-labels span,.journey-webgl{transition:none}}
+
+.journey-webgl svg{display:block;width:100%;height:100%;background:transparent!important}

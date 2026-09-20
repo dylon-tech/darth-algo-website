@@ -26,7 +26,7 @@ Chapter buttons work in both directions. A skip-to-tools link and final trial/pl
 - Rendering settles when input stops, pauses outside the viewport and when the tab is hidden.
 - Drawing resolution is capped at 1.8 million pixels and a device ratio of 1.5 on narrow screens.
 - Geometries, materials, canvas and observers are disposed on cleanup.
-- Reduced-motion mode and WebGL failure show actual product images with manual chapter controls.
+- GPU-unavailable browsers use Three.js SVGRenderer to project the same real geometry and camera path as vector shapes. Reduced-motion mode and total renderer failure show actual product images with manual chapter controls.
 - The browser scroll remains native; no wheel/touch event cancellation.
 - Phone camera distance fits the scene to viewport width. Short and landscape viewport layouts have dedicated styles.
 
