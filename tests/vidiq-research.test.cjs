@@ -31,7 +31,13 @@ async function main(){
  await pg.exec('delete from os_vidiq_discovery;update os_control set paused=true');assert.equal((await research.syncVidiqResearch()).status,'paused');assert.equal(paid,2);
  await connection.disconnectVidiq();assert.equal((await research.vidiqEvidence()).status,'unavailable');
  assert.deepEqual(research.socialPosts({url:'https://instagram.com.evil.example/reel/test'}),[]);
-  assert.equal(research.balanceData({structuredContent:{totalCredits:'100'}}),null);
+  const formatted='## Instagram\n\n**@ig_trader** — "EMA idea"\n  reel:AbcDef12345\n  **reel_concept**: EMA context only\n\n## TikTok\n\n**@tick_trader** — "Liquidity idea"\nhttps://www.tiktok.com/@tick_trader/video/123456789\n**concept**: Liquidity sweep\n\n**@other_trader** — "Volume idea"\nhttps://www.tiktok.com/@other_trader/video/987654321';
+ const parsed=research.socialPosts({content:[{type:'text',text:formatted}]});assert.equal(parsed.length,3);
+ const ig=parsed.find(p=>p.platform==='Instagram'),tik=parsed.find(p=>p.url.includes('@tick_trader'));
+ assert.equal(ig.url,'https://www.instagram.com/reel/AbcDef12345/');assert.equal(ig.urlProvenance,'provider_reel_id');assert(ig.metadata.includes('EMA'));assert(!ig.metadata.includes('Liquidity'));
+ assert(tik.metadata.includes('Liquidity'));assert(!tik.metadata.includes('EMA'));assert(!tik.metadata.includes('Volume'));
+ assert.equal(research.socialPosts('Unattributed caption and https://www.tiktok.com/@x/video/123')[0].metadata,'');
+ assert.equal(research.balanceData({structuredContent:{totalCredits:'100'}}),null);
  const owner=load('owner-session');
  function route(relative){const filename=path.resolve(relative),mod=new Module(filename,module);mod.filename=filename;mod.paths=module.paths;mod.require=id=>id.endsWith('/owner-session')?owner:id.endsWith('/vidiq-connection')?connection:id.endsWith('/vidiq-research')?research:require(id);mod._compile(ts.transpileModule(fs.readFileSync(filename,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,esModuleInterop:true}}).outputText,filename);return mod.exports;}
  const api=route('app/api/owner/connections/vidiq/route.ts'),callback=route('app/api/owner/connections/vidiq/callback/route.ts');
