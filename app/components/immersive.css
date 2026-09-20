@@ -37,3 +37,5 @@
 @media(max-height:700px) and (min-width:768px){.immersion-story-sticky{min-height:580px}.immersion-story-layout{padding-block:35px}}
 @media(max-height:720px) and (max-width:767px){.immersion-story h2{font-size:29px}.immersion-story-layout{padding-top:16px;padding-bottom:12px}.immersion-story .immersion-engine{max-width:290px;aspect-ratio:1.5}.immersion-description{min-height:0}.immersion-footnote{margin-top:8px}.immersion-chapters{margin-top:10px}}
 @media(prefers-reduced-motion:reduce){.immersion-camera,.immersion-screen,.immersion-chip{transition:none!important}.immersion-camera{transform:rotateX(4deg) rotateY(-5deg)}.immersion-story[data-scroll="true"]{height:auto}.immersion-story-sticky{position:relative;height:auto;min-height:0}.immersion-story-track{display:none}}
+/* Keep perspective-projected cards inside the narrow link-hub container. */
+.immersion-compact .immersion-camera{scale:.84;transform-origin:50% 45%}
