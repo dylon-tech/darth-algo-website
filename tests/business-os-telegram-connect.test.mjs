@@ -26,13 +26,13 @@ try {
    if(text.includes('pg_advisory_xact_lock')) return [];
    return (await driver.query(text,values)).rows;
   };
-  sql.json=v=>JSON.stringify(v);
+  sql.json=v=>JSON.stringify(v);sql.unsafe=q=>driver.exec(q);
   sql.begin=async fn=>{let release;const prior=tail;tail=new Promise(r=>release=r);await prior;try{return await database.transaction(tx=>fn(makeSql(tx)));}finally{release();}};
   return sql;
  };
  const sql=makeSql(database);
  const mock=(path,exports)=>{const id=join(dir,'lib',path+'.js');require.cache[id]={id,filename:id,loaded:true,exports};};
- mock('affiliate-db',{db:()=>sql});mock('business-os/service',{});
+ mock('affiliate-db',{db:()=>sql});mock('business-os/service',{});mock('stripe',{});
 
  let work={status:'idle_or_paused'};
  mock('business-os/jobs',{workOneJob:async()=>work});
@@ -62,8 +62,8 @@ try {
   work={status:success?'succeeded':'failed',jobId:id,department:'operations',...(success?{runId}:{})};await workAndNotify();
  };
  await job('schedule');assert.equal(sent.length,1,'Routine background report stays in dashboard');
- await job('telegram');assert.equal(sent.length,2);assert.match(sent[1].text,/reply ready/);
- await job('schedule',false);await job('schedule',false);assert.equal(sent.length,3,'Scheduled failure alert dedupes by department/day');
+ await job('telegram');assert.equal(sent.length,1,'Detached results stay in history instead of creating a new message');
+ await job('schedule',false);await job('schedule',false);assert.equal(sent.length,1,'Scheduled failures are summarized in the daily briefing');
  console.log('PASS: authenticated-inbox reconnect routing, one-use hashed links, no bearer token in outbox/activity, replay dedupe, direct replies, quiet scheduled reports, bounded failure alerts. Telegram provider mocked.');
 } finally {
  globalThis.fetch=originalFetch;for(const k of Object.keys(process.env))if(!(k in env))delete process.env[k];Object.assign(process.env,env);

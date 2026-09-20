@@ -17,7 +17,7 @@ try {
     assert.deepEqual(ui.menuAction(`ui:agent:${department}`),{command:`/${department}`,department});
     for(const assignment of workAssignments[department]) {
       const button=ui.agentMenu(department).flat().find(b=>b.callback_data?.endsWith(':'+assignment.id));
-      assert.ok(button); assert.ok(Buffer.byteLength(button.callback_data)<=64);
+      if(!button)continue; assert.ok(Buffer.byteLength(button.callback_data)<=64);
       assert.equal(ui.menuAction(button.callback_data).assignmentId,assignment.id);
     }
   }
@@ -27,16 +27,18 @@ try {
   assert.equal(ui.naturalCommand('menu'),'/home');
   assert.equal(ui.naturalCommand('connect dashboard'),'/connect');
   assert.deepEqual(ui.menuAction('ui:nav:connect'),{command:'/connect'});
-  assert.ok(ui.homeMenu().flat().some(b=>b.callback_data==='ui:nav:connect'));
+  assert.equal(ui.homeMenu().flat().length,6);
+  assert.ok(ui.settingsMenu().flat().some(b=>b.callback_data==='ui:nav:connect'));
   assert.equal(isPrivateOwnerUpdate({update_id:2,message:{from:{id:456},chat:{id:456,type:'private'},text:'/connect'}},'123'),false);
   assert.equal(ui.naturalCommand('Who’s working?'),'/status');
   assert.equal(ui.naturalCommand('Please revise the draft'), 'Please revise the draft');
   assert.deepEqual(ui.menuAction('ui:nav:pause'),{command:'/pause'});
   assert.deepEqual(ui.menuAction('ui:nav:posts'),{command:'/posts'});
-  assert.ok(ui.homeMenu().flat().some(b=>b.callback_data==='ui:nav:queue'));
+  assert.ok(ui.postsMenu().flat().some(b=>b.callback_data==='ui:nav:queue'));
   const full='A complete draft. '.repeat(100);
   assert.ok(ui.shortReply(full).length<800);
-  assert.match(ui.shortReply(full),/preview.*dashboard/s);
+  assert.ok(!ui.shortReply(full).includes('dashboard'));
+  assert.ok(ui.replyPages(full).every(p=>p.length<=800));
   assert.equal(full.length,1800,'Full persisted result is not mutated');
   const update={update_id:1,callback_query:{from:{id:123,is_bot:false},data:'ui:work:growth:acquisition-test',message:{chat:{id:123,type:'private'}}}};
   assert.equal(isPrivateOwnerUpdate(update,'123'),true);

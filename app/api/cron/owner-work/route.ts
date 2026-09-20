@@ -1,3 +1,4 @@
+import { syncTelegramDesk } from "../../../lib/business-os/telegram-panel";
 import { coordinationTick } from "../../../lib/business-os/coordination";
 import { syncContentApprovals } from "../../../lib/business-os/content-handoff";
 import { syncMediaAutopilot } from "../../../lib/business-os/media-autopilot";
@@ -13,6 +14,8 @@ export async function GET(request:Request) {
   if(process.env.AI_OS_ENABLED!=="true" || process.env.AI_OS_AI_ENABLED!=="true" || process.env.AI_OS_AUTONOMY_ENABLED!=="true") return Response.json({error:"Not available"},{status:404});
   if(!secretMatches(request.headers.get("authorization"),process.env.CRON_SECRET ? `Bearer ${process.env.CRON_SECRET}` : undefined)) return Response.json({error:"Unauthorized"},{status:401});
   try {
+    try {console.info(JSON.stringify({event:"telegram_desk_sync",...await syncTelegramDesk()}));}
+    catch {console.warn(JSON.stringify({event:"telegram_desk_sync",status:"needs_check"}));}
     await syncContentApprovals();
     try {
       const instagram=await syncInstagramCampaign();
