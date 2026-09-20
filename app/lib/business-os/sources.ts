@@ -4,6 +4,7 @@ import { stripe } from "../stripe";
 import { summarizePayments, type PaymentRow } from "./payment-summary";
 import { businessKnowledge } from "./knowledge";
 import { checkoutConversions } from "./conversions";
+import { creativePlaybookEvidence } from "./creative-playbook";
 
 export type Evidence = { id: string; status: "verified" | "unavailable"; checkedAt: string; scope: string; data: unknown; error?: string };
 
@@ -86,5 +87,6 @@ export async function collectEvidence(): Promise<Evidence[]> {
     scope: "No verified read adapter connected in Phase 1. Historical setup and plans are not live evidence.",
   })));
   sources.push(businessKnowledge());
+  sources.push(creativePlaybookEvidence());
   return sources;
 }
