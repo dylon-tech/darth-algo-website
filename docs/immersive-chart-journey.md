@@ -33,3 +33,6 @@ Chapter buttons work in both directions. A skip-to-tools link and final trial/pl
 ## Verification
 
 `node tests/chart-journey.test.mjs` checks chapter navigation round-trips, scroll bounds, camera continuity and narrow-screen framing. Production build checks types, lint and generated pages. Live visual and interaction verification follows deployment; this is not a physical iPhone performance benchmark.
+
+## Animated indicator walkthrough
+The tour plays a 12-second simulated setup once when visitors reach Signals. Sixteen new candles form after the existing history, markers appear only after their illustrative candle closes, then the risk levels reveal. Replay setup starts another pass; Stop demo, Motion off, reduced motion and hidden/offscreen states stop or suspend animation. The final scene uses the existing actual indicator screenshot. This is explicitly labeled a simulation: the website is not running Pine Script or showing live signals. A real TradingView screen recording can later replace the illustrative timing without inventing indicator output.

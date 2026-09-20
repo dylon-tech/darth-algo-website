@@ -1,8 +1,8 @@
 import * as THREE from "three";
 import { SVGRenderer } from "three/addons/renderers/SVGRenderer.js";
-import { cameraPose, demoCandles, smooth } from "./chart-journey-math";
+import { cameraPose, demoCandles, smooth, setupPlayback } from "./chart-journey-math";
 
-export type ChartWorld = { render: (progress: number) => void; resize: () => void; dispose: () => void };
+export type ChartWorld = { render: (progress: number, playback?: number) => void; resize: () => void; dispose: () => void };
 
 export function createChartWorld(host: HTMLElement, accent: string, onFailure: () => void): ChartWorld {
   let renderer: THREE.WebGLRenderer | SVGRenderer;
@@ -51,10 +51,12 @@ export function createChartWorld(host: HTMLElement, accent: string, onFailure: (
   const gridGeo = geometry(new THREE.BufferGeometry()); gridGeo.setAttribute("position", new THREE.Float32BufferAttribute(gridPoints, 3));
   const gridLines = new THREE.LineSegments(gridGeo, material(new THREE.LineBasicMaterial({ color: 0x415270, transparent: true, opacity: .24 })));
   gridLines.renderOrder = -80; gridLayer.add(gridLines);
+  const candleMeshes: { body: THREE.Mesh; wick: THREE.Mesh; volume: THREE.Mesh }[] = [];
   demoCandles.forEach((candle) => {
     const body = new THREE.Mesh(box, candle.up ? up : down); body.scale.set(.27, Math.max(.10, Math.abs(candle.close - candle.open)), .27); body.position.set(candle.x, (candle.open + candle.close) / 2, 0); candleLayer.add(body);
     const wick = new THREE.Mesh(box, candle.up ? up : down); wick.scale.set(.035, candle.high - candle.low, .035); wick.position.set(candle.x, (candle.high + candle.low) / 2, 0); candleLayer.add(wick);
     const volume = new THREE.Mesh(volumeGeometry, glow(candle.up ? 0x56dfc0 : 0xf0768b, .2)); volume.scale.set(.26, .13 + Math.abs(Math.sin(candle.x * 3)) * .4, .03); volume.position.set(candle.x, -3.8 + volume.scale.y / 2, -.08); gridLayer.add(volume);
+    candleMeshes.push({ body, wick, volume });
   });
   const curvePoints = demoCandles.map((candle, index) => new THREE.Vector3(candle.x, Math.sin(index * .25) * 1.05 + (index - 19) * .075 - .65, .08));
   const curve = new THREE.CatmullRomCurve3(curvePoints);
@@ -69,12 +71,13 @@ export function createChartWorld(host: HTMLElement, accent: string, onFailure: (
     const outline = new THREE.LineSegments(geometry(new THREE.EdgesGeometry(new THREE.PlaneGeometry(20.6, 8.3))), material(new THREE.LineBasicMaterial({ color: index === 2 ? accent : 0x66bcd3, transparent: true, opacity: .1 })));
     outline.position.z = -.1; layer.add(outline); return mesh;
   });
+  const signalMarkers: { marker: THREE.Group; index: number }[] = [];
   [9, 19, 29].forEach((index, i) => {
     const candle = demoCandles[index];
     const marker = new THREE.Group(); marker.position.set(candle.x, candle.low - .7, .2);
     const cone = new THREE.Mesh(geometry(new THREE.ConeGeometry(.17, .28, 4)), metal(i === 1 ? 0xf0768b : 0x79ffe1)); marker.add(cone);
     const halo = new THREE.Mesh(geometry(new THREE.RingGeometry(.29, .32, 40)), glow(i === 1 ? 0xf0768b : 0x79ffe1, .7)); marker.add(halo);
-    const stem = new THREE.Mesh(box, glow(0x8df6dd, .35)); stem.scale.set(.012, .45, .012); stem.position.y = .32; marker.add(stem); signalLayer.add(marker);
+    const stem = new THREE.Mesh(box, glow(0x8df6dd, .35)); stem.scale.set(.012, .45, .012); stem.position.y = .32; marker.add(stem); signalLayer.add(marker); signalMarkers.push({ marker, index });
   });
   const riskColors = [0x7ee4c8, 0xe2e8f0, 0xf87186];
   [2, .2, -1.3].forEach((y, index) => {
@@ -97,15 +100,28 @@ export function createChartWorld(host: HTMLElement, accent: string, onFailure: (
   const projected = new THREE.Vector3();
   let disposed = false;
   let current = 0;
-  const render = (progress: number) => {
+  let currentPlayback = 1;
+  const render = (progress: number, playback = 1) => {
     if (disposed) return;
-    current = progress;
+    current = progress; currentPlayback = playback;
+    const demo = setupPlayback(playback);
+    candleMeshes.forEach(({ body, wick, volume }, index) => {
+      const candle = demoCandles[index];
+      const growth = Math.max(0, Math.min(1, demo.candles - index));
+      body.visible = wick.visible = volume.visible = growth > 0;
+      const close = candle.open + (candle.close - candle.open) * growth;
+      body.scale.y = Math.max(.035, Math.abs(close - candle.open));
+      body.position.y = (candle.open + close) / 2;
+      wick.scale.y = Math.max(.035, (candle.high - candle.low) * growth);
+      wick.position.y = candle.open + ((candle.high + candle.low) / 2 - candle.open) * growth;
+    });
+    signalMarkers.forEach(({ marker, index }) => { marker.visible = demo.candles >= index + 1; });
     const pose = cameraPose(progress, camera.aspect);
     camera.position.set(pose[0], pose[1], pose[2]); camera.lookAt(pose[3], pose[4], pose[5]);
     const assemble = 1 - smooth(.72, .93, progress);
-    const trend = smooth(.1, .25, progress), signals = smooth(.32, .46, progress), plan = smooth(.54, .68, progress);
+    const trend = smooth(.1, .25, progress), signals = smooth(.32, .46, progress), plan = smooth(.54, .68, progress) * demo.risk;
     trendLayer.visible = trend > .01; signalLayer.visible = signals > .01; riskLayer.visible = plan > .01;
-    trendLine.material.opacity = trend; cloud.material.opacity = .22 * trend; signalLayer.scale.setScalar(Math.max(.001, signals)); riskLayer.scale.set(Math.max(.001, plan), 1, 1);
+    trendLine.material.opacity = trend * demo.trend; cloud.material.opacity = .22 * trend * demo.trend; signalLayer.scale.setScalar(Math.max(.001, signals)); riskLayer.scale.set(Math.max(.001, plan), 1, 1);
     trendLayer.position.z = .4 + trend * assemble * 1.3;
     signalLayer.position.z = .7 + signals * assemble * 2.4;
     riskLayer.position.z = 1 + plan * assemble * 3.5;
@@ -128,7 +144,7 @@ export function createChartWorld(host: HTMLElement, accent: string, onFailure: (
     const pixelRatio = Math.min(window.devicePixelRatio || 1, width < 768 ? 1.5 : 1.8, Math.sqrt(1800000 / (width * height)));
     if (renderer instanceof THREE.WebGLRenderer) { renderer.setPixelRatio(pixelRatio); renderer.setSize(width, height, false); }
     else renderer.setSize(width, height);
-    camera.aspect = width / height; camera.updateProjectionMatrix(); render(current);
+    camera.aspect = width / height; camera.updateProjectionMatrix(); render(current, currentPlayback);
   };
   const contextLost = (event: Event) => { event.preventDefault(); onFailure(); };
   renderer.domElement.addEventListener("webglcontextlost", contextLost);

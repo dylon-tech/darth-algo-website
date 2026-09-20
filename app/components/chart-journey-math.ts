@@ -35,3 +35,15 @@ export const demoCandles = Array.from({ length: 38 }, (_, index) => {
   const delta = Math.sin(index * 2.3 + .5) * .63;
   return { x, open: mid - delta / 2, close: mid + delta / 2, high: mid + Math.abs(delta) / 2 + .22, low: mid - Math.abs(delta) / 2 - .28, up: delta > 0 };
 });
+
+/** A 12-second simulated setup; no indicator engine or historical returns implied. */
+export function setupPlayback(progress: number) {
+  const p = clamp(progress);
+  const candles = 22 + 16 * smooth(.08, .76, p);
+  return {
+    candles,
+    trend: .35 + .65 * smooth(0, .24, p),
+    risk: smooth(.76, .92, p),
+    phase: p < .24 ? "Reading trend context" : p < .56 ? "New candles forming" : p < .76 ? "Signal appears" : p < .92 ? "Risk levels appear" : "Setup complete",
+  };
+}

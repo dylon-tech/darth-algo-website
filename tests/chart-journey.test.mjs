@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { cameraPose, chapterAt, chapterProgress, journeyProgress } from '../app/components/chart-journey-math.ts';
+import { cameraPose, chapterAt, chapterProgress, journeyProgress, setupPlayback } from '../app/components/chart-journey-math.ts';
 
 // Forward/backward chapter navigation must round-trip through the real sticky geometry.
 for (const [height, stage] of [[3960, 828], [2960, 650], [1850, 500]]) {
@@ -27,3 +27,14 @@ assert.ok(cameraPose(.5, .55)[2] > cameraPose(.5, 2)[2], 'Narrow screens must pu
 assert.deepEqual(cameraPose(-1, 2), cameraPose(0, 2));
 assert.deepEqual(cameraPose(2, 2), cameraPose(1, 2));
 console.log('Chart journey navigation and camera continuity checks passed.');
+
+// A signal must wait for its candle close; risk levels follow the completed setup.
+assert.equal(setupPlayback(0).candles, 22);
+assert.equal(setupPlayback(1).candles, 38);
+assert.ok(setupPlayback(.4).candles < 30);
+assert.ok(setupPlayback(.6).candles >= 30);
+assert.equal(setupPlayback(.7).risk, 0);
+assert.equal(setupPlayback(1).risk, 1);
+assert.deepEqual(setupPlayback(-1), setupPlayback(0));
+assert.deepEqual(setupPlayback(2), setupPlayback(1));
+console.log('Setup playback sequence checks passed.');
