@@ -561,7 +561,7 @@ export default function Home() {
 
   useEffect(() => {
     const revealTargets = Array.from(
-      document.querySelectorAll<HTMLElement>("main > section:not(.immersion-story):not(.immersion-hero), .chart-card, .pricing-card, .stat-panel"),
+      document.querySelectorAll<HTMLElement>("main > section:not(.chart-journey):not(.immersion-story):not(.immersion-hero), .chart-card, .pricing-card, .stat-panel"),
     );
     const revealObserver = new IntersectionObserver(
       (entries) => {

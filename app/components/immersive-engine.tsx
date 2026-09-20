@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import ChartJourney from "./chart-journey";
 import { useEffect, useRef, useState } from "react";
 
 export type EngineScene = { label: string; title: string; copy: string; image: string; alt: string };
@@ -83,60 +84,5 @@ export default function ImmersiveEngine({ accent = "red", image = "/indicators/s
 }
 
 export function ImmersiveStory({ scenes = engineScenes, accent = "red" }: { scenes?: EngineScene[]; accent?: Props["accent"] }) {
-  const root = useRef<HTMLElement>(null);
-  const [active, setActive] = useState(0);
-  const [scrollEnabled, setScrollEnabled] = useState(false);
-  const activeRef = useRef(0);
-  useEffect(() => {
-    const preference = matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => setScrollEnabled(!preference.matches);
-    update(); preference.addEventListener("change", update);
-    return () => preference.removeEventListener("change", update);
-  }, []);
-  useEffect(() => {
-    if (!scrollEnabled) return;
-    const node = root.current;
-    if (!node) return;
-    let frame = 0;
-    const update = () => {
-      frame = 0;
-      const bounds = node.getBoundingClientRect();
-      const distance = bounds.height - window.innerHeight;
-      const progress = Math.max(0, Math.min(1, (72 - bounds.top) / Math.max(1, distance)));
-      node.style.setProperty("--story-progress", String(progress));
-      const next = Math.min(scenes.length - 1, Math.floor(progress * scenes.length));
-      if (next !== activeRef.current) { activeRef.current = next; setActive(next); }
-    };
-    const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };
-    window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule); update();
-    return () => { cancelAnimationFrame(frame); window.removeEventListener("scroll", schedule); window.removeEventListener("resize", schedule); };
-  }, [scrollEnabled, scenes.length]);
-  const select = (index: number) => {
-    activeRef.current = index; setActive(index);
-    if (scrollEnabled && root.current) {
-      const bounds = root.current.getBoundingClientRect();
-      const distance = bounds.height - window.innerHeight;
-      window.scrollTo({ top: window.scrollY + bounds.top - 72 + (index + .35) / scenes.length * distance, behavior: "instant" });
-    }
-  };
-  const scene = scenes[active];
-  return (
-    <section ref={root} id="inside-the-engine" className={`immersion-story immersion-${accent}`} data-scroll={scrollEnabled} aria-label="Explore the Darth Algo indicator layers">
-      <div className="immersion-story-sticky">
-        <div className="immersion-story-layout section-shell">
-          <div className="immersion-story-copy">
-            <p className="immersion-eyebrow">Inside the engine / 0{active + 1}</p>
-            <h2>{scene.title}</h2><p className="immersion-description">{scene.copy}</p>
-            <div className="immersion-chapters" role="group" aria-label="Indicator layers">
-              {scenes.map((item, index) => <button type="button" key={item.label} aria-pressed={index === active} onClick={() => select(index)}><span>0{index + 1}</span>{item.label}</button>)}
-            </div>
-            <p className="immersion-footnote">Recorded examples. Historical views are not live signals or typical results.</p>
-          </div>
-          <ImmersiveEngine accent={accent} image={scene.image} alt={scene.alt} active={active} />
-        </div>
-        <div className="immersion-story-track" aria-hidden="true"><span /></div>
-      </div>
-    </section>
-  );
+  return <ChartJourney scenes={scenes} accent={accent} />;
 }
