@@ -60,12 +60,16 @@ export default function ChartJourney({ scenes, accent = "red" }: { scenes: Engin
     const section = root.current, viewport = stage.current;
     if (!section || !viewport) return;
     let frame = 0;
+    let lastFrame = 0;
     let visible = false;
     const paint = () => {
       frame = 0;
       if (!visible || document.hidden) return;
+      const now = performance.now();
+      const elapsed = lastFrame ? Math.min(50, now - lastFrame) : 16;
+      lastFrame = now;
       const difference = target.current - current.current;
-      current.current = Math.abs(difference) < .0002 || !motion ? target.current : current.current + difference * .13;
+      current.current = Math.abs(difference) < .0002 || !motion ? target.current : current.current + difference * (1 - Math.exp(-elapsed / 100));
       const value = current.current;
       world.current?.render(value);
       section.style.setProperty("--journey-progress", String(value));

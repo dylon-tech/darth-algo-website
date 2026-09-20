@@ -75,3 +75,6 @@
 @media(prefers-reduced-motion:reduce){.journey-heading{animation:none}.journey-chapters button,.journey-chapters button i,.journey-layer-labels span,.journey-webgl{transition:none}}
 
 .journey-webgl svg{display:block;width:100%;height:100%;background:transparent!important}
+
+.journey-world-label{position:absolute;left:0;top:0;font:9px/1.4 monospace;padding:5px 8px;border:1px solid currentColor;border-radius:4px;background:#080d16db;pointer-events:none;letter-spacing:.04em}
+@media(max-width:767px){.journey-world-label{font-size:7px;padding:3px 5px}}
