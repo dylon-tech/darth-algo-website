@@ -12,7 +12,7 @@ try {
   const {departments}=require(join(dir,'lib/business-os/policy.js'));
   const {workAssignments}=require(join(dir,'owner/work-assignments.js'));
   const {isPrivateOwnerUpdate}=require(join(dir,'lib/business-os/telegram-policy.js'));
-  assert.equal(ui.homeMenu().flat().filter(b=>b.callback_data?.startsWith('ui:agent:')).length,8);
+  assert.equal(ui.agentsMenu().flat().filter(b=>b.callback_data?.startsWith('ui:agent:')).length,8);
   for(const department of departments) {
     assert.deepEqual(ui.menuAction(`ui:agent:${department}`),{command:`/${department}`,department});
     for(const assignment of workAssignments[department]) {
@@ -21,16 +21,19 @@ try {
       assert.equal(ui.menuAction(button.callback_data).assignmentId,assignment.id);
     }
   }
-  for(const bad of ['ui:nav:approve','ui:work:growth:refund','ui:agent:admin','ui:agent:growth:extra','os:abc','ui:nav:pause']) assert.equal(ui.menuAction(bad),null);
+  for(const bad of ['ui:nav:approve','ui:work:growth:refund','ui:agent:admin','ui:agent:growth:extra','os:abc']) assert.equal(ui.menuAction(bad),null);
   assert.equal(ui.naturalCommand('Growth, find our next customers'),'/growth find our next customers');
   assert.equal(ui.naturalCommand('CONTENT: Write a post'),'/content Write a post');
-  assert.equal(ui.naturalCommand('menu'),'/agents');
+  assert.equal(ui.naturalCommand('menu'),'/home');
   assert.equal(ui.naturalCommand('connect dashboard'),'/connect');
   assert.deepEqual(ui.menuAction('ui:nav:connect'),{command:'/connect'});
   assert.ok(ui.homeMenu().flat().some(b=>b.callback_data==='ui:nav:connect'));
   assert.equal(isPrivateOwnerUpdate({update_id:2,message:{from:{id:456},chat:{id:456,type:'private'},text:'/connect'}},'123'),false);
   assert.equal(ui.naturalCommand('Who’s working?'),'/status');
   assert.equal(ui.naturalCommand('Please revise the draft'), 'Please revise the draft');
+  assert.deepEqual(ui.menuAction('ui:nav:pause'),{command:'/pause'});
+  assert.deepEqual(ui.menuAction('ui:nav:posts'),{command:'/posts'});
+  assert.ok(ui.homeMenu().flat().some(b=>b.callback_data==='ui:nav:queue'));
   const full='A complete draft. '.repeat(100);
   assert.ok(ui.shortReply(full).length<800);
   assert.match(ui.shortReply(full),/preview.*dashboard/s);

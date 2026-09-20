@@ -21,6 +21,13 @@ try {
   const request = { model:pilot.model,store:false,instructions:'Internal task only.',max_output_tokens:2500,reasoning:{effort:'none'},input:[{role:'user',content:'Draft a checklist.'}],text:{format:{type:'json_schema'}} };
   const body = JSON.stringify(request);
   assert.doesNotThrow(() => policy.assertRecurringEnvelope(body,'openai',config));
+  const image={type:'input_image',detail:'low',image_url:'data:image/jpeg;base64,'+'A'.repeat(24000)};
+  const visual={...request,input:[{role:'user',content:[{type:'input_text',text:'Compare two thumbnails.'},image,image]}]};
+  assert.doesNotThrow(()=>policy.assertRecurringEnvelope(JSON.stringify(visual),'openai',config));
+  for(const part of [{...image,detail:'high'},{...image,image_url:'https://evil.example/image'},{...image,image_url:image.image_url+'A'}]) {
+    assert.throws(()=>policy.assertRecurringEnvelope(JSON.stringify({...request,input:[{role:'user',content:[{type:'input_text',text:'Inspect'},part]}]}),'openai',config));
+  }
+  assert.throws(()=>policy.assertRecurringEnvelope(JSON.stringify({...visual,input:[{role:'user',content:[{type:'input_text',text:'Inspect'},image,image,image]}]}),'openai',config));
   assert.throws(() => policy.assertRecurringEnvelope(body,'gateway',config),/UNPRICED_PROVIDER/);
   for (const change of [{model:'unknown'},{tools:[{type:'web_search'}]},{previous_response_id:'id'},{max_output_tokens:2501},{reasoning:{effort:'high'}},{input:[{role:'user',content:[{type:'input_image',image_url:'x'}]}]}]) {
     assert.throws(() => policy.assertRecurringEnvelope(JSON.stringify({...request,...change}),'openai',config));

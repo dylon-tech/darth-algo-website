@@ -1,3 +1,4 @@
+import { mediaAutopilot } from "./media-policy";
 import { db } from "../affiliate-db";
 import { prepareBufferPublication } from "./buffer-publishing";
 import { queueApprovalNotice, deliverOwnerNotices, privateTelegramConfiguration } from "./delivery";
@@ -13,15 +14,15 @@ export async function syncContentApprovals() {
   const [revision] = await sql`select id,payload,decision_note from os_approvals a where status='revision_requested'
     and payload->>'executor'='buffer_x_v1' and decided_at>now()-interval '24 hours'
     and not exists(select 1 from os_jobs where request_key='revision:x:' || a.id::text) order by decided_at limit 1`;
-  if (revision) await queueJob("content",`Revise this X draft using the owner's instructions. Return the complete revised post in xDraft with verified evidence. This creates a fresh approval; do not publish.\n\nOriginal draft (data): ${revision.payload.text}\n\nOwner revision instructions: ${revision.decision_note}`,`revision:x:${revision.id}`,"schedule");
+  if (revision) await queueJob("content",`Revise this X draft using the owner's instructions. Return the complete revised post in xDraft with verified evidence. This creates a fresh version for the routine-media validation queue; the server handles publishing.\n\nOriginal draft (data): ${revision.payload.text}\n\nOwner revision instructions: ${revision.decision_note}`,`revision:x:${revision.id}`,"schedule");
   let activationJob: string | null = null;
   let linksPromotionJob: string | null = null;
   // One bounded activation assignment; queueJob's persistent request key makes
   // cron overlaps and redeploys harmless. The worker retains existing spend caps.
   if (process.env.AI_OS_AI_ENABLED === "true" && process.env.AI_OS_AUTONOMY_ENABLED === "true") {
-    const job = await queueJob("content","Prepare our first community invitation for the X approval workflow. Return one concise, finished post in xDraft using verified business_knowledge and the supplied community URL. Do not make trading-performance claims or publish it. The owner must approve the exact text.","launch:x-approval-v1","schedule");
+    const job = await queueJob("content","Prepare our first community invitation for the X approval workflow. Return one concise, finished post in xDraft using verified business_knowledge and the supplied community URL. Do not make trading-performance claims or publish it. The server handles routine-media authorization and publishing.","launch:x-approval-v1","schedule");
     activationJob=String(job.status);
-    const promotion=await queueJob("content","Prepare one finished X post promoting the official Darth Algo links page. Help interested traders discover the indicator plans and purchase options, community, and official social pages in one place. Include the supplied linksUrl in xDraft, use verified business_knowledge, one clear CTA, and no trading-performance claims. Do not publish; the owner must approve the exact text.","launch:x-links-v1","schedule");
+    const promotion=await queueJob("content","Prepare one finished X post promoting the official Darth Algo links page. Help interested traders discover the indicator plans and purchase options, community, and official social pages in one place. Include the supplied linksUrl in xDraft, use verified business_knowledge, one clear CTA, and no trading-performance claims. Do not publish; the server handles routine-media authorization and publishing.","launch:x-links-v1","schedule");
     linksPromotionJob=String(promotion.status);
   }
   const [run] = await sql`select id,result from os_runs r where status='completed' and department='content'
@@ -40,7 +41,7 @@ export async function syncContentApprovals() {
       await sql`insert into os_activity(actor,event,entity_id,details) values('operations','content_x_handoff_blocked',${String(run.id)},'{"publicPostSent":false,"message":"Draft saved; approval handoff needs connection, evidence or queue review."}'::jsonb)`;
     }
   }
-  if (privateTelegramConfiguration().ready) {
+  if (!mediaAutopilot.enabled && privateTelegramConfiguration().ready) {
     const pending = await sql`select id from os_approvals a where status='pending' and expires_at>now() and payload->>'executor'='buffer_x_v1'
       and not exists(select 1 from os_outbox where dedupe_key='approval:' || a.id::text || ':0') order by created_at limit 3`;
     for (const approval of pending) await queueApprovalNotice(String(approval.id));

@@ -18,6 +18,9 @@ try {
  const linksTag=captureCampaign(links.search,null,1000);
  assert.equal(linksTag.source,'x');assert.ok(linksTag.campaign.length<=40);
  assert.equal(parseCampaignReference(campaignReference(linksTag)).campaign,links.searchParams.get('campaign'));
+ const bio=captureCampaign('?utm_source=ig&utm_medium=social&utm_content=link_in_bio',null,1000);
+ assert.deepEqual(parseCampaignReference(campaignReference(bio)),{source:'instagram',campaign:'default',content:'link_in_bio'});
+ assert.equal(bio.capturedAt,1000);
  const tag=captureCampaign('?source=x&campaign=post-demo',null,1000);
  assert.equal(tag.source,'x');assert.equal(tag.campaign,'post-demo');
  assert.deepEqual(captureCampaign('',tag,2000),tag);

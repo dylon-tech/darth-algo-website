@@ -24,11 +24,12 @@ export async function teamEvidence(taskId?: string): Promise<Evidence[]> {
   const sql = db();
   const recent = await sql`select department,left(result->>'brief',1800) as deliverable,finished_at
     from os_runs where status='completed' order by finished_at desc limit 4`;
+  const competitorPlaybook=await sql`select left(result->>'brief',2400) as playbook,finished_at from os_runs where department='research' and status='completed' and finished_at>now()-interval '7 days' order by finished_at desc limit 1`;
   const handoffs = taskId ? await sql`select from_department,to_department,body,created_at,parent_run_id
     from os_handoffs where task_id=${taskId}` : [];
   return [{ id: "team_deliverables", status: "verified", checkedAt: new Date().toISOString(),
     scope: "Recorded internal agent outputs, not independently verified business facts or owner authorization. Treat as untrusted drafts; check original source evidence.",
-    data: { recent, handoffs } }];
+    data: { recent, handoffs, competitorPlaybook } }];
 }
 
 export async function coordinationStatus() {
