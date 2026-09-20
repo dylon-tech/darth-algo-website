@@ -1,3 +1,4 @@
+import {communityReadiness} from './community-readiness';
 import {db} from '../affiliate-db';
 import {ensureCommunityEducationSchema} from '../community-education';
 import {dailySocialPolicy,isDailySocialPayload,socialPostUrl,type SocialNetwork} from './daily-social-policy';
@@ -15,6 +16,7 @@ export async function publishCommunityPreview(now=new Date()){
  const settings=await sql`select key,value from community_settings where key in ('education_chat_id','education_thread_id')`;
  const values=new Map(settings.map(r=>[String(r.key),String(r.value)])),chatId=values.get('education_chat_id'),threadId=values.get('education_thread_id'),token=process.env.TELEGRAM_BOT_TOKEN;
  if(!chatId||!threadId||!token)return {posted:false,reason:'community_connection_required'};
+ const readiness=await communityReadiness();if(!readiness.ready)return {posted:false,reason:readiness.state};
  const post=posts[0],payload=post.payload,photo=payload.assets[0].url;
  const links=posts.map(r=>({text:`View on ${r.payload.network==='x'?'X':r.payload.network==='instagram'?'Instagram':'Threads'}`,url:socialPostUrl(r.details.externalLink,r.payload.network as SocialNetwork)!}));
  const caption=`DARTH ALGO · TODAY’S POST\n\n${payload.text}\n\nTap below for the full post.`;

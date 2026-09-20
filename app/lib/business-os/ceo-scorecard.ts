@@ -1,3 +1,4 @@
+import {socialHealthIssues} from "./social-health";
 import { db } from "../affiliate-db";
 import {publishingQueueSnapshot,nextContentWindow} from "./publishing-scorecard";
 import { stripe } from "../stripe";
@@ -50,10 +51,7 @@ export async function ceoScorecard(){
   if(research && !research.connected)attention.push("connect vidIQ in Connections");
   attention.push("TradingView publishing worker needs setup");
  }
- const [social]=await sql`select details from os_activity where event='daily_social_status' order by id desc limit 1`;
- if(social?.details.deliveries?.threads==='connection_required')attention.push('connect Darth Algo Threads in Buffer');
- const [community]=await sql`select event from os_activity where entity_id=${day} and event in ('community_social_sent','community_social_unknown') order by id desc limit 1`;
- if(community?.event==='community_social_unknown')attention.push('check community preview delivery in Telegram');
+ attention.push(...await socialHealthIssues());
  const body=[`◆ DARTH ALGO · CEO DESK`,`Talking to: CEO`,"",`Active subscribing customers: ${customers.active??'unavailable'}`,`Trials: ${customers.trials??'unavailable'} · Past due: ${customers.pastDue??'unavailable'}`,`Published today: ${x+ig+threads} (${x} X · ${ig} Instagram · ${threads} Threads)`,`Post queue: ${queue.waiting} ready · ${queue.checking} checking delivery`,`Agents: ${count('running')} working · ${count('queued')} waiting`,"",`Needs you: ${attention.length?attention.join('; '):'no pending decisions or recent failed jobs.'}`,needs.blocked?`Blocked tasks: ${needs.blocked} · open Needs me.`:'',`Posting: ${controls[0]?.paused?'paused':`automatic · next content window ${nextContentWindow()}`}`,"",`Stripe subscriptions only; lifetime/access unverified.`,`Updated ${new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'}).format(new Date())} ET · ${day}`].filter((x,i,a)=>x!=='' || a[i-1]!=='').join('\n');
  return {day,body,customers,posts:{x,instagram:ig,threads},queue,needs};
 }

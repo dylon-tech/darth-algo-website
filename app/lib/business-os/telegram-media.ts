@@ -14,7 +14,7 @@ export async function mediaDashboard(view:"today"|"queue") {
   const posts=selected.slice(0,4).map((r,i)=>{
     const network=r.payload.executor==='buffer_social_v2'?(r.payload.network==='x'?'X':r.payload.network==='threads'?'Threads':'Instagram'):r.payload.executor==='buffer_x_v1'?'X':'Instagram';
     const state=r.delivery?.published?'Published':r.delivery?.event==='buffer_publish_unknown'?'Delivery uncertain — check Buffer':r.delivery?'Checking delivery':'Waiting for next available slot';
-    return `${i+1}. ${network} · ${state}\n${shortReply(String(r.payload.text).replace(/https?:\/\/\S+/g,''),120)}`;
+    return `${i+1}. ${network} · ${state}\n${shortReply(String(r.payload.text).replace(/https?:\/\/\S+/g,''),100)}${r.delivery?.published && r.delivery.externalLink ? `\n${r.delivery.externalLink}` : ""}`;
   }).join('\n\n');
   return `${view==='today'?"TODAY’S POSTS":"UPCOMING POSTS"} · ${today}\n${selected.length} ${view==='today'?'confirmed published':'waiting or checking delivery'}\n\n${posts || (view==='today'?'No confirmed posts today yet.':'The queue is clear.')}\n\n${selected.length>4?'Showing the latest 4. ':''}One daily photo campaign is shared across X, Instagram and Threads.\nNext content window: ${nextContentWindow()}.`;
 }
