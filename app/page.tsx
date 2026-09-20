@@ -581,6 +581,42 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    // The tour gains its scroll track after hydration. Keep purchase deep links
+    // aligned through that layout change, but stop as soon as the visitor interacts.
+    const purchaseIds = new Set(["pricing", "swing-trial", "scalper-plan", "pro-plan", "lifetime-plan"]);
+    let active = true, frame = 0;
+    const position = () => {
+      frame = 0;
+      if (!active || !purchaseIds.has(location.hash.slice(1))) return;
+      const target = document.getElementById(location.hash.slice(1));
+      if (!target) return;
+      // Reveal transforms must not offset the anchor or leave its card invisible.
+      for (let node: HTMLElement | null = target; node; node = node.parentElement) {
+        node.removeAttribute("data-reveal");
+      }
+      target.scrollIntoView({ behavior: "instant", block: "start" });
+    };
+    const schedule = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(position); };
+    const navigate = () => { active = true; schedule(); };
+    const stop = () => { active = false; cancelAnimationFrame(frame); };
+    const observer = new ResizeObserver(schedule);
+    const main = document.getElementById("main-content");
+    if (main) observer.observe(main);
+    schedule();
+    document.fonts.ready.then(() => { if (active) schedule(); });
+    window.addEventListener("hashchange", navigate);
+    window.addEventListener("wheel", stop, { passive: true });
+    window.addEventListener("touchstart", stop, { passive: true });
+    window.addEventListener("pointerdown", stop, { passive: true });
+    window.addEventListener("keydown", stop);
+    return () => {
+      stop(); observer.disconnect(); window.removeEventListener("hashchange", navigate);
+      window.removeEventListener("wheel", stop); window.removeEventListener("touchstart", stop);
+      window.removeEventListener("pointerdown", stop); window.removeEventListener("keydown", stop);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!expandedImage) return;
     restoreFocusRef.current = document.activeElement as HTMLElement | null;
     const closeOnEscape = (event: KeyboardEvent) => {
