@@ -1,4 +1,5 @@
 import {indicatorMarketEvidence} from "./indicator-research";
+import {vidiqEvidence} from "./vidiq-research";
 import { competitorEvidence } from "./competitor-research";
 import { db } from "../affiliate-db";
 import { stripe } from "../stripe";
@@ -88,7 +89,7 @@ export async function collectEvidence(): Promise<Evidence[]> {
     id, status: "unavailable" as const, checkedAt: new Date().toISOString(), data: null,
     scope: "No verified read adapter connected in Phase 1. Historical setup and plans are not live evidence.",
   })));
-  if(process.env.AI_OS_INDICATOR_LAB_ENABLED==="true")sources.push({id:"indicator_social",status:"unavailable",checkedAt:new Date().toISOString(),scope:"Broad public Instagram/TikTok indicator and strategy discovery is not connected. Do not infer actual use, comments, requests or demand from unavailable posts. YouTube has a separate bounded public sample.",data:null});
+  if(process.env.AI_OS_INDICATOR_LAB_ENABLED==="true")sources.push(await vidiqEvidence());
   sources.push(businessKnowledge());
   sources.push(creativePlaybookEvidence());
   return sources;

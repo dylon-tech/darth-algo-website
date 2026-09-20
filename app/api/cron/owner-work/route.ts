@@ -20,6 +20,8 @@ export async function GET(request:Request) {
     const {deliverOwnerNotices}=await import("../../../lib/business-os/delivery");
     await processOwnerUpdates();
     await deliverOwnerNotices(2);
+    try {const {syncVidiqResearch}=await import("../../../lib/business-os/vidiq-research");console.info(JSON.stringify({event:"vidiq_research_tick",...await syncVidiqResearch()}));}
+    catch {console.warn(JSON.stringify({event:"vidiq_research_tick",status:"blocked"}));}
     try {const {syncIndicatorLab}=await import("../../../lib/business-os/indicator-lab");console.info(JSON.stringify({event:"indicator_lab_tick",...await syncIndicatorLab()}));}
     catch {console.warn(JSON.stringify({event:"indicator_lab_tick",status:"blocked"}));}
     if(process.env.AI_OS_AI_ENABLED!=="true" || process.env.AI_OS_AUTONOMY_ENABLED!=="true") {
