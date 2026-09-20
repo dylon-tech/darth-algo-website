@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import ImmersiveEngine from "../components/immersive-engine";
 import { useState } from "react";
 
 const scenes = [
@@ -19,9 +19,7 @@ export default function IndicatorPreview() {
       </div>
       <div id="indicator-scene" aria-live="polite" aria-atomic="true">
         <figure key={scene.label} className="indicator-scene-enter mt-4">
-          <a href={scene.image} target="_blank" rel="noopener noreferrer" aria-label={`Open full-size ${scene.label.toLowerCase()} chart`} className="flex aspect-[16/9] items-center justify-center overflow-hidden rounded-xl bg-[#101522] focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-300">
-            <Image src={scene.image} alt={scene.alt} width={scene.width} height={scene.height} sizes="(max-width: 640px) 90vw, 534px" className="max-h-full w-auto max-w-full object-contain" />
-          </a>
+          <ImmersiveEngine accent="swing" image={scene.image} alt={scene.alt} active={active} compact />
           <figcaption className="mt-4">
             <p className="text-lg font-semibold tracking-tight text-white">{scene.title}</p>
             <p className="mt-1 min-h-12 text-sm leading-6 text-zinc-300">{scene.copy}</p>
