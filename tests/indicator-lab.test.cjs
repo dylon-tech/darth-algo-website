@@ -36,6 +36,18 @@ async function main(){
  async function output(c= candidate){const id=randomUUID();await sql`insert into os_runs(id,request_key,status,result,snapshot) values(${id},${id},'completed',${JSON.stringify({indicatorCandidate:c})},${JSON.stringify(snapshot)})`;await sql`insert into os_jobs(id,request_key,department,message,source,status,run_id) values(${randomUUID()},${'indicator:fixture:'+id},'research','lab','schedule','succeeded',${id})`;return id;}
  await output();await lab.syncIndicatorLab();await lab.syncIndicatorLab();
  const [row]=await sql`select * from os_indicator_candidates`;assert.equal(row.status,'pending');assert.equal(cards.length,1);
+
+ const privatePreview={chartUrl:'https://www.tradingview.com/chart/Private123/',screenshotUrl:'https://www.tradingview.com/x/Shot123/',compiled:true,replay:true,reopened:true,notes:'Compiled and replayed two symbols and three timeframes; saved chart reopened with the indicator.'};
+ for(const bad of [{...privatePreview,chartUrl:'https://www.tradingview.com/chart/'},{...privatePreview,chartUrl:'https://www.tradingview.com.evil.com/chart/Bad/'},{...privatePreview,chartUrl:'https://www.tradingview.com/chart/Private123/?token=secret'},{...privatePreview,screenshotUrl:'javascript:alert(1)'},{...privatePreview,reopened:false},{...privatePreview,compiled:false}])await assert.rejects(lab.recordPrivateIndicatorPreview(row.id,row.source_hash,bad));
+ await assert.rejects(lab.recordPrivateIndicatorPreview(row.id,'0'.repeat(64),privatePreview));
+ await lab.recordPrivateIndicatorPreview(row.id,row.source_hash,privatePreview);
+ const [savedPreview]=await sql`select private_preview,status,tradingview_url from os_indicator_candidates where id=${row.id}`;
+ assert.equal(policy.validPrivatePreview(savedPreview.private_preview,row.source_hash),true);
+ assert.equal(policy.validPrivatePreview(savedPreview.private_preview,'0'.repeat(64)),false);
+ assert.equal(savedPreview.status,'pending');assert.equal(savedPreview.tradingview_url,null);
+ await sql`update os_indicator_candidates set status='declined' where id=${row.id}`;
+ await assert.rejects(lab.recordPrivateIndicatorPreview(row.id,row.source_hash,privatePreview));
+ await sql`update os_indicator_candidates set status='pending' where id=${row.id}`;
  await output({...candidate,name:'Darth Algo Renamed',pine:pine.replace('Darth Algo Test','Darth Algo Renamed')});await lab.syncIndicatorLab();assert.equal((await sql`select * from os_indicator_candidates`).length,1);
  const checks={compiled:true,replay:true,notes:'Verified two symbols and three timeframes with closed-bar alert replay.',screenshotUrl:'https://www.tradingview.com/x/Abcd123/'};
  await assert.rejects(lab.recordIndicatorRelease(row.id,row.source_hash,'https://www.tradingview.com/script/Abcd-Test/',checks));

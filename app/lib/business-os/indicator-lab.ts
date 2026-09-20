@@ -3,7 +3,7 @@ import {db} from "../affiliate-db";
 import {fingerprint} from "./policy";
 import {queueJob} from "./jobs";
 import {queueApprovalNotice,queueOwnerNotice} from "./delivery";
-import {pineChecks,pineHash,pineLogicHash,scoreIndicator,validateIndicator,validTradingViewRelease,type IndicatorCandidate} from "./indicator-policy";
+import {pineChecks,pineHash,pineLogicHash,scoreIndicator,validateIndicator,validTradingViewRelease,validPrivatePreview,type IndicatorCandidate} from "./indicator-policy";
 import {observedIndicatorUrls} from "./indicator-research";
 import type {Evidence} from "./sources";
 
@@ -14,8 +14,9 @@ create table if not exists os_indicator_candidates (
  qa jsonb not null, score jsonb not null, approval_id uuid unique references os_approvals(id),
  status text not null check(status in ('qa_blocked','pending','approved','declined','revision_requested','expired','released')),
  created_at timestamptz not null default now(), released_at timestamptz,
- tradingview_url text unique, release_evidence jsonb
-);
+ tradingview_url text unique, release_evidence jsonb, private_preview jsonb
+ );
+alter table os_indicator_candidates add column if not exists private_preview jsonb;
 `;
 export async function ensureIndicatorSchema(){await db().begin(async tx=>{await tx`select pg_advisory_xact_lock(730932)`;await tx.unsafe(indicatorSchema);});}
 export function labEnabled(){return process.env.AI_OS_INDICATOR_LAB_ENABLED==="true";}
@@ -104,4 +105,20 @@ export async function indicatorDashboard(){
   const rows=await db()`select candidate->>'name' as name,status,score->>'total' as score,created_at from os_indicator_candidates order by created_at desc limit 5`;
   const [latest]=await db()`select details,created_at from os_activity where event='indicator_handoff' order by id desc limit 1`;
   return `◆ INDICATOR LAB\n\nDaily target: ${Math.max(1,Math.min(3,Number(process.env.AI_OS_INDICATORS_PER_DAY)||1))} original prototypes, within the existing AI budget. Evidence or quality gaps can reduce output.\n\n${rows.map(r=>`${r.name}\n${r.status} · screening ${r.score}/90`).join("\n\n")||"First prototype is waiting."}\n\n${latest?`Latest handoff: ${latest.details.reason}`:""}\nTradingView compilation and chart replay must be verified before release. Use My decisions for approval cards.`;
+}
+
+export async function recordPrivateIndicatorPreview(id:string, sourceHash:string, input:unknown) {
+  if(!input || typeof input !== "object" || Array.isArray(input)) throw Error("PRIVATE_PREVIEW_REQUIRED");
+  const raw=input as Record<string,unknown>;
+  const preview={sourceHash,chartUrl:raw.chartUrl,screenshotUrl:raw.screenshotUrl,compiled:raw.compiled,replay:raw.replay,reopened:raw.reopened,notes:raw.notes,checkedAt:new Date().toISOString(),attestedBy:"owner"};
+  if(!validPrivatePreview(preview,sourceHash)) throw Error("PRIVATE_PREVIEW_REQUIRED");
+  await ensureIndicatorSchema();
+  await db().begin(async tx=>{
+    const [c]=await tx`select * from os_indicator_candidates where id=${id} for update`;
+    if(!c || !["pending","approved"].includes(c.status) || c.source_hash!==sourceHash || pineHash(c.candidate.pine)!==sourceHash || !pineChecks(c.candidate.pine).passed) throw Error("CURRENT_SOURCE_REQUIRED");
+    // An authenticated operator attests to the actual chart; URLs alone prove nothing.
+    await tx`update os_indicator_candidates set private_preview=${tx.json(preview)} where id=${id}`;
+    await tx`insert into os_activity(actor,event,entity_id,details) values('owner','indicator_private_preview_ready',${id},${tx.json({sourceHash,chartUrl:preview.chartUrl})})`;
+  });
+  return {ready:true,chartUrl:preview.chartUrl,published:false};
 }

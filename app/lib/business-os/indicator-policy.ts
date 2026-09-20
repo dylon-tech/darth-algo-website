@@ -54,3 +54,23 @@ export function scoreIndicator(c:IndicatorCandidate) {
 export function validTradingViewRelease(url:string) {
   try {const u=new URL(url);return u.origin==="https://www.tradingview.com" && /^\/script\/[A-Za-z0-9][A-Za-z0-9-]*\/$/.test(u.pathname) && !u.search && !u.hash && !u.username && !u.password;}catch{return false;}
 }
+
+export type PrivateIndicatorPreview = {
+  sourceHash: string; chartUrl: string; screenshotUrl: string;
+  compiled: true; replay: true; reopened: true; notes: string;
+  checkedAt: string; attestedBy: "owner";
+};
+function tradingViewPath(url: unknown, pattern: RegExp) {
+  if(typeof url !== "string") return false;
+  try { const u=new URL(url); return u.origin === "https://www.tradingview.com" && pattern.test(u.pathname) && !u.search && !u.hash && !u.username && !u.password; } catch { return false; }
+}
+export function validPrivatePreview(value: unknown, hash: string): value is PrivateIndicatorPreview {
+  if(!value || typeof value !== "object") return false;
+  const p=value as PrivateIndicatorPreview;
+  return /^[a-f0-9]{64}$/.test(hash) && p.sourceHash === hash &&
+    tradingViewPath(p.chartUrl, /^\/chart\/[A-Za-z0-9]+\/$/) &&
+    tradingViewPath(p.screenshotUrl, /^\/x\/[A-Za-z0-9]+\/$/) &&
+    p.compiled === true && p.replay === true && p.reopened === true &&
+    typeof p.notes === "string" && p.notes.trim().length >= 30 && p.notes.length <= 2000 &&
+    p.attestedBy === "owner" && typeof p.checkedAt === "string" && Number.isFinite(Date.parse(p.checkedAt));
+}
