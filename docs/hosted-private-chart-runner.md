@@ -1,6 +1,6 @@
 # Hosted private chart runner
 
-The existing Browserbase connection now has a finite scheduled runtime check for the previously authorized Opening Range Fakeout private prototype. `/api/cron/indicator-browser` runs every five minutes with CRON_SECRET authentication and a 180-second function limit. The existing two-session pilot allowance and 15-minute session timeout remain unchanged. No upgrade, additional allowance or recurring browser purchase is enabled.
+The existing Browserbase connection now has a finite scheduled runtime check for the previously authorized Opening Range Fakeout private prototype. `/api/cron/indicator-browser` runs every five minutes with CRON_SECRET authentication and a 180-second function limit. The approved allowance is now three sessions total; the 15-minute session timeout is unchanged. The owner explicitly approved one extra 15-minute session on September 20 after the original two were used. Attempt history is preserved; this grants exactly one remaining start, not a reset. No upgrade or recurring browser purchase is enabled.
 
 One initial job is inserted for the known source hash when the Lab is enabled, production is active, the OS is unpaused and Browserbase is connected. A database claim prevents concurrent work. Completed and blocked jobs do not retry automatically; interrupted jobs become blocked. The owner can explicitly requeue from `/owner/browser` while a sign-in session is active. Unknown creation/termination outcomes keep their reservation.
 
