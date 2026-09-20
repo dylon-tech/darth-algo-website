@@ -97,3 +97,6 @@
 .chart-journey[data-pro="true"] .journey-caption{font-size:10px}
 @media(max-width:767px){.chart-journey[data-pro="true"] .journey-world-wrap{top:200px;bottom:151px;left:12px;right:12px}.chart-journey[data-pro="true"] .journey-heading{top:60px}.chart-journey[data-pro="true"] .journey-heading h2{font-size:30px}.chart-journey[data-pro="true"] .journey-caption{font-size:8px}}
 @media(max-height:650px) and (min-width:768px){.chart-journey[data-pro="true"] .journey-world-wrap{top:185px;bottom:143px}.chart-journey[data-pro="true"] .journey-heading{top:45px}.chart-journey[data-pro="true"] .journey-copy{margin-top:6px}}
+
+.chart-journey[data-pro="true"] .journey-world-wrap{bottom:188px}
+@media(max-width:767px){.chart-journey[data-pro="true"] .journey-world-wrap{bottom:182px}}

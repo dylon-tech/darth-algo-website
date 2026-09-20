@@ -9,7 +9,13 @@ const GREEN = "#4caf50", RED = "#ff304b", UP = "#00a995";
 const X = (i: number) => 26 + i * 12.2;
 let chartNumber = 0;
 const Y = (price: number) => 475 - (price - 4430) * 2.25;
-const cloud = candles.map((c, i) => ({ x: X(i), fast: Y((c.open + c.close) / 2 + (i < 60 ? -7 : 7)), slow: Y((c.open + c.close) / 2 + (i < 60 ? -20 : 20)) }));
+// Continuous illustrative smoothing avoids a geometric spike when the cloud changes color.
+let fastAverage = candles[0].open, slowAverage = candles[0].open;
+const cloud = candles.map((c,i)=>{
+  const mid = (c.open+c.close)/2;
+  fastAverage += (mid-fastAverage)*.32; slowAverage += (mid-slowAverage)*.14;
+  return {x:X(i),fast:Y(fastAverage),slow:Y(slowAverage)};
+});
 
 export function createProChartWorld(host: HTMLElement): ChartWorld {
   const svg = document.createElementNS(NS, "svg");
