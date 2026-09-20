@@ -60,7 +60,7 @@ export async function syncMediaAutopilot() {
   await queueOwnerNotice(`media-policy:${mediaAutopilot.id}`,"◆ DARTH ALGO · CEO DESK\n\nRoutine posting is automatic: up to 3 X posts and 1 Instagram post daily, within the existing AI budget. No per-post approval needed.\n\nTap Today’s posts for actual delivery, Queue for upcoming content, or Agents to give work. Send /suggest followed by a topic or style idea. Pause stops new work and new submissions.\n\nOnly verified connected X and Instagram accounts are enabled. Other business actions retain their own approval requirements.",homeMenu());
   if(process.env.AI_OS_AI_ENABLED==="true") {
     const {queueJob}=await import("./jobs");
-    await queueJob("research","Activate the competitor visual research feed. Use competitor_public_posts and the attached thumbnails. Compare recent titles, hooks, thumbnail design and public views/day within each competitor and format. Deliver three original Darth Algo content tests and share actionable guidance for Content, Growth and CEO. Cite the exact posts and distinguish observed evidence from hypotheses; do not claim views are sales or thumbnails are full videos.","launch:competitor-visual-v2","schedule");
+    await queueJob("research","Activate the competitor visual research feed. Use competitor_public_posts and the attached thumbnails. Compare recent titles, hooks, thumbnail design and public views/day within each competitor and format. Deliver three original Darth Algo content tests and share actionable guidance for Content, Growth and CEO. Cite the exact posts and distinguish observed evidence from hypotheses; do not claim views are sales or thumbnails are full videos.","launch:competitor-visual-v3","schedule");
   }
   const slot=contentSlot();
   if(slot.key && process.env.AI_OS_AI_ENABLED==="true") {
@@ -117,7 +117,7 @@ export async function syncMediaAutopilot() {
   for(const row of recovery){if(isBufferPublication(row.payload))await executeBufferPublication(row.id,row.payload_hash);else if(isInstagramPublication(row.payload))await executeInstagramPublication(row.id,row.payload_hash);}
   const [policyNotice]=await sql`select status from os_outbox where dedupe_key=${`media-policy:${mediaAutopilot.id}:0`} limit 1`;
   const [contentWork]=await sql`select status from os_jobs where request_key=${slot.key ? `${slot.key}:v2` : "no-slot"} limit 1`;
-  const [researchWork]=await sql`select status from os_jobs where request_key='launch:competitor-visual-v2' limit 1`;
+  const [researchWork]=await sql`select status from os_jobs where request_key='launch:competitor-visual-v3' limit 1`;
   const [deliveries]=await sql`select count(*)::int as n from os_approvals a where decided_by='owner_policy' and exists(select 1 from os_activity where entity_id=a.id::text and event='buffer_publish_checked' and details->>'published'='true')`;
   return {status:"active",submitted:sent,slot:slot.key,contentStatus:contentWork?.status,researchStatus:researchWork?.status,noticeStatus:policyNotice?.status,confirmedPosts:deliveries.n};
 }
