@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import LinkActions from "./link-actions";
 import IndicatorPreview from "./indicator-preview";
+import MarketScene from "./market-scene";
+import "./market-scene.css";
 
 export const metadata: Metadata = {
   title: "Darth Algo Links | Indicators, Community & Support",
@@ -40,28 +42,17 @@ const secondaryLinks = [
 
 export default function LinksPage() {
   return (
-    <main id="main-content" className="relative min-h-screen overflow-hidden bg-[#07090d] px-4 py-4 text-white sm:py-8">
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-        <div className="absolute left-1/2 top-[-16rem] h-[34rem] w-[34rem] -translate-x-1/2 rounded-full bg-red-600/10 blur-[110px]" />
-        <div className="absolute bottom-[-12rem] right-[-10rem] h-[28rem] w-[28rem] rounded-full bg-emerald-400/10 blur-[120px]" />
-        <div className="absolute inset-0 opacity-[0.16] [background-image:linear-gradient(rgba(255,255,255,.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.08)_1px,transparent_1px)] [background-size:36px_36px] [mask-image:linear-gradient(to_bottom,black,transparent_70%)]" />
-        <div className="absolute inset-x-[-18%] top-0 h-[45rem] overflow-hidden [mask-image:linear-gradient(to_bottom,black_2%,black_66%,transparent_100%)]">
-          <Image src="/indicators/swing-overview.png" alt="" fill priority sizes="136vw" className="market-hero-chart object-cover object-center saturate-[1.35] contrast-110" />
-          <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(7,9,13,.08),rgba(7,9,13,.28)_52%,#07090d),radial-gradient(circle_at_50%_28%,transparent_8%,rgba(7,9,13,.46)_84%)]" />
-          <div className="market-hero-scan absolute inset-y-0 w-28 bg-gradient-to-r from-transparent via-sky-300/10 to-transparent blur-xl" />
-          <div className="absolute inset-0 bg-red-950/[.06] mix-blend-color" />
-        </div>
+    <main id="main-content" className="links-market-hub relative min-h-screen overflow-hidden bg-[#07090d] px-4 py-4 text-white sm:py-8">
+      <MarketScene />
 
-      </div>
-
-      <div className="relative mx-auto w-full max-w-xl">
+      <div className="hub-content relative mx-auto w-full max-w-xl">
         <div className="absolute right-0 top-0 z-20">
           <LinkActions />
         </div>
 
-        <section className="pt-3 text-center">
+        <section className="hub-brand-stage text-center">
           <Link href="/" aria-label="Go to the Darth Algo website" className="inline-flex justify-center">
-            <span className="relative grid h-28 w-28 place-items-center overflow-hidden rounded-[1.6rem] border border-red-400/40 bg-black shadow-[0_0_55px_rgba(239,68,68,.28)] ring-1 ring-white/10 sm:h-36 sm:w-36">
+            <span className="hub-brand-emblem relative grid h-28 w-28 place-items-center overflow-hidden rounded-[1.6rem] border border-red-400/40 bg-black shadow-[0_0_55px_rgba(239,68,68,.28)] ring-1 ring-white/10 sm:h-36 sm:w-36">
               <Image src="/darth-algo-link-logo.svg" alt="Darth Algo trading logo" fill priority sizes="144px" className="object-cover transition duration-500 hover:scale-105" />
               <span className="absolute inset-0 rounded-[2rem] ring-1 ring-inset ring-white/15" />
             </span>
@@ -84,7 +75,7 @@ export default function LinksPage() {
           </nav>
         </section>
 
-        <section id="indicators" aria-label="Featured Darth Algo Swing Tool trial" className="relative mt-4 overflow-hidden rounded-[1.75rem] border border-white/15 bg-[#0c131d] shadow-[0_24px_80px_rgba(0,0,0,.25)]">
+        <section id="indicators" aria-label="Featured Darth Algo Swing Tool trial" className="hub-depth-card relative mt-4 overflow-hidden rounded-[1.75rem] border border-white/15 bg-[#0c131d] shadow-[0_24px_80px_rgba(0,0,0,.25)]">
           <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_82%_8%,rgba(14,165,233,.32),transparent_34%),radial-gradient(circle_at_5%_92%,rgba(59,130,246,.2),transparent_38%)]" />
           <div className="relative border-b border-white/10 bg-black/25 px-5 py-3">
             <div className="flex items-center justify-between gap-3">
@@ -116,7 +107,7 @@ export default function LinksPage() {
           <IndicatorPreview />
         </section>
 
-        <section id="community" aria-label="Join the Darth Algo community" className="relative mt-5 overflow-hidden rounded-[1.75rem] border border-emerald-300/30 bg-[#081314]/92 shadow-[0_28px_80px_rgba(16,185,129,.18)] backdrop-blur-sm">
+        <section id="community" aria-label="Join the Darth Algo community" className="hub-depth-card relative mt-5 overflow-hidden rounded-[1.75rem] border border-emerald-300/30 bg-[#081314]/92 shadow-[0_28px_80px_rgba(16,185,129,.18)] backdrop-blur-sm">
           <div className="relative aspect-video overflow-hidden border-b border-white/10 bg-black">
             <Image src="/darth-algo-community-banner.svg" alt="Darth Algo traders sharing charts in the community trading room" fill sizes="(max-width: 640px) 100vw, 576px" className="object-cover transition duration-700 hover:scale-105" />
             <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#081314] via-transparent to-transparent" />
@@ -143,7 +134,7 @@ export default function LinksPage() {
             <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-600">Official socials</span>
           </div>
 
-          <article className="overflow-hidden rounded-[1.5rem] border border-red-500/25 bg-[#11151d]/92 shadow-[0_20px_50px_rgba(0,0,0,.3)] backdrop-blur-sm">
+          <article className="hub-depth-card relative overflow-hidden rounded-[1.5rem] border border-red-500/25 bg-[#11151d]/92 shadow-[0_20px_50px_rgba(0,0,0,.3)] backdrop-blur-sm">
             <div className="relative aspect-video overflow-hidden bg-black">
               <iframe
                 src="https://www.youtube-nocookie.com/embed/YGhU7kgd8h0?rel=0"
@@ -161,7 +152,7 @@ export default function LinksPage() {
             </a>
           </article>
 
-          <article className="mt-3 overflow-hidden rounded-[1.5rem] border border-fuchsia-400/25 bg-[#11151d]/92 shadow-[0_20px_50px_rgba(0,0,0,.25)] backdrop-blur-sm">
+          <article className="hub-depth-card relative mt-3 overflow-hidden rounded-[1.5rem] border border-fuchsia-400/25 bg-[#11151d]/92 shadow-[0_20px_50px_rgba(0,0,0,.25)] backdrop-blur-sm">
             <div className="grid grid-cols-3 gap-1 bg-black p-1">
               {[
                 ["/indicators/signal-context-alt.png", "Darth Algo signal chart post"],
@@ -176,7 +167,7 @@ export default function LinksPage() {
             </a>
           </article>
 
-          <article className="mt-3 overflow-hidden rounded-[1.5rem] border border-cyan-300/25 bg-[#0c1118]/92 shadow-[0_20px_50px_rgba(0,0,0,.25)] backdrop-blur-sm">
+          <article className="hub-depth-card relative mt-3 overflow-hidden rounded-[1.5rem] border border-cyan-300/25 bg-[#0c1118]/92 shadow-[0_20px_50px_rgba(0,0,0,.25)] backdrop-blur-sm">
             <div className="relative grid h-48 grid-cols-3 gap-1 overflow-hidden bg-black p-1">
               {[
                 ["/indicator-examples/darth-algo-feature-map-01.png", "Darth Algo Pro Tool TikTok preview"],
@@ -199,7 +190,7 @@ export default function LinksPage() {
             {[
               {name:'Scalper Tool',eyebrow:'Fast session signals',price:'$18.99',image:'/indicators/scalper-execution.png',href:'https://buy.stripe.com/14AfZi4T5fRidqS2oc6kg03',product:'/products/scalper',accent:'from-orange-500 to-red-500',border:'border-orange-400/25',text:'text-orange-300'},
               {name:'Pro Tool',eyebrow:'Scalper + Swing',price:'$29',image:'/indicator-examples/darth-algo-feature-map-01.png',href:'https://buy.stripe.com/4gM8wQfxJ6gI1IabYM6kg05',product:'/products/pro',accent:'from-violet-600 to-fuchsia-500',border:'border-violet-400/25',text:'text-violet-300'},
-            ].map(tool=><article key={tool.name} className={`group overflow-hidden rounded-[1.35rem] border bg-[#0d1118]/92 backdrop-blur-sm ${tool.border} shadow-[0_18px_45px_rgba(0,0,0,.22)]`}>
+            ].map(tool=><article key={tool.name} className={`hub-depth-card relative group overflow-hidden rounded-[1.35rem] border bg-[#0d1118]/92 backdrop-blur-sm ${tool.border} shadow-[0_18px_45px_rgba(0,0,0,.22)]`}>
               <Link href={tool.product} className="relative block aspect-[16/8] overflow-hidden bg-black"><Image src={tool.image} alt={`Darth Algo ${tool.name} chart preview`} fill sizes="(max-width: 640px) 100vw, 288px" className="object-cover transition duration-500 group-hover:scale-105"/><span className="absolute inset-0 bg-gradient-to-t from-[#0d1118] to-transparent"/><span className={`absolute bottom-2 left-3 text-[8px] font-black uppercase tracking-[.15em] ${tool.text}`}>{tool.eyebrow}</span></Link>
               <div className="p-4"><div className="flex items-start justify-between gap-3"><h3 className="font-display text-lg font-black">Darth Algo {tool.name}</h3><div className="shrink-0 text-right"><strong className="text-lg font-black">{tool.price}</strong><span className="block text-[8px] uppercase text-zinc-600">/ month</span></div></div><a href={tool.href} className={`mt-3 flex min-h-11 items-center justify-center gap-2 rounded-xl bg-gradient-to-r px-4 text-xs font-black text-white shadow-lg transition hover:-translate-y-0.5 hover:brightness-110 ${tool.accent}`}>Get {tool.name} <ArrowUpRight className="h-3.5 w-3.5"/></a></div>
             </article>)}
