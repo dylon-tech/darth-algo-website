@@ -105,11 +105,12 @@ export async function runAgent(department: Department, requestKey: string, messa
       sql`select role,left(body,3000) as body from (select role,body,created_at from os_messages where department=${department} and run_id<>${id} order by created_at desc limit 4) h order by created_at`,
     ]);
     if (coordinationEnabled() && !approvedPilot) evidence.push(...await teamEvidence(taskId));
-    if(department==="research" && message.startsWith("[INDICATOR_LAB]") && process.env.AI_OS_INDICATOR_LAB_ENABLED==="true") {
+    if(["research","growth"].includes(department) && /^\[INDICATOR_(LAB|IDEAS)\]/.test(message) && process.env.AI_OS_INDICATOR_LAB_ENABLED==="true") {
       const {indicatorMarketEvidence}=await import("./indicator-research");
       const {labContext}=await import("./indicator-lab");
-      const publicEvidence=evidence.filter(e=>e.id==="competitor_public_posts");
-      evidence.splice(0,evidence.length,...publicEvidence,await indicatorMarketEvidence(),await labContext(message.match(/Revision ID: ([a-f0-9-]{36})/)?.[1]));
+      const {indicatorIdeaEvidence}=await import("./indicator-ideas");
+      const publicEvidence=evidence.filter(e=>["competitor_public_posts","indicator_social"].includes(e.id));
+      evidence.splice(0,evidence.length,...publicEvidence,await indicatorIdeaEvidence(),await indicatorMarketEvidence(),await labContext(message.match(/Revision ID: ([a-f0-9-]{36})/)?.[1]));
     }
     await sql`update os_runs set snapshot=${sql.json(JSON.parse(JSON.stringify(evidence)))} where id=${id} and status='running'`;
     await sql`insert into os_activity(actor,event,entity_id,details) values(${department},'agent_sources_checked',${id},${sql.json({verifiedSources:evidence.filter(s=>s.status==="verified").length,unavailableSources:evidence.filter(s=>s.status==="unavailable").length})})`;
@@ -129,7 +130,7 @@ export async function runAgent(department: Department, requestKey: string, messa
       let workflowCount = rootCount?.n || 0;
       const assignedTasks = [...plan.tasks];
       const target = reviewTarget[department];
-      if (coordinating && !message.startsWith("[INDICATOR_LAB]") && target && !assignedTasks.length && handoffAllowed(department, target, depth, workflowCount)) {
+      if (coordinating && !/^\[INDICATOR_(LAB|IDEAS)\]/.test(message) && target && !assignedTasks.length && handoffAllowed(department, target, depth, workflowCount)) {
         assignedTasks.push({ department: target, title: `Review and build on ${department}'s deliverable`, priority: 3, evidence: ["team_deliverables"] });
       }
       for (const task of assignedTasks) {
@@ -183,6 +184,10 @@ export async function decide(id: string, hash: string, decision: "approved" | "d
     const [row] = await tx`select * from os_approvals where id=${id} for update`;
     if (!row || row.status !== "pending" || new Date(row.expires_at).getTime() <= Date.now()) throw new Error("APPROVAL_NOT_PENDING");
     if (hash !== row.payload_hash || fingerprint(row.payload) !== hash) throw new Error("APPROVAL_VERSION_CHANGED");
+    if(row.payload.executor==="indicator_release_v1" && decision==="approved") {
+      const {queueApprovedIndicator}=await import("./indicator-package");
+      await queueApprovedIndicator(tx,id,row.payload);
+    }
     await tx`update os_approvals set status=${decision},decided_at=now(),decided_by='owner',decision_note=${note} where id=${id}`;
     await tx`insert into os_activity(actor,event,entity_id,details) values('owner',${`approval_${decision}`},${id},${tx.json({ payloadHash: hash, note, executed: false })})`;
     return { id, status: decision, executed: false, publish: decision === "approved" && (isBufferPublication(row.payload) || isInstagramPublication(row.payload)), instagram: isInstagramPublication(row.payload), message: decision === "revision_requested" && isBufferPublication(row.payload) ? "Revision saved. Content will prepare a fresh X draft for approval while work is resumed." : decision === "revision_requested" && isInstagramPublication(row.payload) ? "Revision saved. This carousel will not publish. Revised slides or caption need a fresh approval." : "Plan saved. This card describes planning work, not a ready-to-publish post. Routine media uses the automatic publishing queue." };

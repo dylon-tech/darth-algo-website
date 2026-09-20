@@ -23,3 +23,5 @@ No production migration or activation was performed during implementation. Schem
 ## Names and owner-facing explanations
 
 Use Darth Algo plus a recognizable setup or function, such as Opening Range Fakeout. Names must match implemented behavior; do not use unexplained fantasy names or imply order flow/liquidity detection without supporting inputs. Each private candidate preview should pair an actual current-source TradingView capture and saved chart link with a concise walkthrough: what it does, color/marker legend, exact trigger, practical use, supported settings, and limitations. Explain missing-signal conditions and closed-bar timing. Never use a generated chart image as implementation evidence. Only show candidates that actually exist.
+
+The complete-package workflow in indicator-release-packages.md supersedes the earlier source-only approval flow. Chart evidence is a prerequisite; an actual instruction image and educational worked example must also be recorded before approval cards are sent.

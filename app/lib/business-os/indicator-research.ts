@@ -58,6 +58,6 @@ export function observedIndicatorUrls(evidence:Evidence[]) {
     if(typeof row.url==="string" && row.url.startsWith("https://"))urls.add(row.url);
     for(const x of Object.values(row))if(typeof x==="object")walk(x,depth+1);
   }
-  for(const e of evidence)if(["indicator_market","competitor_public_posts"].includes(e.id) && e.status==="verified")walk(e.data);
+  for(const e of evidence)if(["indicator_market","competitor_public_posts","indicator_idea_handoffs","indicator_social"].includes(e.id) && e.status==="verified")walk(e.data);
   return [...urls];
 }

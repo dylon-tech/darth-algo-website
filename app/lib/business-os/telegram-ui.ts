@@ -14,7 +14,7 @@ export function homeMenu():MenuButtons{return [
 export function backMenu():MenuButtons{return [[homeButton]];}
 export function postsMenu():MenuButtons{return [[{text:"Today",callback_data:"ui:nav:posts"},{text:"Upcoming",callback_data:"ui:nav:queue"}],[homeButton]];}
 export function settingsMenu(paused=false):MenuButtons{return [[{text:paused?"▶ Resume agents":"⏸ Pause agents",callback_data:paused?"ui:nav:resume":"ui:nav:pause"},{text:"Connections",callback_data:"ui:nav:buffer"}],[centerLink,connectButton],[homeButton]];}
-export function agentsMenu():MenuButtons{return [...Array.from({length:4},(_,i)=>departments.slice(i*2,i*2+2).map(d=>({text:agentNames[d],callback_data:`ui:agent:${d}`}))),[{text:"Live work",callback_data:"ui:nav:status"},homeButton]];}
+export function agentsMenu():MenuButtons{return [...Array.from({length:4},(_,i)=>departments.slice(i*2,i*2+2).map(d=>({text:agentNames[d],callback_data:`ui:agent:${d}`}))),[{text:"🧪 Indicator Builder",callback_data:"ui:nav:lab"}],[{text:"Live work",callback_data:"ui:nav:status"},homeButton]];}
 const quick:Record<Department,Array<[string,string]>>={
  ceo:[["today-plan","Choose our next move"],["growth-review","Find the main problem"]],
  growth:[["acquisition-test","Find customer ideas"],["signup-friction","Improve signups"]],
