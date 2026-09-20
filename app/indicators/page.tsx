@@ -1,0 +1,9 @@
+import Link from "next/link";
+import {db} from "../lib/affiliate-db";
+export const dynamic="force-dynamic";
+export const metadata={title:"Indicator catalog | Darth Algo",description:"Explore released Darth Algo TradingView indicators."};
+export default async function IndicatorCatalog(){
+  let rows:Array<{id:string;name:string;purpose:string;tier:string;url:string}>=[];let unavailable=false;
+  try{rows=await db()`select id,candidate->>'name' as name,candidate->>'purpose' as purpose,candidate->>'tier' as tier,tradingview_url as url from os_indicator_candidates where status='released' and release_evidence is not null order by released_at desc`;}catch{unavailable=true;}
+  return <main className="mx-auto max-w-5xl space-y-8 px-6 py-16"><Link href="/">← Darth Algo</Link><p className="text-red-400">DARTH ALGO · INDICATORS</p><h1 className="text-4xl font-bold">Tools built for your chart.</h1><p>Explore our indicator plans and the latest releases from the Darth Algo Lab.</p><div className="flex gap-6"><Link className="underline" href="/products/scalper">Scalper</Link><Link className="underline" href="/products/swing">Swing</Link><Link className="underline" href="/products/pro">Pro</Link></div>{rows.length?rows.map(r=><article key={r.id} className="rounded-xl border border-white/15 p-6"><h2 className="text-2xl font-semibold">{r.name}</h2><p className="my-4">{r.purpose}</p><p>{r.tier==="free"?"Free indicator":"Paid access · see availability"}</p><a className="mt-4 inline-block text-red-400 underline" href={r.url} target="_blank" rel="noopener noreferrer">View on TradingView</a></article>):<p>{unavailable?"Lab releases are temporarily unavailable. Explore our existing plans above.":"New Lab indicators will appear here after approval and release verification."}</p>}<p className="text-sm text-white/60">Indicators support analysis. They do not guarantee trading results.</p></main>;
+}

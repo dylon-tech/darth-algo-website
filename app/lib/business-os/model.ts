@@ -1,3 +1,5 @@
+import {indicatorJsonSchema,validateIndicator} from "./indicator-policy";
+import {observedIndicatorUrls} from "./indicator-research";
 import { competitorThumbnails } from "./competitor-research";
 import { contentDestinations } from "./content-destinations";
 import { actionKinds, departments, registry, validatePlan, type Department } from "./policy";
@@ -42,12 +44,13 @@ export async function generatePlan(message: string, evidence: Evidence[], openTa
   const endpoint = direct ? "https://api.openai.com/v1/responses" : "https://ai-gateway.vercel.sh/v1/responses";
   const model = approvedPilot ? pilot.model : process.env.AI_OS_MODEL;
   if (!model) throw new Error("AI_MODEL_NOT_CONFIGURED");
+  const indicatorRun=department==="research" && message.startsWith("[INDICATOR_LAB]") && process.env.AI_OS_INDICATOR_LAB_ENABLED==="true";
   const string = { type: "string", minLength:1, maxLength:4500 };
   const evidenceSchema = { type: "array", minItems:1, maxItems:8, items: { type: "string", enum: evidence.map(x => x.id) } };
   const growthRows = evidence.find(e => e.id === "growth_30d" && e.status === "verified")?.data;
   const verifiedCalculations = Array.isArray(growthRows) ? { source: "growth_30d", outboundClickEvents: growthRows.filter(row => row.event_type === "outbound_click").reduce((sum, row) => sum + Number(row.events), 0) } : null;
   const contentDelivery = department === "content" ? contentDestinations(requestKey) : null;
-  const thumbnails=department==="research" && !approvedPilot ? await competitorThumbnails(evidence) : [];
+  const thumbnails=department==="research" && !approvedPilot && !indicatorRun ? await competitorThumbnails(evidence) : [];
   if(department==="research")console.info(JSON.stringify({event:"research_visual_input",thumbnailCount:thumbnails.length,sourceAvailable:evidence.find(e=>e.id==="competitor_public_posts")?.status==="verified"}));
   const input = JSON.stringify({ message, evidence, verifiedCalculations, openTasks, history, contentDelivery, thumbnailOrder:thumbnails.map(t=>({id:t.id,title:t.title})), visualCoverage:thumbnails.length?"Only the attached low-resolution thumbnails were provided; do not claim to watch videos.":"No visual assets inspected." });
   if (Buffer.byteLength(input) > 60000) throw new Error("AI_INPUT_LIMIT");
@@ -58,8 +61,9 @@ export async function generatePlan(message: string, evidence: Evidence[], openTa
       reasoning: { effort: "none" },
       input: [{ role: "user", content: thumbnails.length ? [{type:"input_text",text:input},...thumbnails.map(t=>t.part)] : input }],
       text: { format: { type: "json_schema", name: "ceo_plan", strict: true, schema: {
-        type: "object", additionalProperties: false, required: ["brief", "tasks", "proposals", "xDraft"],
+        type: "object", additionalProperties: false, required: ["brief", "tasks", "proposals", "xDraft",...(indicatorRun?["indicatorCandidate"]:[])],
         properties: {
+          ...(indicatorRun?{indicatorCandidate:indicatorJsonSchema}:{}),
           brief: string,
           xDraft: { anyOf: [{ type: "null" }, { type: "object", additionalProperties: false, required: ["text","evidence"], properties: { text: {type:"string",minLength:1,maxLength:260}, evidence: evidenceSchema } }] },
           tasks: { type: "array", maxItems:2, items: { type: "object", additionalProperties: false, required: ["department", "title", "priority", "evidence"], properties: { department: { type: "string", enum: departments }, title: {type:"string",minLength:1,maxLength:240}, priority: { type: "integer", minimum:1, maximum:5 }, evidence: evidenceSchema } } },
@@ -86,6 +90,7 @@ export async function generatePlan(message: string, evidence: Evidence[], openTa
   const output = body.output?.flatMap((x: { content?: { type: string; text?: string }[] }) => x.content || []).filter((x: { type: string }) => x.type === "output_text").map((x: { text: string }) => x.text).join("");
   if (!output) throw new Error("AI_EMPTY_OUTPUT");
   const parsed=JSON.parse(output);
+  if(indicatorRun && parsed.indicatorCandidate)validateIndicator(parsed.indicatorCandidate,observedIndicatorUrls(evidence));
   if(typeof parsed?.xDraft?.text==="string")parsed.xDraft.text=parsed.xDraft.text.trim();
   let plan;
   try {plan=validatePlan(parsed,evidence.map(x=>x.id));}

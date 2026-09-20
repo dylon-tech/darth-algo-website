@@ -6,6 +6,7 @@ export const centerLink={text:"Website dashboard",url:"https://www.darthalgo.com
 export const connectButton={text:"Connect browser",callback_data:"ui:nav:connect"};
 export const homeButton={text:"‹ CEO desk",callback_data:"ui:nav:home"};
 export function homeMenu():MenuButtons{return [
+ [{text:"🧪 Indicator Lab",callback_data:"ui:nav:lab"},{text:"🩺 Health",callback_data:"ui:nav:health"}],
  [{text:"☀ Overview",callback_data:"ui:nav:brief"},{text:"👥 My team",callback_data:"ui:nav:agents"}],
  [{text:"🗓 Posts",callback_data:"ui:nav:posts"},{text:"🔔 Needs me",callback_data:"ui:nav:approvals"}],
  [{text:"💡 Ideas",callback_data:"ui:nav:ideas"},{text:"⚙ Settings",callback_data:"ui:nav:settings"}],
@@ -34,6 +35,7 @@ export function resultMenu(department:Department,jobId:string,page=0,total=1):Me
 export function menuAction(data:string|undefined):{command:string;department?:Department;assignmentId?:string;style?:string;jobId?:string;page?:number}|null {
  const p=data?.split(":") || [];
  if(p[0]!=="ui")return null;
+ if(p.length===3 && p[1]==="nav" && ["lab","health"].includes(p[2]))return {command:`/${p[2]}`};
  if(p.length===3 && p[1]==="nav" && ["home","agents","status","approvals","brief","buffer","connect","posts","queue","ideas","suggest","researchview","pause","resume","settings"].includes(p[2]))return {command:`/${p[2]}`};
  if(p.length===3 && p[1]==="style" && ["crimson","minimal","clean"].includes(p[2]))return {command:"/style",style:p[2]};
  if(p.length===4 && p[1]==="result" && /^[a-f0-9-]{36}$/.test(p[2]) && /^\d{1,2}$/.test(p[3]))return {command:"/result",jobId:p[2],page:Number(p[3])};
@@ -47,6 +49,7 @@ export function naturalCommand(text:string){
  const n=text.trim().toLowerCase().replace(/[?!]+$/g,"");
  if(["hi","hello","hey","help","menu","home"].includes(n))return "/home";
  if(n==="agents")return "/agents";
+ if(["lab","indicator lab","indicators"].includes(n))return "/lab";
  if(["posts","today’s posts","today's posts"].includes(n))return "/posts";
  if(["queue","upcoming posts"].includes(n))return "/queue";
  if(["status","who's working","who’s working","what's happening","what’s happening"].includes(n))return "/status";

@@ -1,3 +1,4 @@
+import {indicatorMarketEvidence} from "./indicator-research";
 import { competitorEvidence } from "./competitor-research";
 import { db } from "../affiliate-db";
 import { stripe } from "../stripe";
@@ -14,6 +15,7 @@ async function readSource(id: string, scope: string, read: () => Promise<unknown
 
 export async function collectEvidence(): Promise<Evidence[]> {
   const sources = await Promise.all([
+    ...(process.env.AI_OS_INDICATOR_LAB_ENABLED==="true"?[indicatorMarketEvidence().catch(()=>({id:"indicator_market",status:"unavailable" as const,checkedAt:new Date().toISOString(),scope:"Market discovery unavailable.",data:null}))]:[]),
     readSource("content_workflows", "Saved media policy and latest publication observations. These are execution records, not a guarantee of future delivery or content performance.", async()=>await db()`select event,created_at,details - 'png' as details from os_activity where event in ('media_policy_enabled','buffer_publish_checked','instagram_carousel_draft_verified') order by id desc limit 6`),
     competitorEvidence().catch(()=>({id:"competitor_public_posts",status:"unavailable" as const,checkedAt:new Date().toISOString(),scope:"Public competitor source check unavailable.",data:null})),
     readSource("paid_conversion", "Live Stripe checkout sessions created in the last 30 days. Campaign-tagged initial paid checkouts and trial starts are separate. Coverage includes untagged sessions; no unique-customer count, click conversion rate, renewals or causation is inferred.", checkoutConversions),

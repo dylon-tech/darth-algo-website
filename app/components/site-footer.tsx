@@ -7,6 +7,7 @@ const footerLinks = [
   ["Education", "/education"],
   ["Community", "/community"],
   ["Pricing", "/#pricing"],
+  ["Indicator catalog", "/indicators"],
   ["Affiliate Program", "/affiliates"],
   ["Creator Dashboard", "/affiliate-dashboard"],
   ["Support", "/support"],
