@@ -12,10 +12,19 @@ export const proCandles = Array.from({ length: 76 }, (_, i) => {
   const close = closingPrice(i), open = i ? closingPrice(i - 1) : close - 2;
   return {open,close,high:Math.max(open,close)+1.2,low:Math.min(open,close)-1.2};
 });
-export const proSignals = [{index:44,buy:true},{index:60,buy:false}].map(signal => {
+export type IndicatorMode = "swing" | "scalp";
+export const indicatorProfiles = {
+  swing: { label: "Swing", timeframe: "15m", minutes: 15, setups: [{index:44,buy:true},{index:60,buy:false}], risk: 20, target1: 20, target2: 30 },
+  scalp: { label: "Scalper", timeframe: "1m", minutes: 1, setups: [{index:44,buy:true},{index:50,buy:true},{index:60,buy:false},{index:67,buy:false}], risk: 12, target1: 8, target2: 12 },
+};
+export function signalsFor(mode: IndicatorMode = "swing") {
+ const profile = indicatorProfiles[mode];
+ return profile.setups.map(signal => {
   const entry = proCandles[signal.index].close, direction = signal.buy ? 1 : -1;
-  return {...signal,entry,stop:entry-direction*20,tp1:entry+direction*20,tp2:entry+direction*30};
-});
+  return {...signal,entry,stop:entry-direction*profile.risk,tp1:entry+direction*profile.target1,tp2:entry+direction*profile.target2};
+ });
+}
+export const proSignals = signalsFor();
 export function advanceProLoop(progress: number, elapsed: number) {
   return (progress + Math.max(0, elapsed) / PRO_LOOP_MS) % 1;
 }
@@ -35,13 +44,14 @@ export function proFocusFrame(feature: number, narrow: boolean, priceX: number, 
   if (feature === 1) return [Math.max(40,priceX-270),priceY-95,430,220];
   return narrow ? [300,0,820,570] : [0,0,1120,570];
 }
-export function proSimulation(progress: number) {
+export function proSimulation(progress: number, mode: IndicatorMode = "swing") {
+  const signals = signalsFor(mode);
   const p = clamp(progress), visible = 42 + 34 * Math.min(1, p / .88);
   const index = Math.min(75, Math.ceil(visible) - 1), growth = Math.min(1, visible - index);
   const candle = proCandles[index];
   const price = proCandleTick(candle,growth).price;
-  const active = proSignals.findLastIndex(signal => visible >= signal.index + 1);
-  const signal = proSignals[active];
+  const active = signals.findLastIndex(signal => visible >= signal.index + 1);
+  const signal = signals[active];
   const reached = (target: number) => {
     if (!signal) return false;
     // Only completed candles and the currently revealed fraction may hit a target.

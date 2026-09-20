@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { proCandles, proSignals, proSimulation, advanceProLoop, PRO_LOOP_MS, proCandleTick, proFocusFrame } from '../app/components/pro-chart-simulation.ts';
+import { proCandles, proSignals, proSimulation, advanceProLoop, PRO_LOOP_MS, proCandleTick, proFocusFrame, signalsFor, indicatorProfiles } from '../app/components/pro-chart-simulation.ts';
 const progressAt = visible => (visible - 42) / 34 * .88;
 assert.equal(proSimulation(0).active, -1);
 for (const [i, signal] of proSignals.entries()) {
@@ -47,3 +47,26 @@ for (const narrow of [false,true]) {
   assert.ok(frames[3][0]<=420&&frames[3][0]+frames[3][2]>=1005);
 }
 console.log('Discrete ticks and five feature-focus crops passed.');
+
+// The product variants differ in signal frequency and risk range, not just labels.
+assert.ok(signalsFor("scalp").length > signalsFor("swing").length);
+assert.ok(indicatorProfiles.swing.target2 > indicatorProfiles.scalp.target2);
+for (const mode of ["swing", "scalp"]) {
+  const signals = signalsFor(mode);
+  for (const [i, signal] of signals.entries()) {
+    assert.equal(proSimulation(progressAt(signal.index+1)-1e-6, mode).active, i-1);
+    const fresh = proSimulation(progressAt(signal.index+1)+1e-6, mode);
+    assert.equal(fresh.active,i);
+    assert.equal(fresh.tp1Hit,false);
+    assert.equal(fresh.tp2Hit,false);
+    const end = signals[i+1]?.index ?? 75;
+    const result = proSimulation(progressAt(end+1)-1e-6, mode);
+    assert.equal(result.active,i);
+    assert.ok(result.tp1Hit && result.tp2Hit, `${mode} setup ${i} reaches both actual targets`);
+    assert.ok(proCandles.slice(signal.index+1,end+1).every(c=>signal.buy ? c.low>signal.stop : c.high<signal.stop));
+  }
+  const reset = proSimulation(0,mode);
+  assert.equal(reset.active,-1);
+  assert.equal(reset.tp2Hit,false);
+}
+console.log('Swing and Scalp variants: frequency, risk ranges, confirmation and complete trades passed.');

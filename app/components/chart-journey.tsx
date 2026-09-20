@@ -2,13 +2,12 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { chapterAt, chapterProgress, journeyProgress, smooth, setupPlayback } from "./chart-journey-math";
-import { advanceProLoop, proSimulation } from "./pro-chart-simulation";
+import { chapterAt, chapterProgress, journeyProgress } from "./chart-journey-math";
+import { advanceProLoop, proSimulation, type IndicatorMode } from "./pro-chart-simulation";
 import type { ChartWorld } from "./chart-world";
 import type { EngineScene } from "./immersive-engine";
 
-const colors = { red: "#ff4c65", swing: "#58afff", scalp: "#ffa64e", pro: "#b48aff" };
-const chapters = ["The chart", "Trend", "Signals", "Risk", "Your move"];
+type TourAccent = "red" | "swing" | "scalp" | "pro";
 const proChapters = ["Chart", "Trend", "Signals", "Risk", "Dashboard"];
 const proCopy = [
   {title:"Your chart, in motion.",copy:"Pick a feature below to take a closer look."},
@@ -17,23 +16,17 @@ const proCopy = [
   {title:"See the complete risk plan.",copy:"Entry, stop and targets appear together at each signal."},
   {title:"Read the dashboard.",copy:"Trend, signal, RSI, volatility and risk/reward in one view."},
 ];
-const defaultCopy = [
-  { title: "Step inside the chart.", copy: "One chart. Three layers of clarity. Scroll to see how they fit together." },
-  { title: "Find the direction.", copy: "Trend context comes forward, helping you see beyond the next candle." },
-  { title: "Bring the setup into focus.", copy: "Signal markers add a point of reference. You decide whether the context fits." },
-  { title: "Define the risk first.", copy: "Entry, stop and targets form a visible plan before you make your move." },
-  { title: "Now, make it your chart.", copy: "Explore the real Darth Algo tools on TradingView. Choose the pace that fits you." },
-];
-
-export default function ChartJourney({ scenes, accent = "red" }: { scenes: EngineScene[]; accent?: keyof typeof colors }) {
+export default function ChartJourney({ scenes, accent = "red" }: { scenes: EngineScene[]; accent?: TourAccent }) {
   const isPro = accent === "red" || accent === "pro";
+  const [mode, setMode] = useState<IndicatorMode>(accent === "scalp" ? "scalp" : "swing");
+  const productName = isPro ? "Pro" : accent === "scalp" ? "Scalper" : "Swing";
+  const purchaseHref = accent === "red" ? "#pricing" : accent === "swing" ? "/#swing-trial" : accent === "scalp" ? "/#scalper-plan" : "/#pro-plan";
   const paused = useRef(false);
   const root = useRef<HTMLElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLDivElement>(null);
   const world = useRef<ChartWorld | null>(null);
-  const playback = useRef(isPro ? 0 : 1);
-  const played = useRef(false);
+  const playback = useRef(0);
   const playing = useRef(false);
   const playbackStatus = useRef<HTMLSpanElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -46,7 +39,10 @@ export default function ChartJourney({ scenes, accent = "red" }: { scenes: Engin
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
   const [nearby, setNearby] = useState(false);
-  const copy = isPro ? proCopy[active] : active > 0 && active < 4 ? scenes[active - 1] : defaultCopy[active];
+  const copy = active === 0 ? {
+    title: isPro ? "Two modes. One Pro." : mode === "swing" ? "Fewer signals. Broader moves." : "More signals. Faster setups.",
+    copy: isPro ? "Switch between Swing and Scalp. Explore any feature below." : mode === "swing" ? "Follow broader trend setups at a steadier pace." : "See more frequent setups for a faster trading style.",
+  } : proCopy[active];
   const proof = accent === "red" ? { image: "/indicator-examples/darth-algo-feature-map-03.png", alt: "Actual Darth Algo Pro reference showing SELL, SL, ENTRY, TP1 and TP2" } : scenes[Math.min(2, Math.max(0, active - 1))];
   useEffect(() => {
     const preference = matchMedia("(prefers-reduced-motion: reduce)");
@@ -57,26 +53,23 @@ export default function ChartJourney({ scenes, accent = "red" }: { scenes: Engin
     return () => { preference.removeEventListener("change", change); observer.disconnect(); };
   }, []);
   useEffect(() => {
-    if (!nearby || (!motion && !isPro) || failed || !canvas.current) return;
+    if (!nearby || failed || !canvas.current) return;
     const host = canvas.current;
     let cancelled = false;
     let observer: ResizeObserver | undefined;
-    const loader = accent === "red" || accent === "pro"
-      ? import("./pro-chart-world").then(module => module.createProChartWorld)
-      : import("./chart-world").then(module => module.createChartWorld);
-    loader.then(createChartWorld => {
+    import("./pro-chart-world").then(({ createProChartWorld }) => {
       if (cancelled) return;
       try {
-        world.current = createChartWorld(host, colors[accent], () => { setFailed(true); setReady(false); });
+        world.current = createProChartWorld(host, {mode, pro: isPro});
         world.current.render(current.current, playback.current, !motion); setReady(true);
         observer = new ResizeObserver(() => world.current?.resize()); observer.observe(host);
         requestFrame.current();
       } catch { setFailed(true); setReady(false); }
     }).catch(() => { if (!cancelled) { setFailed(true); setReady(false); } });
     return () => { cancelled = true; observer?.disconnect(); world.current?.dispose(); world.current = null; setReady(false); };
-  }, [nearby, motion, failed, accent, isPro]);
+  }, [nearby, motion, failed, mode, isPro]);
   useEffect(() => {
-    if (!motion || failed) { playing.current = false; playback.current = isPro ? .38 : 1; setIsPlaying(false); }
+    if (!motion || failed) { playing.current = false; playback.current = .38; setIsPlaying(false); }
     const section = root.current, viewport = stage.current;
     if (!section || !viewport) return;
     let frame = 0;
@@ -91,24 +84,15 @@ export default function ChartJourney({ scenes, accent = "red" }: { scenes: Engin
       const difference = target.current - current.current;
       current.current = Math.abs(difference) < .0002 || !motion ? target.current : current.current + difference * (1 - Math.exp(-elapsed / 100));
       const value = current.current;
-      if (isPro) {
+      {
         const run = !!(motion && world.current && !paused.current);
         if (playing.current !== run) { playing.current = run; setIsPlaying(run); }
         if (run) playback.current = advanceProLoop(playback.current, elapsed);
       }
-      if (!isPro && motion && world.current && !played.current && value >= .37 && value < .81) {
-        played.current = true; playing.current = true; playback.current = 0; setIsPlaying(true);
-      }
-      if (!isPro && playing.current && motion && world.current) {
-        playback.current = Math.min(1, playback.current + elapsed / 12000);
-        if (playback.current === 1 || target.current >= .81 || target.current < .32) {
-          playing.current = false; playback.current = 1; setIsPlaying(false);
-        }
-      }
       world.current?.render(value, playback.current, !motion);
-      if (playbackStatus.current) playbackStatus.current.textContent = isPro ? proSimulation(playback.current).phase : playing.current ? setupPlayback(playback.current).phase : "Watch a setup unfold";
+      if (playbackStatus.current) playbackStatus.current.textContent = proSimulation(playback.current, mode).phase;
       section.style.setProperty("--journey-progress", String(value));
-      section.style.setProperty("--proof-reveal", String(isPro ? 0 : smooth(.81, .92, value)));
+      section.style.setProperty("--proof-reveal", "0");
       const next = chapterAt(value);
       if (next !== activeRef.current) { activeRef.current = next; setActive(next); }
       if (Math.abs(target.current - value) > .0002 || playing.current) frame = requestAnimationFrame(paint);
@@ -124,7 +108,7 @@ export default function ChartJourney({ scenes, accent = "red" }: { scenes: Engin
     const visibility = () => { if (document.hidden) { cancelAnimationFrame(frame); frame = 0; } else { lastFrame = 0; readScroll(); } };
     window.addEventListener("scroll", readScroll, { passive: true }); window.addEventListener("resize", readScroll); document.addEventListener("visibilitychange", visibility);
     return () => { intersection.disconnect(); cancelAnimationFrame(frame); requestFrame.current = () => {}; window.removeEventListener("scroll", readScroll); window.removeEventListener("resize", readScroll); document.removeEventListener("visibilitychange", visibility); };
-  }, [motion, failed, isPro]);
+  }, [motion, failed, mode]);
   const select = (index: number) => {
     const progress = chapterProgress[index];
     target.current = progress;
@@ -134,14 +118,14 @@ export default function ChartJourney({ scenes, accent = "red" }: { scenes: Engin
     }
     requestFrame.current();
   };
-  const replay = () => {
-    if (isPro) { paused.current = !paused.current; requestFrame.current(); return; }
-    if (playing.current) { playing.current = false; playback.current = 1; setIsPlaying(false); }
-    else { played.current = true; playing.current = true; playback.current = 0; setIsPlaying(true); select(3); }
-    requestFrame.current();
+  const replay = () => { paused.current = !paused.current; requestFrame.current(); };
+  const changeMode = (next: IndicatorMode) => {
+    if (next === mode) return;
+    playback.current = motion ? 0 : .38;
+    setMode(next);
   };
   const toggleMotion = () => {
-    playing.current = false; playback.current = isPro ? 0 : 1; paused.current = false; setIsPlaying(false);
+    playing.current = false; playback.current = 0; paused.current = false; setIsPlaying(false);
     const top = root.current ? window.scrollY + root.current.getBoundingClientRect().top - 72 : window.scrollY;
     setMotion(value => !value);
     // Keep the selected tour on screen when its long scroll track collapses.
@@ -149,32 +133,33 @@ export default function ChartJourney({ scenes, accent = "red" }: { scenes: Engin
   };
   return (
     <>
-    <section ref={root} id="inside-the-engine" className={`chart-journey immersion-${accent}`} data-pro={isPro} data-animated={motion && !failed} data-ready={ready} data-chapter={active} aria-label="Darth Algo 3D product tour">
+    <section ref={root} id="inside-the-engine" className={`chart-journey immersion-${accent}`} data-pro="true" data-mode={mode} data-product={productName} data-toggle={isPro} data-animated={motion && !failed} data-ready={ready} data-chapter={active} aria-label={`Darth Algo ${productName} interactive product tour`}>
       <div ref={stage} className="chart-journey-stage">
-        <div className="journey-topline"><span>DARTH ALGO / THE INTERACTIVE TOUR</span><a href="#journey-finish">Skip to the tools ↗</a></div>
+        <div className="journey-topline"><span>DARTH ALGO / {productName.toUpperCase()} DEMO</span><a href={purchaseHref}>Skip to the tools ↗</a></div>
         <div className="journey-heading" key={active}>
-          <p className="journey-kicker">0{active + 1} <span>/</span> {(isPro ? proChapters : chapters)[active]}</p>
-          <h2>{copy.title}</h2><p className="journey-copy">{active === 0 && (!motion || failed) && !isPro ? "Tap a chapter to explore the actual indicator charts." : copy.copy}</p>
+          <p className="journey-kicker">0{active + 1} <span>/</span> {proChapters[active]}</p>
+          <h2>{copy.title}</h2><p className="journey-copy">{copy.copy}</p>
         </div>
         <div className="journey-world-wrap">
           <div className="journey-light journey-light-left" aria-hidden="true" /><div className="journey-light journey-light-right" aria-hidden="true" />
           <span className="journey-backdrop-word" aria-hidden="true">{active === 0 ? "CLARITY" : active === 1 ? "CONTEXT" : active === 2 ? "PRECISION" : active === 3 ? "CONTROL" : "DARTH ALGO"}</span>
           <div ref={canvas} className="journey-webgl" aria-hidden="true" />
           <div className="journey-layer-labels" aria-hidden="true"><span data-visible={active >= 1}>01 — Trend context</span><span data-visible={active >= 2}>02 — Signal markers</span><span data-visible={active >= 3}>03 — Risk plan</span></div>
-          <div className="journey-proof" aria-hidden={ready && (isPro || active !== 4)}>
+          <div className="journey-proof" aria-hidden={ready}>
             <div className="journey-proof-bar"><span>DARTH ALGO / ACTUAL PRODUCT</span><span>TRADINGVIEW</span></div>
-            <a href={proof.image} target="_blank" rel="noopener noreferrer" tabIndex={ready && (isPro || active !== 4) ? -1 : 0} aria-label="Open the actual Darth Algo chart full-size"><Image src={proof.image} alt={proof.alt} fill sizes="(max-width: 768px) 90vw, 950px" className="object-contain" /></a>
+            <a href={proof.image} target="_blank" rel="noopener noreferrer" tabIndex={ready ? -1 : 0} aria-label="Open the actual Darth Algo chart full-size"><Image src={proof.image} alt={proof.alt} fill sizes="(max-width: 768px) 90vw, 950px" className="object-contain" /></a>
             <p>Recorded chart example · Tap to inspect</p>
           </div>
         </div>
         <div className="journey-bottom">
-          {ready && (isPro ? motion : active !== 4) && <div className="journey-playback"><span ref={playbackStatus}>Watch a setup unfold</span><button type="button" onClick={replay} aria-label={isPro ? isPlaying ? "Pause demo animation" : "Resume demo animation" : isPlaying ? "Stop setup animation" : "Replay setup animation"}>{isPro ? isPlaying ? "Ⅱ Pause demo" : "▶ Resume demo" : isPlaying ? "■ Stop demo" : "▶ Replay setup"}</button></div>}
-          <div className="journey-chapters" role="group" aria-label="Tour chapters">{(isPro ? proChapters : chapters).map((label, index) => <button key={label} type="button" onClick={() => select(index)} aria-pressed={active === index}><span>0{index + 1}</span>{label}<i /></button>)}</div>
-          <div className="journey-caption"><span>{ready && (isPro || active !== 4) ? isPro ? "Scripted winning example · Real trades can lose" : "Simulated indicator walkthrough · Not live signals" : "Recorded product example · Not typical results"}</span><button type="button" onClick={toggleMotion} aria-pressed={motion && !failed} disabled={failed}>{failed ? "Still view" : motion ? "Motion on" : "Motion off"}</button></div>
+          {isPro && <div className="journey-modes" role="group" aria-label="Pro trading mode"><span>PRO MODE</span><button type="button" onClick={() => changeMode("swing")} aria-pressed={mode === "swing"}>Swing</button><button type="button" onClick={() => changeMode("scalp")} aria-pressed={mode === "scalp"}>Scalp</button></div>}
+          {ready && motion && <div className="journey-playback"><span ref={playbackStatus}>Watch a setup unfold</span><button type="button" onClick={replay} aria-label={isPlaying ? "Pause demo animation" : "Resume demo animation"}>{isPlaying ? "Ⅱ Pause demo" : "▶ Resume demo"}</button></div>}
+          <div className="journey-chapters" role="group" aria-label="Tour chapters">{proChapters.map((label, index) => <button key={label} type="button" onClick={() => select(index)} aria-pressed={active === index}><span>0{index + 1}</span>{label}<i /></button>)}</div>
+          <div className="journey-caption"><span>{ready ? "Scripted winning example · Real trades can lose" : "Recorded product example · Not typical results"}</span><button type="button" onClick={toggleMotion} aria-pressed={motion && !failed} disabled={failed}>{failed ? "Still view" : motion ? "Motion on" : "Motion off"}</button></div>
         </div>
       </div>
     </section>
-      <div id="journey-finish" className="journey-finish"><div><p className="immersion-eyebrow">Clarity is just the beginning.</p><h2>Your chart. Your next move.</h2></div><div><a href={accent === "red" ? "/products/swing" : "/#pricing"}>{accent === "red" ? "Explore Swing · 2 days free" : "Choose your plan"} <span>↗</span></a><a href="/links">Explore all Darth Algo links →</a></div></div>
+      <div id="journey-finish" className="journey-finish"><div><p className="immersion-eyebrow">Clarity is just the beginning.</p><h2>Your chart. Your next move.</h2></div><div><a href={purchaseHref}>{accent === "red" ? "Choose your tool" : `Get ${productName} access`} <span>↗</span></a><a href="/links">Explore all Darth Algo links →</a></div></div>
     </>
   );
 }
