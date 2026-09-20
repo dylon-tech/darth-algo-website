@@ -39,20 +39,22 @@ export function createChartWorld(host: HTMLElement, accent: string, onFailure: (
   const glow = (color: THREE.ColorRepresentation, opacity = 1) => material(new THREE.MeshBasicMaterial({ color, transparent: true, opacity, depthWrite: false, side: THREE.DoubleSide }));
   const up = metal(0x56dfc0), down = metal(0xf0768b);
   const box = geometry(new THREE.BoxGeometry(1, 1, 1));
+  const volumeGeometry = geometry(new THREE.PlaneGeometry(1, 1));
   const gridLayer = new THREE.Group(), candleLayer = new THREE.Group(), trendLayer = new THREE.Group(), signalLayer = new THREE.Group(), riskLayer = new THREE.Group();
   root.add(gridLayer, candleLayer, trendLayer, signalLayer, riskLayer);
-  const board = new THREE.Mesh(box, metal(0x0c1320, 0x080e19)); board.scale.set(21.3, 9, .14); board.position.z = -.3; gridLayer.add(board);
+  const board = new THREE.Mesh(box, metal(0x0c1320, 0x080e19)); board.scale.set(21.3, 9, .14); board.position.z = -.3; board.renderOrder = -100; gridLayer.add(board);
   const border = new THREE.LineSegments(geometry(new THREE.EdgesGeometry(new THREE.BoxGeometry(21.3, 9, .14))), material(new THREE.LineBasicMaterial({ color: 0x526176, transparent: true, opacity: .45 })));
-  border.position.copy(board.position); gridLayer.add(border);
+  border.position.copy(board.position); border.renderOrder = -90; gridLayer.add(border);
   const gridPoints: number[] = [];
   for (let x = -10; x <= 10; x++) gridPoints.push(x, -4.3, -.2, x, 4.3, -.2);
   for (let y = -4; y <= 4; y++) gridPoints.push(-10.5, y, -.2, 10.5, y, -.2);
   const gridGeo = geometry(new THREE.BufferGeometry()); gridGeo.setAttribute("position", new THREE.Float32BufferAttribute(gridPoints, 3));
-  gridLayer.add(new THREE.LineSegments(gridGeo, material(new THREE.LineBasicMaterial({ color: 0x415270, transparent: true, opacity: .24 }))));
+  const gridLines = new THREE.LineSegments(gridGeo, material(new THREE.LineBasicMaterial({ color: 0x415270, transparent: true, opacity: .24 })));
+  gridLines.renderOrder = -80; gridLayer.add(gridLines);
   demoCandles.forEach((candle) => {
     const body = new THREE.Mesh(box, candle.up ? up : down); body.scale.set(.27, Math.max(.10, Math.abs(candle.close - candle.open)), .27); body.position.set(candle.x, (candle.open + candle.close) / 2, 0); candleLayer.add(body);
     const wick = new THREE.Mesh(box, candle.up ? up : down); wick.scale.set(.035, candle.high - candle.low, .035); wick.position.set(candle.x, (candle.high + candle.low) / 2, 0); candleLayer.add(wick);
-    const volume = new THREE.Mesh(box, glow(candle.up ? 0x56dfc0 : 0xf0768b, .2)); volume.scale.set(.26, .13 + Math.abs(Math.sin(candle.x * 3)) * .4, .03); volume.position.set(candle.x, -3.8 + volume.scale.y / 2, -.08); gridLayer.add(volume);
+    const volume = new THREE.Mesh(volumeGeometry, glow(candle.up ? 0x56dfc0 : 0xf0768b, .2)); volume.scale.set(.26, .13 + Math.abs(Math.sin(candle.x * 3)) * .4, .03); volume.position.set(candle.x, -3.8 + volume.scale.y / 2, -.08); gridLayer.add(volume);
   });
   const curvePoints = demoCandles.map((candle, index) => new THREE.Vector3(candle.x, Math.sin(index * .25) * 1.05 + (index - 19) * .075 - .65, .08));
   const curve = new THREE.CatmullRomCurve3(curvePoints);
@@ -63,7 +65,7 @@ export function createChartWorld(host: HTMLElement, accent: string, onFailure: (
   const cloud = new THREE.Mesh(geometry(new THREE.ShapeGeometry(cloudShape)), glow(0x39c9b0, .22)); trendLayer.add(cloud);
   // Three translucent technical planes split apart, then return to the chart.
   const layerPlanes = [trendLayer, signalLayer, riskLayer].map((layer, index) => {
-    const mesh = new THREE.Mesh(geometry(new THREE.PlaneGeometry(20.6, 8.3)), glow([0x4dd9c0, 0x7fb3ff, accent][index], .018)); mesh.position.z = -.1; layer.add(mesh);
+    const mesh = new THREE.Mesh(geometry(new THREE.PlaneGeometry(20.6, 8.3)), glow([0x4dd9c0, 0x7fb3ff, accent][index], .018)); mesh.position.z = -.1; mesh.renderOrder = -70 + index; layer.add(mesh);
     const outline = new THREE.LineSegments(geometry(new THREE.EdgesGeometry(new THREE.PlaneGeometry(20.6, 8.3))), material(new THREE.LineBasicMaterial({ color: index === 2 ? accent : 0x66bcd3, transparent: true, opacity: .1 })));
     outline.position.z = -.1; layer.add(outline); return mesh;
   });
@@ -86,6 +88,13 @@ export function createChartWorld(host: HTMLElement, accent: string, onFailure: (
   for (let i = 0; i < 100; i++) points.push(Math.sin(i * 12.31) * 24, Math.cos(i * 8.57) * 12, -9 - (i % 17));
   const particleGeo = geometry(new THREE.BufferGeometry()); particleGeo.setAttribute("position", new THREE.Float32BufferAttribute(points, 3));
   scene.add(new THREE.Points(particleGeo, material(new THREE.PointsMaterial({ color: 0x7890b4, size: .035, transparent: true, opacity: .4 }))));
+  const labels = ["Target", "Entry", "Stop"].map((text, index) => {
+    const element = document.createElement("span");
+    element.className = "journey-world-label"; element.textContent = text;
+    element.style.color = ["#8ae8ca", "#e2e8f0", "#ffa1b0"][index];
+    host.appendChild(element); return { element, point: new THREE.Vector3(9.1, [2, .2, -1.3][index], .12) };
+  });
+  const projected = new THREE.Vector3();
   let disposed = false;
   let current = 0;
   const render = (progress: number) => {
@@ -105,6 +114,13 @@ export function createChartWorld(host: HTMLElement, accent: string, onFailure: (
     root.rotation.y = Math.sin(progress * Math.PI * 2) * .08;
     layerPlanes.forEach((plane, i) => { (plane.material as THREE.MeshBasicMaterial).opacity = .015 + [trend, signals, plan][i] * assemble * .02; });
     renderer.render(scene, camera);
+    labels.forEach(({ element, point }) => {
+      projected.copy(point).applyMatrix4(riskLayer.matrixWorld).project(camera);
+      const x = Math.max(12, Math.min(host.clientWidth - 65, (projected.x * .5 + .5) * host.clientWidth));
+      const y = (-projected.y * .5 + .5) * host.clientHeight;
+      element.style.transform = `translate(${x}px,${y}px) translateY(-50%)`;
+      element.style.opacity = String(plan);
+    });
   };
   const resize = () => {
     if (disposed) return;
@@ -122,6 +138,6 @@ export function createChartWorld(host: HTMLElement, accent: string, onFailure: (
     renderer.domElement.removeEventListener("webglcontextlost", contextLost);
     geometries.forEach(item => item.dispose()); materials.forEach(item => item.dispose());
     if (renderer instanceof THREE.WebGLRenderer) { renderer.dispose(); renderer.forceContextLoss(); }
-    renderer.domElement.remove(); delete host.dataset.renderer;
+    renderer.domElement.remove(); labels.forEach(({element}) => element.remove()); delete host.dataset.renderer;
   } };
 }
