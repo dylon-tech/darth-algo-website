@@ -58,7 +58,7 @@ export function createChartWorld(host: HTMLElement, accent: string, onFailure: (
   });
   const curvePoints = demoCandles.map((candle, index) => new THREE.Vector3(candle.x, Math.sin(index * .25) * 1.05 + (index - 19) * .075 - .65, .08));
   const curve = new THREE.CatmullRomCurve3(curvePoints);
-  const trendLine = new THREE.Mesh(geometry(new THREE.TubeGeometry(curve, gpu ? 110 : 45, .055, gpu ? 6 : 4, false)), metal(0x65e5cf)); trendLayer.add(trendLine);
+  const trendLine = new THREE.Mesh(geometry(new THREE.TubeGeometry(curve, gpu ? 110 : 45, .055, gpu ? 6 : 4, false)), metal(0x65e5cf)); trendLine.material.transparent = true; trendLayer.add(trendLine);
   const cloudShape = new THREE.Shape();
   curvePoints.forEach((point, i) => i === 0 ? cloudShape.moveTo(point.x, point.y + .22) : cloudShape.lineTo(point.x, point.y + .22));
   [...curvePoints].reverse().forEach(point => cloudShape.lineTo(point.x, point.y - .35)); cloudShape.closePath();
@@ -105,7 +105,7 @@ export function createChartWorld(host: HTMLElement, accent: string, onFailure: (
     const assemble = 1 - smooth(.72, .93, progress);
     const trend = smooth(.1, .25, progress), signals = smooth(.32, .46, progress), plan = smooth(.54, .68, progress);
     trendLayer.visible = trend > .01; signalLayer.visible = signals > .01; riskLayer.visible = plan > .01;
-    trendLayer.scale.set(Math.max(.001, trend), 1, 1); signalLayer.scale.setScalar(Math.max(.001, signals)); riskLayer.scale.set(Math.max(.001, plan), 1, 1);
+    trendLine.material.opacity = trend; cloud.material.opacity = .22 * trend; signalLayer.scale.setScalar(Math.max(.001, signals)); riskLayer.scale.set(Math.max(.001, plan), 1, 1);
     trendLayer.position.z = .4 + trend * assemble * 1.3;
     signalLayer.position.z = .7 + signals * assemble * 2.4;
     riskLayer.position.z = 1 + plan * assemble * 3.5;
