@@ -1,3 +1,4 @@
+import { dailySocialPolicy } from "./daily-social-policy";
 import { mediaAutopilot } from "./media-policy";
 import { db } from "../affiliate-db";
 import { prepareBufferPublication } from "./buffer-publishing";
@@ -6,6 +7,7 @@ import { queueApprovalNotice, deliverOwnerNotices, privateTelegramConfiguration 
 // No model call and no public-post mutation. Recover completed drafts and missing
 // owner cards after a worker restart, including when the AI allowance is exhausted.
 export async function syncContentApprovals() {
+  if (dailySocialPolicy.enabled) return {status:"shared_daily_campaign",message:"Daily photo publishing uses one campaign across X, Instagram and Threads."};
   if (process.env.VERCEL_ENV !== "production" || process.env.AI_OS_ENABLED !== "true") return {status:"disabled"};
   const sql = db();
   const [control] = await sql`select paused from os_control where id=1`;

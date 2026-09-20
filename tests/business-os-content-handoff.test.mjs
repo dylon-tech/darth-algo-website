@@ -40,7 +40,12 @@ try {
  globalThis.fetch=async(url,options)=>{assert.match(url,/api.telegram.org\/bot12345:testtoken\/sendMessage$/);const body=JSON.parse(options.body);assert.equal(body.chat_id,'54321');assert.match(body.text,/Approve|Approving/);assert.ok(body.reply_markup.inline_keyboard[0].some(b=>b.text==='Approve & publish on X'));messages++;return Response.json({ok:true,result:{message_id:messages}});};
  mock('business-os/media-policy',{mediaAutopilot:{enabled:false}});
  const {prepareBufferPublication}=require(join(dir,'lib/business-os/buffer-publishing.js'));
+ // The unified campaign suppresses the legacy handoff. Exercise that first, then
+ // retain the old manual-mode contract as an isolated compatibility fixture.
+ const dailyPolicy=require(join(dir,'lib/business-os/daily-social-policy.js'));
  const {syncContentApprovals}=require(join(dir,'lib/business-os/content-handoff.js'));
+ assert.equal((await syncContentApprovals()).status,'shared_daily_campaign');
+ dailyPolicy.dailySocialPolicy.enabled=false;
  const {validatePlan}=require(join(dir,'lib/business-os/policy.js'));
  const plan=text=>({brief:'Internal draft',tasks:[],proposals:[],xDraft:{text,evidence:['business_knowledge']}});
  assert.throws(()=>validatePlan(plan('x'.repeat(281)),['business_knowledge']),/Invalid X/);

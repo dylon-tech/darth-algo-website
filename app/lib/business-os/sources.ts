@@ -28,7 +28,7 @@ export async function collectEvidence(): Promise<Evidence[]> {
       return await db()`with publications as (
         select a.id,a.status,a.expires_at,
           (select details from os_activity where entity_id=a.id::text and event in ('buffer_publish_started','buffer_publish_receipt','buffer_publish_checked','buffer_publish_unknown') order by id desc limit 1) as receipt
-        from os_approvals a where a.payload->>'executor' in ('buffer_x_v1','buffer_instagram_v1') and a.created_at>=now()-interval '30 days'
+        from os_approvals a where a.payload->>'executor' in ('buffer_x_v1','buffer_instagram_v1','buffer_social_v2') and a.created_at>=now()-interval '30 days'
       ) select case when receipt->>'published'='true' then 'confirmed_published'
           when receipt is not null then coalesce(receipt->>'state','unknown')
           when status='pending' and expires_at<=now() then 'expired'

@@ -1,4 +1,3 @@
-import { randomUUID } from "crypto";
 import { db } from "./affiliate-db";
 
 export type FuturesQuote = {
@@ -18,7 +17,6 @@ export type EducationPost = {
   market_snapshot: FuturesQuote[];
 };
 
-const SITE_URL = "https://www.darthalgo.com";
 const MARKET_URL = "https://query1.finance.yahoo.com/v8/finance/chart";
 
 const lessons = [
@@ -150,20 +148,6 @@ async function quote(symbol: string, label: string): Promise<FuturesQuote> {
   }
 }
 
-async function telegram(method: string, payload: Record<string, unknown>) {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  if (!token) throw new Error("TELEGRAM_BOT_TOKEN is not configured");
-  const response = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-    cache: "no-store",
-  });
-  const result = await response.json() as { ok: boolean; description?: string; result?: { message_id?: number } };
-  if (!response.ok || !result.ok) throw new Error(result.description || `Telegram ${method} failed`);
-  return result;
-}
-
 export async function configureEducationDestination(chatId: number, threadId: number) {
   await ensureCommunityEducationSchema();
   const sql = db();
@@ -177,43 +161,10 @@ export async function getEducationPost(id: string) {
   return post || null;
 }
 
-export async function publishEducationPost(options: { force?: boolean } = {}) {
-  await ensureCommunityEducationSchema();
-  const sql = db();
-  if (!options.force) {
-    const [recent] = await sql`select id from community_education_posts where status='posted' and posted_at>now()-interval '72 hours' limit 1`;
-    if (recent) return { posted: false, reason: "not_due" } as const;
-  }
-
-  const settings = await sql`select key,value from community_settings where key in ('education_chat_id','education_thread_id')`;
-  const values = new Map(settings.map((row) => [String(row.key), String(row.value)]));
-  const chatId = values.get("education_chat_id");
-  const threadId = values.get("education_thread_id");
-  if (!chatId || !threadId) throw new Error("Trading Education topic is not configured");
-
-  const [{ count }] = await sql<{ count: number }[]>`select count(*)::int as count from community_education_posts where status='posted'`;
-  const lessonIndex = Number(count) % lessons.length;
-  const { lesson, marketSnapshot } = await getEducationCardData(lessonIndex);
-  const id = randomUUID();
-  await sql`
-    insert into community_education_posts(id,title,market,bullets,chart_focus,market_snapshot)
-    values(${id},${lesson.title},${lesson.market},${lesson.bullets},${lesson.chartFocus},${sql.json(marketSnapshot)})
-  `;
-
-  try {
-    const result = await telegram("sendPhoto", {
-      chat_id: chatId,
-      message_thread_id: Number(threadId),
-      photo: `${SITE_URL}/api/community/education-card/${lessonIndex}?post=${id}`,
-      caption: `<b><u>FUTURES EDUCATION DROP</u></b>\n\n<b>${lesson.title}</b>\n${lesson.chartFocus}\n\nMarket figures in the graphic may be delayed. Verify prices on your live chart. Educational purposes only—not financial advice. Trading involves risk.`,
-      parse_mode: "HTML",
-      reply_markup: { inline_keyboard: [[{ text: "Open TradingView", url: "https://www.tradingview.com/chart/" }], [{ text: "View Darth Algo Plans", url: `${SITE_URL}/#pricing` }]] },
-    });
-    const messageId = result.result?.message_id;
-    await sql`update community_education_posts set status='posted',posted_at=now(),telegram_message_id=${messageId ? String(messageId) : null} where id=${id}`;
-    return { posted: true, id, messageId } as const;
-  } catch (error) {
-    await sql`update community_education_posts set status='failed' where id=${id}`;
-    throw error;
-  }
+// Owner replaced scheduled lessons with a preview of the confirmed social post.
+// Keep the legacy entry point so /seteducation also follows the current policy.
+export async function publishEducationPost(_options: { force?: boolean } = {}) {
+  void _options; // Legacy callers cannot bypass the once-daily preview guard.
+  const {publishCommunityPreview}=await import("./business-os/community-social");
+  return publishCommunityPreview();
 }

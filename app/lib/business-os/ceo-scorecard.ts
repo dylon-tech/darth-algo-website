@@ -28,7 +28,7 @@ export async function customerSnapshot(){
 }
 export async function ownerNeeds(){
  const sql=db();
- const approvals=await sql`select id,payload from os_approvals where status='pending' and expires_at>now() and coalesce(payload->>'executor','') not in ('buffer_x_v1','buffer_instagram_v1') order by created_at limit 6`;
+ const approvals=await sql`select id,payload from os_approvals where status='pending' and expires_at>now() and coalesce(payload->>'executor','') not in ('buffer_x_v1','buffer_instagram_v1','buffer_social_v2') order by created_at limit 6`;
  const failed=await sql`select department,status from (select distinct on(department) department,status,created_at from os_jobs order by department,created_at desc) latest where status in ('failed','unknown') and created_at>now()-interval '24 hours'`;
  const [blocked]=await sql`select count(*)::int as n from os_tasks where status='blocked'`;
  return {approvals,failed,blocked:Number(blocked.n)};
@@ -37,11 +37,11 @@ export async function ceoScorecard(){
  const sql=db(),day=businessDay();
  const [customers,needs,posts,jobs,controls,queue]=await Promise.all([
   customerSnapshot(),ownerNeeds(),
-  sql`select a.payload->>'executor' as network,(r.details->>'sentAt')::timestamptz at time zone 'America/New_York' as sent_at from os_approvals a join lateral (select details from os_activity where entity_id=a.id::text and event='buffer_publish_checked' and details->>'published'='true' and details->>'sentAt' is not null order by id desc limit 1) r on true where a.payload->>'executor' in ('buffer_x_v1','buffer_instagram_v1') and ((r.details->>'sentAt')::timestamptz at time zone 'America/New_York')::date=${day}::date`,
+  sql`select coalesce(a.payload->>'network',a.payload->>'executor') as network,(r.details->>'sentAt')::timestamptz at time zone 'America/New_York' as sent_at from os_approvals a join lateral (select details from os_activity where entity_id=a.id::text and event='buffer_publish_checked' and details->>'published'='true' and details->>'sentAt' is not null order by id desc limit 1) r on true where a.payload->>'executor' in ('buffer_x_v1','buffer_instagram_v1','buffer_social_v2') and ((r.details->>'sentAt')::timestamptz at time zone 'America/New_York')::date=${day}::date`,
   sql`select status,count(*)::int as n from os_jobs where status in ('queued','running') group by status`,
   sql`select paused from os_control where id=1`,publishingQueueSnapshot(),
  ]);
- const x=posts.filter(p=>p.network==='buffer_x_v1').length,ig=posts.filter(p=>p.network==='buffer_instagram_v1').length;
+ const x=posts.filter(p=>['buffer_x_v1','x'].includes(p.network)).length,ig=posts.filter(p=>['buffer_instagram_v1','instagram'].includes(p.network)).length,threads=posts.filter(p=>p.network==='threads').length;
  const count=(s:string)=>jobs.find(j=>j.status===s)?.n || 0;
  const attention=[...(needs.approvals.length?[`${needs.approvals.length}${needs.approvals.length===6?'+':''} proposal${needs.approvals.length===1?'':'s'} to review`]:[]),...(needs.failed.length?[`${needs.failed.map(j=>j.department).join(', ')}: last job needs a check`]:[])];
  if(queue.attention)attention.push(`${queue.attention} post delivery needs checking in Buffer`);
@@ -50,6 +50,10 @@ export async function ceoScorecard(){
   if(research && !research.connected)attention.push("connect vidIQ in Connections");
   attention.push("TradingView publishing worker needs setup");
  }
- const body=[`◆ DARTH ALGO · CEO DESK`,`Talking to: CEO`,"",`Active subscribing customers: ${customers.active??'unavailable'}`,`Trials: ${customers.trials??'unavailable'} · Past due: ${customers.pastDue??'unavailable'}`,`Published today: ${x+ig} (${x} X · ${ig} Instagram)`,`Post queue: ${queue.waiting} ready · ${queue.checking} checking delivery`,`Agents: ${count('running')} working · ${count('queued')} waiting`,"",`Needs you: ${attention.length?attention.join('; '):'no pending decisions or recent failed jobs.'}`,needs.blocked?`Blocked tasks: ${needs.blocked} · open Needs me.`:'',`Posting: ${controls[0]?.paused?'paused':`automatic · next content window ${nextContentWindow()}`}`,"",`Stripe subscriptions only; lifetime/access unverified.`,`Updated ${new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'}).format(new Date())} ET · ${day}`].filter((x,i,a)=>x!=='' || a[i-1]!=='').join('\n');
- return {day,body,customers,posts:{x,instagram:ig},queue,needs};
+ const [social]=await sql`select details from os_activity where event='daily_social_status' order by id desc limit 1`;
+ if(social?.details.deliveries?.threads==='connection_required')attention.push('connect Darth Algo Threads in Buffer');
+ const [community]=await sql`select event from os_activity where entity_id=${day} and event in ('community_social_sent','community_social_unknown') order by id desc limit 1`;
+ if(community?.event==='community_social_unknown')attention.push('check community preview delivery in Telegram');
+ const body=[`◆ DARTH ALGO · CEO DESK`,`Talking to: CEO`,"",`Active subscribing customers: ${customers.active??'unavailable'}`,`Trials: ${customers.trials??'unavailable'} · Past due: ${customers.pastDue??'unavailable'}`,`Published today: ${x+ig+threads} (${x} X · ${ig} Instagram · ${threads} Threads)`,`Post queue: ${queue.waiting} ready · ${queue.checking} checking delivery`,`Agents: ${count('running')} working · ${count('queued')} waiting`,"",`Needs you: ${attention.length?attention.join('; '):'no pending decisions or recent failed jobs.'}`,needs.blocked?`Blocked tasks: ${needs.blocked} · open Needs me.`:'',`Posting: ${controls[0]?.paused?'paused':`automatic · next content window ${nextContentWindow()}`}`,"",`Stripe subscriptions only; lifetime/access unverified.`,`Updated ${new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'}).format(new Date())} ET · ${day}`].filter((x,i,a)=>x!=='' || a[i-1]!=='').join('\n');
+ return {day,body,customers,posts:{x,instagram:ig,threads},queue,needs};
 }

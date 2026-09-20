@@ -1,3 +1,4 @@
+import { checkSocialDelivery } from "../../../lib/business-os/daily-social";
 import { after } from "next/server";
 import { db } from "../../../lib/affiliate-db";
 import { ownerSessionFromRequest, privateHeaders, sameOrigin } from "../../../lib/business-os/owner-session";
@@ -35,6 +36,10 @@ export async function POST(request:Request) {
   let body; try{body=JSON.parse(raw);}catch{return json({error:"Invalid JSON"},400);}
   if(!body || typeof body!=="object") return json({error:"Invalid request"},400);
   try {
+    if(body.operation==="social_receipt") {
+      if(!/^[0-9a-f-]{36}$/.test(body.id||"")) return json({error:"Invalid receipt"},400);
+      return json(await checkSocialDelivery(body.id));
+    }
     if(body.operation==="initialize") {await initializeOS(); return json({initialized:true});}
     if(body.operation==="pause" && typeof body.paused==="boolean") return json(await setPaused(body.paused));
     if(body.operation==="brief") return json(await createDailyBrief());
