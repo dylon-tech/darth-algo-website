@@ -71,7 +71,7 @@ export async function syncIndicatorLab(){
   const day=new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
   if(process.env.AI_OS_AI_ENABLED==="true" && process.env.AI_OS_AUTONOMY_ENABLED==="true"){
     const ideaStage=await syncIndicatorIdeas(day);
-    if(ideaStage==="no_supported_idea")await queueOwnerNotice(`indicator-ideas-held:${day}`,"Indicator Lab: Research and Growth completed today's review, but found insufficient supported demand for a new build. No indicator is ready for approval. The Lab will research again tomorrow; broad Instagram/TikTok discovery remains unconnected.");
+    if(ideaStage==="no_supported_idea")await queueOwnerNotice(`indicator-ideas-held:${day}`,"Indicator Lab: Research and Growth completed today's review, but found insufficient supported demand for a new build. No indicator is ready for approval. The Lab will research again tomorrow. Social research connection status: https://www.darthalgo.com/owner/connections");
     const n=Number(process.env.AI_OS_INDICATORS_PER_DAY||"1");const limit=Number.isInteger(n)?Math.max(1,Math.min(3,n)):1;
     const pending=await sql`select id from os_jobs where request_key like 'indicator:%' and status in ('queued','running') limit 1`;
     const [{count}]=await sql`select count(*)::int as count from os_jobs where request_key like ${`indicator:${day}:%`}`;
@@ -84,7 +84,8 @@ export async function syncIndicatorLab(){
   const [last]=await sql`select details from os_activity where event='indicator_handoff' order by id desc limit 1`;
   const [counts]=await sql`select count(*)::int as candidates,count(*) filter(where status='pending')::int as pending from os_indicator_candidates`;
   const [delivery]=await sql`select count(*)::int as sent from os_outbox o join os_indicator_candidates c on o.dedupe_key='approval:' || c.approval_id::text || ':0' where o.status='sent'`;
-  return {status:"active",privateTesting:"worker_not_connected",socialDiscovery:"youtube_tradingview_only",cardsQueued:cards.length,candidates:counts.candidates,pending:counts.pending,cardsDelivered:delivery.sent,lastHandoff:last?.details?.reason||null};
+  const social=await (await import("./vidiq-connection")).vidiqStatus().catch(()=>null);
+  return {status:"active",privateTesting:"worker_not_connected",socialDiscovery:social?.connected?(social.latest?.status||"awaiting_first_check"):"youtube_tradingview_only",cardsQueued:cards.length,candidates:counts.candidates,pending:counts.pending,cardsDelivered:delivery.sent,lastHandoff:last?.details?.reason||null};
 }
 export async function indicatorDecisionMessage(id:string,decision:string){
   await db()`update os_indicator_candidates set status=${decision} where approval_id=${id} and status='pending'`;
@@ -115,7 +116,8 @@ export async function indicatorDashboard(){
   const [latest]=await db()`select details,created_at from os_activity where event='indicator_handoff' order by id desc limit 1`;
   const stages=await db()`select department,status from os_jobs where request_key like 'indicator-ideas:%' order by created_at desc limit 2`;
   const labels:Record<string,string>={qa_blocked:"Private testing / educational package pending",pending:"Ready for your decision",approved:"Approved · publishing connection pending",declined:"Declined",released:"Published"};
-  return `◆ INDICATOR LAB\n\nResearch → Growth → Indicator Builder\n${stages.map(s=>`${s.department}: ${s.status}`).join("\n")}\n\nDaily target: ${Math.max(1,Math.min(3,Number(process.env.AI_OS_INDICATORS_PER_DAY)||1))} original prototypes, within the existing AI budget. Evidence or quality gaps can reduce output.\n\n${rows.map(r=>`${r.name}\n${labels[r.status]||r.status} · screening ${r.score}/90`).join("\n\n")||"First prototype is waiting."}\n\n${latest?`Latest handoff: ${latest.details.reason}`:""}\nTradingView browser worker: not connected. Instagram/TikTok broad discovery: not connected. Only fully tested packages with an instruction image and educational example reach Approve / Decline.`;
+  const social=await (await import("./vidiq-connection")).vidiqStatus().catch(()=>null);
+  return `◆ INDICATOR LAB\n\nResearch → Growth → Indicator Builder\n${stages.map(s=>`${s.department}: ${s.status}`).join("\n")}\n\nDaily target: ${Math.max(1,Math.min(3,Number(process.env.AI_OS_INDICATORS_PER_DAY)||1))} original prototypes, within the existing AI budget. Evidence or quality gaps can reduce output.\n\n${rows.map(r=>`${r.name}\n${labels[r.status]||r.status} · screening ${r.score}/90`).join("\n\n")||"First prototype is waiting."}\n\n${latest?`Latest handoff: ${latest.details.reason}`:""}\nTradingView browser worker: not connected. Instagram/TikTok discovery: ${social?.connected ? (social.latest?.status || "first scheduled check pending").replaceAll("_"," ") : "sign-in needed"}.\nConnections: https://www.darthalgo.com/owner/connections Only fully tested packages with an instruction image and educational example reach Approve / Decline.`;
 }
 
 export async function recordPrivateIndicatorPreview(id:string, sourceHash:string, input:unknown) {
