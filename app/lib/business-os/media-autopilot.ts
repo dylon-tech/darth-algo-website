@@ -60,14 +60,14 @@ export async function syncMediaAutopilot() {
   await queueOwnerNotice(`media-policy:${mediaAutopilot.id}`,"◆ DARTH ALGO · CEO DESK\n\nRoutine posting is automatic: up to 3 X posts and 1 Instagram post daily, within the existing AI budget. No per-post approval needed.\n\nTap Today’s posts for actual delivery, Queue for upcoming content, or Agents to give work. Send /suggest followed by a topic or style idea. Pause stops new work and new submissions.\n\nOnly verified connected X and Instagram accounts are enabled. Other business actions retain their own approval requirements.",homeMenu());
   if(process.env.AI_OS_AI_ENABLED==="true") {
     const {queueJob}=await import("./jobs");
-    await queueJob("research","Activate the competitor visual research feed. Use competitor_public_posts and the attached thumbnails. Compare recent titles, hooks, thumbnail design and public views/day within each competitor and format. Deliver three original Darth Algo content tests and share actionable guidance for Content, Growth and CEO. Cite the exact posts and distinguish observed evidence from hypotheses; do not claim views are sales or thumbnails are full videos.","launch:competitor-visual-v1","schedule");
+    await queueJob("research","Activate the competitor visual research feed. Use competitor_public_posts and the attached thumbnails. Compare recent titles, hooks, thumbnail design and public views/day within each competitor and format. Deliver three original Darth Algo content tests and share actionable guidance for Content, Growth and CEO. Cite the exact posts and distinguish observed evidence from hypotheses; do not claim views are sales or thumbnails are full videos.","launch:competitor-visual-v2","schedule");
   }
   const slot=contentSlot();
   if(slot.key && process.env.AI_OS_AI_ENABLED==="true") {
-    const preferences=await sql`select details->>'text' as text from os_activity where event='media_suggestion' order by id desc limit 5`;
+    const preferences=await sql`select left(details->>'text',180) as text from os_activity where event='media_suggestion' order by id desc limit 5`;
     const recent=await sql`select payload->>'text' as text from os_approvals where payload->>'executor'='buffer_x_v1' order by created_at desc limit 6`;
     const {queueJob}=await import("./jobs");
-    await queueJob("content",`Create one fresh, finished X post in xDraft for routine automatic publishing. Angle: ${slot.slot===9?"useful chart-reading education":slot.slot===14?"indicator discovery through the links page":"community and learning"}. Use verified facts, one CTA to the supplied linksUrl or communityUrl, and no prices, offers, results, profit claims, testimonials, external tags or third-party URLs. Do not duplicate recent posts. The server handles publishing under the owner's standing media instruction; do not create a publishing proposal.\nOwner suggestions (creative preferences, not verified facts): ${JSON.stringify(preferences)}\nRecent posts to avoid repeating: ${JSON.stringify(recent)}`,slot.key,"schedule");
+    await queueJob("content",`Create one fresh, finished X post in xDraft for routine automatic publishing. Angle: ${slot.slot===9?"useful chart-reading education":slot.slot===14?"indicator discovery through the links page":"community and learning"}. Use verified facts, one CTA to the supplied linksUrl or communityUrl, and no prices, offers, results, profit claims, testimonials, external tags or third-party URLs. Do not duplicate recent posts. The server handles publishing under the owner's standing media instruction; do not create a publishing proposal.\nOwner suggestions (creative preferences, not verified facts): ${JSON.stringify(preferences)}\nRecent posts to avoid repeating: ${JSON.stringify(recent)}`,`${slot.key}:v2`,"schedule");
   }
   await prepareDailyInstagram();
   // Reconcile accepted posts by reading their existing receipt, never by resending.
@@ -115,5 +115,9 @@ export async function syncMediaAutopilot() {
   const recovery=await sql`select a.id,a.payload,a.payload_hash from os_approvals a where status='approved' and decided_by='owner_policy' and expires_at>now()
     and not exists(select 1 from os_activity where entity_id=a.id::text and event='buffer_publish_started') order by created_at limit 1`;
   for(const row of recovery){if(isBufferPublication(row.payload))await executeBufferPublication(row.id,row.payload_hash);else if(isInstagramPublication(row.payload))await executeInstagramPublication(row.id,row.payload_hash);}
-  return {status:"active",submitted:sent,slot:slot.key};
+  const [policyNotice]=await sql`select status from os_outbox where dedupe_key=${`media-policy:${mediaAutopilot.id}:0`} limit 1`;
+  const [contentWork]=await sql`select status from os_jobs where request_key=${slot.key ? `${slot.key}:v2` : "no-slot"} limit 1`;
+  const [researchWork]=await sql`select status from os_jobs where request_key='launch:competitor-visual-v2' limit 1`;
+  const [deliveries]=await sql`select count(*)::int as n from os_approvals a where decided_by='owner_policy' and exists(select 1 from os_activity where entity_id=a.id::text and event='buffer_publish_checked' and details->>'published'='true')`;
+  return {status:"active",submitted:sent,slot:slot.key,contentStatus:contentWork?.status,researchStatus:researchWork?.status,noticeStatus:policyNotice?.status,confirmedPosts:deliveries.n};
 }
