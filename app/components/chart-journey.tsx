@@ -82,7 +82,7 @@ export default function ChartJourney({ scenes, accent = "red" }: { scenes: Engin
       }
       if (playing.current && motion && world.current) {
         playback.current = Math.min(1, playback.current + elapsed / 12000);
-        if (playback.current === 1 || value >= .81 || value < .32) {
+        if (playback.current === 1 || target.current >= .81 || target.current < .32) {
           playing.current = false; playback.current = 1; setIsPlaying(false);
         }
       }
