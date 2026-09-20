@@ -108,7 +108,8 @@ export async function syncMediaAutopilot() {
     if(claimed) {
       const result=network==="x"?await executeBufferPublication(candidate.id,hash):await executeInstagramPublication(candidate.id,hash);
       sent++;
-      await queueOwnerNotice(`media-submitted:${candidate.id}`,`◆ ${network==="x"?"X":"INSTAGRAM"} · ${result.published?"PUBLISHED":"DELIVERY CHECK"}\n\n${candidate.payload.text}\n\n${result.message}`,homeMenu());
+      // Publishing receipts appear in Posts and the daily briefing.
+      void result;
     }
   }
   // Recover an interruption between the durable authorization and execution.

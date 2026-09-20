@@ -26,7 +26,7 @@ try {
    if(text.includes('pg_advisory_xact_lock')) return [];
    return (await driver.query(text,values)).rows;
   };
-  sql.json=v=>JSON.stringify(v);
+  sql.json=v=>JSON.stringify(v);sql.unsafe=q=>driver.exec(q);
   sql.begin=async fn=>{let release;const prior=tail;tail=new Promise(r=>release=r);await prior;try{return await database.transaction(tx=>fn(makeSql(tx)));}finally{release();}};
   return sql;
  };

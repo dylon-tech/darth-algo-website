@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/cron/owner-brief",
-      "schedule": "0 13 * * *"
+      "schedule": "0 13,14 * * *"
     },
     {
       "path": "/api/cron/community-education",

@@ -4,6 +4,7 @@ import type { MenuButtons } from "./telegram-ui";
 import { isBufferPublication } from "./buffer-publication-policy";
 import { mediaAutopilot } from "./media-policy";
 import { isInstagramPublication } from "./instagram-policy";
+import { ensureTelegramPanels } from "./telegram-panel";
 
 export function privateTelegramConfiguration() {
   const token = process.env.AI_OS_TELEGRAM_TOKEN;
@@ -14,12 +15,16 @@ export function privateTelegramConfiguration() {
   const privateId = token?.split(":")[0];
   return { token, owner, ready: Boolean(enabled && token && /^\d+:[A-Za-z0-9_-]+$/.test(token) && token !== communityToken && communityId && /^\d+$/.test(communityId) && privateId !== communityId && owner && /^[1-9]\d{0,15}$/.test(owner)) };
 }
-export async function telegramMethod(method: "sendMessage" | "answerCallbackQuery" | "getMe" | "getWebhookInfo" | "setWebhook", body: Record<string, unknown>) {
+export async function telegramMethod(method: "sendMessage" | "editMessageText" | "answerCallbackQuery" | "getMe" | "getWebhookInfo" | "setWebhook", body: Record<string, unknown>) {
   const config = privateTelegramConfiguration();
   if (!config.ready) throw new Error("PRIVATE_TELEGRAM_NOT_CONFIGURED");
   const response = await fetch(`https://api.telegram.org/bot${config.token}/${method}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: AbortSignal.timeout(12000), cache: "no-store" });
   const result = await response.json();
-  if (!response.ok || !result.ok) throw new Error("TELEGRAM_REQUEST_FAILED");
+  if (!response.ok || !result.ok) {
+    if(method==="editMessageText" && result.error_code===400 && /message is not modified/i.test(result.description || ""))return {message_id:body.message_id};
+    if(method==="editMessageText" && result.error_code===400 && /message to edit not found|message can't be edited/i.test(result.description || ""))throw new Error("TELEGRAM_EDIT_UNAVAILABLE");
+    throw new Error("TELEGRAM_REQUEST_FAILED");
+  }
   return result.result;
 }
 export async function configurePrivateWebhook() {
@@ -70,6 +75,7 @@ export async function queueApprovalNotice(id: string) {
 export async function deliverOwnerNotices(limit=4) {
   const config = privateTelegramConfiguration();
   if (!config.ready) return { sent:0, status:"not_configured" };
+  await ensureTelegramPanels();
   const sql = db();
   let sent=0;
   for (let i=0;i<limit;i++) {
@@ -86,11 +92,25 @@ export async function deliverOwnerNotices(limit=4) {
     });
     if (!item) break;
     try {
-      const result = await telegramMethod("sendMessage", { chat_id:config.owner,text:item.body,...(item.buttons ? {reply_markup:{inline_keyboard:item.buttons}} : {}) });
+      const target=item.panel_target;
+      const [panel]=target ? await sql`select * from os_telegram_panels where owner_id=${config.owner!}` : [];
+      if(target && (target.owner!==config.owner || !panel || panel.session_id!==target.session || Number(panel.revision)!==target.revision)) {
+        await sql`update os_outbox set status='failed',error_code='PANEL_SUPERSEDED' where id=${item.id}`;
+        continue;
+      }
+      const body={chat_id:config.owner,text:item.body,link_preview_options:{is_disabled:true},...(item.buttons ? {reply_markup:{inline_keyboard:item.buttons}} : {})};
+      let edited=false,result;
+      if(target && panel.message_id) {
+        try {result=await telegramMethod("editMessageText",{...body,message_id:Number(panel.message_id)});edited=true;}
+        catch(error) {if(!(error instanceof Error) || error.message!=="TELEGRAM_EDIT_UNAVAILABLE")throw error;}
+      }
+      if(!result)result=await telegramMethod("sendMessage",body);
       await sql.begin(async tx => {
         await tx`update os_outbox set status='sent',sent_at=now(),provider_message_id=${result.message_id} where id=${item.id} and status='sending'`;
         await tx`insert into os_activity(actor,event,entity_id,details) values('operations','owner_notice_sent',${item.id},'{}'::jsonb)`;
+        if(target)await tx`update os_telegram_panels set message_id=${result.message_id} where owner_id=${config.owner!} and session_id=${target.session} and (revision=${target.revision} or message_id is null)`;
       });
+      console.info(JSON.stringify({event:"owner_telegram_delivery",mode:edited?"edit":"send",panel:Boolean(target),status:"sent"}));
       sent++;
     } catch {
       // Timeout may mean Telegram accepted the message. Do not blindly replay.

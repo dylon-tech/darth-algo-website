@@ -1,5 +1,6 @@
 import { db } from "../affiliate-db";
 import { coordinationSchema } from "./coordination";
+import { telegramPanelSchema } from "./telegram-panel";
 import { budgetSchema } from "./budget";
 
 // Additive, explicitly initialized through the owner-only init operation.
@@ -96,6 +97,7 @@ export async function initializeOS() {
     await sql.unsafe(schema);
     await sql.unsafe(coordinationSchema);
     await sql.unsafe(budgetSchema);
+    await sql.unsafe(telegramPanelSchema);
     await sql`insert into os_activity(actor,event,details) values('owner','schema_initialized','{}'::jsonb)`;
   });
 }
