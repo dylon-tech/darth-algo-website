@@ -6,8 +6,8 @@ export async function publishCommunityPreview(now=new Date()){
  if(process.env.VERCEL_ENV!=='production'||!dailySocialPolicy.enabled||process.env.AI_OS_AUTONOMY_ENABLED!=='true')return {posted:false,reason:'disabled'};
  const sql=db(),day=new Intl.DateTimeFormat('en-CA',{timeZone:dailySocialPolicy.timezone,year:'numeric',month:'2-digit',day:'2-digit'}).format(now);
  const [control]=await sql`select paused from os_control where id=1`;if(!control||control.paused)return {posted:false,reason:'paused'};
- const [already]=await sql`select event from os_activity where entity_id=${day} and event in ('community_social_started','community_social_sent') limit 1`;
- if(already)return {posted:false,reason:'already_attempted'};
+ const [already]=await sql`select event,details from os_activity where entity_id=${day} and event in ('community_social_started','community_social_sent','community_social_unknown') order by id desc limit 1`;
+ if(already)return {posted:false,reason:'already_attempted',confirmed:already.event==='community_social_sent',messageId:already.event==='community_social_sent'?already.details.messageId:undefined};
  const rows=await sql`select a.payload,r.details from os_approvals a join lateral(select details from os_activity where entity_id=a.id::text and event='buffer_publish_checked' and details->>'published'='true' and details->>'externalLink' is not null order by id desc limit 1) r on true where a.payload->>'executor'='buffer_social_v2' and a.payload->'campaign'->>'day'=${day} and a.status='approved' and ((r.details->>'sentAt')::timestamptz at time zone 'America/New_York')::date=${day}::date`;
  const posts=rows.filter(r=>isDailySocialPayload(r.payload)&&socialPostUrl(r.details.externalLink,r.payload.network));
  posts.sort((a,b)=>['instagram','x','threads'].indexOf(a.payload.network)-['instagram','x','threads'].indexOf(b.payload.network));
