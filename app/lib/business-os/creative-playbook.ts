@@ -1,6 +1,9 @@
 import type { Department } from "./policy";
 import type { Evidence } from "./sources";
 
+// Latest owner direction overrides older requests for agent-made social videos.
+export const ownerMediaDirection = "The owner handles social video creation. Focus agent creative work on original promotional photos, static graphics and carousels. Do not generate, commission, queue or publish agent-made TikToks, Reels or Shorts, including the rejected 18-second tools promo, unless the owner explicitly changes this direction. Existing website animations are outside this restriction. Competitor video research may continue, but translate supported findings into original static-image concepts and share them with Content and Growth. Photo standard: chart-led compositions using exact owned indicator captures, one feature per card, a short readable headline, restrained Darth Algo branding, and one clear CTA to /links or the relevant product. Vary the hook and layout across useful feature explanations, tool comparisons and links-page discovery; avoid repetitive generic quote cards. Never fabricate chart results or copy a competitor's finished artwork.";
+
 // Curated from owner-supplied references, not executable instructions from the web.
 // Full captions were read for nine videos. The other two remain partial references.
 export const creativeReferences = [
@@ -22,13 +25,14 @@ export function creativePlaybookEvidence(): Evidence {
     id:"owner_creative_references", status:"verified", checkedAt:"2026-09-20T03:30:00Z",
     scope:"Curated one-time review of 11 unique owner-supplied TikToks. Coverage is explicit per source; captions can contain transcription errors. Verified means the reference was inspected to the stated extent, not that creator claims, conversion benefits, tool availability or trading results were verified. Not a live competitor feed. No new paid service or subscription authorized.",
     data:{
+      ownerMediaDirection,
       references:creativeReferences.map(({video,creator,...reference})=>({...reference,url:`https://www.tiktok.com/@${creator}/video/${video}`})),
       adaptation:"Preserve Darth Algo branding, prices and existing working integrations. Use real owned chart captures to explain trend, signals and risk, with an obvious next step to /links. The owner explicitly wants dimensional 3D scenes and immersive scroll-driven product storytelling across the existing website. Use the shared perspective engine and owned charts; retain mobile legibility, reduced-motion alternatives and immediate access to purchase options.",
       qualityGate:["One audience, one useful idea and one CTA per piece.","Use actual product captures; show charts clearly and keep text outside important chart levels.","Match the script to the visible evidence. Label recorded or illustrative scenes. Never invent trade wins, testimonials or product capabilities.","Review on a phone: readable copy, clear contrast, large controls, no clipping, reduced-motion fallback.","Track source → original adaptation → draft → delivery receipt → observed outcome. Public engagement is inspiration, not evidence of sales."],
       suggestedExperiments:[
         {angle:"Read the trend first",visual:"Owned trend-cloud capture, then one signal in context",destination:"/links",hypothesis:"A feature explanation may bring better-qualified product visits."},
         {angle:"Know your risk",visual:"Owned recorded entry/stop/target capture; explain that levels are plans, not promises",destination:"/links",hypothesis:"A clear risk walkthrough may reduce buyer confusion."},
-        {angle:"One place to start",visual:"Actual links-page recording showing indicators, community and official socials",destination:"/links",hypothesis:"A guided hub tour may make the next step easier."},
+        {angle:"One place to start",visual:"Static carousel using actual links-page and product captures showing indicators, community and official socials",destination:"/links",hypothesis:"A clear hub overview may make the next step easier."},
       ],
     },
   };
@@ -43,5 +47,5 @@ export function creativeDirection(department: Department) {
     analytics:"Evaluate creative tests only with available receipts and measured campaign data. State numerator, denominator, period and coverage before a rate; public views or likes cannot prove customer acquisition.",
     ceo:"Use the shared creative playbook to keep Research, Content and Growth aligned around original product demonstrations and a clear /links journey. Prefer one finished, measurable improvement to another generic redesign plan.",
   };
-  return roles[department] || "Use the shared creative references only when relevant to the requested work; do not turn design inspiration into product facts.";
+  return `${roles[department] || "Use the shared creative references only when relevant to the requested work; do not turn design inspiration into product facts."}\n${ownerMediaDirection}`;
 }
