@@ -8,7 +8,8 @@ import { queueJob, setPaused, workOneJob } from "./jobs";
 import { decide } from "./service";
 import { privateTelegramConfiguration, queueOwnerNotice, queueApprovalNotice, deliverOwnerNotices, telegramMethod } from "./delivery";
 import type { OwnerUpdate } from "./telegram-policy";
-import { agentNames, agentMenu, homeMenu, menuAction, naturalCommand, shortReply, budgetMessage, type MenuButtons } from "./telegram-ui";
+import { mediaDashboard, researchDashboard } from "./telegram-media";
+import { agentNames, agentMenu, homeMenu, agentsMenu, ideasMenu, menuAction, naturalCommand, shortReply, budgetMessage, type MenuButtons } from "./telegram-ui";
 import { workSummary } from "./work-summary";
 import { revenueGoals } from "./business-focus";
 import { workAssignments, assignmentMessage } from "../../owner/work-assignments";
@@ -67,7 +68,7 @@ async function handleUpdate(update: OwnerUpdate) {
     await sql`update os_telegram_state set revision_id=null,revision_hash=null where owner_id=${owner}`;
     await notice(result.message); return;
   }
-  if(command==="/start" || command==="/help") {
+  if(command==="/start" || command==="/help" || command==="/home") {
     await notice("Your Darth Algo crew 👋\n\nTap an agent below, then type what you need or pick a job. You can also say ‘Growth, find our next customers.’\n\nDashboard asking for a setup link? Tap Connect dashboard, or send /connect."); return;
   }
   if(command==="/connect") {
@@ -79,9 +80,22 @@ async function handleUpdate(update: OwnerUpdate) {
       reply_markup:{inline_keyboard:[[{text:"🔑 Connect this device",url:link.url}]]}});
     return;
   }
-  if(command==="/agents") { await notice("Who would you like to talk to? 👇"); return; }
+  if(command==="/agents") { await notice("◆ DARTH ALGO · YOUR TEAM\n\nChoose an agent. Pick a job or type what you want it to do.",agentsMenu()); return; }
+  if(command==="/posts" || command==="/queue") {await notice(await mediaDashboard(command==="/posts"?"today":"queue"));return;}
+  if(command==="/researchview") {await notice(await researchDashboard(),agentMenu("research"));return;}
+  if(command==="/ideas") {await notice("◆ CONTENT DIRECTION\n\nSend /suggest followed by any topic, hook or style you want. Your last five suggestions guide upcoming posts. Choose a visual style below, or ask Content for recommendations.",ideasMenu());return;}
+  if(command==="/suggest") {
+    const suggestion=text.slice(text.split(/\s+/)[0].length).trim();
+    if(!suggestion){await notice("Type /suggest followed by your idea. Example: /suggest Make more beginner-friendly posts about reading trend candles.",ideasMenu());return;}
+    await sql`insert into os_activity(actor,event,entity_id,details) values('owner','media_suggestion',${String(update.update_id)},${sql.json({text:suggestion.slice(0,1500)})})`;
+    await notice("Saved. Content will use this direction for upcoming posts. Already submitted posts are unchanged.",ideasMenu());return;
+  }
+  if(command==="/style" && menu?.style) {
+    await sql`insert into os_activity(actor,event,entity_id,details) values('owner','media_style_changed',${String(update.update_id)},${sql.json({style:menu.style})})`;
+    await notice(`Style saved: ${menu.style}. New daily graphics will use it.`,ideasMenu());return;
+  }
 
-  if(command==="/pause" || command==="/resume") { const result=await setPaused(command==="/pause"); await notice(result.paused ? "New work and new X submissions are paused. An already-started provider request may finish." : "Work resumed within configured AI limits. Public X posts still require exact approval."); return; }
+  if(command==="/pause" || command==="/resume") { const result=await setPaused(command==="/pause"); await notice(result.paused ? "New work and new social submissions are paused. An already-started provider request may finish." : "Work resumed. Routine posts on connected X and Instagram run automatically within the existing spending limits and daily cadence."); return; }
   if(command==="/status") {
     const budget = await recurringBudgetAvailability();
     const jobs=await sql`select status,count(*)::int as count from os_jobs group by status`;
@@ -96,8 +110,7 @@ async function handleUpdate(update: OwnerUpdate) {
   if(command==="/buffer") {
     try {
       const connection=await bufferStatus();
-      const name=connection.xChannel?.displayName || connection.xChannel?.name || "X";
-      await notice(connection.ready ? `${name}: Buffer API connection verified. Prepare a text post in dashboard Settings, then review its exact public-publishing approval. Saved delivery receipts are in Approvals.` : `Buffer needs attention: ${connection.error || "Connection unverified"}. Open Settings in the dashboard.`);
+      await notice(`◆ CONNECTED CHANNELS\n\n${connection.channels.map(c=>`${c.service}: ${c.displayName || c.name} · ${c.isDisconnected || c.isLocked || c.isQueuePaused ? "needs attention" : "connected"}`).join("\n")}\n\nAutomatic publishing supports the verified Darth Algo X and Instagram accounts. Other platforms still need a connected publishing adapter. Use Today’s posts for receipts.`);
     } catch { await notice("Buffer connection could not be verified. Check the API key and channel in dashboard Settings."); }
     return;
   }
@@ -119,7 +132,7 @@ async function handleUpdate(update: OwnerUpdate) {
     await sql`insert into os_telegram_state(owner_id,department) values(${owner},${department}) on conflict(owner_id) do update set department=excluded.department`;
     message=text.slice(text.split(/\s+/)[0].length).trim();
     if(menu?.assignmentId) message=assignmentMessage(workAssignments[department].find(a=>a.id===menu.assignmentId)!);
-    if(!message) { await notice(`${agentNames[department]} here. What can I help with?\n\nType your own request, or tap a job to start an internal draft.`,agentMenu(department)); return; }
+    if(!message) { await notice(`${agentNames[department]} here. What can I help with?\n\nType your request or choose a job. Routine posts publish automatically; research and other work return a deliverable here.`,agentMenu(department)); return; }
   } else if(text.startsWith("/")) { await notice("Unknown command. Use /help."); return; }
   if(menu?.assignmentId) {
     const [pending]=await sql`select id from os_jobs where department=${department} and message=${message} and status in ('queued','running') limit 1`;

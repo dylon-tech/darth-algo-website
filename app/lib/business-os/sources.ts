@@ -1,3 +1,4 @@
+import { competitorEvidence } from "./competitor-research";
 import { db } from "../affiliate-db";
 import { stripe } from "../stripe";
 import { summarizePayments, type PaymentRow } from "./payment-summary";
@@ -13,15 +14,17 @@ async function readSource(id: string, scope: string, read: () => Promise<unknown
 
 export async function collectEvidence(): Promise<Evidence[]> {
   const sources = await Promise.all([
+    readSource("content_workflows", "Saved media policy and latest publication observations. These are execution records, not a guarantee of future delivery or content performance.", async()=>await db()`select event,created_at,details - 'png' as details from os_activity where event in ('media_policy_enabled','buffer_publish_checked','instagram_carousel_draft_verified') order by id desc limit 6`),
+    competitorEvidence().catch(()=>({id:"competitor_public_posts",status:"unavailable" as const,checkedAt:new Date().toISOString(),scope:"Public competitor source check unavailable.",data:null})),
     readSource("paid_conversion", "Live Stripe checkout sessions created in the last 30 days. Campaign-tagged initial paid checkouts and trial starts are separate. Coverage includes untagged sessions; no unique-customer count, click conversion rate, renewals or causation is inferred.", checkoutConversions),
     readSource("growth_30d", "Existing community tracking, last 30 days. Clicks are not purchases; no paid conversion attribution is inferred.", async () => {
       return await db()`select source,event_type,count(*)::int as events from community_growth_events where created_at >= now()-interval '30 days' group by source,event_type order by source,event_type`;
     }),
-    readSource("buffer_publications_30d", "App-prepared X approvals created in the last 30 days, with their latest saved Buffer delivery observation. Counts are per approval, not per polling event. No live provider refresh, impressions, clicks, conversions or revenue are inferred. Unknown outcomes may have published; do not automatically repost them.", async () => {
+    readSource("buffer_publications_30d", "App-prepared X and Instagram posts created in the last 30 days, with their latest saved Buffer delivery observation. Counts are per approval, not per polling event. No live provider refresh, impressions, clicks, conversions or revenue are inferred. Unknown outcomes may have published; do not automatically repost them.", async () => {
       return await db()`with publications as (
         select a.id,a.status,a.expires_at,
           (select details from os_activity where entity_id=a.id::text and event in ('buffer_publish_started','buffer_publish_receipt','buffer_publish_checked','buffer_publish_unknown') order by id desc limit 1) as receipt
-        from os_approvals a where a.payload->>'executor'='buffer_x_v1' and a.created_at>=now()-interval '30 days'
+        from os_approvals a where a.payload->>'executor' in ('buffer_x_v1','buffer_instagram_v1') and a.created_at>=now()-interval '30 days'
       ) select case when receipt->>'published'='true' then 'confirmed_published'
           when receipt is not null then coalesce(receipt->>'state','unknown')
           when status='pending' and expires_at<=now() then 'expired'
@@ -78,7 +81,7 @@ export async function collectEvidence(): Promise<Evidence[]> {
       throw new Error("Pagination incomplete");
     }),
   ]);
-  sources.push(...["tradingview_fulfillment", "content_workflows", "support_cases", "retention"].map(id => ({
+  sources.push(...["tradingview_fulfillment", "support_cases", "retention"].map(id => ({
     id, status: "unavailable" as const, checkedAt: new Date().toISOString(), data: null,
     scope: "No verified read adapter connected in Phase 1. Historical setup and plans are not live evidence.",
   })));

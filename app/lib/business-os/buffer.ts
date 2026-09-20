@@ -1,6 +1,6 @@
 type BufferGraphQLResponse<T> = { data?: T; errors?: Array<{ message?: string }> };
 
-async function bufferGraphQL<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
+export async function bufferGraphQL<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
   const key = process.env.BUFFER_API_KEY?.trim();
   if (!key) throw new Error("BUFFER_API_KEY_MISSING");
   const response = await fetch("https://api.buffer.com", {

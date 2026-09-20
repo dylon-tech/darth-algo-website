@@ -1,5 +1,7 @@
 import { coordinationTick } from "../../../lib/business-os/coordination";
 import { syncContentApprovals } from "../../../lib/business-os/content-handoff";
+import { syncMediaAutopilot } from "../../../lib/business-os/media-autopilot";
+import { syncInstagramCampaign } from "../../../lib/business-os/instagram-publishing";
 import { db } from "../../../lib/affiliate-db";
 import { queueJob } from "../../../lib/business-os/jobs";
 import { workAndNotify } from "../../../lib/business-os/telegram-command";
@@ -12,6 +14,15 @@ export async function GET(request:Request) {
   if(!secretMatches(request.headers.get("authorization"),process.env.CRON_SECRET ? `Bearer ${process.env.CRON_SECRET}` : undefined)) return Response.json({error:"Unauthorized"},{status:401});
   try {
     await syncContentApprovals();
+    try {
+      const instagram=await syncInstagramCampaign();
+      console.info(JSON.stringify({event:"instagram_campaign_sync",...instagram}));
+    } catch(error) {
+      const code=error instanceof Error && /^(INSTAGRAM_|BUFFER_)[A-Z0-9_]+$/.test(error.message) ? error.message : "INSTAGRAM_PREPARATION_BLOCKED";
+      console.warn(JSON.stringify({event:"instagram_campaign_sync",status:"blocked",code}));
+    }
+    try {console.info(JSON.stringify({event:"media_autopilot_sync",...await syncMediaAutopilot()}));}
+    catch(error){console.warn(JSON.stringify({event:"media_autopilot_sync",status:"blocked",code:error instanceof Error && /^(INSTAGRAM_|BUFFER_|AI_)[A-Z0-9_]+$/.test(error.message)?error.message:"MEDIA_SYNC_BLOCKED"}));}
     if (process.env.AI_OS_COORDINATION_ENABLED === "true") {
       const result=await coordinationTick("vercel-cron");
       console.info(JSON.stringify({event:"owner_work_tick",status:result.status,reason:"reason" in result ? result.reason : null}));

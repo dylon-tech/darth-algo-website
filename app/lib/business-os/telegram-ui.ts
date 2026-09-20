@@ -10,27 +10,36 @@ export const centerLink = {text:"🏠 Open dashboard",url:"https://www.darthalgo
 export const connectButton = {text:"🔑 Connect dashboard",callback_data:"ui:nav:connect"};
 export function homeMenu(): MenuButtons {
   return [
-    ...Array.from({length:4},(_,i)=>departments.slice(i*2,i*2+2).map(d=>({text:agentNames[d],callback_data:`ui:agent:${d}`}))),
-    [{text:"📸 Fresh media",callback_data:"ui:work:content:media-scout"},{text:"🗓 Today’s posts",callback_data:"ui:work:content:daily-content-engine"}],
-    [{text:"🌐 Community scout",callback_data:"ui:work:research:community-scout"},{text:"🕵️ Competitor intel",callback_data:"ui:work:research:competitor-intelligence"}],
-    [{text:"👀 Who’s working?",callback_data:"ui:nav:status"},{text:"✅ My decisions",callback_data:"ui:nav:approvals"}],
-    [{text:"☀️ Daily brief",callback_data:"ui:nav:brief"},{text:"𝕏 Connection",callback_data:"ui:nav:buffer"}],
-    [centerLink,connectButton],
+    [{text:"👥 Agents",callback_data:"ui:nav:agents"},{text:"🗓 Today’s posts",callback_data:"ui:nav:posts"}],
+    [{text:"📋 Queue",callback_data:"ui:nav:queue"},{text:"👀 Live work",callback_data:"ui:nav:status"}],
+    [{text:"💡 Content ideas",callback_data:"ui:nav:ideas"},{text:"🔎 Research",callback_data:"ui:nav:researchview"}],
+    [{text:"⏸ Pause",callback_data:"ui:nav:pause"},{text:"▶ Resume",callback_data:"ui:nav:resume"}],
+    [{text:"⚙ Connections",callback_data:"ui:nav:buffer"},{text:"☀ Daily brief",callback_data:"ui:nav:brief"}],
+    [{text:"🏠 CEO desk",callback_data:"ui:nav:home"},connectButton],
   ];
+}
+export function agentsMenu(): MenuButtons {
+  return [...Array.from({length:4},(_,i)=>departments.slice(i*2,i*2+2).map(d=>({text:agentNames[d],callback_data:`ui:agent:${d}`}))),[{text:"🏠 CEO desk",callback_data:"ui:nav:home"}]];
+}
+export function ideasMenu(): MenuButtons {
+  return [[{text:"✍ Suggest a topic",callback_data:"ui:nav:suggest"},{text:"✨ Recommend ideas",callback_data:"ui:work:content:content-week"}],
+    [{text:"🔴 Crimson",callback_data:"ui:style:crimson"},{text:"🟣 Minimal",callback_data:"ui:style:minimal"},{text:"🟡 Clean",callback_data:"ui:style:clean"}],
+    [{text:"🏠 CEO desk",callback_data:"ui:nav:home"}]];
 }
 export function agentMenu(department: Department): MenuButtons {
   return [
     ...workAssignments[department].map(a=>[{text:`▶ ${a.title}`,callback_data:`ui:work:${department}:${a.id}`}]),
     [{text:"👀 Who’s working?",callback_data:"ui:nav:status"},{text:"👥 Change agent",callback_data:"ui:nav:agents"}],
-    [centerLink,connectButton],
+    [{text:"🏠 CEO desk",callback_data:"ui:nav:home"}],
   ];
 }
 // Menu callbacks select known roles, presets, views or owner-only device setup.
 // Approval decisions stay on their separate expiring os: token path.
-export function menuAction(data: string | undefined): {command: string; department?: Department; assignmentId?: string} | null {
+export function menuAction(data: string | undefined): {command: string; department?: Department; assignmentId?: string; style?:string} | null {
   const parts=data?.split(":") || [];
   if(parts[0]!=="ui") return null;
-  if(parts.length===3 && parts[1]==="nav" && ["agents","status","approvals","brief","buffer","connect"].includes(parts[2])) return {command:`/${parts[2]}`};
+  if(parts.length===3 && parts[1]==="nav" && ["home","agents","status","approvals","brief","buffer","connect","posts","queue","ideas","suggest","researchview","pause","resume"].includes(parts[2])) return {command:`/${parts[2]}`};
+  if(parts.length===3 && parts[1]==="style" && ["crimson","minimal","clean"].includes(parts[2]))return {command:"/style",style:parts[2]};
   const department=parts[2] as Department;
   if(!departments.includes(department)) return null;
   if(parts.length===3 && parts[1]==="agent") return {command:`/${department}`,department};
@@ -39,7 +48,10 @@ export function menuAction(data: string | undefined): {command: string; departme
 }
 export function naturalCommand(text:string) {
   const normalized=text.trim().toLowerCase().replace(/[?!]+$/g,"");
-  if(["hi","hello","hey","help","menu","agents","home"].includes(normalized)) return "/agents";
+  if(["hi","hello","hey","help","menu","home"].includes(normalized)) return "/home";
+  if(normalized==="agents")return "/agents";
+  if(["posts","today’s posts","today's posts"].includes(normalized))return "/posts";
+  if(["queue","upcoming posts"].includes(normalized))return "/queue";
   if(["status","who's working","who’s working","what's happening","what’s happening"].includes(normalized)) return "/status";
   if(["approvals","my decisions"].includes(normalized)) return "/approvals";
   if(["buffer","x connection"].includes(normalized)) return "/buffer";

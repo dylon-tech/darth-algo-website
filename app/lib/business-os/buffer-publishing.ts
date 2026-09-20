@@ -1,3 +1,4 @@
+import { mediaAutopilot } from "./media-policy";
 import { randomUUID } from "node:crypto";
 import { db } from "../affiliate-db";
 import { bufferStatus, createBufferXPost, getBufferPost } from "./buffer";
@@ -54,7 +55,7 @@ export async function prepareBufferPublication(text: string, sourceRunId?: strin
 }
 
 function approvedPayload(row: Record<string, unknown> | undefined, hash: string): BufferPublication {
-  if (!row || row.status !== "approved" || row.decided_by !== "owner") throw new Error("BUFFER_APPROVAL_REQUIRED");
+  if (!row || row.status !== "approved" || !["owner","owner_policy"].includes(String(row.decided_by))) throw new Error("BUFFER_APPROVAL_REQUIRED");
   if (row.payload_hash !== hash || fingerprint(row.payload) !== hash || !isBufferPublication(row.payload)) throw new Error("BUFFER_APPROVAL_VERSION_CHANGED");
   return row.payload;
 }
@@ -81,6 +82,10 @@ export async function executeBufferPublication(id: string, hash: string) {
   const claim = await sql.begin(async tx => {
     const [row] = await tx`select * from os_approvals where id=${id} for update`;
     const payload = approvedPayload(row, hash);
+    if(row!.decided_by==="owner_policy") {
+      const [grant]=await tx`select id from os_activity where event='media_auto_authorized' and entity_id=${id} and details->>'payloadHash'=${hash} and details->>'policyId'=${mediaAutopilot.id} limit 1`;
+      if(!mediaAutopilot.enabled || !grant)throw new Error("BUFFER_APPROVAL_REQUIRED");
+    }
     const [prepared] = await tx`select id from os_activity where entity_id=${id} and event='buffer_publication_prepared' and details->>'payloadHash'=${hash} limit 1`;
     if (!prepared) throw new Error("BUFFER_PREPARED_APPROVAL_REQUIRED");
     const [receipt] = await tx`select details from os_activity where entity_id=${id} and event='buffer_publish_receipt' order by id desc limit 1`;

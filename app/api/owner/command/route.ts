@@ -13,6 +13,8 @@ import { bufferStatus } from "../../../lib/business-os/buffer";
 import { testBufferDraft } from "../../../lib/business-os/buffer-test";
 import { prepareBufferPublication, checkBufferPublication, executeBufferPublication } from "../../../lib/business-os/buffer-publishing";
 
+import { checkInstagramPublication, executeInstagramPublication } from "../../../lib/business-os/instagram-publishing";
+
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
 export const maxDuration=120;
@@ -64,6 +66,10 @@ export async function POST(request:Request) {
     if(body.operation==="buffer_receipt" || body.operation==="buffer_publish_approved") {
       if(!/^[0-9a-f-]{36}$/.test(body.id || "") || !/^[a-f0-9]{64}$/.test(body.payloadHash || "")) return json({error:"Invalid approval"},400);
       return json(await (body.operation==="buffer_receipt" ? checkBufferPublication(body.id,body.payloadHash) : executeBufferPublication(body.id,body.payloadHash)));
+    }
+    if(body.operation==="instagram_receipt" || body.operation==="instagram_publish_approved") {
+      if(!/^[0-9a-f-]{36}$/.test(body.id || "") || !/^[a-f0-9]{64}$/.test(body.payloadHash || "")) return json({error:"Invalid approval"},400);
+      return json(await (body.operation==="instagram_receipt" ? checkInstagramPublication(body.id,body.payloadHash) : executeInstagramPublication(body.id,body.payloadHash)));
     }
     if(body.operation==="telegram_check") {
       const config=privateTelegramConfiguration(); if(!config.ready) return json({error:"PRIVATE_TELEGRAM_NOT_CONFIGURED"},409);

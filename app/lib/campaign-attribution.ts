@@ -5,7 +5,7 @@ const label = (v: string | null) => (v || "").trim().toLowerCase().replace(/[^a-
 export function captureCampaign(search: string, previous: unknown, now = Date.now()): CampaignAttribution | null {
   const q = new URLSearchParams(search);
   const rawSource = (q.get("utm_source") || q.get("source") || "").toLowerCase();
-  const source = ["twitter","x-twitter"].includes(rawSource) ? "x" : rawSource;
+  const source = ["twitter","x-twitter"].includes(rawSource) ? "x" : rawSource === "ig" ? "instagram" : rawSource;
   if (sources.has(source)) return {source,campaign:label(q.get("utm_campaign") || q.get("campaign")) || "default",content:label(q.get("utm_content")),capturedAt:now};
   const p = previous as CampaignAttribution | null;
   return p && sources.has(p.source) && /^[a-z0-9_-]{1,40}$/.test(p.campaign) && /^[a-z0-9_-]{0,40}$/.test(p.content) && Number.isFinite(p.capturedAt) && p.capturedAt<=now && now-p.capturedAt<30*86400000 ? p : null;

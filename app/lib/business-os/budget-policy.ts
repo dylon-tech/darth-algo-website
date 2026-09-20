@@ -31,6 +31,8 @@ export function assertRecurringEnvelope(bodyText: string, provider: string, poli
   if (bytes > pilot.maxRequestBytes) throw new Error("AI_BUDGET_REQUEST_LIMIT");
   const body = JSON.parse(bodyText);
   const allowed = new Set(["model", "store", "instructions", "max_output_tokens", "reasoning", "input", "text"]);
+  const content=body?.input?.[0]?.content;
+  const boundedImages=Array.isArray(content) && content.length>=2 && content.length<=3 && content[0]?.type==="input_text" && typeof content[0].text==="string" && Object.keys(content[0]).length===2 && content.slice(1).every((part:Record<string,unknown>)=>part.type==="input_image" && part.detail==="low" && typeof part.image_url==="string" && /^data:image\/jpeg;base64,[A-Za-z0-9+/=]{1,24000}$/.test(part.image_url) && Object.keys(part).length===3);
   if (!body || typeof body !== "object" || Array.isArray(body)
     || Object.keys(body).some(key => !allowed.has(key)) || body.model !== policy.model
     || body.store !== false || typeof body.instructions !== "string"
@@ -38,13 +40,14 @@ export function assertRecurringEnvelope(bodyText: string, provider: string, poli
     || body.max_output_tokens > pilot.maxOutputTokens
     || body.reasoning?.effort !== "none" || Object.keys(body.reasoning).length !== 1
     || !Array.isArray(body.input) || body.input.length !== 1
-    || body.input[0]?.role !== "user" || typeof body.input[0]?.content !== "string"
+    || body.input[0]?.role !== "user" || (typeof body.input[0]?.content !== "string" && !boundedImages)
     || Object.keys(body.input[0]).some(key => !["role", "content"].includes(key))) {
     throw new Error("AI_BUDGET_UNBOUNDED_REQUEST");
   }
   // UTF-8 bytes upper-bound text tokens; 25k tokens allow for API/schema framing.
-  // No images, tools, prior response context, or other billable modalities permitted.
-  const upperMicros = Math.ceil((bytes + 25000) * policy.inputUsdPerMillion
+  // Only up to two bounded low-detail JPEG thumbnails, no tools or prior context.
+  // Reserve an additional 25k input tokens per thumbnail, conservatively above its resolution cost.
+  const upperMicros = Math.ceil((bytes + 25000 + (boundedImages ? (content.length-1)*25000 : 0)) * policy.inputUsdPerMillion
     + body.max_output_tokens * policy.outputUsdPerMillion);
   if (upperMicros > policy.reservationMicros) throw new Error("AI_BUDGET_RESERVATION_TOO_SMALL");
 }
