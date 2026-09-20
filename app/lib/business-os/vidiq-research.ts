@@ -5,6 +5,19 @@ import {ensureVidiqSchema,vidiqAccessToken,vidiqResource} from "./vidiq-connecti
 import type {Evidence} from "./sources";
 
 export function researchDay(){return new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());}
+function transportFor(token:string){return new StreamableHTTPClientTransport(new URL(vidiqResource),{reconnectionOptions:{maxRetries:0,maxReconnectionDelay:0,initialReconnectionDelay:0,reconnectionDelayGrowFactor:1},requestInit:{headers:{Authorization:`Bearer ${token}`},redirect:"error"},fetch:(input,init)=>fetch(input,{...init,signal:init?.signal?AbortSignal.any([init.signal,AbortSignal.timeout(15000)]):AbortSignal.timeout(15000)})});}
+export async function verifyVidiqKey(key:string){
+  if(key.length<16 || key.length>4096 || /\s/.test(key))throw Error("VIDIQ_KEY_INVALID");
+  const client=new Client({name:"darth-algo-connection-check",version:"1.0.0"});
+  try{
+    await client.connect(transportFor(key),{timeout:15000});
+    const list=await client.listTools({}, {timeout:15000});
+    const tool=list.tools.find(t=>["vidiq_balance","balance"].includes(t.name));if(!tool)throw Error("VIDIQ_BALANCE_UNAVAILABLE");
+    const result=await client.callTool({name:tool.name,arguments:{}},undefined,{timeout:15000});
+    const balance=result.isError?null:balanceData(result);if(!balance)throw Error("VIDIQ_BALANCE_UNAVAILABLE");
+    return balance;
+  }finally{await client.close().catch(()=>{});}
+}
 export function socialPosts(value:unknown){
   const posts=new Map<string,{url:string;platform:string;metadata:string}>();
   function walk(v:unknown,depth=0){
@@ -50,7 +63,7 @@ export async function syncVidiqResearch(){
   let status="connection_failed";
   try{
     const token=await vidiqAccessToken();
-    const transport=new StreamableHTTPClientTransport(new URL(vidiqResource),{reconnectionOptions:{maxRetries:0,maxReconnectionDelay:0,initialReconnectionDelay:0,reconnectionDelayGrowFactor:1},requestInit:{headers:{Authorization:`Bearer ${token}`},redirect:"error"},fetch:(input,init)=>fetch(input,{...init,signal:init?.signal?AbortSignal.any([init.signal,AbortSignal.timeout(15000)]):AbortSignal.timeout(15000)})});
+    const transport=transportFor(token);
     await client.connect(transport,{timeout:15000});
     const listed=await client.listTools({}, {timeout:15000});
     const balanceTool=listed.tools.find(t=>["vidiq_balance","balance"].includes(t.name));

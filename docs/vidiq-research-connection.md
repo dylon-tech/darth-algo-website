@@ -1,6 +1,6 @@
 # Server-side social research
 
-The owner connects vidIQ at `/owner/connections`, using the existing owner session. This is a separate OAuth consent from ChatGPT's connector. The existing every-minute production cron checks the connection once per New York calendar day before starting Indicator Lab work.
+The owner connects vidIQ using a scoped MCP API key at `/owner/connections`, using the existing owner session. This is a separate OAuth consent from ChatGPT's connector. The existing every-minute production cron checks the connection once per New York calendar day before starting Indicator Lab work.
 
 - Fixed provider: `https://mcp.vidiq.com/mcp`; fixed callback: `https://www.darthalgo.com/api/owner/connections/vidiq/callback`.
 - Public client registration, PKCE S256, ten-minute single-use state and an independent HttpOnly, Secure, SameSite=Lax browser nonce. Initiation and disconnect require owner authentication and same-origin requests. The normal Strict owner cookie intentionally stays Strict; the cross-site callback is bound to the authenticated initiation by the nonce.
@@ -13,3 +13,11 @@ The owner connects vidIQ at `/owner/connections`, using the existing owner sessi
 Verification: `tests/vidiq-research.test.cjs` exercises encryption, state/browser binding, callback replay, cross-site mutation rejection, refresh, disconnect, zero credits, daily cap, uncertain outcomes, pause, and source provenance with PGlite and mocked provider responses. It does not prove a real account connection or paid discovery. Set `OS_TEST_PGLITE_MODULE` to the installed PGlite entry point to run it.
 
 TradingView unattended compilation, screenshots, replay and approved publishing still require a hosted browser worker and a user sign-in in that worker. This integration does not transfer the local browser session, publish indicators, or claim the worker is active.
+
+
+## Provider registration restriction and supported key connection
+Live registration on September 20 returned HTTP 400, `redirect_uri is not allowed.` for the DarthAlgo.com callback. Generic OAuth compatibility in the older help article did not establish that this callback was allowed. The public setup page https://vidiq.com/mcp/ documents API keys as Bearer tokens and links https://app.vidiq.com/account/settings/mcp for key creation.
+
+The Connections page now directly links to those settings and offers an owner-only password field. PUT requires same-origin authentication, validates input, performs only initialization, tool discovery and the free balance call, then stores the key encrypted. Invalid/unverifiable replacements preserve the existing credential. Keys never appear in responses or logs. Zero credits is a successful connection with research waiting. The recurring five-credit cap is unchanged. The legacy OAuth endpoint now reports the specific provider restriction without exposing provider bodies.
+
+Tests include the real provider error shape, rejected cross-site key saves, invalid lengths, failed verification preserving the old connection, encrypted persistence, redacted status, successful zero-credit verification and no paid calls during setup. A real user key is still required to verify the complete live connection.

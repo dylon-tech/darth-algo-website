@@ -19,8 +19,8 @@ async function main(){
  assert.equal(await connection.vidiqAccessToken(),'private-access-token');assert.equal(refreshes,1);
  const cancelled=await connection.beginVidiqConnection();await connection.disconnectVidiq();await assert.rejects(connection.finishVidiqConnection(new URL(cancelled.url).searchParams.get('state'),cancelled.browser,'code'));
  const fresh=await connection.beginVidiqConnection();await connection.finishVidiqConnection(new URL(fresh.url).searchParams.get('state'),fresh.browser,'code');
- let credits=0,paid=0,fail=false;
- class Client {async connect(){}async close(){}async listTools(){return {tools:[{name:'vidiq_balance'},{name:'vidiq_instagram_tiktok_outlier_search'}]};}async callTool({name}){if(name==='vidiq_balance')return {structuredContent:{totalCredits:credits,renewableResetsAt:'2026-09-30T12:10:26Z'}};paid++;if(fail)throw Error('timeout after submission');return {structuredContent:{instagram:[{url:'https://www.instagram.com/reel/abc123/',caption:'Trading example'}],tiktok:[{url:'https://www.tiktok.com/@trader/video/1234567890',description:'VWAP context'}]}};}}
+ let credits=0,paid=0,fail=false,authReject=false;
+ class Client {async connect(){if(authReject)throw Error("invalid provider credential");}async close(){}async listTools(){return {tools:[{name:'vidiq_balance'},{name:'vidiq_instagram_tiktok_outlier_search'}]};}async callTool({name}){if(name==='vidiq_balance')return {structuredContent:{totalCredits:credits,renewableResetsAt:'2026-09-30T12:10:26Z'}};paid++;if(fail)throw Error('timeout after submission');return {structuredContent:{instagram:[{url:'https://www.instagram.com/reel/abc123/',caption:'Trading example'}],tiktok:[{url:'https://www.tiktok.com/@trader/video/1234567890',description:'VWAP context'}]}};}}
  stubs['@modelcontextprotocol/sdk/client/index.js']={Client};stubs['@modelcontextprotocol/sdk/client/streamableHttp.js']={StreamableHTTPClientTransport:class{}};
  const research=load('vidiq-research');await pg.exec('create table os_control(id integer primary key,paused boolean);insert into os_control values(1,false)');
  assert.equal((await research.syncVidiqResearch()).status,'waiting_for_credits');assert.equal(paid,0);assert.equal((await research.vidiqEvidence()).status,'unavailable');
@@ -33,7 +33,7 @@ async function main(){
  assert.deepEqual(research.socialPosts({url:'https://instagram.com.evil.example/reel/test'}),[]);
   assert.equal(research.balanceData({structuredContent:{totalCredits:'100'}}),null);
  const owner=load('owner-session');
- function route(relative){const filename=path.resolve(relative),mod=new Module(filename,module);mod.filename=filename;mod.paths=module.paths;mod.require=id=>id.endsWith('/owner-session')?owner:id.endsWith('/vidiq-connection')?connection:require(id);mod._compile(ts.transpileModule(fs.readFileSync(filename,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,esModuleInterop:true}}).outputText,filename);return mod.exports;}
+ function route(relative){const filename=path.resolve(relative),mod=new Module(filename,module);mod.filename=filename;mod.paths=module.paths;mod.require=id=>id.endsWith('/owner-session')?owner:id.endsWith('/vidiq-connection')?connection:id.endsWith('/vidiq-research')?research:require(id);mod._compile(ts.transpileModule(fs.readFileSync(filename,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,esModuleInterop:true}}).outputText,filename);return mod.exports;}
  const api=route('app/api/owner/connections/vidiq/route.ts'),callback=route('app/api/owner/connections/vidiq/callback/route.ts');
  assert.equal((await api.GET(new Request('https://www.darthalgo.com/api/owner/connections/vidiq'))).status,401);
  const headers={host:'www.darthalgo.com',origin:'https://www.darthalgo.com',cookie:`darth_os_owner=${owner.createOwnerSession(process.env.AI_OS_OWNER_KEY)}`};
@@ -45,6 +45,20 @@ async function main(){
  const callbackUrl='https://www.darthalgo.com/api/owner/connections/vidiq/callback?'+new URLSearchParams({state:authUrl.searchParams.get('state'),code:'new-code'});
  const complete=await callback.GET(new Request(callbackUrl,{headers:{host:'www.darthalgo.com',cookie:nonce}}));assert(complete.headers.get('location').endsWith('vidiq=connected'));
  const replay=await callback.GET(new Request(callbackUrl,{headers:{host:'www.darthalgo.com',cookie:nonce}}));assert(replay.headers.get('location').endsWith('vidiq=sign_in_failed'));
+
+ const paidBeforeKey=paid,keyValue='test-mcp-key-12345678901234567890';
+ const keyRequest=(key=keyValue,h=headers)=>new Request('https://www.darthalgo.com/api/owner/connections/vidiq',{method:'PUT',headers:{...h,'Content-Type':'application/json'},body:JSON.stringify({key})});
+ assert.equal((await api.PUT(keyRequest(keyValue,{...headers,origin:'https://evil.example'}))).status,403);
+ assert.equal((await api.PUT(keyRequest('short'))).status,400);
+ credits=0;const savedKey=await api.PUT(keyRequest());assert.equal(savedKey.status,200);assert.equal((await savedKey.json()).balance.totalCredits,0);assert.equal(paid,paidBeforeKey);
+ assert.equal(await connection.vidiqAccessToken(),keyValue);const publicStatus=JSON.stringify(await connection.vidiqStatus());assert(!publicStatus.includes(keyValue));assert.equal((await connection.vidiqStatus()).verifiedBalance.totalCredits,0);
+ const [storedKey]=await sql`select tokens from os_vidiq_connection where id=1`;assert(!storedKey.tokens.includes(keyValue));
+ authReject=true;const rejected=await api.PUT(keyRequest('replacement-invalid-key-1234567890'));assert.equal(rejected.status,502);assert.equal(await connection.vidiqAccessToken(),keyValue);assert(!(await rejected.text()).includes('replacement-invalid'));assert.equal(paid,paidBeforeKey);authReject=false;
+ await sql`update os_vidiq_connection set client_id=null where id=1`;
+ global.fetch=async()=>Response.json({detail:'redirect_uri is not allowed.'},{status:400});
+ const deniedRedirect=await api.POST(new Request('https://www.darthalgo.com/api/owner/connections/vidiq',{method:'POST',headers}));assert.equal(deniedRedirect.status,409);assert.equal((await deniedRedirect.json()).code,'VIDIQ_REDIRECT_NOT_ALLOWED');
+ await connection.disconnectVidiq();assert.equal((await connection.vidiqStatus()).verifiedBalance,null);
+ const cancelledKeyGeneration=await connection.beginVidiqKeyVerification();await connection.disconnectVidiq();await assert.rejects(connection.saveVidiqKey(keyValue,{totalCredits:0,renewableResetsAt:null},cancelledKeyGeneration));assert.equal((await connection.vidiqStatus()).connected,false);
  await pg.close();console.log('Passed: encrypted tokens, wrong key/tampering, PKCE browser binding, single-use state, disconnect cancellation, refresh, zero-credit hold, paid-call cap, ambiguous-outcome hold, pause, source provenance.');
 }
 main().catch(e=>{console.error(e);process.exit(1);});
