@@ -111,7 +111,12 @@ export function createProChartWorld(host: HTMLElement): ChartWorld {
     const settle = smooth(.1, .7, progress);
     svg.style.transform = `perspective(1400px) rotateX(${12 * (1-settle)}deg) rotateY(${-17 * (1-settle)}deg) scale(${.86 + .14*settle})`;
   };
-  const resize = () => render(current, playback);
-  render(0);
+  const resize = () => {
+    const narrow = host.clientWidth < 640;
+    svg.setAttribute("viewBox", narrow ? "430 0 690 540" : "0 0 1120 540");
+    svg.style.aspectRatio = narrow ? "690 / 540" : "1120 / 540";
+    render(current, playback);
+  };
+  resize();
   return {render,resize,dispose:()=>{disposed=true; svg.remove(); delete host.dataset.renderer;}};
 }
