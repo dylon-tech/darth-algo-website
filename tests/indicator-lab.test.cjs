@@ -80,6 +80,12 @@ async function main(){
  await sql`update os_jobs set status='succeeded' where status='queued'`;}
  const stages=await sql`select department,request_key from os_jobs where request_key like 'indicator-ideas:%' order by created_at`;assert.deepEqual(stages.map(r=>r.department),['research','growth']);
  assert.equal((await sql`select * from os_jobs where message like '[INDICATOR_LAB]%'`).length,2);
+ const ideas=load('indicator-ideas');
+ const compact=await ideas.indicatorIdeaEvidence();assert.ok(JSON.stringify(compact).length<10000);
+ assert.ok(research.observedIndicatorUrls([compact]).includes(candidate.sourceUrls[0]));
+ await sql`update os_runs set result=${JSON.stringify({brief:'BUILD_NONE. Insufficient demand evidence.'})} where id in (select run_id from os_jobs where request_key like 'indicator-ideas:%:growth')`;
+ assert.equal(await ideas.syncIndicatorIdeas(),'no_supported_idea');
+ process.env.AI_OS_INDICATORS_PER_DAY='3';await lab.syncIndicatorLab();assert.equal((await sql`select * from os_jobs where message like '[INDICATOR_LAB]%'`).length,2);
  await pg.close();console.log('PASS: static screening, source provenance, no code ingestion, idempotent schema/handoff/cards, duplicate logic, daily cap, pause, approval/hash/replay gates and release replay.');
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});

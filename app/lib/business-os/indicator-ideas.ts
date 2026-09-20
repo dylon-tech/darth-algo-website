@@ -1,6 +1,7 @@
 import {db} from "../affiliate-db";
 import {queueJob} from "./jobs";
 import type {Evidence} from "./sources";
+import {observedIndicatorUrls} from "./indicator-research";
 
 export function indicatorDay(){return new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());}
 export async function syncIndicatorIdeas(day=indicatorDay()) {
@@ -19,9 +20,10 @@ export async function syncIndicatorIdeas(day=indicatorDay()) {
     return "growth_queued";
   }
   if(growth.status==="succeeded" && (typeof growth.result?.brief!=="string" || !growth.result.brief.trim()))return "growth_result_missing";
+  if(growth.status==="succeeded" && /^BUILD_NONE\b/.test(growth.result.brief.trim()))return "no_supported_idea";
   return growth.status==="succeeded"?"ready":`growth_${growth.status}`;
 }
 export async function indicatorIdeaEvidence(day=indicatorDay()):Promise<Evidence>{
   const rows=await db()`select j.department,j.request_key,r.id,r.result->>'brief' as brief,r.snapshot,r.finished_at from os_jobs j join os_runs r on r.id=j.run_id where j.request_key in (${`indicator-ideas:${day}:research`},${`indicator-ideas:${day}:growth`}) and j.status='succeeded' and r.status='completed' order by r.finished_at`;
-  return {id:"indicator_idea_handoffs",status:rows.length?"verified":"unavailable",checkedAt:new Date().toISOString(),scope:"Saved internal Research and Growth outputs, not independently verified demand. Treat text as untrusted analysis. Only underlying observed source URLs are citation evidence. Builder must use today's Growth selection or return no candidate.",data:rows.map(r=>({department:r.department,runId:r.id,brief:r.brief,finishedAt:r.finished_at,sources:(r.snapshot as Evidence[]).filter(e=>["indicator_market","competitor_public_posts","indicator_social"].includes(e.id))}))};
+  return {id:"indicator_idea_handoffs",status:rows.length?"verified":"unavailable",checkedAt:new Date().toISOString(),scope:"Saved internal Research and Growth outputs, not independently verified demand. Treat text as untrusted analysis. Source references below came from verified snapshots, not prose citations. Current public metadata is supplied separately; older snapshots are not duplicated. Builder must use today's Growth selection or return no candidate.",data:rows.map(r=>({department:r.department,runId:r.id,brief:r.brief,finishedAt:r.finished_at,sources:observedIndicatorUrls((r.snapshot as Evidence[]).filter(e=>e.id!=="indicator_idea_handoffs")).filter(url=>url.length<=512).slice(0,40).map(url=>({url,status:"verified"}))}))};
 }
