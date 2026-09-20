@@ -11,6 +11,10 @@ const savedEnv={...process.env};
 try {
   execFileSync('node_modules/.bin/tsc',['--target','ES2020','--module','commonjs','--moduleResolution','node','--esModuleInterop','--skipLibCheck','--outDir',dir,'app/lib/business-os/buffer-test.ts'],{stdio:'pipe'});
   const require=createRequire(import.meta.url);
+  const dbPath=join(dir,'affiliate-db.js');
+  let storage=async()=>[];
+  storage.json=x=>x;
+  require.cache[dbPath]={id:dbPath,filename:dbPath,loaded:true,exports:{db:()=>storage}};
   const adapter=require(join(dir,'business-os/buffer.js'));
   let requests=[], organizations=[{id:'org1'},{id:'org2'}];
   const channel={id:'x1',name:'DarthAlgos',service:'twitter',isDisconnected:false,isLocked:false,isQueuePaused:false};
@@ -86,6 +90,7 @@ try {
   const sql=async(parts,...values)=>{
     const q=parts.join('?').replace(/\s+/g,' ');
     if(q.includes('pg_advisory_xact_lock')) return [];
+    if(q.includes('buffer_connection_checked')||q.includes('buffer_rate_limited'))return [];
     if(q.includes('select details')) {
       const event=q.includes("event='buffer_draft_test_started'")?'buffer_draft_test_started':'buffer_draft_test_receipt';
       return events.filter(e=>e.key===values[0]&&e.event===event).slice(-1).map(e=>({details:e.details}));
@@ -101,8 +106,7 @@ try {
     let release;const previous=tail;tail=new Promise(resolve=>{release=resolve;});await previous;
     try{return await fn(sql);}finally{release();}
   };
-  const dbPath=join(dir,'affiliate-db.js');
-  require.cache[dbPath]={id:dbPath,filename:dbPath,loaded:true,exports:{db:()=>sql}};
+  storage=sql;
   const {testBufferDraft}=require(join(dir,'business-os/buffer-test.js'));
   const before=createCount;
   const concurrent=await Promise.all([testBufferDraft(),testBufferDraft(),testBufferDraft()]);
