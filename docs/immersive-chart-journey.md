@@ -39,3 +39,8 @@ The tour plays a 12-second simulated setup once when visitors reach Signals. Six
 
 ## Pro visual match
 Home and Pro now use a dedicated animated SVG reconstruction based on the owned Pro feature-map 01/03/04 references: dark TradingView-like grid, blue session bands, teal/red candles, green/red cloud, rectangular BUY/SELL markers, the Darth Algo AI V1.7 dashboard, and correctly ordered short SL/ENTRY/TP1/TP2 zones. The scene approaches in perspective and settles for readability. Synthetic price candles form, the sell marker appears after its candle, and the risk plan reveals. RSI and displayed prices are simulated; this is not the Pine Script engine. Original Pro reference images are retained in the actual-product reveal for comparison.
+
+## Repeating Pro walkthrough
+The homepage and Pro simulation now autoplay while visible and repeat every 24 seconds. The scripted BUY and SELL examples each confirm a signal and display entry, SL, TP1 and TP2 in the same frame. Targets gain checkmarks only after the visible simulated candle reaches their price; each scripted example reaches both targets before the next setup. The on-chart heading and caption disclose the winning scenario as scripted and say real trades can lose. These examples are not indicator performance evidence.
+
+Pause freezes the current frame; resume continues it. Hidden tabs, offscreen scenes, the final screenshot chapter and reduced-motion settings stop active rendering. A new loop clears prior signals and hit states. Pure timeline tests cover signal/plan synchronization, no future target leakage, long/short level ordering, both target hits, loop reset and pause progress.
