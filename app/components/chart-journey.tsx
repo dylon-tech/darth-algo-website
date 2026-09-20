@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { chapterAt, chapterProgress, journeyProgress, smooth, setupPlayback } from "./chart-journey-math";
+import { advanceProLoop, proSimulation } from "./pro-chart-simulation";
 import type { ChartWorld } from "./chart-world";
 import type { EngineScene } from "./immersive-engine";
 
@@ -17,11 +18,13 @@ const defaultCopy = [
 ];
 
 export default function ChartJourney({ scenes, accent = "red" }: { scenes: EngineScene[]; accent?: keyof typeof colors }) {
+  const isPro = accent === "red" || accent === "pro";
+  const paused = useRef(false);
   const root = useRef<HTMLElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLDivElement>(null);
   const world = useRef<ChartWorld | null>(null);
-  const playback = useRef(1);
+  const playback = useRef(isPro ? 0 : 1);
   const played = useRef(false);
   const playing = useRef(false);
   const playbackStatus = useRef<HTMLSpanElement>(null);
@@ -65,7 +68,7 @@ export default function ChartJourney({ scenes, accent = "red" }: { scenes: Engin
     return () => { cancelled = true; observer?.disconnect(); world.current?.dispose(); world.current = null; setReady(false); };
   }, [nearby, motion, failed, accent]);
   useEffect(() => {
-    if (!motion || failed) { playing.current = false; playback.current = 1; setIsPlaying(false); }
+    if (!motion || failed) { playing.current = false; playback.current = isPro ? 0 : 1; setIsPlaying(false); }
     const section = root.current, viewport = stage.current;
     if (!section || !viewport) return;
     let frame = 0;
@@ -80,24 +83,29 @@ export default function ChartJourney({ scenes, accent = "red" }: { scenes: Engin
       const difference = target.current - current.current;
       current.current = Math.abs(difference) < .0002 || !motion ? target.current : current.current + difference * (1 - Math.exp(-elapsed / 100));
       const value = current.current;
-      if (motion && world.current && !played.current && value >= .37 && value < .81) {
+      if (isPro) {
+        const run = !!(motion && world.current && !paused.current && value < .81);
+        if (playing.current !== run) { playing.current = run; setIsPlaying(run); }
+        if (run) playback.current = advanceProLoop(playback.current, elapsed);
+      }
+      if (!isPro && motion && world.current && !played.current && value >= .37 && value < .81) {
         played.current = true; playing.current = true; playback.current = 0; setIsPlaying(true);
       }
-      if (playing.current && motion && world.current) {
+      if (!isPro && playing.current && motion && world.current) {
         playback.current = Math.min(1, playback.current + elapsed / 12000);
         if (playback.current === 1 || target.current >= .81 || target.current < .32) {
           playing.current = false; playback.current = 1; setIsPlaying(false);
         }
       }
       world.current?.render(value, playback.current);
-      if (playbackStatus.current) playbackStatus.current.textContent = playing.current ? setupPlayback(playback.current).phase : "Watch a setup unfold";
+      if (playbackStatus.current) playbackStatus.current.textContent = isPro ? proSimulation(playback.current).phase : playing.current ? setupPlayback(playback.current).phase : "Watch a setup unfold";
       section.style.setProperty("--journey-progress", String(value));
       section.style.setProperty("--proof-reveal", String(smooth(.81, .92, value)));
       const next = chapterAt(value);
       if (next !== activeRef.current) { activeRef.current = next; setActive(next); }
       if (Math.abs(target.current - value) > .0002 || playing.current) frame = requestAnimationFrame(paint);
     };
-    const schedule = () => { if (visible && !document.hidden && !frame) frame = requestAnimationFrame(paint); };
+    const schedule = () => { if (visible && !document.hidden && !frame) { lastFrame = 0; frame = requestAnimationFrame(paint); } };
     requestFrame.current = schedule;
     const readScroll = () => {
       if (motion && !failed) target.current = journeyProgress(section.getBoundingClientRect().top, section.offsetHeight, viewport.offsetHeight);
@@ -108,7 +116,7 @@ export default function ChartJourney({ scenes, accent = "red" }: { scenes: Engin
     const visibility = () => { if (document.hidden) { cancelAnimationFrame(frame); frame = 0; } else { lastFrame = 0; readScroll(); } };
     window.addEventListener("scroll", readScroll, { passive: true }); window.addEventListener("resize", readScroll); document.addEventListener("visibilitychange", visibility);
     return () => { intersection.disconnect(); cancelAnimationFrame(frame); requestFrame.current = () => {}; window.removeEventListener("scroll", readScroll); window.removeEventListener("resize", readScroll); document.removeEventListener("visibilitychange", visibility); };
-  }, [motion, failed]);
+  }, [motion, failed, isPro]);
   const select = (index: number) => {
     const progress = chapterProgress[index];
     target.current = progress;
@@ -119,12 +127,13 @@ export default function ChartJourney({ scenes, accent = "red" }: { scenes: Engin
     requestFrame.current();
   };
   const replay = () => {
+    if (isPro) { paused.current = !paused.current; requestFrame.current(); return; }
     if (playing.current) { playing.current = false; playback.current = 1; setIsPlaying(false); }
     else { played.current = true; playing.current = true; playback.current = 0; setIsPlaying(true); select(3); }
     requestFrame.current();
   };
   const toggleMotion = () => {
-    playing.current = false; playback.current = 1; setIsPlaying(false);
+    playing.current = false; playback.current = isPro ? 0 : 1; paused.current = false; setIsPlaying(false);
     const top = root.current ? window.scrollY + root.current.getBoundingClientRect().top - 72 : window.scrollY;
     setMotion(value => !value);
     // Keep the selected tour on screen when its long scroll track collapses.
@@ -151,9 +160,9 @@ export default function ChartJourney({ scenes, accent = "red" }: { scenes: Engin
           </div>
         </div>
         <div className="journey-bottom">
-          {ready && active !== 4 && <div className="journey-playback"><span ref={playbackStatus}>Watch a setup unfold</span><button type="button" onClick={replay} aria-label={isPlaying ? "Stop setup animation" : "Replay setup animation"}>{isPlaying ? "■ Stop demo" : "▶ Replay setup"}</button></div>}
+          {ready && active !== 4 && <div className="journey-playback"><span ref={playbackStatus}>Watch a setup unfold</span><button type="button" onClick={replay} aria-label={isPro ? isPlaying ? "Pause demo animation" : "Resume demo animation" : isPlaying ? "Stop setup animation" : "Replay setup animation"}>{isPro ? isPlaying ? "Ⅱ Pause demo" : "▶ Resume demo" : isPlaying ? "■ Stop demo" : "▶ Replay setup"}</button></div>}
           <div className="journey-chapters" role="group" aria-label="Tour chapters">{chapters.map((label, index) => <button key={label} type="button" onClick={() => select(index)} aria-pressed={active === index}><span>0{index + 1}</span>{label}<i /></button>)}</div>
-          <div className="journey-caption"><span>{ready && active !== 4 ? "Simulated indicator walkthrough · Not live signals" : "Recorded product example · Not typical results"}</span><button type="button" onClick={toggleMotion} aria-pressed={motion && !failed} disabled={failed}>{failed ? "Still view" : motion ? "Motion on" : "Motion off"}</button></div>
+          <div className="journey-caption"><span>{ready && active !== 4 ? isPro ? "Scripted winning example · Real trades can lose" : "Simulated indicator walkthrough · Not live signals" : "Recorded product example · Not typical results"}</span><button type="button" onClick={toggleMotion} aria-pressed={motion && !failed} disabled={failed}>{failed ? "Still view" : motion ? "Motion on" : "Motion off"}</button></div>
         </div>
       </div>
     </section>
