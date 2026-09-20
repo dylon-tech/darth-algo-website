@@ -28,11 +28,11 @@ async function prepareDailyInstagram() {
   let [asset]=await sql`select details from os_activity where event='social_media_asset' and entity_id=${sourceId} limit 1`;
   if(!asset) {
     const [preference]=await sql`select details from os_activity where event='media_style_changed' order by id desc limit 1`;
-    const {renderSocialArt}=await import("./social-art");
+    const {renderSocialCarousel}=await import("./social-art");
     const text=source.payload.text.replace(/https?:\/\/\S+/g,"").replace(/#\w+/g,"").trim();
-    const png=await renderSocialArt(text,preference?.details.style || "crimson");
-    const sha256=createHash("sha256").update(png).digest("hex");
-    const details={sha256,png:png.toString("base64"),text,altText:`Darth Algo field notes: ${text}`,caption:`${text}\n\nExplore our indicators, community and official pages through the link in our bio.\n\n#DarthAlgo #TradingView #FuturesTrading`};
+    const images=await renderSocialCarousel(text,preference?.details.style || "crimson");
+    const slides=images.map(({png,altText})=>({sha256:createHash("sha256").update(png).digest("hex"),png:png.toString("base64"),altText}));
+    const details={...slides[0],slides,text,caption:`${text}\n\nExplore our indicators, community and official pages through the link in our bio.\n\n#DarthAlgo #TradingView #FuturesTrading`};
     asset=await sql.begin(async tx=>{
       await tx`select pg_advisory_xact_lock(730923)`;
       const [existing]=await tx`select details from os_activity where event='social_media_asset' and entity_id=${sourceId} limit 1`;
@@ -41,7 +41,7 @@ async function prepareDailyInstagram() {
       return {details};
     });
   }
-  const p=instagramPublicationPayload({campaignId:`daily-${sourceId}`,text:asset.details.caption,assets:[{url:`https://www.darthalgo.com/api/social-media/${sourceId}/${asset.details.sha256}`,sha256:asset.details.sha256,altText:asset.details.altText}]});
+  const p=instagramPublicationPayload({campaignId:`daily-${sourceId}`,text:asset.details.caption,assets:(asset.details.slides || [asset.details]).map((slide:{sha256:string;altText:string})=>({url:`https://www.darthalgo.com/api/social-media/${sourceId}/${slide.sha256}`,sha256:slide.sha256,altText:slide.altText}))});
   const result=await syncInstagramCampaign(p);
   if(result.status==="prepared")await sql`insert into os_activity(actor,event,entity_id,details) select 'content','instagram_daily_handoff',${sourceId},${sql.json({approvalId:result.approvalId})} where not exists(select 1 from os_activity where event='instagram_daily_handoff' and entity_id=${sourceId})`;
 }

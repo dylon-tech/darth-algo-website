@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 export type IndicatorCandidate = {
   name: string; purpose: string; differentiation: string; audience: string;
   pine: string; sourceUrls: string[]; demand: string; pricingRationale: string;
-  tier: "free" | "paid"; monthlyPriceUsd: number;
+  tier: "free"; monthlyPriceUsd: 0;
 };
 export const indicatorJsonSchema = { anyOf: [{type:"null"}, {
   type:"object", additionalProperties:false,
@@ -11,8 +11,8 @@ export const indicatorJsonSchema = { anyOf: [{type:"null"}, {
   properties:Object.fromEntries([
     ...["name","purpose","differentiation","audience","pine","demand","pricingRationale"].map(k=>[k,{type:"string",minLength:1,maxLength:k==="pine"?6500:k==="name"?80:500}]),
     ["sourceUrls",{type:"array",minItems:2,maxItems:5,items:{type:"string"}}],
-    ["tier",{type:"string",enum:["free","paid"]}],
-    ["monthlyPriceUsd",{type:"number",minimum:0,maximum:99}],
+    ["tier",{type:"string",enum:["free"]}],
+    ["monthlyPriceUsd",{type:"number",enum:[0]}],
   ])
 }] };
 export function validateIndicator(value: unknown, observedUrls: string[]): IndicatorCandidate {
@@ -20,7 +20,7 @@ export function validateIndicator(value: unknown, observedUrls: string[]): Indic
   const c=value as IndicatorCandidate;
   for(const key of ["name","purpose","differentiation","audience","pine","demand","pricingRationale"] as const)
     if(typeof c[key]!=="string" || !c[key].trim() || c[key].length>(key==="pine"?6500:key==="name"?80:500))throw Error("INVALID_INDICATOR");
-  if(!c.name.startsWith("Darth Algo ") || !["free","paid"].includes(c.tier) || !Number.isFinite(c.monthlyPriceUsd) || c.monthlyPriceUsd<0 || c.monthlyPriceUsd>99 || (c.tier==="free" && c.monthlyPriceUsd!==0) || (c.tier==="paid" && c.monthlyPriceUsd===0))throw Error("INVALID_INDICATOR");
+  if(!c.name.startsWith("Darth Algo ") || c.tier!=="free" || c.monthlyPriceUsd!==0)throw Error("INVALID_INDICATOR");
   if(!Array.isArray(c.sourceUrls) || new Set(c.sourceUrls).size<2 || c.sourceUrls.length>5 || c.sourceUrls.some(u=>!observedUrls.includes(u)))throw Error("INDICATOR_UNOBSERVED_SOURCE");
   return c;
 }
@@ -73,4 +73,14 @@ export function validPrivatePreview(value: unknown, hash: string): value is Priv
     p.compiled === true && p.replay === true && p.reopened === true &&
     typeof p.notes === "string" && p.notes.trim().length >= 30 && p.notes.length <= 2000 &&
     p.attestedBy === "owner" && typeof p.checkedAt === "string" && Number.isFinite(Date.parse(p.checkedAt));
+}
+
+// Standing owner direction: NEW Lab products are free and searchable on TradingView.
+// Protected code keeps ownership separate from free access; it does not require invitations.
+export const indicatorReleasePolicy = {version:3,priceUsd:0,privacy:"public",visibility:"protected",access:"free",requiresInvite:false} as const;
+export const freeIndicatorInstructions = "Every NEW Indicator Lab release is free: tier=free, monthlyPriceUsd=0. Plan a PUBLIC, PROTECTED TradingView Community script that anyone can find and add without an invite. Existing paid Swing, Scalper, Pro and Lifetime products are unchanged. Never promise search ranking, profitability, or publication before real verification. Use a clear Darth Algo + function name and accurate search keywords; no spam or copied code. Explain usefulness and discovery, not a paid pricing hypothesis.";
+export function freePublicReleaseVerified(value:unknown):boolean {
+  if(!value || typeof value!=="object")return false;
+  const v=value as Record<string,unknown>;
+  return v.privacy==="public" && v.visibility==="protected" && v.freeToUse===true && v.inviteRequired===false && v.communitySearchVerified===true && v.addToChartVerified===true;
 }

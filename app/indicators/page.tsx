@@ -7,13 +7,13 @@ import { db } from "../lib/affiliate-db";
 import { productList, getCheckoutLink } from "../lib/products";
 import ProductGallery from "./product-gallery";
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Indicator catalog | Darth Algo", description: "Preview real Darth Algo charts, compare Scalper, Swing and Pro, and get invite-only TradingView access.", alternates: { canonical: "/indicators" } };
+export const metadata = { title: "Indicator catalog | Darth Algo", description: "Explore free public Darth Algo indicators and compare the paid Swing, Scalper and Pro tools for TradingView.", alternates: { canonical: "/indicators" } };
 const accents = { scalp: "text-scalp", swing: "text-swing", pro: "text-pro" };
 const buttons = { scalp: "bg-scalp hover:bg-orange-400", swing: "bg-swing hover:bg-blue-500", pro: "bg-pro hover:bg-violet-500" };
 export default async function IndicatorCatalog() {
   let rows: Array<{ id: string; name: string; purpose: string; tier: string; url: string }> = [];
   let unavailable = false;
-  try { rows = await db()`select id,candidate->>'name' as name,candidate->>'purpose' as purpose,candidate->>'tier' as tier,tradingview_url as url from os_indicator_candidates where status='released' and release_evidence is not null order by released_at desc`; } catch { unavailable = true; }
+  try { rows = await db()`select id,candidate->>'name' as name,candidate->>'purpose' as purpose,candidate->>'tier' as tier,tradingview_url as url from os_indicator_candidates where status='released' and candidate->>'tier'='free' and release_evidence->>'privacy'='public' and release_evidence->>'freeToUse'='true' and release_evidence->>'communitySearchVerified'='true' and release_evidence->>'addToChartVerified'='true' order by released_at desc`; } catch { unavailable = true; }
   return <>
     <SiteHeader />
     <main id="main-content" className="min-h-screen bg-obsidian text-white">
@@ -25,7 +25,7 @@ export default async function IndicatorCatalog() {
             <h1 className="max-w-3xl font-display text-5xl font-black leading-[1.04] tracking-tight sm:text-7xl">Your chart.<br /><span className="text-zinc-500">A clearer perspective.</span></h1>
             <div className="max-w-lg"><p className="text-lg leading-8 text-zinc-400">Explore the signals, trend context, and risk levels behind Darth Algo. See the actual charts. Find the tool that fits your trading style.</p><a href="#access" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold hover:text-ember">How to get access <ArrowRight size={16} /></a></div>
           </div>
-          <div className="mt-10 flex flex-wrap gap-x-7 gap-y-3 border-t border-white/10 pt-6 text-xs text-zinc-400"><span className="inline-flex items-center gap-2"><ChartNoAxesCombined size={15} /> Built for TradingView</span><span className="inline-flex items-center gap-2"><MousePointer2 size={15} /> Expandable chart previews</span><span className="inline-flex items-center gap-2"><LockKeyhole size={15} /> Invite-only access</span></div>
+          <div className="mt-10 flex flex-wrap gap-x-7 gap-y-3 border-t border-white/10 pt-6 text-xs text-zinc-400"><span className="inline-flex items-center gap-2"><ChartNoAxesCombined size={15} /> Built for TradingView</span><span className="inline-flex items-center gap-2"><MousePointer2 size={15} /> Expandable chart previews</span><span className="inline-flex items-center gap-2"><LockKeyhole size={15} /> Free & premium tools</span></div>
         </div>
       </section>
       <section className="section-shell py-14 sm:py-20" aria-labelledby="collection-title">
@@ -47,8 +47,8 @@ export default async function IndicatorCatalog() {
           <div className="mt-9 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6"><TradingViewUsernameHelp /><Link href="/support" className="text-sm text-zinc-400 hover:text-white">Need help with access? Contact support →</Link></div>
         </div>
       </section>
-      <section className="section-shell py-16"><div className="flex items-center gap-3 text-zinc-400"><FlaskConical size={20} /><span className="text-xs font-bold uppercase tracking-widest">Darth Algo Lab</span></div><h2 className="mt-4 font-display text-3xl font-bold">The next ideas start here.</h2><p className="mt-3 max-w-2xl text-sm leading-7 text-zinc-400">New indicators join the collection after review and release verification.</p>
-        {rows.length ? <div className="mt-7 grid gap-4 md:grid-cols-2">{rows.map(row => <article key={row.id} className="rounded-xl border border-white/10 p-6"><p className="text-xs uppercase text-ember">{row.tier} · Released</p><h3 className="mt-2 text-xl font-bold">{row.name}</h3><p className="mt-3 text-sm text-zinc-400">{row.purpose}</p><a href={row.url} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold">View chart and access details on TradingView <ArrowRight size={16} /></a></article>)}</div> : <p className="mt-6 rounded-lg border border-dashed border-white/15 p-5 text-sm text-zinc-500">{unavailable ? "Lab releases are temporarily unavailable. The tools above are available to explore." : "No new Lab releases yet. Explore Scalper, Swing, and Pro above."}</p>}
+      <section id="free-indicators" className="section-shell py-16"><div className="flex items-center gap-3 text-zinc-400"><FlaskConical size={20} /><span className="text-xs font-bold uppercase tracking-widest">Darth Algo Lab</span></div><h2 className="mt-4 font-display text-3xl font-bold">Free tools. Find them on TradingView.</h2><p className="mt-3 max-w-2xl text-sm leading-7 text-zinc-400">New Lab indicators are free to use. After release, search their exact Darth Algo name in TradingView → Indicators → Community, or open the link below and add the tool to your chart. No purchase or invitation is required.</p>
+        {rows.length ? <div className="mt-7 grid gap-4 md:grid-cols-2">{rows.map(row => <article key={row.id} className="rounded-xl border border-white/10 p-6"><p className="text-xs uppercase text-ember">Free · Public on TradingView</p><h3 className="mt-2 text-xl font-bold">{row.name}</h3><p className="mt-3 text-sm text-zinc-400">{row.purpose}</p><a href={row.url} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold">Open free indicator on TradingView <ArrowRight size={16} /></a></article>)}</div> : <p className="mt-6 rounded-lg border border-dashed border-white/15 p-5 text-sm text-zinc-500">{unavailable ? "Lab releases are temporarily unavailable. The tools above are available to explore." : "The first free releases are still being prepared and tested. Only verified public releases appear here."}</p>}
       </section>
     </main>
     <SiteFooter />
