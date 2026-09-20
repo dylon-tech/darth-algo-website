@@ -1,3 +1,4 @@
+import {bufferCooldown} from './buffer';
 import {db} from "../affiliate-db";
 import {checkBufferPublication} from "./buffer-publishing";
 import {checkInstagramPublication} from "./instagram-publishing";
@@ -22,13 +23,13 @@ export async function syncMediaAutopilot() {
   await tx`update os_approvals a set status='expired',decision_note='Superseded by the owner’s same-post daily campaign' where status in ('pending','approved') and payload->>'executor' in ('buffer_x_v1','buffer_instagram_v1') and not exists(select 1 from os_activity where entity_id=a.id::text and event='buffer_publish_started')`;
  });
  const receipts=await sql`select a.id,a.payload,a.payload_hash from os_approvals a where status='approved' and payload->>'executor' in ('buffer_x_v1','buffer_instagram_v1') and exists(select 1 from os_activity where entity_id=a.id::text and event='buffer_publish_receipt') and not exists(select 1 from os_activity where entity_id=a.id::text and event='buffer_publish_checked' and (details->>'published'='true' or created_at>now()-interval '5 minutes')) order by created_at limit 2`;
- for(const r of receipts){if(r.payload.executor==='buffer_x_v1')await checkBufferPublication(r.id,r.payload_hash);else await checkInstagramPublication(r.id,r.payload_hash);}
+ for(const r of receipts){if(r.payload.executor==='buffer_x_v1')await checkBufferPublication(r.id,r.payload_hash,{scheduled:true});else await checkInstagramPublication(r.id,r.payload_hash,{scheduled:true});}
  let social;
  try{social=await syncDailySocial();}
  catch(error){
   const code=error instanceof Error?error.message:'';
   if(!['BUFFER_HTTP_429','BUFFER_RATE_LIMIT_COOLDOWN'].includes(code))throw error;
-  social={status:'waiting_for_buffer',code};
+  social={status:'waiting_for_buffer',code,nextCheckAt:await bufferCooldown()};
  }
  const community=await publishCommunityPreview();
  return {...social,community};

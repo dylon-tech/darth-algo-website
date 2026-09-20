@@ -10,10 +10,12 @@ Owner flow: Start sign-in session → sign in to TradingView inside the live win
 
 ## Scope
 
-This is an executable **saved-private-chart runtime checker**, not a complete indicator release executor. A successful result does not certify semantic signal behavior, compiler diagnostics, alerts, replay, educational examples, publication or Community discovery. It does not register this manual prototype as an AI-generated candidate. New candidate testing/provisioning and approved public script/educational publication remain unfinished. Release package gates remain in force.
+This is an executable **saved-private-chart runtime checker**, not a complete indicator release executor. A successful result does not certify semantic signal behavior, compiler diagnostics, alerts, replay, educational examples, publication or Community discovery. After a successful exact-source check, it imports this existing prototype with a null research run and explicit owner-private-import provenance. It attaches the already observed supervised compile/replay evidence, including the stated unverified cases. The Lab downloads the actual inspected snapshot, records its byte digest and prepares an approval package. No synthetic Research result is created, and no approval is granted automatically. New candidate testing/provisioning and approved public script/educational publication remain unfinished. Release package gates remain in force.
 
 ## Validation
 
 PGlite tests exercise the production queue/state code with mocked browser interactions: duplicate claims, pause, source-keyed evidence, login loss, masked errors, interrupted jobs, exhausted allowance and cron authentication. Existing hosted-browser tests retain encrypted-key, CSRF, context and pilot-cap checks. These tests are not live TradingView execution evidence. Inspect `indicator_browser_tick` and the owner browser status for the real outcome after deployment.
 
 References: Browserbase [Playwright connection](https://docs.browserbase.com/welcome/quickstarts/playwright), [session retrieval](https://docs.browserbase.com/reference/api/get-a-session), and [persistent contexts](https://docs.browserbase.com/platform/browser/core-features/contexts).
+
+Live deployment PR85 ran at 19:20 UTC September 20 and returned TRADINGVIEW_LOGIN_REQUIRED. The hosted profile was not verified, and no candidate import or publication occurred. The owner needs a TradingView session in the hosted profile before the runtime check and source-bound package handoff can complete.

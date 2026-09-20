@@ -57,7 +57,7 @@ export async function bufferStatus(options:{fresh?:boolean}={}): Promise<BufferC
   // Display/cron discovery is cached durably across serverless instances.
   // Actual publication preflight explicitly requests fresh channel state.
   if(!options.fresh){
-    const [cached]=await sql`select details from os_activity where event='buffer_connection_checked' and entity_id=${key} and created_at>now()-interval '30 minutes' order by id desc limit 1`;
+    const [cached]=await sql`select details from os_activity where event='buffer_connection_checked' and entity_id=${key} and created_at>now()-interval '2 hours' order by id desc limit 1`;
     if(cached)return cached.details as BufferConnection;
   }
   const account = await bufferGraphQL<{ account: { organizations: Array<{ id: string }> } }>(`

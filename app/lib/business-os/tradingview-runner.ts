@@ -48,6 +48,7 @@ async function sourceOnChart(page:Page){
  const copied=await page.evaluate(()=>navigator.clipboard.readText());
  if(exactSourceHash(copied)!==privateTest.sourceHash)throw Error('PRIVATE_SOURCE_CHANGED');
  await page.getByRole('button',{name:'Close',exact:true}).click();
+ return copied;
 }
 async function chartValues(page:Page,interval:number):Promise<ChartCheck>{
  const chart=page.getByRole('region',{name:'Chart #1',exact:true});
@@ -60,14 +61,14 @@ async function chartValues(page:Page,interval:number):Promise<ChartCheck>{
   return bars.some(e=>['Opening range high','Opening range low'].every(label=>{const t=e.querySelector(`[title="${label}"]`)?.textContent||'';return /^\d[\d,.]*$/.test(t.trim());}));
  },{title:privateTest.title},{timeout:20000}).catch(()=>{throw Error('CHART_DATA_UNAVAILABLE');});
  const rangeHigh=(await high.innerText()).trim(),rangeLow=(await low.innerText()).trim();
- if(Number(rangeHigh.replaceAll(',',''))<=Number(rangeLow.replaceAll(',','')))throw Error('CHART_DATA_UNAVAILABLE');
+ if(Number(rangeHigh.replace(/,/g,''))<=Number(rangeLow.replace(/,/g,'')))throw Error('CHART_DATA_UNAVAILABLE');
  return {interval,rangeHigh,rangeLow};
 }
-export async function checkPrivateChart(page:Page):Promise<RunnerEvidence>{
+export async function checkPrivateChart(page:Page):Promise<RunnerEvidence&{source:string}>{
  await verifyHostedIdentity(page);
  await page.getByRole('button',{name:'AAPL',exact:true}).waitFor({state:'visible'});
  await page.getByRole('button',{name:'Candles',exact:true}).waitFor({state:'visible'});
- await sourceOnChart(page);
+ const source=await sourceOnChart(page);
  // Only this dedicated private layout is touched. Preserve its saved defaults.
  const initial=await page.getByRole('button',{name:/^(1 minute|3 minutes|5 minutes|15 minutes)$/,exact:true}).innerText();
  const labels:Record<number,string>={1:'1 minute',3:'3 minutes',5:'5 minutes',15:'15 minutes'};
@@ -88,5 +89,5 @@ export async function checkPrivateChart(page:Page):Promise<RunnerEvidence>{
  await page.getByRole('button',{name:'All changes saved',exact:true}).waitFor({state:'visible'});
  await page.reload({waitUntil:'domcontentloaded',timeout:25000});
  await identity(page);await chartValues(page,5);await sourceOnChart(page);
- return {account:privateTest.account,sourceHash:privateTest.sourceHash,chartUrl:privateTest.chartUrl,checks,reopened:true,checkedAt:new Date().toISOString()};
+ return {source,account:privateTest.account,sourceHash:privateTest.sourceHash,chartUrl:privateTest.chartUrl,checks,reopened:true,checkedAt:new Date().toISOString()};
 }

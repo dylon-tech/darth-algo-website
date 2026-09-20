@@ -41,11 +41,14 @@ export async function runHostedChecks(){
   const context=browser.contexts()[0];if(!context)throw Error('PRIVATE_BROWSER_CHECK_FAILED');
   await context.grantPermissions(['clipboard-read','clipboard-write'],{origin:'https://www.tradingview.com'});
   const page=await context.newPage();page.setDefaultTimeout(12000);
-  const evidence=await checkPrivateChart(page);
+  const {source,...evidence}=await checkPrivateChart(page);
   await recordBrowserVerification('verified');
   await sql`update os_browser_checks set status='checked',evidence=${sql.json(evidence)},finished_at=now() where id=${checkId} and status='running'`;
+  const {importPrivateBeta}=await import('./private-beta-package');
+  let imported=false;
+  try{await importPrivateBeta(source,evidence);imported=true;}catch{/* Preserve real runtime evidence; release remains held if import fails. */}
   await queueOwnerNotice(`hosted-private-check:${checkId}`,'TradingView private chart checked: saved source matches, four intervals loaded, and the chart reopened. This is a runtime check; replay, educational review and public release are separate.');
-  return {status:'checked',sourceHash:privateTest.sourceHash,intervals:evidence.checks.map(c=>c.interval),published:false};
+  return {status:'checked',sourceHash:privateTest.sourceHash,intervals:evidence.checks.map(c=>c.interval),privateCandidateImported:imported,published:false};
  }catch(error){
   const code=checkError(error);
   await recordBrowserVerification(code);

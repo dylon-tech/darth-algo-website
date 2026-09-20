@@ -37,3 +37,9 @@ Campaign preparation and public asset-byte checks run before the daily window, m
 Runtime health and the CEO desk now identify missing channels, blocked community photo permissions, failed asset preparation and social submissions unconfirmed after 15 minutes. Existing health-transition dedupe avoids repeat healthy messages. Today's-posts views include the verified social URL. Indicator Lab logs expose its actual idea stage and hosted-browser credential connection separately from the unimplemented publishing worker.
 
 Telegram permission reference: https://core.telegram.org/bots/api#chatmember
+
+## Buffer allowance follow-up — September 20
+
+The authenticated Buffer API page showed 0/100 requests in 15 minutes, 250/250 in 24 hours and 327/3,000 in 30 days. This is a daily provider allowance exhaustion, not a disconnected social channel. No upgrade or replacement key was purchased.
+
+Connection discovery now caches for two hours; immediate publishing preflight still fetches fresh channel state. Receipt reconciliation runs every five minutes initially, then hourly after an accepted post is over an hour old. Failed legacy reads also record a check so a provider failure cannot create an every-minute polling loop. A previous uncertain submission is checked in the database before downloading assets or querying channels for a new post. This preserves exact-payload and single-attempt behavior while reducing unused polling. Cooldown logs include the next permitted check time; that timestamp is not a promise that the rolling provider quota has reset.
