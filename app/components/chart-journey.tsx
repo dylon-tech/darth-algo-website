@@ -108,7 +108,7 @@ export default function ChartJourney({ scenes, accent = "red" }: { scenes: Engin
         <div className="journey-topline"><span>DARTH ALGO / THE INTERACTIVE TOUR</span><a href="#journey-finish">Skip to the tools ↗</a></div>
         <div className="journey-heading" key={active}>
           <p className="journey-kicker">0{active + 1} <span>/</span> {chapters[active]}</p>
-          <h2>{copy.title}</h2><p className="journey-copy">{copy.copy}</p>
+          <h2>{copy.title}</h2><p className="journey-copy">{active === 0 && (!motion || failed) ? "Tap a chapter to explore the actual indicator charts." : copy.copy}</p>
         </div>
         <div className="journey-world-wrap">
           <div className="journey-light journey-light-left" aria-hidden="true" /><div className="journey-light journey-light-right" aria-hidden="true" />

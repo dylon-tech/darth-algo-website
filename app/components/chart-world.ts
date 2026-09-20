@@ -1,14 +1,26 @@
 import * as THREE from "three";
+import { SVGRenderer } from "three/addons/renderers/SVGRenderer.js";
 import { cameraPose, demoCandles, smooth } from "./chart-journey-math";
 
 export type ChartWorld = { render: (progress: number) => void; resize: () => void; dispose: () => void };
 
 export function createChartWorld(host: HTMLElement, accent: string, onFailure: () => void): ChartWorld {
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "low-power" });
-  renderer.setClearColor(0x04060a, 0);
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.5;
+  let renderer: THREE.WebGLRenderer | SVGRenderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "low-power" });
+    renderer.setClearColor(0x04060a, 0);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.5;
+  } catch {
+    // Preserve actual perspective geometry when GPU rendering is unavailable.
+    renderer = new SVGRenderer();
+    renderer.setQuality("high");
+    renderer.setPrecision(2);
+    renderer.setClearColor(new THREE.Color(0x05070b), 0);
+  }
+  const gpu = renderer instanceof THREE.WebGLRenderer;
+  host.dataset.renderer = gpu ? "webgl" : "vector3d";
   renderer.domElement.setAttribute("aria-hidden", "true");
   host.appendChild(renderer.domElement);
   const scene = new THREE.Scene();
@@ -16,8 +28,9 @@ export function createChartWorld(host: HTMLElement, accent: string, onFailure: (
   const root = new THREE.Group();
   scene.add(root);
   scene.add(new THREE.HemisphereLight(0xdceaff, 0x17243b, 2.3));
-  const light = new THREE.DirectionalLight(0xffffff, 4); light.position.set(-6, 10, 12); scene.add(light);
-  const rim = new THREE.DirectionalLight(accent, 3); rim.position.set(8, -3, 6); scene.add(rim);
+  if (!gpu) scene.add(new THREE.AmbientLight(0xc9dbf0, .65));
+  const light = new THREE.DirectionalLight(0xffffff, gpu ? 4 : 1.1); light.position.set(-6, 10, 12); scene.add(light);
+  const rim = new THREE.DirectionalLight(accent, gpu ? 3 : .4); rim.position.set(8, -3, 6); scene.add(rim);
   const geometries: THREE.BufferGeometry[] = [];
   const materials: THREE.Material[] = [];
   const geometry = <T extends THREE.BufferGeometry>(item: T): T => { geometries.push(item); return item; };
@@ -43,7 +56,7 @@ export function createChartWorld(host: HTMLElement, accent: string, onFailure: (
   });
   const curvePoints = demoCandles.map((candle, index) => new THREE.Vector3(candle.x, Math.sin(index * .25) * 1.05 + (index - 19) * .075 - .65, .08));
   const curve = new THREE.CatmullRomCurve3(curvePoints);
-  const trendLine = new THREE.Mesh(geometry(new THREE.TubeGeometry(curve, 110, .055, 6, false)), metal(0x65e5cf)); trendLayer.add(trendLine);
+  const trendLine = new THREE.Mesh(geometry(new THREE.TubeGeometry(curve, gpu ? 110 : 45, .055, gpu ? 6 : 4, false)), metal(0x65e5cf)); trendLayer.add(trendLine);
   const cloudShape = new THREE.Shape();
   curvePoints.forEach((point, i) => i === 0 ? cloudShape.moveTo(point.x, point.y + .22) : cloudShape.lineTo(point.x, point.y + .22));
   [...curvePoints].reverse().forEach(point => cloudShape.lineTo(point.x, point.y - .35)); cloudShape.closePath();
@@ -97,7 +110,9 @@ export function createChartWorld(host: HTMLElement, accent: string, onFailure: (
     if (disposed) return;
     const width = Math.max(1, host.clientWidth), height = Math.max(1, host.clientHeight);
     const pixelRatio = Math.min(window.devicePixelRatio || 1, width < 768 ? 1.5 : 1.8, Math.sqrt(1800000 / (width * height)));
-    renderer.setPixelRatio(pixelRatio); renderer.setSize(width, height, false); camera.aspect = width / height; camera.updateProjectionMatrix(); render(current);
+    if (renderer instanceof THREE.WebGLRenderer) { renderer.setPixelRatio(pixelRatio); renderer.setSize(width, height, false); }
+    else renderer.setSize(width, height);
+    camera.aspect = width / height; camera.updateProjectionMatrix(); render(current);
   };
   const contextLost = (event: Event) => { event.preventDefault(); onFailure(); };
   renderer.domElement.addEventListener("webglcontextlost", contextLost);
@@ -105,6 +120,8 @@ export function createChartWorld(host: HTMLElement, accent: string, onFailure: (
   return { render, resize, dispose: () => {
     if (disposed) return; disposed = true;
     renderer.domElement.removeEventListener("webglcontextlost", contextLost);
-    geometries.forEach(item => item.dispose()); materials.forEach(item => item.dispose()); renderer.dispose(); renderer.forceContextLoss(); renderer.domElement.remove();
+    geometries.forEach(item => item.dispose()); materials.forEach(item => item.dispose());
+    if (renderer instanceof THREE.WebGLRenderer) { renderer.dispose(); renderer.forceContextLoss(); }
+    renderer.domElement.remove(); delete host.dataset.renderer;
   } };
 }
