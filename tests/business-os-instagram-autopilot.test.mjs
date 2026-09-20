@@ -27,7 +27,14 @@ try {
  const {mediaDashboard}=require(join(dir,'lib/business-os/telegram-media.js'));
  const {contentSlot,mediaAutopilot}=require(join(dir,'lib/business-os/media-policy.js'));
  const {decide}=require(join(dir,'lib/business-os/service.js'));
- const {parseCompetitorFeed}=require(join(dir,'lib/business-os/competitor-research.js'));
+ const {parseCompetitorFeed,parseCompetitorPage}=require(join(dir,'lib/business-os/competitor-research.js'));
+ const pageData={metadata:{channelMetadataRenderer:{externalId:'verified-channel'}},contents:{twoColumnBrowseResultsRenderer:{tabs:[{tabRenderer:{selected:true,content:{items:[{lockupViewModel:{contentId:'abcdefghijk',contentType:'LOCKUP_CONTENT_TYPE_VIDEO',metadata:{lockupMetadataViewModel:{title:{content:'A chart-reading lesson'},metadata:{contentMetadataViewModel:{metadataRows:[{metadataParts:[{text:{content:'2.4K views'}},{text:{content:'3 days ago'}}]}]}}}}}}]}}}]}}};
+ const page=()=>`<script>var ytInitialData = ${JSON.stringify(pageData)};</script>`;
+ const pagePosts=parseCompetitorPage(page(),'verified-channel',Date.parse('2026-09-20T12:00:00Z'));
+ assert.equal(pagePosts.length,1);assert.equal(pagePosts[0].views,2400);assert.equal(pagePosts[0].viewsPerDay,800);assert.equal(pagePosts[0].viewsPrecision,'rounded public display');assert.equal(pagePosts[0].published,'2026-09-17T12:00:00.000Z');
+ assert.equal(parseCompetitorPage(page(),'wrong-channel').length,0);
+ pageData.contents.twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.items[0].lockupViewModel.metadata.lockupMetadataViewModel.metadata.contentMetadataViewModel.metadataRows[0].metadataParts[0].text.content='Views unavailable';
+ assert.equal(parseCompetitorPage(page(),'verified-channel')[0].views,null);
  process.env.VERCEL_ENV='production';process.env.AI_OS_AUTONOMY_ENABLED='true';process.env.AI_OS_AI_ENABLED='false';process.env.BUFFER_API_KEY='offline';process.env.BUFFER_X_CHANNEL_ID=mediaAutopilot.channels.x;process.env.AI_OS_TELEGRAM_ENABLED='false';
  let drafts=0,publics=0,drop=false,corrupt=false;const posts=new Map();
  globalThis.fetch=async(url,options)=>{
