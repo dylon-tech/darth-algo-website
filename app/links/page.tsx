@@ -17,6 +17,7 @@ import {
   Zap,
 } from "lucide-react";
 import LinkActions from "./link-actions";
+import IndicatorPreview from "./indicator-preview";
 
 export const metadata: Metadata = {
   title: "Darth Algo Links | Indicators, Community & Support",
@@ -41,7 +42,7 @@ export default function LinksPage() {
   return (
     <main id="main-content" className="relative min-h-screen overflow-hidden bg-[#07090d] px-4 py-4 text-white sm:py-8">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-        <div className="absolute left-1/2 top-[-16rem] h-[34rem] w-[34rem] -translate-x-1/2 rounded-full bg-red-600/15 blur-[110px]" />
+        <div className="absolute left-1/2 top-[-16rem] h-[34rem] w-[34rem] -translate-x-1/2 rounded-full bg-red-600/10 blur-[110px]" />
         <div className="absolute bottom-[-12rem] right-[-10rem] h-[28rem] w-[28rem] rounded-full bg-emerald-400/10 blur-[120px]" />
         <div className="absolute inset-0 opacity-[0.16] [background-image:linear-gradient(rgba(255,255,255,.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.08)_1px,transparent_1px)] [background-size:36px_36px] [mask-image:linear-gradient(to_bottom,black,transparent_70%)]" />
         <div className="absolute inset-x-[-18%] top-0 h-[45rem] overflow-hidden [mask-image:linear-gradient(to_bottom,black_2%,black_66%,transparent_100%)]">
@@ -50,34 +51,7 @@ export default function LinksPage() {
           <div className="market-hero-scan absolute inset-y-0 w-28 bg-gradient-to-r from-transparent via-sky-300/10 to-transparent blur-xl" />
           <div className="absolute inset-0 bg-red-950/[.06] mix-blend-color" />
         </div>
-        <svg viewBox="0 0 1200 1100" preserveAspectRatio="xMidYMin slice" className="market-chart-drift absolute inset-x-0 top-[43rem] h-[68rem] w-full opacity-[.26]">
-          <defs>
-            <linearGradient id="market-line" x1="0" x2="1"><stop stopColor="#ef4444"/><stop offset=".5" stopColor="#a855f7"/><stop offset="1" stopColor="#34d399"/></linearGradient>
-            <filter id="market-glow"><feGaussianBlur stdDeviation="5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-          </defs>
-          <path d="M0 650 C120 620 145 700 250 625 S430 520 520 590 S690 690 775 530 S955 430 1200 300" fill="none" stroke="url(#market-line)" strokeWidth="5" filter="url(#market-glow)" />
-          <path d="M0 665 C120 635 145 715 250 640 S430 535 520 605 S690 705 775 545 S955 445 1200 315 L1200 1100 L0 1100Z" fill="url(#market-line)" opacity=".07" />
-          <g strokeWidth="4">
-            <g stroke="#ef4444" fill="#ef4444"><path d="M82 380v135"/><rect x="66" y="410" width="32" height="70" rx="3"/></g>
-            <g stroke="#34d399" fill="#34d399"><path d="M145 300v150"/><rect x="129" y="330" width="32" height="78" rx="3"/></g>
-            <g stroke="#34d399" fill="#34d399"><path d="M208 230v155"/><rect x="192" y="260" width="32" height="86" rx="3"/></g>
-            <g stroke="#ef4444" fill="#ef4444"><path d="M995 585v155"/><rect x="979" y="610" width="32" height="84" rx="3"/></g>
-            <g stroke="#34d399" fill="#34d399"><path d="M1058 500v160"/><rect x="1042" y="535" width="32" height="82" rx="3"/></g>
-            <g stroke="#34d399" fill="#34d399"><path d="M1121 420v155"/><rect x="1105" y="450" width="32" height="85" rx="3"/></g>
-          </g>
-          <g fill="#ffffff" fontFamily="monospace" fontSize="19" fontWeight="700" opacity=".4"><text x="45" y="545">SELL</text><text x="178" y="215">BUY</text><text x="955" y="770">SELL</text><text x="1080" y="400">BUY</text></g>
-        </svg>
-        {[50,78,110,145,185,228].map((top,index)=><div key={top} style={{top:`${top}rem`,transform:`rotate(${index % 2 ? 1.2 : -1.2}deg)`}} className="absolute inset-x-[-8%] overflow-hidden border-y border-white/[.055] bg-gradient-to-r from-red-500/[.055] via-transparent to-emerald-400/[.06] py-2.5 opacity-45 [mask-image:linear-gradient(90deg,transparent,black_8%,black_92%,transparent)]">
-          <div style={{animationDuration:`${24 + index * 3}s`}} className={`market-ticker-track flex w-max items-center gap-10 whitespace-nowrap font-mono text-[10px] font-black uppercase tracking-[.16em] ${index % 2 ? 'market-ticker-reverse' : ''}`}>
-            {[0,1].map(copy=><span key={copy} className="flex items-center gap-10"><span className="text-red-300/70">DARTH ALGO WIRE</span><span className="text-emerald-300/80">ES +0.62%</span><span className="text-red-300/75">NQ −0.18%</span><span className="text-emerald-300/80">GC +0.41%</span><span className="text-sky-200/65">SIGNAL CONTEXT ONLINE</span><span className="text-zinc-400/60">RISK LEVELS MAPPED</span><span className="text-violet-200/65">COMMUNITY ROOM OPEN</span></span>)}
-          </div>
-        </div>)}
-        <div className="absolute left-[max(1.5rem,calc(50%-31rem))] top-[45rem] hidden w-44 rotate-[-4deg] rounded-xl border border-emerald-300/15 bg-[#0a1212]/65 p-3 font-mono shadow-[0_20px_50px_rgba(0,0,0,.3)] backdrop-blur md:block">
-          <p className="text-[8px] font-black uppercase tracking-wider text-zinc-600">Market pulse</p><p className="mt-2 text-lg font-black text-emerald-300">+0.62%</p><div className="mt-2 flex h-7 items-end gap-1">{[35,55,42,70,62,88,76].map((height,index)=><span key={index} className="w-2 rounded-t-sm bg-emerald-400/50" style={{height:`${height}%`}} />)}</div>
-        </div>
-        <div className="absolute right-[max(1.5rem,calc(50%-31rem))] top-[68rem] hidden w-44 rotate-3 rounded-xl border border-red-300/15 bg-[#120a0b]/65 p-3 font-mono shadow-[0_20px_50px_rgba(0,0,0,.3)] backdrop-blur md:block">
-          <p className="text-[8px] font-black uppercase tracking-wider text-zinc-600">Session watch</p><p className="mt-2 text-xs font-black text-white">NY PM • ACTIVE</p><p className="mt-2 text-[8px] leading-4 text-zinc-500">Momentum and risk context updating</p>
-        </div>
+
       </div>
 
       <div className="relative mx-auto w-full max-w-xl">
@@ -101,25 +75,21 @@ export default function LinksPage() {
             <Image src="/darth-algo-wordmark-clean.svg" alt="Darth Algo" width={830} height={100} priority className="h-auto w-full drop-shadow-[0_8px_28px_rgba(239,68,68,.34)]" />
           </h1>
           <p className="mx-auto mt-2 max-w-md text-sm leading-5 text-zinc-400 sm:text-base">
-            Indicators, education, community, and support—all in one place.
+            Read the chart. Explore the tools. Find your community.
           </p>
+          <nav aria-label="Find what you need" className="mt-5 flex justify-center gap-2">
+            <a href="#indicators" className="inline-flex min-h-11 items-center rounded-full bg-white px-4 text-sm font-semibold text-zinc-950">Indicators</a>
+            <a href="#community" className="inline-flex min-h-11 items-center rounded-full border border-white/20 bg-[#11151d] px-4 text-sm font-medium text-zinc-200 hover:bg-white/10">Community</a>
+            <a href="#socials" className="inline-flex min-h-11 items-center rounded-full border border-white/20 bg-[#11151d] px-4 text-sm font-medium text-zinc-200 hover:bg-white/10">Socials</a>
+          </nav>
         </section>
 
-        <section aria-label="Featured Darth Algo Swing Tool trial" className="relative mt-4 overflow-hidden rounded-[1.75rem] border border-sky-400/35 bg-[#0c131d]/95 shadow-[0_24px_80px_rgba(14,165,233,.22)] backdrop-blur">
+        <section id="indicators" aria-label="Featured Darth Algo Swing Tool trial" className="relative mt-4 overflow-hidden rounded-[1.75rem] border border-white/15 bg-[#0c131d] shadow-[0_24px_80px_rgba(0,0,0,.25)]">
           <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_82%_8%,rgba(14,165,233,.32),transparent_34%),radial-gradient(circle_at_5%_92%,rgba(59,130,246,.2),transparent_38%)]" />
           <div className="relative border-b border-white/10 bg-black/25 px-5 py-3">
             <div className="flex items-center justify-between gap-3">
               <span className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[.2em] text-sky-200"><span className="h-2 w-2 animate-pulse rounded-full bg-sky-400" /> Start here</span>
               <span className="rounded-full border border-sky-300/25 bg-sky-300/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-sky-100">2 days free</span>
-            </div>
-          </div>
-
-          <div className="relative aspect-[16/9] overflow-hidden border-b border-white/10 bg-black">
-            <Image src="/indicators/swing-overview.png" alt="Darth Algo Swing Tool showing signals and market trends on a futures chart" fill priority sizes="(max-width: 640px) 100vw, 576px" className="object-cover object-left" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0b0c12] via-transparent to-transparent" />
-            <div className="absolute bottom-3 left-3 flex gap-2">
-              <span className="rounded-md border border-white/15 bg-black/70 px-2.5 py-1.5 text-[9px] font-black uppercase tracking-wider text-white backdrop-blur">Buy + sell signals</span>
-              <span className="rounded-md border border-white/15 bg-black/70 px-2.5 py-1.5 text-[9px] font-black uppercase tracking-wider text-white backdrop-blur">Risk levels</span>
             </div>
           </div>
 
@@ -139,16 +109,18 @@ export default function LinksPage() {
             <a href="https://buy.stripe.com/28EcN699l8oQ9aC5Ao6kg02" className="mt-5 flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 via-sky-500 to-cyan-400 px-5 text-sm font-black text-white shadow-[0_12px_35px_rgba(14,165,233,.35)] transition hover:-translate-y-0.5 hover:brightness-110">
               <CreditCard className="h-4 w-4" /> Start My 2-Day Free Trial <ArrowUpRight className="h-4 w-4" />
             </a>
-            <p className="mt-3 text-center text-[10px] font-bold text-zinc-500">Then $14.99/month. Cancel anytime.</p>
+            <p className="mt-3 text-center text-xs font-medium tabular-nums text-zinc-300">Then $14.99/month. Cancel anytime.</p>
+            <p className="mt-2 text-center text-xs leading-5 text-zinc-400">Trial starts at checkout. TradingView access is activated manually, usually within 24 hours.</p>
             <Link href="/#pricing" className="mt-3 flex min-h-11 items-center justify-center text-xs font-black text-zinc-400 transition hover:text-white">Compare every indicator plan</Link>
           </div>
+          <IndicatorPreview />
         </section>
 
-        <section aria-label="Join the Darth Algo community" className="relative mt-5 overflow-hidden rounded-[1.75rem] border border-emerald-300/30 bg-[#081314]/92 shadow-[0_28px_80px_rgba(16,185,129,.18)] backdrop-blur-sm">
+        <section id="community" aria-label="Join the Darth Algo community" className="relative mt-5 overflow-hidden rounded-[1.75rem] border border-emerald-300/30 bg-[#081314]/92 shadow-[0_28px_80px_rgba(16,185,129,.18)] backdrop-blur-sm">
           <div className="relative aspect-video overflow-hidden border-b border-white/10 bg-black">
             <Image src="/darth-algo-community-banner.svg" alt="Darth Algo traders sharing charts in the community trading room" fill sizes="(max-width: 640px) 100vw, 576px" className="object-cover transition duration-700 hover:scale-105" />
             <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#081314] via-transparent to-transparent" />
-            <span className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-emerald-300/30 bg-black/65 px-3 py-1.5 text-[9px] font-black uppercase tracking-[.16em] text-emerald-200 backdrop-blur"><span className="h-2 w-2 animate-pulse rounded-full bg-emerald-300 shadow-[0_0_14px_#6ee7b7]" /> Community live</span>
+            <span className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-emerald-300/30 bg-black/65 px-3 py-1.5 text-[9px] font-black uppercase tracking-[.16em] text-emerald-200 backdrop-blur"><span className="h-2 w-2 animate-pulse rounded-full bg-emerald-300 shadow-[0_0_14px_#6ee7b7]" /> Trader community</span>
             <span className="absolute bottom-3 left-3 rounded-lg border border-white/10 bg-black/65 px-3 py-2 text-[9px] font-bold text-white/75 backdrop-blur">Charts • Education • Indicator help</span>
           </div>
           <div className="relative p-4 sm:p-5">
@@ -165,7 +137,7 @@ export default function LinksPage() {
           </div>
         </section>
 
-        <section aria-labelledby="social-heading" className="mt-8">
+        <section id="socials" aria-labelledby="social-heading" className="mt-8">
           <div className="mb-4 flex items-end justify-between gap-3">
             <div><p className="text-[10px] font-black uppercase tracking-[.2em] text-red-400">See it in action</p><h2 id="social-heading" className="font-display mt-1 text-2xl font-black">Watch. Learn. Follow.</h2></div>
             <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-600">Official socials</span>
@@ -175,7 +147,8 @@ export default function LinksPage() {
             <div className="relative aspect-video overflow-hidden bg-black">
               <iframe
                 src="https://www.youtube-nocookie.com/embed/YGhU7kgd8h0?rel=0"
-                title="Darth Algo real-time buy and sell signals"
+                title="Darth Algo indicator demonstration"
+                loading="lazy"
                 className="absolute inset-0 h-full w-full"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
@@ -233,16 +206,14 @@ export default function LinksPage() {
           </div>
         </section>
 
-        <section aria-label="More Darth Algo links" className="mt-4 grid grid-cols-2 gap-3">
+        <section aria-label="More Darth Algo links" className="mt-5 divide-y divide-white/10 overflow-hidden rounded-2xl border border-white/10 bg-[#11151d]">
           {secondaryLinks.map((item) => {
             const Icon = item.icon;
             return (
-              <Link key={item.title} href={item.href} className="group relative flex min-h-[100px] flex-col justify-between overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/[.06] to-white/[.015] p-4 shadow-[0_12px_30px_rgba(0,0,0,.18)] transition duration-300 hover:-translate-y-1 hover:border-red-500/35 hover:shadow-[0_18px_45px_rgba(239,68,68,.12)]">
-                <span aria-hidden="true" className="absolute -right-6 -top-6 h-16 w-16 rounded-full bg-red-500/10 blur-2xl transition group-hover:bg-red-500/25" />
-                <Icon className="relative h-5 w-5 text-red-400 transition group-hover:scale-110" />
-                <span className="flex items-end justify-between gap-2 text-sm font-black">
-                  {item.title}<ArrowUpRight className="h-4 w-4 text-zinc-600 group-hover:text-white" />
-                </span>
+              <Link key={item.title} href={item.href} className="flex min-h-16 items-center gap-3 px-5 py-3 text-sm font-semibold text-zinc-200 transition-colors hover:bg-white/5">
+                <Icon aria-hidden="true" className="h-5 w-5 text-zinc-400" />
+                <span className="flex-1">{item.title}</span>
+                <ArrowUpRight aria-hidden="true" className="h-4 w-4 text-zinc-400" />
               </Link>
             );
           })}
