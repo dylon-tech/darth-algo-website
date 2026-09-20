@@ -12,6 +12,10 @@ let ready:Promise<void>|undefined;
 export function ensureBrowserSchema(){return ready??=(async()=>{await db().begin(async t=>{
  await t`select pg_advisory_xact_lock(730936)`;
  await t`create table if not exists os_browser_connection(id integer primary key check(id=1),secret text,connected_at timestamptz,session_id text,hold_until timestamptz,attempts integer not null default 0)`;
+ await t`alter table os_browser_connection add column if not exists verified_at timestamptz`;
+ await t`alter table os_browser_connection add column if not exists verification_status text`;
+ await t`alter table os_browser_connection add column if not exists verification_lock timestamptz`;
+ await t`create table if not exists os_browser_checks(id text primary key,status text not null,started_at timestamptz,finished_at timestamptz,evidence jsonb,error_code text)`;
  await t`insert into os_browser_connection(id) values(1) on conflict do nothing`;
 });})().catch(e=>{ready=undefined;throw e;});}
 async function api(key:string,path:string,body?:unknown){
@@ -25,10 +29,15 @@ export function validateViewer(value:unknown){if(typeof value!=="string")throw E
 export async function connectBrowser(key:string){
  if(key.length<16||key.length>4096||/\s/.test(key))throw Error("Paste the full Browserbase API key.");
  const c=await api(key,`contexts/${contextId}`);if(c.id!==contextId||c.projectId!==projectId)throw Error("This key does not match the Darth Algo browser profile.");
- await ensureBrowserSchema();const rows=await db()`update os_browser_connection set secret=${sealBrowserKey(key)},connected_at=now() where id=1 and (hold_until is null or hold_until<now()) returning id`;
+ await ensureBrowserSchema();const rows=await db()`update os_browser_connection set secret=${sealBrowserKey(key)},connected_at=now(),verified_at=null,verification_status=null where id=1 and (hold_until is null or hold_until<now()) returning id`;
  if(!rows.length)throw Error("Wait for the existing browser session to finish before replacing the connection.");
 }
-export async function browserStatus(){await ensureBrowserSchema();const [r]=await db()`select secret is not null as connected,connected_at,session_id,hold_until,attempts from os_browser_connection where id=1`;return {connected:!!r.connected,connectedAt:r.connected_at,sessionId:r.session_id,expiresAt:r.hold_until,remainingPilotStarts:Math.max(0,2-r.attempts),tradingViewVerified:false,workerEnabled:false};}
+export async function browserStatus(){
+ await ensureBrowserSchema();
+ const [r]=await db()`select secret is not null as connected,connected_at,session_id,hold_until,attempts,verified_at,verification_status from os_browser_connection where id=1`;
+ const [check]=await db()`select status,started_at,finished_at,error_code from os_browser_checks order by started_at desc nulls last limit 1`;
+ return {connected:!!r.connected,connectedAt:r.connected_at,sessionId:r.session_id,expiresAt:r.hold_until,remainingPilotStarts:Math.max(0,2-r.attempts),tradingViewVerified:!!r.verified_at&&r.verification_status==='verified',verifiedAt:r.verified_at,verificationStatus:r.verification_status,workerConfigured:true,workerEnabled:check?.status==='queued'||check?.status==='running',workerScope:'private_saved_chart_checks',publishingEnabled:false,latestCheck:check||null};
+}
 export async function startBrowser(){
  await ensureBrowserSchema();
  // Commit reservation before the external request; an uncertain response must not create another session.
@@ -47,3 +56,17 @@ export async function browserView(){
  return {active:true,url:validateViewer(view.debuggerFullscreenUrl),sessionId:r.session_id,expiresAt:r.hold_until,contextVerified:true};
 }
 export async function stopBrowser(){await ensureBrowserSchema();const [r]=await db()`select secret,session_id from os_browser_connection where id=1`;if(r.secret&&r.session_id){const key=openKey(r.secret);await api(key,`sessions/${r.session_id}`,{status:"REQUEST_RELEASE"});const latest=await api(key,`sessions/${r.session_id}`);if(["COMPLETED","TIMED_OUT","ERROR"].includes(latest.status))await db()`update os_browser_connection set hold_until=now()+interval '30 seconds' where id=1 and session_id=${r.session_id}`;}/* An unconfirmed stop keeps the full reservation. */}
+
+// Server-only connection material; never returned by the owner routes or logged.
+export async function hostedConnection(){
+ await ensureBrowserSchema();
+ const [r]=await db()`select secret,session_id,hold_until from os_browser_connection where id=1`;
+ if(!r?.secret||!r.session_id||new Date(r.hold_until).getTime()<=Date.now())throw Error('HOSTED_SESSION_REQUIRED');
+ const s=await api(openKey(r.secret),`sessions/${r.session_id}`);validateSession(s);
+ if(s.status!=='RUNNING')throw Error('HOSTED_SESSION_REQUIRED');
+ const {safeBrowserEndpoint}=await import('./tradingview-runner');
+ return {sessionId:r.session_id,endpoint:safeBrowserEndpoint(s.connectUrl)};
+}
+export async function recordBrowserVerification(status:string){
+ await db()`update os_browser_connection set verification_status=${status},verified_at=case when ${status}='verified' then now() else null end where id=1`;
+}

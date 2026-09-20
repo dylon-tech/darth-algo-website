@@ -87,7 +87,7 @@ export async function syncIndicatorLab(){
   const [delivery]=await sql`select count(*)::int as sent from os_outbox o join os_indicator_candidates c on o.dedupe_key='approval:' || c.approval_id::text || ':0' where o.status='sent'`;
   const social=await (await import("./vidiq-connection")).vidiqStatus().catch(()=>null);
   const hosted=await (await import("./hosted-browser")).browserStatus().catch(()=>null);
-  return {status:"active",ideaStage,hostedBrowser:hosted?.connected?"connected":"connection_required",privateTesting:"worker_not_connected",socialDiscovery:social?.connected?(social.latest?.status||"awaiting_first_check"):"youtube_tradingview_only",cardsQueued:cards.length,candidates:counts.candidates,pending:counts.pending,cardsDelivered:delivery.sent,lastHandoff:last?.details?.reason||null};
+  return {status:"active",ideaStage,hostedBrowser:hosted?.connected?"connected":"connection_required",privateTesting:hosted?.tradingViewVerified&&hosted?.latestCheck?.status==="checked"?"private_runtime_checked":hosted?.latestCheck?.status||"hosted_sign_in_test_required",publishing:"release_executor_not_connected",socialDiscovery:social?.connected?(social.latest?.status||"awaiting_first_check"):"youtube_tradingview_only",cardsQueued:cards.length,candidates:counts.candidates,pending:counts.pending,cardsDelivered:delivery.sent,lastHandoff:last?.details?.reason||null};
 }
 export async function indicatorDecisionMessage(id:string,decision:string){
   await db()`update os_indicator_candidates set status=${decision} where approval_id=${id} and status='pending'`;
