@@ -1,3 +1,4 @@
+import {cachedScheduledReceipt} from './buffer-receipts';
 import { mediaAutopilot } from "./media-policy";
 import { randomUUID } from "node:crypto";
 import { db } from "../affiliate-db";
@@ -72,6 +73,8 @@ async function readReceipt(id: string, hash: string, payload: BufferPublication,
       : post.status === "sending" || post.status === "scheduled" ? "Buffer has the post. Publication is not confirmed yet; check its receipt again shortly."
       : "Buffer has the post, but has not confirmed publication. Review its status in Buffer. It will not be submitted again." };
   } catch {
+    const details={postId,state:"unconfirmed",published:false,checkedAt:new Date().toISOString()};
+    await sql`insert into os_activity(actor,event,entity_id,details) values('operations','buffer_publish_checked',${id},${sql.json(details)})`;
     return { postId, state: "unconfirmed", published: false, message: "The Buffer receipt is saved, but its current state could not be verified. Check the receipt again; this only reads the existing post." };
   }
 }
@@ -117,11 +120,12 @@ export async function executeBufferPublication(id: string, hash: string) {
 }
 
 // Read-only reconciliation, allowed even after expiry or while paused.
-export async function checkBufferPublication(id: string, hash: string) {
+export async function checkBufferPublication(id: string, hash: string, options:{scheduled?:boolean}={}) {
   const sql = db();
   const [row] = await sql`select * from os_approvals where id=${id}`;
   const payload = approvedPayload(row, hash);
   const [receipt] = await sql`select details from os_activity where entity_id=${id} and event='buffer_publish_receipt' order by id desc limit 1`;
   if (!receipt) return { state: "unknown", published: false, message: "No Buffer receipt was saved. Check Buffer and X directly before taking further action. This check does not send a post." };
+  if(options.scheduled){const cached=await cachedScheduledReceipt(id);if(cached)return cached;}
   return readReceipt(id, hash, payload, String(receipt.details.postId));
 }

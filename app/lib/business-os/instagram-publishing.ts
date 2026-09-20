@@ -1,3 +1,4 @@
+import {cachedScheduledReceipt} from './buffer-receipts';
 import { mediaAutopilot } from "./media-policy";
 import { randomUUID } from "node:crypto";
 import { db } from "../affiliate-db";
@@ -72,7 +73,10 @@ async function readReceipt(id:string,hash:string,payload:InstagramPublication,po
     const details={payloadHash:hash,channelId:payload.channelId,postId,state:post.status,published,sentAt:post.sentAt || null,checkedAt:new Date().toISOString()};
     await db()`insert into os_activity(actor,event,entity_id,details) values('operations','buffer_publish_checked',${id},${db().json(details)})`;
     return {...details,message:published ? "Buffer confirms the approved carousel was published on Instagram." : "Buffer has the carousel. Publication is not confirmed yet. Check the receipt again; it will not send another post."};
-  } catch {return {postId,state:"unconfirmed",published:false,message:"The Buffer receipt is saved, but publication could not be verified. Check the receipt or Buffer; this will not submit another post."};}
+  } catch {
+    const sql=db(),details={postId,state:"unconfirmed",published:false,checkedAt:new Date().toISOString()};
+    await sql`insert into os_activity(actor,event,entity_id,details) values('operations','buffer_publish_checked',${id},${sql.json(details)})`;
+    return {postId,state:"unconfirmed",published:false,message:"The Buffer receipt is saved, but publication could not be verified. Check the receipt or Buffer; this will not submit another post."};}
 }
 export async function executeInstagramPublication(id:string,hash:string) {
   if(process.env.VERCEL_ENV!=="production")throw new Error("BUFFER_PUBLISH_PRODUCTION_ONLY");
@@ -107,11 +111,12 @@ export async function executeInstagramPublication(id:string,hash:string) {
     return {state:"unknown",published:false,message:"Publication could not be confirmed. Check Buffer and Instagram. This approval cannot submit another post."};
   }
 }
-export async function checkInstagramPublication(id:string,hash:string) {
+export async function checkInstagramPublication(id:string,hash:string,options:{scheduled?:boolean}={}) {
   const sql=db();
   const [row]=await sql`select * from os_approvals where id=${id}`;
   const payload=approved(row,hash);
   const [receipt]=await sql`select details from os_activity where entity_id=${id} and event='buffer_publish_receipt' order by id desc limit 1`;
   if(!receipt)return {state:"unknown",published:false,message:"No receipt was saved. Check Buffer and Instagram directly. This check does not send a post."};
+  if(options.scheduled){const cached=await cachedScheduledReceipt(id);if(cached)return cached;}
   return readReceipt(id,hash,payload,String(receipt.details.postId));
 }

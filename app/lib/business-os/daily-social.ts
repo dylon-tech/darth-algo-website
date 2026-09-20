@@ -1,7 +1,8 @@
 import {createHash,randomUUID} from 'node:crypto';
 import {db} from '../affiliate-db';
 import {fingerprint} from './policy';
-import {bufferStatus} from './buffer';
+import {bufferStatus,bufferCooldown} from './buffer';
+import {cachedScheduledReceipt} from './buffer-receipts';
 import {verifyInstagramAssets} from './buffer-instagram';
 import {instagramPublicationPayload} from './instagram-policy';
 import {communityReadiness} from './community-readiness';
@@ -52,8 +53,8 @@ export async function checkSocialDelivery(id:string,options:{scheduled?:boolean}
  const [receipt]=await sql`select details from os_activity where entity_id=${id} and event='buffer_publish_receipt' order by id desc limit 1`;
  if(!receipt)return {state:'unknown',published:false};
  if(options.scheduled){
-  const [checked]=await sql`select details from os_activity where entity_id=${id} and event='buffer_publish_checked' and created_at>now()-interval '5 minutes' order by id desc limit 1`;
-  if(checked)return checked.details;
+  const checked=await cachedScheduledReceipt(id);
+  if(checked)return checked;
  }
  try{
   const postId=String(receipt.details.postId),post=await getSocialPost(postId);
@@ -80,6 +81,9 @@ export async function executeSocialDelivery(id:string){
  // Avoid downloading the carousel every cron tick while a platform is within its cadence window.
  const [cooldown]=await sql`select id from os_activity where event='media_auto_authorized' and details->>'network'=${payload.network} and (created_at>now()-interval '20 hours' or (created_at at time zone 'America/New_York')::date=(now() at time zone 'America/New_York')::date) limit 1`;
  if(cooldown)return {state:'waiting_for_daily_window',published:false};
+ // A previous uncertain submission blocks this channel before any API/asset reads.
+ const [priorUncertain]=await sql`select a.id from os_approvals a where a.id<>${id} and a.payload->>'channelId'=${payload.channelId} and exists(select 1 from os_activity where entity_id=a.id::text and event='buffer_publish_started') and not exists(select 1 from os_activity where entity_id=a.id::text and event='buffer_publish_checked' and details->>'published'='true') limit 1`;
+ if(priorUncertain)return {state:'waiting_for_prior_receipt',published:false};
  // Missing connections/assets are preflight failures, not ambiguous external writes.
  await socialPreflight(payload);
  const claimed=await sql.begin(async tx=>{
@@ -119,7 +123,9 @@ export async function syncDailySocial(now=new Date()){
  const creative=await syncDailyCreative(now);
  const hour=Number(new Intl.DateTimeFormat('en-US',{timeZone:dailySocialPolicy.timezone,hour:'numeric',hourCycle:'h23'}).format(now));
  if(creative.waiting)return {status:'preparing_daily_caption'};
- const campaign=await prepareDailyCampaign(now),state=await bufferStatus(),community=await communityReadiness(),deliveries:Record<string,string>={};
+ const campaign=await prepareDailyCampaign(now);
+ if(await bufferCooldown())throw Error('BUFFER_RATE_LIMIT_COOLDOWN');
+ const state=await bufferStatus(),community=await communityReadiness(),deliveries:Record<string,string>={};
  const [checkedAssets]=await sql`select id from os_activity where event='daily_social_assets_checked' and entity_id=${campaign.assetId} limit 1`;
  let assetsReady=Boolean(checkedAssets);
  if(!assetsReady){

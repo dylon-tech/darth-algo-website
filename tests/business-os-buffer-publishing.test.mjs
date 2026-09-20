@@ -28,6 +28,7 @@ try {
     if (q.includes("event='buffer_draft_test_verified'")) return verified && v[0] === 'x1' ? [{ id: 1 }] : [];
     if (q.includes('select paused')) return [{ paused }];
     if (q.includes('select id,status,expires_at from os_approvals')) return approvals.filter(a => ['pending', 'approved'].includes(a.status) && a.payload.channelId === v[0] && a.payload.text === v[1]).slice(-1);
+    if (q.startsWith("select payload->>'executor' as executor from os_approvals")) return approvals.filter(a=>a.id===v[0]).map(a=>({executor:a.payload.executor}));
     if (q.startsWith('select * from os_approvals')) return approvals.filter(a => a.id === v[0]);
     if (q.startsWith('update os_approvals set status=?')) { const a = approvals.find(a => a.id === v[2]); a.status = v[0]; a.decision_note = v[1]; a.decided_by = 'owner'; return []; }
     if (q.startsWith('update os_approvals')) { approvals.forEach(a => { if (a.status === 'pending' && new Date(a.expires_at) <= new Date()) a.status = 'expired'; }); return []; }
@@ -150,6 +151,7 @@ try {
   const decisionPost = await prepareBufferPublication('Owner approves this exact post.');
   row = approvals[0];
   const decisions = await Promise.allSettled([decide(decisionPost.id, row.payload_hash, 'approved', 'Yes'), decide(decisionPost.id, row.payload_hash, 'approved', 'Repeated click')]);
+  if(!decisions.some(r=>r.status==='fulfilled'))throw new AggregateError(decisions.map(r=>r.reason),'Decision dispatcher failed');
   assert.equal(decisions.filter(r => r.status === 'fulfilled').length, 1);
   assert.equal(createCount, 1, 'Decision commit dispatches once');
   reset();

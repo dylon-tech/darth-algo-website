@@ -144,6 +144,12 @@ try {
  assert.equal((await checkSocialDelivery(ids.x)).published,false);
  await checkSocialDelivery(ids.x,{scheduled:true});assert.equal(calls,1);
  assert.ok((await database.query("select id from os_activity where event='buffer_publish_receipt' and entity_id=$1",[ids.x])).rows.length);
+ // Old accepted posts back off to hourly; explicit owner reads still bypass the schedule.
+ await database.exec("update os_activity set created_at=now()-interval '2 hours' where event='buffer_publish_receipt'");
+ await database.exec("update os_activity set created_at=now()-interval '10 minutes' where event='buffer_publish_checked'");
+ await checkSocialDelivery(ids.x,{scheduled:true});assert.equal(calls,1);
+ await database.exec("update os_activity set created_at=now()-interval '61 minutes' where event='buffer_publish_checked'");
+ await checkSocialDelivery(ids.x,{scheduled:true});assert.equal(calls,2);
  // A provider 429 persists its Retry-After across calls; never retries reads or writes early.
  calls=0;globalThis.fetch=async()=>{calls++;return new Response('',{status:429,headers:{'retry-after':'600'}});};
  await assert.rejects(bufferGraphQL('query Test { account { id } }'),/BUFFER_HTTP_429/);

@@ -17,6 +17,7 @@ create table if not exists os_indicator_candidates (
  created_at timestamptz not null default now(), released_at timestamptz,
  tradingview_url text unique, release_evidence jsonb, private_preview jsonb
  );
+alter table os_indicator_candidates alter column run_id drop not null;
 alter table os_indicator_candidates add column if not exists private_preview jsonb;
 alter table os_indicator_candidates add column if not exists release_package jsonb;
 create table if not exists os_indicator_publications (
@@ -66,6 +67,10 @@ export async function syncIndicatorLab(){
   }
   await sql`update os_indicator_candidates c set status=case when a.status='pending' and a.expires_at<=now() then 'expired' else a.status end
     from os_approvals a where c.approval_id=a.id and c.status<>'released' and (a.status<>c.status or (a.status='pending' and a.expires_at<=now()))`;
+  // A source-verified import uses actual supervised QA evidence, not a fake AI run.
+  const {preparePrivateBetaPackage}=await import('./private-beta-package');
+  let privatePackage='not_ready';
+  try{privatePackage=(await preparePrivateBetaPackage()).status;}catch{privatePackage='education_package_needs_check';}
   const cards=await sql`select approval_id from os_indicator_candidates c where status='pending' and release_package is not null and not exists(select 1 from os_outbox where dedupe_key='approval:' || c.approval_id::text || ':0') order by created_at limit 3`;
   for(const row of cards)await queueApprovalNotice(row.approval_id);
   const day=new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
@@ -87,7 +92,7 @@ export async function syncIndicatorLab(){
   const [delivery]=await sql`select count(*)::int as sent from os_outbox o join os_indicator_candidates c on o.dedupe_key='approval:' || c.approval_id::text || ':0' where o.status='sent'`;
   const social=await (await import("./vidiq-connection")).vidiqStatus().catch(()=>null);
   const hosted=await (await import("./hosted-browser")).browserStatus().catch(()=>null);
-  return {status:"active",ideaStage,hostedBrowser:hosted?.connected?"connected":"connection_required",privateTesting:hosted?.tradingViewVerified&&hosted?.latestCheck?.status==="checked"?"private_runtime_checked":hosted?.latestCheck?.status||"hosted_sign_in_test_required",publishing:"release_executor_not_connected",socialDiscovery:social?.connected?(social.latest?.status||"awaiting_first_check"):"youtube_tradingview_only",cardsQueued:cards.length,candidates:counts.candidates,pending:counts.pending,cardsDelivered:delivery.sent,lastHandoff:last?.details?.reason||null};
+  return {status:"active",ideaStage,hostedBrowser:hosted?.connected?"connected":"connection_required",hostedBrowserStartsRemaining:hosted?.remainingPilotStarts??null,privatePackage,privateTesting:hosted?.tradingViewVerified&&hosted?.latestCheck?.status==="checked"?"private_runtime_checked":hosted?.latestCheck?.status||"hosted_sign_in_test_required",publishing:"release_executor_not_connected",socialDiscovery:social?.connected?(social.latest?.status||"awaiting_first_check"):"youtube_tradingview_only",cardsQueued:cards.length,candidates:counts.candidates,pending:counts.pending,cardsDelivered:delivery.sent,lastHandoff:last?.details?.reason||null};
 }
 export async function indicatorDecisionMessage(id:string,decision:string){
   await db()`update os_indicator_candidates set status=${decision} where approval_id=${id} and status='pending'`;

@@ -88,6 +88,29 @@ async function main(){
  await sql`update os_runs set result=${JSON.stringify({brief:'BUILD_NONE. Insufficient demand evidence.'})} where id in (select run_id from os_jobs where request_key like 'indicator-ideas:%:growth')`;
  assert.equal(await ideas.syncIndicatorIdeas(),'no_supported_idea');
  process.env.AI_OS_INDICATORS_PER_DAY='3';await lab.syncIndicatorLab();assert.equal((await sql`select * from os_jobs where message like '[INDICATOR_LAB]%'`).length,2);
+ // Existing private prototypes enter through a separate owner import, not a fabricated Research run.
+ const {privateTest}=load('tradingview-runner'),privateBeta=load('private-beta-package');
+ const importedSource=pine+'\nplot(close/3)';const savedHash=privateTest.sourceHash;
+ privateTest.sourceHash=policy.pineHash(importedSource);
+ const hostedEvidence={account:privateTest.account,sourceHash:privateTest.sourceHash,chartUrl:privateTest.chartUrl,reopened:true,checks:[1,3,5,15].map(interval=>({interval,rangeHigh:'20',rangeLow:'10'})),checkedAt:new Date().toISOString()};
+ await assert.rejects(privateBeta.importPrivateBeta('wrong source',hostedEvidence));
+ await assert.rejects(privateBeta.importPrivateBeta(importedSource,{...hostedEvidence,checks:[]}));
+ const importedId=await privateBeta.importPrivateBeta(importedSource,hostedEvidence);
+ assert.equal(await privateBeta.importPrivateBeta(importedSource,hostedEvidence),importedId);
+ const [imported]=await sql`select * from os_indicator_candidates where id=${importedId}`;
+ assert.equal(imported.run_id,null);assert.equal(imported.qa.origin,'owner_private_import');assert.equal(imported.status,'qa_blocked');
+ const priorFetch=global.fetch;
+ global.fetch=async()=>Response.json({error:'not an image'});
+ await assert.rejects(privateBeta.preparePrivateBetaPackage(),/IMAGE_UNAVAILABLE/);
+ const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aY9sAAAAASUVORK5CYII=','base64');
+ global.fetch=async()=>new Response(png,{headers:{'content-type':'image/png'}});
+ const packaged=await privateBeta.preparePrivateBetaPackage();assert.equal(packaged.status,'prepared');
+ assert.equal((await privateBeta.preparePrivateBetaPackage()).status,'already_prepared');
+ const [manualApproval]=await sql`select * from os_approvals where id=${packaged.approvalId}`;
+ assert.equal(manualApproval.status,'pending');assert.equal(manualApproval.run_id,null);
+ assert.equal(manualApproval.payload.sourceHash,privateTest.sourceHash);
+ assert.equal((await sql`select * from os_indicator_publications where candidate_id=${importedId}`).length,0);
+ global.fetch=priorFetch;privateTest.sourceHash=savedHash;
  await pg.close();console.log('PASS: static screening, source provenance, no code ingestion, idempotent schema/handoff/cards, duplicate logic, daily cap, pause, approval/hash/replay gates and release replay.');
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});
