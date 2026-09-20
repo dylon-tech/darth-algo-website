@@ -58,7 +58,7 @@ export function createProChartWorld(host: HTMLElement): ChartWorld {
   });
   const markers = [{ index: 9, buy: true }, { index: 23, buy: true }, { index: 35, buy: false }, { index: 58, buy: false }].map(({index, buy}) => ({index, node: label(X(index), Y(buy ? candles[index].low : candles[index].high) + (buy ? 12 : -12), buy ? "BUY" : "SELL", buy ? GREEN : RED, plot, !buy)}));
   const levels = element("g", {}, plot);
-  const entry = candles[58].close, left = X(58), right = 995;
+  const entry = candles[58].close, left = X(58), right = 948;
   element("rect", { x: left, y: Y(entry + 19), width: right - left, height: Y(entry) - Y(entry + 19), fill: RED, "fill-opacity": .14 }, levels);
   element("rect", { x: left, y: Y(entry), width: right - left, height: Y(entry - 28.5) - Y(entry), fill: GREEN, "fill-opacity": .14 }, levels);
   [["SL", entry + 19, RED], ["ENTRY", entry, RED], ["TP1", entry - 19, GREEN], ["TP2", entry - 28.5, GREEN]].forEach(([name, price, color]) => {
