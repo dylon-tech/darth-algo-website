@@ -100,3 +100,44 @@
 
 .chart-journey[data-pro="true"] .journey-world-wrap{bottom:188px}
 @media(max-width:767px){.chart-journey[data-pro="true"] .journey-world-wrap{bottom:182px}}
+
+/* Product-specific modes share the same focused chart experience. */
+.journey-modes{display:flex;justify-content:center;align-items:center;gap:6px;margin-bottom:8px}
+.journey-modes>span{font:9px monospace;letter-spacing:.1em;color:#9da6b6;margin-right:8px}
+.journey-modes button{min-width:78px;min-height:40px;border:1px solid #ffffff20;border-radius:8px;font-size:12px;color:#aeb6c5;background:#151a24}
+.journey-modes button[aria-pressed="true"]{color:#fff;border-color:rgba(var(--engine-rgb),.8);background:rgba(var(--engine-rgb),.18)}
+.journey-modes button:focus-visible,.hero-trade-status button:focus-visible{outline:2px solid white;outline-offset:3px}
+.chart-journey[data-toggle="true"] .journey-world-wrap{bottom:238px}
+/* A branded, moving product preview in the opening screen, including on mobile. */
+.hero-live-layout{grid-template-areas:"intro demo" "actions demo";grid-template-rows:auto auto;column-gap:48px;row-gap:0;min-height:630px;padding-block:60px;align-content:center}
+.hero-live-intro{grid-area:intro;align-self:end}
+.hero-live-actions{grid-area:actions;align-self:start}
+.hero-live-layout h1{font-size:clamp(54px,6vw,88px);white-space:nowrap;margin:22px 0}
+.hero-live-layout h1 span{display:inline}
+.hero-live-layout .immersion-hero-lead{font-size:clamp(23px,2.3vw,32px)}
+.hero-live-layout .immersion-hero-copy{max-width:350px;line-height:1.65}
+.hero-trade-demo{grid-area:demo;min-width:0;position:relative;background:linear-gradient(145deg,#1d1118,#0c1018 55%);border:1px solid #ff536a44;border-radius:16px;padding:6px;box-shadow:0 25px 90px #0008,0 0 80px #ff34451c;transform:perspective(1200px) rotateY(-5deg) rotateX(2deg)}
+.hero-trade-title{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 12px;font-size:11px;font-weight:800;letter-spacing:.06em}
+.hero-trade-title>span:first-child{display:flex;align-items:center;gap:8px}.hero-trade-title b{color:#c3a4ff;font:9px monospace;border:1px solid #a780ff50;padding:3px 5px;border-radius:4px}
+.hero-demo-badge{font:8px monospace;letter-spacing:.08em;color:#a9aebd}
+.hero-trade-screen{position:relative;aspect-ratio:2/1;border:1px solid #ffffff12;border-radius:8px;overflow:hidden;background:#141923}
+.hero-trade-canvas{position:absolute;inset:0}.hero-trade-canvas svg{width:100%;height:100%;display:block}
+.hero-trade-status{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 12px;min-height:42px;font-size:11px;color:#c5d1dd}
+.hero-trade-status button{min-height:42px;min-width:52px;font-size:10px;color:#adb7c6}
+.hero-trade-demo figcaption{font-size:9px;color:#929cab;text-align:center;padding:0 8px 9px}
+@media(max-width:1023px){.hero-live-layout{column-gap:24px;min-height:530px}.hero-live-layout h1{font-size:54px}.hero-trade-title{padding:8px 5px;gap:5px;font-size:9px}.hero-trade-title>span:first-child{gap:4px}.hero-demo-badge{font-size:7px}.hero-trade-status{font-size:9px;padding-inline:5px}}
+@media(max-width:767px){
+  .hero-live-layout{grid-template-columns:1fr;grid-template-areas:"intro" "demo" "actions";gap:20px;padding-top:24px;padding-bottom:24px;min-height:0}
+  .hero-live-layout .immersion-eyebrow{font-size:8px;letter-spacing:.12em}
+  .hero-live-layout h1{font-size:clamp(44px,13vw,66px);margin:12px 0;line-height:1}
+  .hero-live-layout .immersion-hero-lead{font-size:22px;max-width:none}
+  .hero-live-layout .immersion-hero-copy{font-size:13px;line-height:1.5;margin-top:10px;max-width:360px}
+  .hero-trade-demo{transform:none;border-radius:12px}
+  .hero-trade-title{font-size:10px;padding:5px 7px}.hero-trade-title>span:first-child{gap:7px}.hero-demo-badge{font-size:7px}
+  .hero-trade-screen{aspect-ratio:1.9}
+  .hero-trade-status{font-size:10px;padding-inline:7px;min-height:36px}.hero-trade-status button{min-height:40px}
+  .hero-live-layout .immersion-hero-actions{margin-top:0;gap:8px}.hero-live-layout .immersion-hero-actions a{padding-inline:15px;font-size:12px}
+  .hero-live-layout .immersion-hero-meta{margin-top:15px;justify-content:center}
+  .chart-journey[data-toggle="true"] .journey-world-wrap{bottom:230px}
+}
+@media(prefers-reduced-motion:reduce){.hero-trade-demo{transform:none}}

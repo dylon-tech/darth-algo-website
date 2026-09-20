@@ -29,7 +29,8 @@ import {
   Zap,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import ImmersiveEngine, { ImmersiveStory } from "./components/immersive-engine";
+import { ImmersiveStory } from "./components/immersive-engine";
+import HeroTradeDemo from "./components/hero-trade-demo";
 import SiteFooter from "./components/site-footer";
 import TradingViewUsernameHelp from "./components/tradingview-username-help";
 
@@ -656,16 +657,18 @@ export default function Home() {
       </header>
 
       <section id="top" className="immersion-hero immersion-red relative z-10">
-        <div className="section-shell immersion-hero-layout">
-          <div>
+        <div className="section-shell immersion-hero-layout hero-live-layout">
+          <div className="hero-live-intro">
             <p className="immersion-eyebrow">TradingView indicators / Built for futures</p>
-            <h1><span>Darth</span><em>Algo.</em></h1>
-            <p className="immersion-hero-lead">A new dimension<br />of chart clarity.</p>
-            <p className="immersion-hero-copy">See the trend. Find the setup. Map the risk. Your trading decisions, brought into focus.</p>
-            <div className="immersion-hero-actions"><a href="#swing-trial">Try Swing Free ↗</a><a href="#inside-the-engine">Explore the engine ↓</a></div>
+            <h1><span>Darth</span> <em>Algo.</em></h1>
+            <p className="immersion-hero-lead">See the setup. Plan the trade.</p>
+            <p className="immersion-hero-copy">Swing, Scalp or both. See your signals, trend and risk together on the chart.</p>
+          </div>
+          <HeroTradeDemo />
+          <div className="hero-live-actions">
+            <div className="immersion-hero-actions"><a href="#swing-trial">Try Swing Free ↗</a><a href="#inside-the-engine">Explore the tools ↓</a></div>
             <div className="immersion-hero-meta"><span>Scalper</span><span>Swing</span><span>Pro</span><span>From $14.99/mo</span></div>
           </div>
-          <ImmersiveEngine priority />
         </div>
         <div className="section-shell immersion-hero-bottom"><span>Signals / Trend context / Defined risk</span><a href="#inside-the-engine">Scroll to explore <ArrowDown className="h-4 w-4" /></a></div>
       </section>
