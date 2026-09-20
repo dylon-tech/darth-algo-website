@@ -69,8 +69,9 @@ export async function syncIndicatorLab(){
   const cards=await sql`select approval_id from os_indicator_candidates c where status='pending' and release_package is not null and not exists(select 1 from os_outbox where dedupe_key='approval:' || c.approval_id::text || ':0') order by created_at limit 3`;
   for(const row of cards)await queueApprovalNotice(row.approval_id);
   const day=new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+  let ideaStage="ai_disabled";
   if(process.env.AI_OS_AI_ENABLED==="true" && process.env.AI_OS_AUTONOMY_ENABLED==="true"){
-    const ideaStage=await syncIndicatorIdeas(day);
+    ideaStage=await syncIndicatorIdeas(day);
     if(ideaStage==="no_supported_idea")await queueOwnerNotice(`indicator-ideas-held:${day}`,"Indicator Lab: Research and Growth completed today's review, but found insufficient supported demand for a new build. No indicator is ready for approval. The Lab will research again tomorrow. Social research connection status: https://www.darthalgo.com/owner/connections");
     const n=Number(process.env.AI_OS_INDICATORS_PER_DAY||"1");const limit=Number.isInteger(n)?Math.max(1,Math.min(3,n)):1;
     const pending=await sql`select id from os_jobs where request_key like 'indicator:%' and status in ('queued','running') limit 1`;
@@ -85,7 +86,8 @@ export async function syncIndicatorLab(){
   const [counts]=await sql`select count(*)::int as candidates,count(*) filter(where status='pending')::int as pending from os_indicator_candidates`;
   const [delivery]=await sql`select count(*)::int as sent from os_outbox o join os_indicator_candidates c on o.dedupe_key='approval:' || c.approval_id::text || ':0' where o.status='sent'`;
   const social=await (await import("./vidiq-connection")).vidiqStatus().catch(()=>null);
-  return {status:"active",privateTesting:"worker_not_connected",socialDiscovery:social?.connected?(social.latest?.status||"awaiting_first_check"):"youtube_tradingview_only",cardsQueued:cards.length,candidates:counts.candidates,pending:counts.pending,cardsDelivered:delivery.sent,lastHandoff:last?.details?.reason||null};
+  const hosted=await (await import("./hosted-browser")).browserStatus().catch(()=>null);
+  return {status:"active",ideaStage,hostedBrowser:hosted?.connected?"connected":"connection_required",privateTesting:"worker_not_connected",socialDiscovery:social?.connected?(social.latest?.status||"awaiting_first_check"):"youtube_tradingview_only",cardsQueued:cards.length,candidates:counts.candidates,pending:counts.pending,cardsDelivered:delivery.sent,lastHandoff:last?.details?.reason||null};
 }
 export async function indicatorDecisionMessage(id:string,decision:string){
   await db()`update os_indicator_candidates set status=${decision} where approval_id=${id} and status='pending'`;

@@ -29,3 +29,11 @@ No new credentials, schema migration, paid service or public posting endpoint. P
 - External services are mocked in integration tests. Production activation and Threads login are verified separately; tests do not establish a real Threads publication.
 
 Buffer reference: https://developers.buffer.com/reference.html
+
+## Execution readiness follow-up
+
+Campaign preparation and public asset-byte checks run before the daily window, making all three prepared posts visible in the app queue without publishing early. Buffer API account/connection checks include Threads. Community preflight uses read-only getChat/getMe/getChatMember checks and caches the result for 15 minutes; it does not claim to prove the forum topic is open or that a future send succeeded.
+
+Runtime health and the CEO desk now identify missing channels, blocked community photo permissions, failed asset preparation and social submissions unconfirmed after 15 minutes. Existing health-transition dedupe avoids repeat healthy messages. Today's-posts views include the verified social URL. Indicator Lab logs expose its actual idea stage and hosted-browser credential connection separately from the unimplemented publishing worker.
+
+Telegram permission reference: https://core.telegram.org/bots/api#chatmember

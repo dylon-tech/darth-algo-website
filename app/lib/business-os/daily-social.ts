@@ -2,6 +2,9 @@ import {createHash,randomUUID} from 'node:crypto';
 import {db} from '../affiliate-db';
 import {fingerprint} from './policy';
 import {bufferStatus} from './buffer';
+import {verifyInstagramAssets} from './buffer-instagram';
+import {instagramPublicationPayload} from './instagram-policy';
+import {communityReadiness} from './community-readiness';
 import {photoPlanForDay} from './photo-plan';
 import {syncDailyCreative,dailyCreativeCaption} from './daily-creative';
 import {dailySocialPolicy,dailySocialPayload,isDailySocialPayload,socialPostUrl,type DailyCampaign,type SocialNetwork,type DailySocialPayload} from './daily-social-policy';
@@ -107,16 +110,29 @@ export async function syncDailySocial(now=new Date()){
  for(const r of waiting)await checkSocialDelivery(r.id);
  const creative=await syncDailyCreative(now);
  const hour=Number(new Intl.DateTimeFormat('en-US',{timeZone:dailySocialPolicy.timezone,hour:'numeric',hourCycle:'h23'}).format(now));
- if(hour<dailySocialPolicy.hour)return {status:'waiting_for_daily_window',creative:creative.status};
  if(creative.waiting)return {status:'preparing_daily_caption'};
- const campaign=await prepareDailyCampaign(now),state=await bufferStatus(),deliveries:Record<string,string>={};
+ const campaign=await prepareDailyCampaign(now),state=await bufferStatus(),community=await communityReadiness(),deliveries:Record<string,string>={};
+ const [checkedAssets]=await sql`select id from os_activity where event='daily_social_assets_checked' and entity_id=${campaign.assetId} limit 1`;
+ let assetsReady=Boolean(checkedAssets);
+ if(!assetsReady){
+  try{
+   await verifyInstagramAssets(instagramPublicationPayload({campaignId:`daily-${campaign.day}`,text:campaign.text,assets:campaign.assets}));
+   await sql`insert into os_activity(actor,event,entity_id,details) values('operations','daily_social_assets_checked',${campaign.assetId},'{"verified":true}'::jsonb)`;
+   assetsReady=true;
+  }catch{/* Failed read is recoverable before any external write. */}
+ }
  for(const network of ['x','instagram','threads'] as const){
   const channel=selectSocialChannel(state.channels,network);
   if(!channel){deliveries[network]='connection_required';continue;}
-  try{const id=await prepareSocialDelivery(campaign,network,channel.id);const result=await executeSocialDelivery(id);deliveries[network]=result.published?'published':result.state;}
+  try{
+   const id=await prepareSocialDelivery(campaign,network,channel.id);
+   if(!assetsReady){deliveries[network]='assets_need_check';continue;}
+   if(hour<dailySocialPolicy.hour){deliveries[network]='ready_for_daily_window';continue;}
+   const result=await executeSocialDelivery(id);deliveries[network]=result.published?'published':result.state;
+  }
   catch{deliveries[network]='needs_check';}
  }
  const [previous]=await sql`select details from os_activity where event='daily_social_status' and entity_id=${campaign.day} order by id desc limit 1`;
- if(fingerprint(previous?.details.deliveries||{})!==fingerprint(deliveries))await sql`insert into os_activity(actor,event,entity_id,details) values('operations','daily_social_status',${campaign.day},${sql.json({deliveries,theme:campaign.theme})})`;
- return {status:'active',day:campaign.day,theme:campaign.theme,deliveries};
+ if(fingerprint({deliveries:previous?.details.deliveries,community:previous?.details.community})!==fingerprint({deliveries,community:community.state}))await sql`insert into os_activity(actor,event,entity_id,details) values('operations','daily_social_status',${campaign.day},${sql.json({deliveries,theme:campaign.theme,community:community.state})})`;
+ return {status:hour<dailySocialPolicy.hour?'prepared_for_daily_window':'active',day:campaign.day,theme:campaign.theme,deliveries,communityReadiness:community.state,assetsReady,previewUrl:campaign.assets[0].url};
 }

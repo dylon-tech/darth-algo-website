@@ -2,10 +2,10 @@
 
 ## Verified live
 
-- Buffer is signed in with X DarthAlgos and Instagram darth.algo. Both channels are connected. Buffer free plan has 2/3 channel slots occupied.
+- Buffer visibly confirms X DarthAlgos, Instagram darth.algo, and Threads darth.algo connected (3/3 free-plan slots). Threads channel ID: 6aafaea4ea19ca0bde94bbc3.
 - Instagram links campaign has a sent receipt: https://www.instagram.com/p/DdfYS2NF-A_/ (September 19, 9:13 PM America/New_York).
 - App logs confirm two posts under the standing routine-media policy. This count excludes older posts published by other workflows.
-- Buffer scheduled queue is empty. The app generates at 9 AM, 2 PM and 7 PM Eastern and submits eligible posts immediately, within existing caps (three X / one Instagram daily) and spacing. A content window is not a promised delivery time.
+- The current app policy prepares one identical three-image campaign and caption for X, Instagram and Threads each day. Posting starts from 9 AM Eastern, subject to the 20-hour per-platform spacing and verified delivery guards. The app queue is separate from Buffer’s scheduled queue. The community gets one confirmed-post preview/link, replacing the standalone education lesson. A content window is not a promised delivery time.
 - The daily CEO briefing has a successful delivery record and a verified Stripe subscription snapshot. Customer counts exclude lifetime buyers and unverified TradingView access.
 
 ## Changes in this release
@@ -22,8 +22,8 @@
 
 ## Remaining external dependencies
 
-- TikTok: Buffer connection reached the TikTok login screen. Owner sign-in is required; no OAuth success has been claimed.
-- YouTube publishing: not connected to Buffer. Connecting both TikTok and YouTube would exceed the current free plan's three-channel limit; no upgrade purchased.
+- TikTok video publishing is deferred under the owner’s later photo-only instruction. The active three-platform scope is X, Instagram and Threads; no further TikTok login requested.
+- YouTube video publishing is deferred. The free Buffer plan is fully occupied by the three authorized active platforms; no upgrade purchased.
 - vidIQ: the initial audit found a missing server connection. The later live check at 07:19 UTC reported socialDiscovery=observed_posts and research already_checked; no further key request is needed. ChatGPT and server credentials remain separate.
 - TradingView: supervised browser is signed in to the existing private test layout; no hosted unattended worker is running. No new public indicator was released. Production Lab had zero candidates at audit.
 - Customer fulfillment: verified TradingView entitlement evidence is still unavailable. Do not report paid subscribers as confirmed indicator activations.

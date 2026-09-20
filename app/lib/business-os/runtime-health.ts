@@ -1,3 +1,4 @@
+import {socialHealthIssues} from "./social-health";
 import {db} from "../affiliate-db";
 import {queueOwnerNotice,deliverOwnerNotices} from "./delivery";
 export async function runtimeHealth(){
@@ -9,7 +10,7 @@ export async function runtimeHealth(){
     min(created_at) filter(where status='queued') as oldest from os_jobs`;
   const [outbox]=await sql`select count(*)::int as n from os_outbox where status in ('unknown','failed') and created_at>now()-interval '24 hours'`;
   const stale=!h || Date.now()-new Date(h.last_seen_at).getTime()>300000;
-  const issues:string[]=[];
+  const issues:string[]=await socialHealthIssues();
   if(stale)issues.push("Worker heartbeat is older than five minutes.");
   if(!control?.paused && jobs.oldest && Date.now()-new Date(jobs.oldest).getTime()>3600000)issues.push("Queued work has waited over an hour.");
   if(h?.status==="budget_blocked")issues.push("AI is waiting for the configured spending allowance.");
