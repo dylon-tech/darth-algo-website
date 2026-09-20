@@ -11,9 +11,20 @@ import { secretMatches, type Department } from "../../../lib/business-os/policy"
 export const runtime="nodejs";
 export const maxDuration=120;
 export async function GET(request:Request) {
-  if(process.env.AI_OS_ENABLED!=="true" || process.env.AI_OS_AI_ENABLED!=="true" || process.env.AI_OS_AUTONOMY_ENABLED!=="true") return Response.json({error:"Not available"},{status:404});
+  if(process.env.AI_OS_ENABLED!=="true") return Response.json({error:"Not available"},{status:404});
   if(!secretMatches(request.headers.get("authorization"),process.env.CRON_SECRET ? `Bearer ${process.env.CRON_SECRET}` : undefined)) return Response.json({error:"Unauthorized"},{status:401});
   try {
+    const {heartbeat}=await import("../../../lib/business-os/coordination");
+    await heartbeat("vercel-cron","checking");
+    const {processOwnerUpdates}=await import("../../../lib/business-os/telegram-command");
+    const {deliverOwnerNotices}=await import("../../../lib/business-os/delivery");
+    await processOwnerUpdates();
+    await deliverOwnerNotices(2);
+    try {const {syncIndicatorLab}=await import("../../../lib/business-os/indicator-lab");console.info(JSON.stringify({event:"indicator_lab_tick",...await syncIndicatorLab()}));}
+    catch {console.warn(JSON.stringify({event:"indicator_lab_tick",status:"blocked"}));}
+    if(process.env.AI_OS_AI_ENABLED!=="true" || process.env.AI_OS_AUTONOMY_ENABLED!=="true") {
+      await heartbeat("vercel-cron","ai_disabled");return Response.json({status:"ai_disabled"});
+    }
     try {console.info(JSON.stringify({event:"telegram_desk_sync",...await syncTelegramDesk()}));}
     catch {console.warn(JSON.stringify({event:"telegram_desk_sync",status:"needs_check"}));}
     await syncContentApprovals();

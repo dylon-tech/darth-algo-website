@@ -1,0 +1,13 @@
+# Daily Indicator Lab and release packages
+
+The existing server scheduler drives an idempotent Research → Growth → Indicator Builder sequence, keyed by the New York calendar date. Research summarizes observed indicator usage, requests and strategy concepts. Growth ranks up to three ideas and distinguishes evidence from hypotheses. The builder receives their briefs plus underlying observed source snapshots and targets 1–3 original Pine prototypes per day within the existing shared spending limits. This is a target, not a guaranteed number of tested products.
+
+YouTube and public TradingView/pricing/discussion metadata are the current bounded sources. Broad Instagram and TikTok discovery is unavailable and is explicitly reported to the agents. No new provider keys or paid subscriptions were created.
+
+Static-screened candidates wait in qa_blocked until a browser operator completes private TradingView compilation, replay and saved-chart verification. Static checks alone never create an approval card. An authenticated operator then records an educational package through POST /api/owner/indicators with action prepare_package, id, sourceHash and education fields: title, body, example, invalidation, instructionImageUrl, imageSha256 and verifiedExample:true. The image URL must be an HTTPS image on www.darthalgo.com or s3.tradingview.com. Verify the actual image bytes and chart example before attesting. The server validates metadata and hashes but does not independently certify image contents.
+
+The package includes exact source hash, private-chart evidence, educational text, example and instruction-image digest. Changes require fresh approval. Telegram exposes Approve package / Decline and a private review link. An approved package is inserted transactionally into os_indicator_publications. No TradingView publication executor is configured: status is awaiting_tradingview_worker. Do not equate queued approval with publication.
+
+Release recording additionally requires the approved packageHash and both the public script URL and educational post URL (educationUrl), plus real test evidence. Only then does the catalog admit the release. The browser worker still needs a server-hosted authenticated TradingView session, durable execution/reconciliation, and verification of platform publishing permissions. Codex's interactive browser is not an always-on worker.
+
+Verification: PGlite tests exercise daily stage ordering, duplicate/cap behavior, no premature cards, package validation/hash gates, publication queue idempotency and final evidence requirements. Network calls are mocked; these checks do not establish live social discovery or TradingView publication.

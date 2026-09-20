@@ -6,7 +6,7 @@ import { createRequire } from 'node:module';
 import assert from 'node:assert/strict';
 const dir=mkdtempSync(join(tmpdir(),'darth-telegram-ui-'));
 try {
-  execFileSync('node_modules/.bin/tsc',['--target','ES2020','--module','commonjs','--moduleResolution','node','--esModuleInterop','--skipLibCheck','--rootDir','app','--outDir',dir,'app/lib/business-os/telegram-ui.ts','app/lib/business-os/telegram-policy.ts'],{stdio:'pipe'});
+  execFileSync(process.execPath,['node_modules/typescript/bin/tsc','--target','ES2020','--module','commonjs','--moduleResolution','node','--esModuleInterop','--skipLibCheck','--rootDir','app','--outDir',dir,'app/lib/business-os/telegram-ui.ts','app/lib/business-os/telegram-policy.ts'],{stdio:'pipe'});
   const require=createRequire(import.meta.url);
   const ui=require(join(dir,'lib/business-os/telegram-ui.js'));
   const {departments}=require(join(dir,'lib/business-os/policy.js'));
@@ -27,7 +27,9 @@ try {
   assert.equal(ui.naturalCommand('menu'),'/home');
   assert.equal(ui.naturalCommand('connect dashboard'),'/connect');
   assert.deepEqual(ui.menuAction('ui:nav:connect'),{command:'/connect'});
-  assert.equal(ui.homeMenu().flat().length,6);
+  assert.equal(ui.homeMenu().flat().length,8);
+  assert.deepEqual(ui.menuAction("ui:nav:lab"),{command:"/lab"});
+  assert.deepEqual(ui.menuAction("ui:nav:health"),{command:"/health"});
   assert.ok(ui.settingsMenu().flat().some(b=>b.callback_data==='ui:nav:connect'));
   assert.equal(isPrivateOwnerUpdate({update_id:2,message:{from:{id:456},chat:{id:456,type:'private'},text:'/connect'}},'123'),false);
   assert.equal(ui.naturalCommand('Who’s working?'),'/status');

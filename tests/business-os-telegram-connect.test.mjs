@@ -15,7 +15,7 @@ try {
  database=new PGlite(join(dir,'db'));
  await database.exec(readFileSync('app/lib/business-os/schema.ts','utf8').match(/export const schema = `([\s\S]*?)`;/)[1]);
  await database.exec("update os_control set paused=false where id=1");
- execFileSync('node_modules/.bin/tsc',['--target','ES2020','--module','commonjs','--moduleResolution','node','--esModuleInterop','--skipLibCheck','--rootDir','app','--outDir',dir,'app/lib/business-os/telegram-command.ts']);
+ execFileSync(process.execPath,['node_modules/typescript/bin/tsc','--target','ES2020','--module','commonjs','--moduleResolution','node','--esModuleInterop','--skipLibCheck','--rootDir','app','--outDir',dir,'app/lib/business-os/telegram-command.ts']);
  const require=createRequire(import.meta.url);
  let tail=Promise.resolve();
  const makeSql=driver=>{

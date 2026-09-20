@@ -1,0 +1,27 @@
+import Link from "next/link";
+import {cookies} from "next/headers";
+import {ownerCookie,validOwnerSession} from "../../../lib/business-os/owner-session";
+import {db} from "../../../lib/affiliate-db";
+import {notFound} from "next/navigation";
+import {pineHash,validPrivatePreview,type IndicatorCandidate} from "../../../lib/business-os/indicator-policy";
+export const dynamic="force-dynamic";
+export const metadata={title:"Darth Algo · Indicator preview",robots:{index:false,follow:false}};
+export default async function IndicatorPreview({params}:{params:Promise<{id:string}>}){
+  if(process.env.AI_OS_ENABLED!=="true" || !validOwnerSession((await cookies()).get(ownerCookie)?.value,process.env.AI_OS_OWNER_KEY))return <main className="mx-auto max-w-3xl p-8"><h1>Private indicator preview</h1><p>Open your Telegram Command Center and choose Settings → Connect browser to view this prototype.</p></main>;
+  const {id}=await params;if(!/^[a-f0-9-]{36}$/.test(id))notFound();
+  const [r]=await db()`select * from os_indicator_candidates where id=${id}`;if(!r)notFound();
+  const c=r.candidate as IndicatorCandidate;
+  const preview=validPrivatePreview(r.private_preview,r.source_hash) && pineHash(c.pine)===r.source_hash ? r.private_preview : null;
+  return <main className="mx-auto max-w-4xl space-y-8 px-6 py-12">
+    <Link href="/owner" className="text-sm text-zinc-400">← Command Center</Link>
+    <header><p className="text-xs tracking-widest text-violet-300">DARTH ALGO · PRIVATE INDICATOR LAB</p><h1 className="mt-4 text-4xl font-bold">{c.name}</h1><p className="mt-4 max-w-2xl text-lg text-zinc-400">{c.purpose}</p></header>
+    <section className="rounded-2xl border border-white/10 bg-white/[0.025] p-7">
+      <h2 className="text-xl font-semibold">Try it before publication</h2>
+      {preview ? <><p className="mt-3 text-sm text-zinc-400">Compilation, chart replay and reopening this saved chart were recorded for this exact version. The link uses your TradingView account’s access.</p><div className="mt-6 flex flex-wrap gap-4"><a href={preview.chartUrl} target="_blank" rel="noopener noreferrer" className="rounded-lg bg-violet-300 px-5 py-3 font-semibold text-black">Open loaded TradingView chart ↗</a><a href={preview.screenshotUrl} target="_blank" rel="noopener noreferrer" className="rounded-lg border border-white/20 px-5 py-3">View actual chart capture ↗</a></div><p className="mt-4 text-xs text-zinc-500">Verification recorded {new Date(preview.checkedAt).toLocaleString("en-US",{timeZone:"America/New_York"})} Eastern. Saved charts can change after verification.</p></> : <><p className="mt-3 text-sm leading-7 text-zinc-400">The private chart is not ready yet. Once this version has been compiled, tested and saved in TradingView, its chart link and real capture will appear here.</p><button disabled className="mt-6 cursor-not-allowed rounded-lg border border-white/10 px-5 py-3 text-zinc-500">Open loaded chart · Setup pending</button></>}
+    </section>
+    {r.release_package?.education && <section className="space-y-5 rounded-2xl border border-white/10 p-7"><h2 className="text-2xl font-semibold">Educational post included in your approval</h2><h3 className="text-xl">{r.release_package.education.title}</h3><a href={r.release_package.education.instructionImageUrl} target="_blank" rel="noopener noreferrer"><img src={r.release_package.education.instructionImageUrl} alt="Annotated example showing how to use this indicator" className="w-full rounded-xl" /></a><p className="whitespace-pre-wrap text-zinc-300">{r.release_package.education.body}</p><h3 className="font-semibold">Worked example</h3><p className="text-zinc-400">{r.release_package.education.example}</p><h3 className="font-semibold">When this setup no longer applies</h3><p className="text-zinc-400">{r.release_package.education.invalidation}</p></section>}
+    <p className="text-sm text-zinc-400">Build privately → Try on your chart → Approve publication in Telegram → Publish</p>
+    <details className="rounded-xl border border-white/10 p-5"><summary className="cursor-pointer font-semibold">About this indicator</summary><div className="mt-5 space-y-4 text-sm text-zinc-400"><p>{c.differentiation}</p><p>For: {c.audience}</p><p>Demand hypothesis: {c.demand}</p><p>Recommendation: {c.tier}{c.tier==="paid"?` · $${c.monthlyPriceUsd}/month`:""}. {c.pricingRationale}</p><p>Stage: {r.status}. Screening: {r.score.total}/{r.score.outOf}; not a trading-performance score.</p><ul>{c.sourceUrls.map(u=><li key={u}><a className="break-all underline" href={u} rel="noopener noreferrer" target="_blank">{u}</a></li>)}</ul></div></details>
+    <details className="rounded-xl border border-white/10 p-5"><summary className="cursor-pointer font-semibold">Source and verification</summary><div className="mt-5 space-y-4"><p className="text-sm text-zinc-400">Static screening does not prove compilation or trading results. Private chart evidence is recorded by an authenticated operator, not independently certified by this page.</p><ul className="text-xs text-zinc-500">{Object.entries(r.qa.checks).map(([k,v])=><li key={k}>{v?"✓":"✕"} {k}</li>)}</ul><pre className="overflow-auto rounded bg-black p-5 text-xs">{c.pine}</pre><p className="break-all text-xs text-zinc-500">Version: {r.source_hash}</p>{preview&&<p className="text-sm text-zinc-400">Chart test notes: {preview.notes}</p>}{r.release_evidence&&<pre className="overflow-auto text-xs">{JSON.stringify(r.release_evidence,null,2)}</pre>}</div></details>
+  </main>;
+}

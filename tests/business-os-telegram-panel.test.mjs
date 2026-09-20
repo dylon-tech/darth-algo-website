@@ -11,7 +11,7 @@ let database;
 try{
  const {PGlite}=await import(pathToFileURL(process.env.OS_TEST_PGLITE_MODULE).href);database=new PGlite(join(dir,'db'));
  await database.exec(readFileSync('app/lib/business-os/schema.ts','utf8').match(/export const schema = `([\s\S]*?)`;/)[1]);
- execFileSync('node_modules/.bin/tsc',['--target','ES2020','--module','commonjs','--moduleResolution','node','--esModuleInterop','--skipLibCheck','--rootDir','app','--outDir',dir,'app/lib/business-os/telegram-command.ts','app/lib/business-os/brief.ts'],{stdio:'pipe'});
+ execFileSync(process.execPath,['node_modules/typescript/bin/tsc','--target','ES2020','--module','commonjs','--moduleResolution','node','--esModuleInterop','--skipLibCheck','--rootDir','app','--outDir',dir,'app/lib/business-os/telegram-command.ts','app/lib/business-os/brief.ts'],{stdio:'pipe'});
  const require=createRequire(import.meta.url);let tail=Promise.resolve();
  const makeSql=driver=>{const sql=async(parts,...values)=>{const q=parts.reduce((s,p,i)=>s+(i?'$'+i:'')+p,'');if(q.includes('pg_advisory_xact_lock'))return [];return (await driver.query(q,values)).rows;};sql.json=v=>JSON.stringify(v);sql.unsafe=q=>driver.exec(q);sql.begin=async fn=>{let release;const prior=tail;tail=new Promise(r=>release=r);await prior;try{return await database.transaction(tx=>fn(makeSql(tx)));}finally{release();}};return sql;};
  const sql=makeSql(database),mock=(path,exports)=>{const id=join(dir,'lib',path+'.js');require.cache[id]={id,filename:id,loaded:true,exports};};
@@ -33,7 +33,7 @@ try{
  const lastText=()=>calls.filter(c=>c.body.text).at(-1).body.text;
  let updateId=0;
  const input=async(text,data,messageId)=>{await recordOwnerUpdate(data?{update_id:++updateId,callback_query:{id:'cb'+updateId,data,message:{message_id:messageId}}}:{update_id:++updateId,message:{text}});await processOwnerUpdates();await deliverOwnerNotices();};
- await input('/start');assert.equal(sendCount(),1);assert.match(lastText(),/Talking to: CEO/);assert.match(lastText(),/Active subscribing customers: 2/);assert.equal(calls.at(-1).body.reply_markup.inline_keyboard.flat().length,6);
+ await input('/start');assert.equal(sendCount(),1);assert.match(lastText(),/Talking to: CEO/);assert.match(lastText(),/Active subscribing customers: 2/);assert.equal(calls.at(-1).body.reply_markup.inline_keyboard.flat().length,8);
  await input(null,'ui:nav:agents',100);assert.equal(sendCount(),1);assert.equal(calls.at(-1).method,'editMessageText');assert.equal(calls.at(-1).body.message_id,100);
  await input(null,'ui:agent:content',100);assert.equal(sendCount(),2);assert.match(lastText(),/Content/);
  await input(null,'ui:work:content:daily-content-engine',101);assert.equal(sendCount(),2);assert.match(lastText(),/Task saved/);
