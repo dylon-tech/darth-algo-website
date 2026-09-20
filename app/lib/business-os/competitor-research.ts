@@ -12,11 +12,12 @@ export function parseCompetitorPage(html:string,channelId:string,now=Date.now())
   if(data.metadata?.channelMetadataRenderer?.externalId!==channelId)return [];
   const tabs=data.contents?.twoColumnBrowseResultsRenderer?.tabs || [];
   const content=tabs.find((t:{tabRenderer?:{selected?:boolean}})=>t.tabRenderer?.selected)?.tabRenderer?.content;
-  const cards:Record<string,any>[]=[];
+  type PublicCard={contentId?:unknown;contentType?:unknown;metadata?:{lockupMetadataViewModel?:{title?:{content?:unknown};metadata?:{contentMetadataViewModel?:{metadataRows?:Array<{metadataParts?:Array<{text?:{content?:string}}>}>}}}}};
+  const cards:PublicCard[]=[];
   function walk(value:unknown,depth=0) {
     if(!value || typeof value!=="object" || depth>30)return;
-    const row=value as Record<string,any>;
-    if(row.lockupViewModel)cards.push(row.lockupViewModel);
+    const row=value as Record<string,unknown>;
+    if(row.lockupViewModel && typeof row.lockupViewModel==='object')cards.push(row.lockupViewModel as PublicCard);
     else for(const item of Object.values(row))walk(item,depth+1);
   }
   walk(content);
@@ -25,7 +26,7 @@ export function parseCompetitorPage(html:string,channelId:string,now=Date.now())
     const id=card.contentId,metadata=card.metadata?.lockupMetadataViewModel;
     const title=metadata?.title?.content;
     if(typeof id!=="string" || !/^[\w-]{11}$/.test(id) || typeof title!=="string" || seen.has(id) || card.contentType!=="LOCKUP_CONTENT_TYPE_VIDEO")return [];
-    const parts=(metadata.metadata?.contentMetadataViewModel?.metadataRows || []).flatMap((r:{metadataParts?:Array<{text?:{content?:string}}>})=>(r.metadataParts || []).map(p=>p.text?.content || ""));
+    const parts=(metadata?.metadata?.contentMetadataViewModel?.metadataRows || []).flatMap((r:{metadataParts?:Array<{text?:{content?:string}}>})=>(r.metadataParts || []).map(p=>p.text?.content || ""));
     const viewsLabel=parts.find((s:string)=>/^(?:[\d,.]+[KMB]?|No) views?$/i.test(s)) || null;
     const ageLabel=parts.find((s:string)=>/^\d+ (?:minute|hour|day|week|month|year)s? ago$/.test(s));
     const age=ageLabel?.match(/^(\d+) (\w+?)s? ago$/);
