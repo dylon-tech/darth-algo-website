@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { SVGRenderer } from "three/addons/renderers/SVGRenderer.js";
 import { cameraPose, demoCandles, smooth, setupPlayback } from "./chart-journey-math";
 
-export type ChartWorld = { render: (progress: number, playback?: number) => void; resize: () => void; dispose: () => void };
+export type ChartWorld = { render: (progress: number, playback?: number, still?: boolean) => void; resize: () => void; dispose: () => void };
 
 export function createChartWorld(host: HTMLElement, accent: string, onFailure: () => void): ChartWorld {
   let renderer: THREE.WebGLRenderer | SVGRenderer;

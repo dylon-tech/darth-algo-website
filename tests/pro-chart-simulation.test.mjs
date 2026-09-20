@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { proCandles, proSignals, proSimulation, advanceProLoop, PRO_LOOP_MS } from '../app/components/pro-chart-simulation.ts';
+import { proCandles, proSignals, proSimulation, advanceProLoop, PRO_LOOP_MS, proCandleTick, proFocusFrame } from '../app/components/pro-chart-simulation.ts';
 const progressAt = visible => (visible - 42) / 34 * .88;
 assert.equal(proSimulation(0).active, -1);
 for (const [i, signal] of proSignals.entries()) {
@@ -28,3 +28,22 @@ assert.ok(Math.abs(advanceProLoop(.9,PRO_LOOP_MS*.2)-.1)<1e-9,'Repeating must wr
 assert.equal(advanceProLoop(.25,-100),.25);
 assert.equal(proSimulation(advanceProLoop(.99,PRO_LOOP_MS*.02)).active,-1,'New cycle clears previous signal and target hits');
 console.log('Pro autoplay, synchronized risk plans, and scripted target-hit checks passed.');
+
+// Tick prices stay still between discrete updates, then visit the candle extremes.
+const example = proCandles[48];
+assert.deepEqual(proCandleTick(example,.01),proCandleTick(example,.1));
+assert.equal(proCandleTick(example,0).price,example.open);
+assert.equal(proCandleTick(example,1).price,example.close);
+assert.equal(proCandleTick(example,1).high,example.high);
+assert.equal(proCandleTick(example,1).low,example.low);
+assert.ok(PRO_LOOP_MS<24000);
+// Every feature gets a distinct, finite crop; dashboard and full risk plan remain in frame.
+for (const narrow of [false,true]) {
+  const frames = Array.from({length:5},(_,i)=>proFocusFrame(i,narrow,525,315,420,315,250));
+  assert.equal(new Set(frames.map(JSON.stringify)).size,5);
+  frames.forEach(frame=>assert.ok(frame.every(Number.isFinite)&&frame[2]>0&&frame[3]>0));
+  const [x,y,w,h]=frames[4];
+  assert.ok(x<=866&&x+w>=1108&&y<=83&&y+h>=221);
+  assert.ok(frames[3][0]<=420&&frames[3][0]+frames[3][2]>=1005);
+}
+console.log('Discrete ticks and five feature-focus crops passed.');

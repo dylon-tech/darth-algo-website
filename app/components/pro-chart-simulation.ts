@@ -1,5 +1,5 @@
 /** Scripted winning examples for a product walkthrough, never performance evidence. */
-export const PRO_LOOP_MS = 24000;
+export const PRO_LOOP_MS = 14000;
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
 const knots = [[0,4470],[15,4535],[30,4510],[43,4488],[44,4494],[56,4530],[59,4524],[60,4520],[75,4485]];
 const closingPrice = (index: number) => {
@@ -19,11 +19,27 @@ export const proSignals = [{index:44,buy:true},{index:60,buy:false}].map(signal 
 export function advanceProLoop(progress: number, elapsed: number) {
   return (progress + Math.max(0, elapsed) / PRO_LOOP_MS) % 1;
 }
+/** Discrete intrabar ticks follow OHLC, so the live candle can move both ways. */
+export function proCandleTick(candle: typeof proCandles[number], growth: number) {
+  const step = growth >= 1 ? 1 : Math.floor(clamp(growth) * 6) / 6;
+  const points = candle.close >= candle.open ? [candle.open,candle.low,candle.high,candle.close] : [candle.open,candle.high,candle.low,candle.close];
+  const segment = Math.min(2,Math.floor(step*3)), fraction = step*3-segment;
+  const price = points[segment]+(points[segment+1]-points[segment])*fraction;
+  const shown = [...points.slice(0,segment+1),price];
+  return {price,high:Math.max(...shown),low:Math.min(...shown)};
+}
+export function proFocusFrame(feature: number, narrow: boolean, priceX: number, priceY: number, signalX: number, signalY: number, riskTop: number) {
+  if (feature === 4) return [850,65,270,180];
+  if (feature === 3) return [Math.max(40,signalX-45),riskTop-45,Math.min(980,1050-Math.max(40,signalX-45)),225];
+  if (feature === 2) return [Math.max(40,Math.min(signalX,priceX)-80),Math.min(signalY,priceY)-90,Math.max(350,Math.abs(priceX-signalX)+230),230];
+  if (feature === 1) return [Math.max(40,priceX-270),priceY-95,430,220];
+  return narrow ? [300,0,820,570] : [0,0,1120,570];
+}
 export function proSimulation(progress: number) {
   const p = clamp(progress), visible = 42 + 34 * Math.min(1, p / .88);
   const index = Math.min(75, Math.ceil(visible) - 1), growth = Math.min(1, visible - index);
   const candle = proCandles[index];
-  const price = candle.open + (candle.close-candle.open)*growth;
+  const price = proCandleTick(candle,growth).price;
   const active = proSignals.findLastIndex(signal => visible >= signal.index + 1);
   const signal = proSignals[active];
   const reached = (target: number) => {
@@ -31,7 +47,8 @@ export function proSimulation(progress: number) {
     // Only completed candles and the currently revealed fraction may hit a target.
     for (let i = signal.index + 1; i <= index; i++) {
       const c = proCandles[i], fraction = i === index ? growth : 1;
-      const extreme = c.open + ((signal.buy ? c.high : c.low) - c.open) * fraction;
+      const tick = proCandleTick(c,fraction);
+      const extreme = signal.buy ? tick.high : tick.low;
       if (signal.buy ? extreme >= target : extreme <= target) return true;
     }
     return false;
