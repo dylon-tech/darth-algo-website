@@ -77,7 +77,7 @@ async function main(){
  await sql`update os_control set paused=false`;process.env.AI_OS_INDICATORS_PER_DAY='2';
  for(let i=0;i<6;i++){await lab.syncIndicatorLab();
  for(const job of await sql`select * from os_jobs where status='queued' and request_key like 'indicator-ideas:%'`){const rid=randomUUID();await sql`insert into os_runs(id,request_key,status,result,snapshot) values(${rid},${rid},'completed',${JSON.stringify({brief:'A source-backed original indicator idea for the next stage.'})},${JSON.stringify(snapshot)})`;await sql`update os_jobs set run_id=${rid} where id=${job.id}`;}
- await sql`update os_jobs set status='succeeded' where status='queued'`;} 
+ await sql`update os_jobs set status='succeeded' where status='queued'`;}
  const stages=await sql`select department,request_key from os_jobs where request_key like 'indicator-ideas:%' order by created_at`;assert.deepEqual(stages.map(r=>r.department),['research','growth']);
  assert.equal((await sql`select * from os_jobs where message like '[INDICATOR_LAB]%'`).length,2);
  await pg.close();console.log('PASS: static screening, source provenance, no code ingestion, idempotent schema/handoff/cards, duplicate logic, daily cap, pause, approval/hash/replay gates and release replay.');
