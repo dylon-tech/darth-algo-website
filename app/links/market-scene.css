@@ -30,7 +30,7 @@
 .hub-depth-card::after { content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none; background:linear-gradient(135deg,#ffffff03,transparent 40%); }
 .links-market-hub #indicators>div[aria-hidden="true"] { opacity:.2; }
 .links-market-hub #indicators>div:nth-child(2) { background:#ffffff03; }
-.links-market-hub #indicators a[href^="https://buy.stripe.com"] { background:linear-gradient(110deg,#1e4654,#286376); box-shadow:0 5px 20px #0006; }
+.links-market-hub #indicators a[href^="https://buy.stripe.com"] { background:linear-gradient(110deg,#bc2333,#e03748); box-shadow:0 5px 20px #0006; }
 .links-market-hub #community a[href^="/go/community"] { background:linear-gradient(110deg,#5dbf9d,#85d2b7); box-shadow:0 5px 20px #0006; }
 .links-market-hub :is(a,button):focus-visible { outline:2px solid #b6e0d2; outline-offset:4px; }
 .hub-market-scene[data-frozen="true"] * { animation-play-state:paused!important; }
@@ -44,3 +44,19 @@
 @media(prefers-reduced-motion:reduce) { .hub-market-scene * { animation:none!important; }.hub-depth-card,.hub-depth-card:hover { transform:none; transition:none; } }
 
 .hub-share button { border-radius:8px; background:#090c0df2; font-size:12px; font-weight:600; }
+
+/* Keep the shop readable, quick to scan and comfortable to tap. */
+.links-market-hub section[id] { scroll-margin-top:20px; }
+.links-market-hub a:active,.hub-share button:active { transform:translateY(1px); }
+.links-market-hub #indicators h2 { text-wrap:balance; }
+.links-market-hub #socials article>a { position:relative; }
+.links-market-hub #socials article>a:focus-visible { outline-offset:-4px; }
+@media(max-width:639px) {
+ .hub-brand-emblem { width:88px!important; height:88px!important; border-radius:24px!important; }
+ .hub-brand-stage h1 { max-width:260px; }
+ .hub-brand-stage { padding-bottom:4px; }
+ .hub-brand-stage nav { margin-top:16px; }
+ .links-market-hub #indicators h2 { font-size:23px; }
+ .links-market-hub #socials article>a strong { font-size:17px; }
+ .links-market-hub #socials article>a { gap:12px; }
+}
