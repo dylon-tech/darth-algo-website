@@ -113,6 +113,7 @@ try {
  assert.match(await mediaDashboard('today'),/Threads/);
  await Promise.all([publishCommunityPreview(),publishCommunityPreview()]);await publishEducationPost({force:true});
  assert.equal((await communityReadiness()).ready,true);
+ assert.equal((await publishCommunityPreview()).confirmed,true);
  assert.equal(telegramWrites,1,'Legacy education trigger and simultaneous cron cannot duplicate preview');
  assert.equal(community[0].photo,campaign.assets[0].url);assert.equal(community[0].message_thread_id,7);
  assert.equal(community[0].reply_markup.inline_keyboard.length,3);assert.match(community[0].caption,/TODAY’S POST/);
