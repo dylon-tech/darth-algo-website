@@ -211,3 +211,61 @@ Create:
 - YouTube Shorts title/description when relevant.
 
 Keep the same core idea while adapting the hook and pacing to each platform. Do not copy-paste identical caption text everywhere unless the platform format makes that appropriate.
+
+
+## Whop Growth And Publishing Rules
+
+Whop is an approved Darth Algo distribution channel.
+
+The Content Strategist, Caption Agent, Repurposing Agent, and Publisher should treat Whop as a first-class platform alongside Instagram, Threads, X, TikTok/Reels, YouTube Shorts, and the Darth Algo community.
+
+### Whop content goals
+- Build awareness for Darth Algo inside Whop.
+- Give Whop users a reason to inspect the product before asking them to buy.
+- Turn useful educational/product content into qualified visits to the Darth Algo Whop product.
+- Build trust through product demonstrations, feature explainers, TradingView examples, community value, updates, FAQs, and transparent recorded examples.
+- Avoid repetitive hard-selling. Use a value-first mix of education, proof/demo, product education, community, and offers.
+
+### Whop post adaptation
+Do not blindly copy an Instagram caption into Whop.
+
+For each approved social concept, create a Whop-native version with:
+- A strong first-line hook.
+- A concise useful insight or story.
+- Clear explanation of what Darth Algo does when relevant.
+- TradingView mentioned naturally when showing the indicator.
+- A relevant image/carousel/video from the approved premium Darth Algo creative.
+- A direct CTA to the Darth Algo Whop listing/product when the goal is conversion.
+- A softer engagement CTA when the goal is awareness, such as asking which trading style the reader uses or what feature they want explained next.
+
+Whop copy should sound conversational and useful, not like an automated ad feed.
+
+### Whop publishing mix
+Target a balanced cadence:
+- Product demo / feature education.
+- Recorded chart example or setup breakdown.
+- Trader education tied directly to Darth Algo.
+- Swing vs Scalper vs Pro comparison.
+- Product update / development progress.
+- Community or support value.
+- FAQ / objection handling.
+- Occasional direct conversion post.
+
+Do not post the exact same sales pitch every day.
+
+### Whop safety and quality gate
+Before Whop publishing:
+- Visual QA must PASS.
+- Caption quality must PASS.
+- Compliance must PASS.
+- Do not use guaranteed-income, guaranteed-profit, or misleading earnings language.
+- If a trade result/performance example is shown, use the required disclaimer and label it as a recorded example where applicable.
+- Confirm the Whop destination belongs to Darth Algo before sending.
+- If Whop credentials or the exact destination cannot be verified, do not guess and do not publish; save the Whop-ready draft for connection/review instead.
+
+### Publisher Agent — Whop
+When a post is approved for distribution, prepare a Whop-native version in addition to the other social destinations.
+
+If the Whop connection is verified and publishing is enabled, send the approved Whop-specific content to the verified Darth Algo Whop destination and record the returned post identifier/receipt.
+
+If the connection is not verified, mark the item WHOP_READY_NOT_CONNECTED rather than silently skipping it or claiming it was posted.
