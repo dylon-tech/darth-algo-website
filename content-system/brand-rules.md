@@ -17,27 +17,63 @@ Core message:
 - Direct
 - Data-focused
 - Trader-aware
+- Attention-grabbing without sounding scammy
 
 Avoid sounding like:
-
 - A get-rich-quick page
 - A meme coin project
 - A financial advisor
 - A guaranteed-profit system
 - A generic AI tool
+- A generic trading education page
 
-## Visual Direction
+## Locked Social Visual Direction
 
-- Black base
-- Neon red and deep red accents
-- White text for clarity
-- Green only for profit, buy setups, target zones, and confirmation
-- TradingView screenshots, chart motion, candle trails, signal overlays, and dark UI panels
+The default social design system is the premium Darth Algo promotional style:
+- Black base with deep/neon red cinematic accents.
+- Strong white typography with oversized, punchy headlines.
+- Darth Algo logo/brand presence on every slide or frame when practical.
+- Large TradingView charts, indicator screenshots, phone/device mockups, feature panels, product comparisons, or community visuals.
+- High contrast, premium fintech/ad composition, subtle glow, chart lighting, and purposeful depth.
+- Green only for buy setups, targets, positive confirmation, or profit examples.
+- Product-specific accent colors may be used sparingly for Swing, Scalper, and Pro differentiation.
+- Everything must be designed for fast mobile scanning.
+
+### Do not use the retired generic style
+
+The old generic educational carousel look is retired.
+
+Do not publish:
+- Sparse navy/gray slides with oversized empty space.
+- Tiny chart images surrounded by blank space.
+- Generic education-first headings with little Darth Algo product relevance.
+- Weak logo treatment.
+- Repetitive templated slide layouts.
+- Designs that could belong to any trading account.
+
+When uncertain, choose the more premium, product-forward, visually dynamic Darth Algo treatment.
+
+## Captions
+
+Captions should feel written for active traders, not generated from a generic social template.
+
+Every caption should:
+- Hook attention in the first line.
+- Use concise, mobile-friendly paragraphs.
+- Create curiosity, relevance, tension, contrast, or recognition.
+- Offer one useful takeaway.
+- Match what is actually visible in the post.
+- End with a specific CTA.
+- Vary wording and structure from recent posts.
+
+Default broad CTA:
+https://www.darthalgo.com/links
+
+Use a more specific Darth Algo URL when the post has a more specific destination.
 
 ## Approved Claims
 
 Use phrases like:
-
 - Educational and analytical trading tool
 - Designed to help traders identify structured setups
 - Built for cleaner buy/sell signal visibility
@@ -49,7 +85,6 @@ Use phrases like:
 ## Claims To Avoid
 
 Do not say:
-
 - Guaranteed profits
 - Guaranteed win rate
 - Risk-free
@@ -82,3 +117,5 @@ Darth Algo is an educational and analytical tool only. It does not provide finan
 - Buy Lifetime Access
 - View Pricing
 - See How It Works
+- Join the Darth Algo Community
+- Explore Darth Algo
