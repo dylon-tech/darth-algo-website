@@ -119,3 +119,13 @@ Darth Algo is an educational and analytical tool only. It does not provide finan
 - See How It Works
 - Join the Darth Algo Community
 - Explore Darth Algo
+
+### Exact visual master and rejected approximation — September 22, 2026
+
+Canonical visual reference: **Darth Algo Trading Carousel Template.png**, saved September 21, Library ID `libfile_1491c511dbfc81919041da4e3e062d28`. Inspect that actual image before making a new template. Supporting full-color-logo promotional reference: **Darth Algo Trading Signals Poster(1).png**, `libfile_d9091a7d3d6c8191b9b4c02d747b67cc`.
+
+The owner explicitly rejected `premium-black-red-2026-09-22-v4` and `Darth_Algo_Updated_Carousel_Preview.html`: a bold headline above a rectangular chart with a red border is still the retired composition. Recoloring or rebranding that stack does not satisfy this master.
+
+Match the actual art direction: beveled metallic silver/red headlines; faceted cinematic black backgrounds with red rim lighting; oversized angled realistic devices integrated into the composition; compact glowing feature panels; varied cover, demonstration, comparison, feature, community and CTA compositions. Use the actual full-color Darth Algo logo. The six-panel master is a visual reference, not a source of verified trade returns, user counts, testimonials or product claims. Retain only sourced factual copy and owned chart evidence. A generated screen is not new performance evidence.
+
+Production fresh social sends are held because v4 was rejected. Existing receipts remain available for reconciliation. A newly generated corrected cover is a visual draft; it is not proof that a complete replacement carousel or daily creative engine is installed. Resume only once a complete matching production artifact and its quality checks are in place.
