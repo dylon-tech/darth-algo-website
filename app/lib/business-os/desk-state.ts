@@ -40,8 +40,8 @@ export function serviceView(service: Observation, now: number): ViewState {
   if (!freshAt(service.observedAt, now)) return { label: 'Stale update', tone: 'warn', detail: 'This service has not reported in the last three minutes.' };
   const d = service.details, status = typeof d.status === 'string' ? d.status : 'unknown';
   const blockers = ['privateTesting', 'publishing', 'socialDiscovery'].map(k => d[k]).filter(v => typeof v === 'string' && /blocked|not_connected|waiting_for_credits|connection_required/.test(v));
-  const deliveryBlocked = d.deliveries && typeof d.deliveries === 'object' && Object.values(d.deliveries).some(v => typeof v === 'string' && /needs_check|connection_required|unknown|unconfirmed|prior_receipt/.test(v));
-  if (blockers.length || deliveryBlocked || /blocked|failed|error|needs_check/.test(status)) return { label: 'Needs attention', tone: 'warn', detail: blockers.length ? blockers.map(words).join(' · ') : words(d.code || d.reason || status) };
+  const deliveryIssues = d.deliveries && typeof d.deliveries === 'object' ? Object.entries(d.deliveries).filter(([,v]) => typeof v === 'string' && /needs_check|connection_required|unknown|unconfirmed|prior_receipt|HTTP_[45]\d\d|failed|blocked|error/i.test(v)).map(([network,value])=>`${network}: ${words(value)}`) : [];
+  if (blockers.length || deliveryIssues.length || /blocked|failed|error|needs_check/i.test(status)) return { label: 'Needs attention', tone: 'warn', detail: [...blockers.map(words),...deliveryIssues].join(' · ') || words(d.code || d.reason || status) };
   if (/disabled|paused/.test(status)) return { label: words(status), tone: 'quiet', detail: 'This service is not currently executing work.' };
   if (/prepared_for_daily_window|preparing_daily_caption/.test(status)) return { label: status === 'prepared_for_daily_window' ? 'Prepared' : 'Preparing', tone: 'quiet', detail: status === 'prepared_for_daily_window' ? 'Saved for the daily posting window. Prepared is not published.' : 'Waiting for the daily creative handoff.' };
   if (/already_checked|idle|waiting|no_supported_idea/.test(status)) return { label: 'Waiting', tone: 'quiet', detail: words(status) };

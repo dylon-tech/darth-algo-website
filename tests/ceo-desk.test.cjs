@@ -24,4 +24,6 @@ equal(serviceView({id:'social',observedAt:stamp(1000),details:{status:'active',d
 equal(serviceView({id:'social',observedAt:stamp(180001),details:{status:'published'}},now).tone,'warn');
 equal(safeReceiptUrl('javascript:alert(1)'),null);equal(safeReceiptUrl('https://x.com.attacker.test/foo'),null);
 equal(safeReceiptUrl('https://a:b@x.com/foo'),null);equal(safeReceiptUrl('https://www.instagram.com/p/example/'),'https://www.instagram.com/p/example/');
+equal(serviceView({id:'social',observedAt:stamp(1000),details:{status:'prepared_for_daily_window',deliveries:{whop:'WHOP_HTTP_400'}}},now).tone,'warn');
+equal(serviceView({id:'social',observedAt:stamp(1000),details:{status:'prepared_for_daily_window',deliveries:{whop:'WHOP_HTTP_400'}}},now).detail,'whop: WHOP HTTP 400');
 console.log(`${assertions} CEO desk state, freshness, and URL safety assertions passed.`);
