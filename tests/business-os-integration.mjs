@@ -42,7 +42,10 @@ try {
     return tag;
   };
   const sql=makeTag(pg);
-  const modulePath=path=>join(dir,path);
+  // TypeScript preserves the source tree below `app`, so these compiled
+  // modules live under `lib/`. Keep the fixture aligned with the actual emit
+  // layout instead of silently requiring files that can never exist.
+  const modulePath=path=>join(dir,path.startsWith('business-os/')||path==='affiliate-db.js'?`lib/${path}`:path);
   const stub=(path,exports)=>{const filename=modulePath(path);require.cache[filename]={id:filename,filename,loaded:true,exports};};
   stub('affiliate-db.js',{db:()=>sql});
   let evidenceReads=0;
@@ -52,6 +55,10 @@ try {
   }});
   const {initializeOS}=require(modulePath('business-os/schema.js'));
   const {queueJob,workOneJob,cancelJob}=require(modulePath('business-os/jobs.js'));
+  // This fixture exercises coordination and durable handoffs. Telegram delivery
+  // has its own PostgreSQL-backed integration suite, so keep that external
+  // surface out of this test while retaining the coordinator's real work path.
+  stub('business-os/telegram-command.js',{workAndNotify:()=>workOneJob()});
   const {coordinationTick}=require(modulePath('business-os/coordination.js'));
   const {seedAssignments}=require(modulePath('business-os/coordination-policy.js'));
   const {runAgent}=require(modulePath('business-os/service.js'));
@@ -122,7 +129,7 @@ try {
   assert.equal(providerInputs.length,2);
   assert.match(providerInputs[1].request.instructions,/operations specialist/);
   for (const call of providerInputs) {
-    assert.match(call.request.instructions,/more paying customers and more sustainable revenue/);
+    assert.match(call.request.instructions,/more qualified buyers, more paying customers, stronger retention, and durable recurring revenue/);
     assert.match(call.request.instructions,/do not create tasks or handoffs/);
     assert.match(call.request.instructions,/does not authorize spending or external actions/);
   }

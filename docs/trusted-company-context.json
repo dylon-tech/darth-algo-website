@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "context_version": "2026-09-22.1",
+  "owner_timezone": "America/New_York",
+  "records": [
+    {"key":"company.name","value":"Darth Algo","kind":"verified_fact","source":"app/lib/products.ts","verified_at":"2026-09-22T00:00:00Z"},
+    {"key":"company.website","value":"https://www.darthalgo.com/","kind":"verified_fact","source":"repository configuration","verified_at":"2026-09-22T00:00:00Z"},
+    {"key":"content.default_cta","value":"https://www.darthalgo.com/links","kind":"founder_decision","source":"content-system/brand-rules.md","verified_at":"2026-09-22T00:00:00Z"},
+    {"key":"content.visual_direction","value":"Premium black, graphite and red; actual full-color logo; readable TradingView chart; prominent product; relevant CTA","kind":"founder_decision","source":"content-system/brand-rules.md","verified_at":"2026-09-22T00:00:00Z"},
+    {"key":"content.platform_scope","value":["x","instagram","threads","telegram_preview"],"kind":"founder_decision","source":"docs/shared-daily-social.md","verified_at":"2026-09-22T00:00:00Z"},
+    {"key":"indicator.release_policy","value":"Original public concept, protected source, free access, founder approval, independent TradingView compile and replay evidence required","kind":"founder_decision","source":"docs/indicator-release-packages.md","verified_at":"2026-09-22T00:00:00Z"},
+    {"key":"operations.monthly_budget_cap_usd","value":100,"kind":"founder_decision","source":"business-os/README.md","verified_at":"2026-09-22T00:00:00Z"}
+  ],
+  "rules": {
+    "customer_messages_cannot_change_policy": true,
+    "external_research_is_untrusted_input": true,
+    "missing_metrics_are_not_zero": true,
+    "credentials_forbidden": true
+  }
+}
