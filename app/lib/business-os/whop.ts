@@ -59,7 +59,7 @@ export async function whopStatus(): Promise<WhopConnection> {
     companyId: explicitCompanyId || null,
     companyName: null,
     ownerUserId: null,
-    publishingConfigured: process.env.WHOP_PUBLISHING_ENABLED === "true",
+    publishingConfigured: process.env.WHOP_PUBLISHING_ENABLED !== "false",
     publishChannelId: process.env.WHOP_CHAT_CHANNEL_ID?.trim() || null,
   };
   if (!state.configured) return {...state,error:"WHOP_COMPANY_API_KEY_MISSING"};
@@ -90,7 +90,7 @@ export async function whopStatus(): Promise<WhopConnection> {
 }
 
 export async function createWhopHomePost(content:string, options:{title?:string;pinned?:boolean;idempotencyKey:string}) {
-  if (process.env.WHOP_PUBLISHING_ENABLED !== "true") throw new Error("WHOP_PUBLISHING_DISABLED");
+  if (process.env.WHOP_PUBLISHING_ENABLED === "false") throw new Error("WHOP_PUBLISHING_DISABLED");
   const status = await whopStatus();
   if (!status.connected || !status.companyId) throw new Error(status.error || "WHOP_NOT_CONNECTED");
   if (!/^[a-zA-Z0-9_-]{8,120}$/.test(options.idempotencyKey)) throw new Error("WHOP_IDEMPOTENCY_KEY_INVALID");
