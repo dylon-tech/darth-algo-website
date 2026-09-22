@@ -1,0 +1,35 @@
+name: Owner operations validation
+on:
+  push:
+    branches: [fix/owner-live-operations-20260922]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: owner-operations-validation-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      AI_OS_AI_ENABLED: 'false'
+      AI_OS_AUTONOMY_ENABLED: 'false'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Evidence and security regression checks
+        run: node scripts/test-owner-operations.mjs
+      - name: Type check
+        run: npx tsc --noEmit
+      - name: Lint changed implementation
+        run: npx eslint app/owner/live-operations.tsx app/lib/business-os/operations-model.ts app/api/owner/operations/route.ts app/lib/business-os/whop-daily.ts app/lib/business-os/indicator-research.ts
+      - name: Build without production secrets
+        run: npm run build
