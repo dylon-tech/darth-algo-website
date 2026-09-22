@@ -10,6 +10,7 @@ import {photoPlanForDay} from './photo-plan';
 import {syncDailyCreative,dailyCreativeCaption} from './daily-creative';
 import {dailySocialPolicy,dailySocialPayload,isDailySocialPayload,socialPostUrl,type DailyCampaign,type SocialNetwork,type DailySocialPayload} from './daily-social-policy';
 import {selectSocialChannel,socialPreflight,createSocialPost,getSocialPost,socialPostMatches} from './buffer-social';
+import {syncDailyWhop} from './whop-daily';
 const dayFor=(now:Date)=>new Intl.DateTimeFormat('en-CA',{timeZone:dailySocialPolicy.timezone,year:'numeric',month:'2-digit',day:'2-digit'}).format(now);
 export async function prepareDailyCampaign(now=new Date()):Promise<DailyCampaign>{
  const sql=db(),day=dayFor(now);
@@ -146,6 +147,8 @@ export async function syncDailySocial(now=new Date()){
   }
   catch{deliveries[network]='needs_check';}
  }
+ const whop=await syncDailyWhop(campaign,hour);
+ deliveries.whop=whop.published?'published':whop.state;
  const [previous]=await sql`select details from os_activity where event='daily_social_status' and entity_id=${campaign.day} order by id desc limit 1`;
  if(fingerprint({deliveries:previous?.details.deliveries,community:previous?.details.community})!==fingerprint({deliveries,community:community.state}))await sql`insert into os_activity(actor,event,entity_id,details) values('operations','daily_social_status',${campaign.day},${sql.json({deliveries,theme:campaign.theme,community:community.state})})`;
  return {status:hour<dailySocialPolicy.hour?'prepared_for_daily_window':'active',day:campaign.day,theme:campaign.theme,deliveries,communityReadiness:community.state,assetsReady,previewUrl:campaign.assets[0].url};
