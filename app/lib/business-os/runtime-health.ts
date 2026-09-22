@@ -1,5 +1,6 @@
 import {socialHealthIssues} from "./social-health";
 import {revenueHealthIssues} from "./revenue-health";
+import {paymentRecoveryHealthIssues,reconcilePaymentRecovery} from "./payment-recovery";
 import {db} from "../affiliate-db";
 import {queueOwnerNotice,deliverOwnerNotices} from "./delivery";
 export async function runtimeHealth(){
@@ -13,6 +14,7 @@ export async function runtimeHealth(){
   const stale=!h || Date.now()-new Date(h.last_seen_at).getTime()>300000;
   const issues:string[]=await socialHealthIssues();
   issues.push(...await revenueHealthIssues());
+  issues.push(...await paymentRecoveryHealthIssues());
   if(stale)issues.push("Worker heartbeat is older than five minutes.");
   if(!control?.paused && jobs.oldest && Date.now()-new Date(jobs.oldest).getTime()>3600000)issues.push("Queued work has waited over an hour.");
   if(h?.status==="budget_blocked")issues.push("AI is waiting for the configured spending allowance.");
@@ -22,6 +24,7 @@ export async function runtimeHealth(){
   return {status:control?.paused?"paused":issues.length?"attention":"healthy",lastSeenAt:h?new Date(h.last_seen_at).toISOString():null,queued:jobs.queued,failed:jobs.failed,unknownNotices:outbox.n,issues};
 }
 export async function monitorRuntime(){
+  await reconcilePaymentRecovery();
   const health=await runtimeHealth(),sql=db();
   const [previous]=await sql`select details from os_activity where event='health_observed' order by id desc limit 1`;
   const signature=JSON.stringify([health.status,health.issues]);

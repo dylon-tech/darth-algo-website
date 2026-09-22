@@ -84,6 +84,13 @@ create table if not exists os_callback_actions (
  payload_hash text not null, decision text not null check(decision in ('approved','declined','revision_requested')),
  expires_at timestamptz not null
 );
+create table if not exists os_payment_recovery (
+ stripe_invoice_id text primary key, stripe_customer_id text, customer_email text,
+ status text not null default 'failed' check(status in ('failed','recovered','closed')),
+ first_failed_at timestamptz not null default now(), last_failed_at timestamptz not null default now(),
+ recovered_at timestamptz, last_notice_at timestamptz, notice_count integer not null default 0
+);
+create index if not exists os_payment_recovery_open on os_payment_recovery(last_failed_at) where status='failed';
 create table if not exists os_briefs (
  day date primary key, created_at timestamptz not null default now(),
  body text not null, evidence jsonb not null
