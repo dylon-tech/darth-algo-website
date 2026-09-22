@@ -28,6 +28,50 @@ create table if not exists os_indicator_publications (
 `;
 export async function ensureIndicatorSchema(){await db().begin(async tx=>{await tx`select pg_advisory_xact_lock(730932)`;await tx.unsafe(indicatorSchema);});}
 export function labEnabled(){return process.env.AI_OS_INDICATOR_LAB_ENABLED==="true";}
+const immediatePrototype:IndicatorCandidate={
+  name:"Darth Algo Session VWAP Reclaim",
+  purpose:"Highlight a confirmed reclaim or rejection of session VWAP only when price closes back through VWAP with short-term trend alignment.",
+  differentiation:"A deliberately small, readable prototype: session filter, closed-bar VWAP cross, EMA direction filter, one marker per direction until price crosses back, and explicit alerts. It is a review prototype, not a profitability claim.",
+  audience:"Intraday futures traders who want fewer, context-aware VWAP markers on 1-, 3-, 5- or 15-minute charts.",
+  demand:"Owner requested an immediately reviewable original prototype. Market demand and trading performance have not been measured; the cited sources document implementation primitives only.",
+  pricingRationale:"Owner direction keeps new Indicator Lab releases free and publicly discoverable if they later pass compilation, replay, education and release QA.",
+  tier:"free",monthlyPriceUsd:0,
+  sourceUrls:["https://www.tradingview.com/pine-script-docs/concepts/sessions/","https://www.tradingview.com/pine-script-docs/language/built-ins/"],
+  pine:`//@version=6
+indicator("Darth Algo Session VWAP Reclaim", overlay=true)
+tradeSession = input.session("0930-1600", "Trading session")
+emaLength = input.int(21, "Trend EMA", minval=2, maxval=200)
+inSession = not na(time(timeframe.period, tradeSession))
+vwapLine = ta.vwap(hlc3)
+trendEma = ta.ema(close, emaLength)
+longSetup = inSession and barstate.isconfirmed and ta.crossover(close, vwapLine) and close > trendEma
+shortSetup = inSession and barstate.isconfirmed and ta.crossunder(close, vwapLine) and close < trendEma
+var int lastSide = 0
+longSignal = longSetup and lastSide != 1
+shortSignal = shortSetup and lastSide != -1
+if longSignal
+    lastSide := 1
+if shortSignal
+    lastSide := -1
+if not inSession
+    lastSide := 0
+plot(vwapLine, "Session VWAP", color=color.new(color.purple, 0), linewidth=2)
+plot(trendEma, "Trend EMA", color=color.new(color.gray, 25), linewidth=1)
+plotshape(longSignal, title="VWAP Reclaim", text="RECLAIM", style=shape.labelup, location=location.belowbar, color=color.new(color.lime, 0), textcolor=color.black, size=size.tiny)
+plotshape(shortSignal, title="VWAP Rejection", text="REJECT", style=shape.labeldown, location=location.abovebar, color=color.new(color.red, 0), textcolor=color.white, size=size.tiny)
+alertcondition(longSignal, "Darth Algo VWAP Reclaim", "Confirmed close reclaimed VWAP with EMA alignment")
+alertcondition(shortSignal, "Darth Algo VWAP Rejection", "Confirmed close rejected VWAP with EMA alignment")`
+};
+async function seedImmediatePrototype(){
+ const qa=pineChecks(immediatePrototype.pine);if(!qa.passed)throw Error("BUILTIN_PROTOTYPE_QA_FAILED");
+ const sql=db(),logic=pineLogicHash(immediatePrototype.pine),hash=pineHash(immediatePrototype.pine);
+ const [prior]=await sql`select id from os_indicator_candidates where logic_hash=${logic}`;if(prior)return String(prior.id);
+ const id=randomUUID();
+ const [row]=await sql`insert into os_indicator_candidates(id,run_id,candidate,source_hash,logic_hash,qa,score,status)
+  values(${id},null,${sql.json(immediatePrototype)},${hash},${logic},${sql.json({...qa,origin:"owner_directed_builtin_prototype",reviewState:"code_ready_static_qa_only"})},${sql.json(scoreIndicator(immediatePrototype))},'qa_blocked') on conflict do nothing returning id`;
+ if(row)await sql`insert into os_activity(actor,event,entity_id,details) values('research','indicator_prototype_ready',${id},${sql.json({name:immediatePrototype.name,sourceHash:hash,reviewState:"static_qa_passed"})})`;
+ return row?String(row.id):null;
+}
 export async function labContext(revisionId?:string):Promise<Evidence>{
   const rows=await db()`select id,candidate->>'name' as name,candidate->>'purpose' as purpose,status from os_indicator_candidates order by created_at desc limit 25`;
   const original=revisionId?await db()`select candidate from os_indicator_candidates where id=${revisionId}`:[];
@@ -39,6 +83,10 @@ export async function syncIndicatorLab(){
   await queueOwnerNotice("indicator-lab-installed-v2","Indicator Lab is connected to this Command Center. Research → Growth → Indicator Builder uses the server schedule and your existing AI allowance when agents are resumed. Target: up to 3 original prototypes per day. Complete packages receive Approve / Decline. TradingView testing/publishing and broad Instagram/TikTok discovery still need connections; unfinished prototypes are held, not sent as ready releases.",[[{text:"🧪 Indicator Lab",callback_data:"ui:nav:lab"}]]);
   const sql=db();const [control]=await sql`select paused from os_control where id=1`;
   if(!control || control.paused)return {status:"paused"};
+  // Owner-authorized, deterministic starter prototype. This keeps prototype
+  // creation moving when paid discovery or the hosted TradingView browser is
+  // unavailable. Publication remains blocked until real compiler/replay QA.
+  await seedImmediatePrototype();
   // Recover output-to-approval handoffs after crashes before adding more work.
   const runs=await sql`select r.id,r.result,r.snapshot from os_runs r join os_jobs j on j.run_id=r.id
     where r.status='completed' and j.request_key like 'indicator:%'
@@ -88,11 +136,11 @@ export async function syncIndicatorLab(){
     }
   }
   const [last]=await sql`select details from os_activity where event='indicator_handoff' order by id desc limit 1`;
-  const [counts]=await sql`select count(*)::int as candidates,count(*) filter(where status='pending')::int as pending from os_indicator_candidates`;
+  const [counts]=await sql`select count(*)::int as candidates,count(*) filter(where status='pending')::int as pending,count(*) filter(where status='qa_blocked' and qa->>'reviewState'='code_ready_static_qa_only')::int as "prototypeReady" from os_indicator_candidates`;
   const [delivery]=await sql`select count(*)::int as sent from os_outbox o join os_indicator_candidates c on o.dedupe_key='approval:' || c.approval_id::text || ':0' where o.status='sent'`;
   const social=await (await import("./vidiq-connection")).vidiqStatus().catch(()=>null);
   const hosted=await (await import("./hosted-browser")).browserStatus().catch(()=>null);
-  return {status:"active",ideaStage,hostedBrowser:hosted?.connected?"connected":"connection_required",hostedBrowserStartsRemaining:hosted?.remainingPilotStarts??null,privatePackage,privateTesting:hosted?.tradingViewVerified&&hosted?.latestCheck?.status==="checked"?"private_runtime_checked":hosted?.latestCheck?.status||"hosted_sign_in_test_required",publishing:"release_executor_not_connected",socialDiscovery:social?.connected?(social.latest?.status||"awaiting_first_check"):"youtube_tradingview_only",cardsQueued:cards.length,candidates:counts.candidates,pending:counts.pending,cardsDelivered:delivery.sent,lastHandoff:last?.details?.reason||null};
+  return {status:counts.prototypeReady?"prototype_ready":"active",ideaStage,hostedBrowser:hosted?.connected?"connected":"connection_required",hostedBrowserStartsRemaining:hosted?.remainingPilotStarts??null,privatePackage,privateTesting:hosted?.tradingViewVerified&&hosted?.latestCheck?.status==="checked"?"private_runtime_checked":hosted?.latestCheck?.status||"hosted_sign_in_test_required",publishing:"release_executor_not_connected",socialDiscovery:social?.connected?(social.latest?.status||"awaiting_first_check"):"youtube_tradingview_only",prototypeReady:counts.prototypeReady,cardsQueued:cards.length,candidates:counts.candidates,pending:counts.pending,cardsDelivered:delivery.sent,lastHandoff:last?.details?.reason||null};
 }
 export async function indicatorDecisionMessage(id:string,decision:string){
   await db()`update os_indicator_candidates set status=${decision} where approval_id=${id} and status='pending'`;
@@ -124,7 +172,7 @@ export async function indicatorDashboard(){
   const rows=await db()`select candidate->>'name' as name,status,score->>'total' as score,created_at from os_indicator_candidates order by created_at desc limit 5`;
   const [latest]=await db()`select details,created_at from os_activity where event='indicator_handoff' order by id desc limit 1`;
   const stages=await db()`select department,status from os_jobs where request_key like 'indicator-ideas:%' order by created_at desc limit 2`;
-  const labels:Record<string,string>={qa_blocked:"Private testing / educational package pending",pending:"Ready for your decision",approved:"Approved · publishing connection pending",declined:"Declined",released:"Published"};
+  const labels:Record<string,string>={qa_blocked:"Prototype ready · chart compilation/replay still required",pending:"Ready for your decision",approved:"Approved · publishing connection pending",declined:"Declined",released:"Published"};
   const social=await (await import("./vidiq-connection")).vidiqStatus().catch(()=>null);
   return `◆ INDICATOR LAB\n\nNew releases: free · public on TradingView\nResearch → Growth → Indicator Builder\n${stages.map(s=>`${s.department}: ${s.status}`).join("\n")}\n\nDaily target: ${Math.max(1,Math.min(3,Number(process.env.AI_OS_INDICATORS_PER_DAY)||1))} original prototypes, within the existing AI budget. Evidence or quality gaps can reduce output.\n\n${rows.map(r=>`${r.name}\n${labels[r.status]||r.status} · screening ${r.score}/90`).join("\n\n")||"First prototype is waiting."}\n\n${latest?`Latest handoff: ${latest.details.reason}`:""}\nTradingView browser worker: not connected. Instagram/TikTok discovery: ${social?.connected ? (social.latest?.status || "first scheduled check pending").replaceAll("_"," ") : "sign-in needed"}.\nConnections: https://www.darthalgo.com/owner/connections Only fully tested packages with an instruction image and educational example reach Approve / Decline.`;
 }

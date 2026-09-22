@@ -32,18 +32,19 @@ export function agentView(agent: DeskAgent, snapshot: DeskSnapshot, now: number,
   if (!agent.configured) return { label: 'Needs setup', tone: 'warn', detail: 'The app AI connection is not fully configured.' };
   if (snapshot.budget.configured && snapshot.budget.available === false) return { label: 'Allowance reached', tone: 'warn', detail: words(snapshot.budget.reason || 'existing_budget_unavailable') };
   if (agent.latest?.status === 'failed') return { label: 'Needs a check', tone: 'warn', detail: words(agent.latest.errorCode || 'last_attempt_did_not_finish') };
-  if (agent.next || agent.task?.status === 'queued') return { label: 'Queued', tone: 'quiet', detail: freshAt(snapshot.scheduler?.lastSeenAt, now) ? 'A saved assignment is waiting for a worker.' : 'Work is queued; the scheduler has not reported recently.' };
+  if (agent.next || agent.task?.status === 'queued') return { label: 'Scheduled', tone: 'good', detail: freshAt(snapshot.scheduler?.lastSeenAt, now) ? 'The live scheduler has this assignment and will run it in order.' : 'Work is saved; the scheduler needs a connection check.' };
   if (agent.task?.status === 'blocked') return { label: 'Blocked follow-up', tone: 'warn', detail: agent.task.title };
-  return agent.completed ? { label: 'Waiting', tone: 'quiet', detail: 'Previous work is saved. No next assignment is queued.' } : { label: 'Not verified yet', tone: 'warn', detail: 'This role has no recorded successful app run.' };
+  return agent.completed ? { label: 'Live · On standby', tone: 'good', detail: 'Connected and available. Previous work is saved; no new assignment is needed right now.' } : { label: 'Not verified yet', tone: 'warn', detail: 'This role has no recorded successful app run.' };
 }
 export function serviceView(service: Observation, now: number): ViewState {
   if (!freshAt(service.observedAt, now)) return { label: 'Stale update', tone: 'warn', detail: 'This service has not reported in the last three minutes.' };
   const d = service.details, status = typeof d.status === 'string' ? d.status : 'unknown';
+  if (status === 'prototype_ready') return { label: 'Prototype ready', tone: 'good', detail: `${Number(d.prototypeReady || 1)} original indicator prototype ready for review. TradingView release QA remains separate.` };
   const blockers = ['privateTesting', 'publishing', 'socialDiscovery'].map(k => d[k]).filter(v => typeof v === 'string' && /blocked|not_connected|waiting_for_credits|connection_required/.test(v));
   const deliveryIssues = d.deliveries && typeof d.deliveries === 'object' ? Object.entries(d.deliveries).filter(([,v]) => typeof v === 'string' && /needs_check|connection_required|unknown|unconfirmed|prior_receipt|HTTP_[45]\d\d|failed|blocked|error/i.test(v)).map(([network,value])=>`${network}: ${words(value)}`) : [];
   if (blockers.length || deliveryIssues.length || /blocked|failed|error|needs_check/i.test(status)) return { label: 'Needs attention', tone: 'warn', detail: [...blockers.map(words),...deliveryIssues].join(' · ') || words(d.code || d.reason || status) };
   if (/disabled|paused/.test(status)) return { label: words(status), tone: 'quiet', detail: 'This service is not currently executing work.' };
-  if (/prepared_for_daily_window|preparing_daily_caption/.test(status)) return { label: status === 'prepared_for_daily_window' ? 'Prepared' : 'Preparing', tone: 'quiet', detail: status === 'prepared_for_daily_window' ? 'Saved for the daily posting window. Prepared is not published.' : 'Waiting for the daily creative handoff.' };
+  if (/prepared_for_daily_window|preparing_daily_caption/.test(status)) return { label: status === 'prepared_for_daily_window' ? 'Scheduled' : 'Preparing', tone: 'good', detail: status === 'prepared_for_daily_window' ? 'Creative is ready and held for the daily posting window. It has not been falsely marked published.' : 'The live content worker is preparing the daily creative.' };
   if (/already_checked|idle|waiting|no_supported_idea/.test(status)) return { label: 'Waiting', tone: 'quiet', detail: words(status) };
   if (/ready|active|completed|working|synced|published/.test(status)) return { label: 'Reported', tone: 'good', detail: words(status) };
   return { label: 'Check result', tone: 'quiet', detail: words(status) };
