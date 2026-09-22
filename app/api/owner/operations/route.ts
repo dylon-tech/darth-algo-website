@@ -1,6 +1,6 @@
 import { db } from '../../../lib/affiliate-db';
 import { ownerSessionFromRequest, privateHeaders } from '../../../lib/business-os/owner-session';
-import { pilotSessionLimit } from '../../../lib/business-os/hosted-browser';
+import { dailySessionLimit } from '../../../lib/business-os/hosted-browser';
 import { publicOperationUrl, recentTimestamp, type OperationsSnapshot } from '../../../lib/business-os/operations-model';
 
 export const runtime = 'nodejs';
@@ -32,7 +32,7 @@ export async function GET(request: Request) {
       read('whop_receipts', () => sql`select event,details,created_at from os_activity where event in ('whop_home_publish_receipt','whop_home_publish_unknown','whop_home_publish_started','whop_home_preflight') and entity_id=${'daily-whop:'+day} order by id desc limit 8`),
       read('indicators', () => sql`select id,candidate->>'name' as name,status,created_at,tradingview_url from os_indicator_candidates order by created_at desc limit 6`),
       read('indicator_jobs', () => sql`select j.request_key,j.status,r.result->>'brief' as brief from os_jobs j left join os_runs r on r.id=j.run_id where j.request_key in (${`indicator-ideas:${day}:research`},${`indicator-ideas:${day}:growth`}) or j.request_key like ${`indicator:${day}:%`} order by j.created_at desc limit 8`),
-      read('browser', () => sql`select secret is not null as connected,attempts,verification_status,verified_at from os_browser_connection where id=1`),
+      read('browser', () => sql`select secret is not null as connected,verification_status,verified_at,case when session_day=(now() at time zone 'America/New_York')::date then sessions_today else 0 end as sessions_today from os_browser_connection where id=1`),
       read('indicator_handoff', () => sql`select details,created_at from os_activity where event='indicator_handoff' order by id desc limit 1`),
       read('team', () => sql`select distinct on(department) department,status,finished_at from os_runs order by department,created_at desc`),
       read('queue', () => sql`select department,count(*) filter(where status='queued')::int as queued,count(*) filter(where status='running' and started_at>now()-interval '5 minutes')::int as running,count(*) filter(where status='running' and (started_at is null or started_at<=now()-interval '5 minutes'))::int as stale from os_jobs where status in ('queued','running') group by department`),
@@ -73,7 +73,7 @@ export async function GET(request: Request) {
       scheduler: {enabled: process.env.AI_OS_AUTONOMY_ENABLED === 'true', paused, lastSeenAt, fresh, state: text(heartbeat?.status) || 'unknown'},
       content: {prepared: Boolean(campaignEvent), preparedAt: text(campaignEvent?.created_at), previewUrl: publicOperationUrl(object(assets[0]).url,'asset'), caption: text(campaign.text), assets: assets.length},
       deliveries,
-      indicator: {enabled: labEnabled, stage, candidates: candidates.map(row => ({id: String(row.id), name: text(row.name) || 'Untitled prototype', status: String(row.status), createdAt: text(row.created_at), url: publicOperationUrl(row.tradingview_url,'tradingview')})), browserConnected: browser.length ? browser[0].connected === true : null, browserStartsRemaining: number(browser[0]?.attempts) === null ? null : Math.max(0,pilotSessionLimit-Number(browser[0].attempts)), loginVerified: browser.length ? Boolean(browser[0].verified_at && browser[0].verification_status === 'verified') : null, releaseExecutorConnected: false, lastHandoff: text(object(handoffs[0]?.details).reason), lastHandoffAt: text(handoffs[0]?.created_at), researchState: text(research?.status)},
+      indicator: {enabled: labEnabled, stage, candidates: candidates.map(row => ({id: String(row.id), name: text(row.name) || 'Untitled prototype', status: String(row.status), createdAt: text(row.created_at), url: publicOperationUrl(row.tradingview_url,'tradingview')})), browserConnected: browser.length ? browser[0].connected === true : null, browserStartsRemaining: number(browser[0]?.sessions_today) === null ? null : Math.max(0,dailySessionLimit-Number(browser[0].sessions_today)), loginVerified: browser.length ? Boolean(browser[0].verified_at && browser[0].verification_status === 'verified') : null, releaseExecutorConnected: true, lastHandoff: text(object(handoffs[0]?.details).reason), lastHandoffAt: text(handoffs[0]?.created_at), researchState: text(research?.status)},
       team: departments.map(id => {
         const run = runs.find(row => row.department === id), queue = queues.find(row => row.department === id);
         const queued = number(queue?.queued) || 0, running = number(queue?.running) || 0;

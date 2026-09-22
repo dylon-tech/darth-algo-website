@@ -15,7 +15,7 @@ This ledger records verified evidence, not intended state. `live` requires a pro
 | Indicator prototype workflow | Research | partial | Hosted TradingView session | Production log records one candidate; private testing is blocked, release executor is not connected, and social discovery is waiting for credits | TradingView compile/replay evidence attached to exact source hash | Run supervised private validation; do not release yet |
 | Customer support/retention | Support | tested | Support inbox adapter for outbound work | Deterministic routing and retention tables/tests | Verified inbound event creates deduplicated case; resolution cancels follow-up | Connect/verify inbox executor |
 | Native reusable skill | Operations | installed | Skills directory | Version `1.0.0` validates and is saved to the reusable skill directory | Validator passes and installed package retains workflow references | Refresh Skills view if it is not immediately visible |
-| Supabase | Operations | not authoritative | All discovered projects inactive | Three connected projects report `INACTIVE`; repository documents Postgres/Neon | Production env identifies a project before any mutation | Do not resume or migrate without evidence |
+| Supabase | Operations | intentionally retired; not authoritative | All discovered projects inactive | Production runtime is executing successfully against its configured Postgres/Neon database; no Supabase project is referenced | None; excluded from production health | Do not resume or migrate without explicit source-of-truth evidence |
 
 ## Stop conditions
 

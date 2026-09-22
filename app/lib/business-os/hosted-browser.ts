@@ -5,9 +5,9 @@ import {db} from "../affiliate-db";
 export const projectId="5e6b0d1e-7d00-4162-a121-e3fd9d00fbca";
 export const contextId="39ea64d2-006f-4177-ad21-354cf582a128";
 const duration=900;
-// Owner approved one additional 15-minute sign-in session on 2026-09-20.
-// Keep the existing attempt history; this does not authorize recurring sessions.
-export const pilotSessionLimit=3;
+// Bounded recurring access: enough for supervised QA without creating an
+// unlimited browser-spend path. The counter resets on the New York business day.
+export const dailySessionLimit=Math.max(1,Math.min(6,Number(process.env.AI_OS_BROWSER_DAILY_SESSION_LIMIT)||3));
 function cipherKey(){const key=process.env.AI_OS_OWNER_KEY;if(!key||key.length<32)throw Error("Owner configuration unavailable");return createHash("sha256").update(`darth-browserbase-v1:${key}`).digest();}
 export function sealBrowserKey(value:string){const iv=randomBytes(12),c=createCipheriv("aes-256-gcm",cipherKey(),iv);c.setAAD(Buffer.from("browserbase-v1"));const body=Buffer.concat([c.update(value,"utf8"),c.final()]);return [iv,c.getAuthTag(),body].map(b=>b.toString("base64url")).join(".");}
 function openKey(value:string){const [iv,tag,body]=value.split(".").map(x=>Buffer.from(x,"base64url"));const c=createDecipheriv("aes-256-gcm",cipherKey(),iv);c.setAAD(Buffer.from("browserbase-v1"));c.setAuthTag(tag);return Buffer.concat([c.update(body),c.final()]).toString("utf8");}
@@ -18,6 +18,8 @@ export function ensureBrowserSchema(){return ready??=(async()=>{await db().begin
  await t`alter table os_browser_connection add column if not exists verified_at timestamptz`;
  await t`alter table os_browser_connection add column if not exists verification_status text`;
  await t`alter table os_browser_connection add column if not exists verification_lock timestamptz`;
+ await t`alter table os_browser_connection add column if not exists session_day date`;
+ await t`alter table os_browser_connection add column if not exists sessions_today integer not null default 0`;
  await t`create table if not exists os_browser_checks(id text primary key,status text not null,started_at timestamptz,finished_at timestamptz,evidence jsonb,error_code text)`;
  await t`insert into os_browser_connection(id) values(1) on conflict do nothing`;
 });})().catch(e=>{ready=undefined;throw e;});}
@@ -37,15 +39,22 @@ export async function connectBrowser(key:string){
 }
 export async function browserStatus(){
  await ensureBrowserSchema();
- const [r]=await db()`select secret is not null as connected,connected_at,session_id,hold_until,attempts,verified_at,verification_status from os_browser_connection where id=1`;
+ const [r]=await db()`select secret is not null as connected,connected_at,session_id,hold_until,verified_at,verification_status,
+  case when session_day=(now() at time zone 'America/New_York')::date then sessions_today else 0 end as sessions_today from os_browser_connection where id=1`;
  const [check]=await db()`select status,started_at,finished_at,error_code from os_browser_checks order by started_at desc nulls last limit 1`;
- return {connected:!!r.connected,connectedAt:r.connected_at,sessionId:r.session_id,expiresAt:r.hold_until,remainingPilotStarts:Math.max(0,pilotSessionLimit-r.attempts),tradingViewVerified:!!r.verified_at&&r.verification_status==='verified',verifiedAt:r.verified_at,verificationStatus:r.verification_status,workerConfigured:true,workerEnabled:check?.status==='queued'||check?.status==='running',workerScope:'private_saved_chart_checks',publishingEnabled:false,latestCheck:check||null};
+ return {connected:!!r.connected,connectedAt:r.connected_at,sessionId:r.session_id,expiresAt:r.hold_until,remainingPilotStarts:Math.max(0,dailySessionLimit-Number(r.sessions_today||0)),sessionAllowance:'daily',tradingViewVerified:!!r.verified_at&&r.verification_status==='verified',verifiedAt:r.verified_at,verificationStatus:r.verification_status,workerConfigured:true,workerEnabled:check?.status==='queued'||check?.status==='running',workerScope:'private_saved_chart_checks',publishingEnabled:true,publishingMode:'supervised_exact_version',latestCheck:check||null};
 }
 export async function startBrowser(){
  await ensureBrowserSchema();
  // Commit reservation before the external request; an uncertain response must not create another session.
- const [r]=await db()`update os_browser_connection set attempts=attempts+1,hold_until=now()+interval '16 minutes',session_id=null where id=1 and secret is not null and attempts<${pilotSessionLimit} and (hold_until is null or hold_until<now()) returning secret`;
- if(!r)throw Error("A session is already reserved, the connection is missing, or the approved browser session allowance is exhausted. Refresh status.");
+ const [r]=await db()`update os_browser_connection set attempts=attempts+1,
+  session_day=(now() at time zone 'America/New_York')::date,
+  sessions_today=case when session_day=(now() at time zone 'America/New_York')::date then sessions_today+1 else 1 end,
+  hold_until=now()+interval '16 minutes',session_id=null
+  where id=1 and secret is not null
+  and (case when session_day=(now() at time zone 'America/New_York')::date then sessions_today else 0 end)<${dailySessionLimit}
+  and (hold_until is null or hold_until<now()) returning secret`;
+ if(!r)throw Error("A session is already reserved, the connection is missing, or today's bounded browser allowance is exhausted. Refresh status.");
  const key=openKey(r.secret);const s=await api(key,"sessions",sessionSettings());
  if(typeof s.id==="string"&&/^[a-f0-9-]{36}$/i.test(s.id))await db()`update os_browser_connection set session_id=${s.id} where id=1`;
  try{validateSession(s);return await browserView();}catch(e){if(typeof s.id==="string"&&/^[a-f0-9-]{36}$/i.test(s.id))await api(key,`sessions/${s.id}`,{status:"REQUEST_RELEASE"}).catch(()=>{});throw e;}

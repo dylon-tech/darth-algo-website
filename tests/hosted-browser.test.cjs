@@ -23,13 +23,13 @@ async function main(){
  await sql`update os_browser_connection set hold_until=null`;mismatch=false;await b.startBrowser();assert.equal(creates,3);assert.equal((await b.browserStatus()).remainingPilotStarts,0);
  await sql`update os_browser_connection set hold_until=null`;await assert.rejects(b.startBrowser());assert.equal(creates,3);
  await b.ensureBrowserSchema();await b.connectBrowser('private-browser-key');assert.equal((await b.browserStatus()).remainingPilotStarts,0);await assert.rejects(b.startBrowser());
- await sql`update os_browser_connection set attempts=0,hold_until=null`;mismatch=false;ambiguous=true;await assert.rejects(b.startBrowser());await assert.rejects(b.startBrowser());assert.equal(creates,4);
+ await sql`update os_browser_connection set attempts=0,session_day=null,sessions_today=0,hold_until=null`;mismatch=false;ambiguous=true;await assert.rejects(b.startBrowser());await assert.rejects(b.startBrowser());assert.equal(creates,4);
  assert.throws(()=>b.validateViewer('https://browserbase.com.evil.example/test'));assert.throws(()=>b.validateViewer('http://browserbase.com/test'));assert.throws(()=>b.validateViewer('https://user:password@browserbase.com/test'));
  const route=load('app/api/owner/connections/browser/route.ts'),owner=load('app/lib/business-os/owner-session.ts');
  const url='https://www.darthalgo.com/api/owner/connections/browser';assert.equal((await route.GET(new Request(url))).status,401);
  const headers={host:'www.darthalgo.com',origin:'https://www.darthalgo.com',cookie:'darth_os_owner='+owner.createOwnerSession(process.env.AI_OS_OWNER_KEY)};
  assert.equal((await route.POST(new Request(url,{method:'POST',headers:{...headers,origin:'https://evil.example'}}))).status,403);
  process.env.VERCEL_ENV='preview';assert.equal((await route.POST(new Request(url,{method:'POST',headers}))).status,403);
- await pg.close();console.log('PASS: encrypted keys, owner/CSRF gates, verified profile, uncertain outcome hold, pilot cap, secret-safe viewer');
+ await pg.close();console.log('PASS: encrypted keys, owner/CSRF gates, verified profile, uncertain outcome hold, daily cap, secret-safe viewer');
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});

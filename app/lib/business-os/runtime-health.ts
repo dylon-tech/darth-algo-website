@@ -11,20 +11,23 @@ export async function runtimeHealth(){
     min(created_at) filter(where status='queued') as oldest from os_jobs`;
   const [outbox]=await sql`select count(*)::int as n from os_outbox where status in ('unknown','failed') and created_at>now()-interval '24 hours'`;
   const stale=!h || Date.now()-new Date(h.last_seen_at).getTime()>300000;
-  const issues:string[]=await socialHealthIssues();
-  issues.push(...await revenueHealthIssues());
+  // Publishing cooldowns and revenue reconciliation are actionable operating
+  // advisories, not evidence that the scheduler or database is unhealthy.
+  const advisories:string[]=await socialHealthIssues();
+  advisories.push(...await revenueHealthIssues());
+  const issues:string[]=[];
   if(stale)issues.push("Worker heartbeat is older than five minutes.");
   if(!control?.paused && jobs.oldest && Date.now()-new Date(jobs.oldest).getTime()>3600000)issues.push("Queued work has waited over an hour.");
   if(h?.status==="budget_blocked")issues.push("AI is waiting for the configured spending allowance.");
   if(["ai_disabled","coordination_disabled"].includes(h?.status))issues.push("Automatic AI work is disabled by configuration.");
   if(h?.status==="failed")issues.push("Latest coordinator invocation failed.");
   if(outbox.n)issues.push("Some Telegram deliveries need reconciliation; they will not be blindly resent.");
-  return {status:control?.paused?"paused":issues.length?"attention":"healthy",lastSeenAt:h?new Date(h.last_seen_at).toISOString():null,queued:jobs.queued,failed:jobs.failed,unknownNotices:outbox.n,issues};
+  return {status:control?.paused?"paused":issues.length?"attention":"healthy",lastSeenAt:h?new Date(h.last_seen_at).toISOString():null,queued:jobs.queued,failed:jobs.failed,unknownNotices:outbox.n,issues,advisories};
 }
 export async function monitorRuntime(){
   const health=await runtimeHealth(),sql=db();
   const [previous]=await sql`select details from os_activity where event='health_observed' order by id desc limit 1`;
-  const signature=JSON.stringify([health.status,health.issues]);
+  const signature=JSON.stringify([health.status,health.issues,health.advisories]);
   // Alert on meaningful transitions only. No recurring "still healthy" messages.
   if(previous?.details.signature!==signature){
     const key=await sql.begin(async tx=>{

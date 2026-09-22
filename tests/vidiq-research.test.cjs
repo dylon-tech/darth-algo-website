@@ -23,7 +23,7 @@ async function main(){
  class Client {async connect(){if(authReject)throw Error("invalid provider credential");}async close(){}async listTools(){return {tools:[{name:'vidiq_balance'},{name:'vidiq_instagram_tiktok_outlier_search'}]};}async callTool({name}){if(name==='vidiq_balance')return {structuredContent:{totalCredits:credits,renewableResetsAt:'2026-09-30T12:10:26Z'}};paid++;if(fail)throw Error('timeout after submission');return {structuredContent:{instagram:[{url:'https://www.instagram.com/reel/abc123/',caption:'Trading example'}],tiktok:[{url:'https://www.tiktok.com/@trader/video/1234567890',description:'VWAP context'}]}};}}
  stubs['@modelcontextprotocol/sdk/client/index.js']={Client};stubs['@modelcontextprotocol/sdk/client/streamableHttp.js']={StreamableHTTPClientTransport:class{}};
  const research=load('vidiq-research');await pg.exec('create table os_control(id integer primary key,paused boolean);insert into os_control values(1,false)');
- assert.equal((await research.syncVidiqResearch()).status,'waiting_for_credits');assert.equal(paid,0);assert.equal((await research.vidiqEvidence()).status,'unavailable');
+ assert.equal((await research.syncVidiqResearch()).status,'public_sources_fallback');assert.equal(paid,0);assert.equal((await research.vidiqEvidence()).status,'unavailable');
  credits=100;assert.equal((await research.syncVidiqResearch()).status,'already_checked');assert.equal(paid,0);
  await pg.exec('delete from os_vidiq_discovery');assert.equal((await research.syncVidiqResearch()).status,'observed_posts');assert.equal(paid,1);assert.equal((await research.vidiqEvidence()).data.posts.length,2);assert.equal((await connection.vidiqStatus()).latest.credits_reserved,5);
  await research.syncVidiqResearch();assert.equal(paid,1);

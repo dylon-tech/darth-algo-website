@@ -96,7 +96,7 @@ export async function syncVidiqResearch(){
     const balance=balanceResult.isError?null:balanceData(balanceResult);
     if(!balance){status="balance_unverified";return {status};}
     await db()`update os_vidiq_discovery set balance=${db().json(balance)} where day=${day}`;
-    if(Number(balance.totalCredits)<5){status="waiting_for_credits";return {status};}
+    if(Number(balance.totalCredits)<5){status="public_sources_fallback";return {status,provider:"vidiq",paidCall:false};}
     // Recheck pause and disconnection immediately before spending. A reservation is never refunded automatically.
     const reserved=await db()`update os_vidiq_discovery set credits_reserved=5,status='reserved' where day=${day} and credits_reserved=0 and exists(select 1 from os_control where id=1 and paused=false) and exists(select 1 from os_vidiq_connection where id=1 and tokens is not null) returning day`;
     if(!reserved.length){status="paused_or_disconnected";return {status};}

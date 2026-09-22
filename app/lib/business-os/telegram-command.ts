@@ -73,7 +73,7 @@ async function handleUpdate(update: OwnerUpdate) {
     await telegramMethod("sendMessage",{chat_id:owner,protect_content:true,text:"Connect this browser once. On iPhone, open in Safari. The link expires in 24 hours.",reply_markup:{inline_keyboard:[[{text:"Connect browser",url:link.url}]]}});return;
   }
   if(command==="/lab"){const {indicatorDashboard}=await import("./indicator-lab");await notice(await indicatorDashboard());return;}
-  if(command==="/health"){const {runtimeHealth}=await import("./runtime-health");const h=await runtimeHealth();await notice(["SYSTEM HEALTH",h.status,"Worker: "+(h.lastSeenAt||"unavailable"),"Waiting: "+h.queued,"Failed/uncertain (24h): "+h.failed,"Unconfirmed notices: "+h.unknownNotices,...h.issues].join("\n"));return;}
+  if(command==="/health"){const {runtimeHealth}=await import("./runtime-health");const h=await runtimeHealth();await notice(["SYSTEM HEALTH",h.status,"Worker: "+(h.lastSeenAt||"unavailable"),"Waiting: "+h.queued,"Failed/uncertain (24h): "+h.failed,"Unconfirmed notices: "+h.unknownNotices,...h.issues,...h.advisories.map(x=>`Advisory: ${x}`)].join("\n"));return;}
   if(command==="/agents"){await notice(`Choose who to work with.\nCurrent: ${agentNames[department]}`,agentsMenu());return;}
   if(command==="/posts" || command==="/queue"){await notice(await mediaDashboard(command==="/posts"?"today":"queue"),postsMenu());return;}
   if(command==="/researchview"){department="research";await notice(await researchDashboard(),agentMenu(department));return;}
