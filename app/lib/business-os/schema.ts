@@ -99,6 +99,24 @@ create table if not exists os_open_loops (
  resolved_at timestamptz, details jsonb not null default '{}'::jsonb
 );
 create index if not exists os_open_loops_active on os_open_loops(severity,last_seen_at desc) where status='open';
+create table if not exists os_support_conversations (
+ id uuid primary key, provider text not null, provider_thread_id text not null unique,
+ customer_key text, category text not null,
+ status text not null default 'open' check(status in ('open','waiting_customer','escalated','resolved','spam')),
+ subject text, last_message_at timestamptz not null, summary text,
+ requires_founder boolean not null default false,
+ created_at timestamptz not null default now(), updated_at timestamptz not null default now()
+);
+create index if not exists os_support_open on os_support_conversations(status,last_message_at desc) where status in ('open','escalated');
+create table if not exists os_retention_opportunities (
+ id uuid primary key, opportunity_key text not null unique, stripe_customer_id text not null,
+ subscription_id text, reason text not null,
+ status text not null default 'open' check(status in ('open','contact_ready','contacted','recovered','closed')),
+ authorized_offer text, last_contact_at timestamptz, recovered_at timestamptz,
+ details jsonb not null default '{}'::jsonb,
+ created_at timestamptz not null default now(), updated_at timestamptz not null default now()
+);
+create index if not exists os_retention_open on os_retention_opportunities(status,updated_at desc) where status in ('open','contact_ready','contacted');
 `;
 
 export async function initializeOS() {

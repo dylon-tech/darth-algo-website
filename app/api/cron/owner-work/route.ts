@@ -22,6 +22,8 @@ export async function GET(request:Request) {
     await deliverOwnerNotices(2);
     try {const {syncOpenLoops}=await import("../../../lib/business-os/open-loops");console.info(JSON.stringify({event:"open_loops_tick",...await observed("open_loops",()=>syncOpenLoops())}));}
     catch {console.warn(JSON.stringify({event:"open_loops_tick",status:"blocked"}));}
+    try {const {syncRetentionOpportunities}=await import("../../../lib/business-os/revenue-ops");console.info(JSON.stringify({event:"retention_tick",...await observed("retention",()=>syncRetentionOpportunities())}));}
+    catch {console.warn(JSON.stringify({event:"retention_tick",status:"blocked"}));}
     try {const {syncVidiqResearch}=await import("../../../lib/business-os/vidiq-research");console.info(JSON.stringify({event:"vidiq_research_tick",...await observed("research",()=>syncVidiqResearch())}));}
     catch {console.warn(JSON.stringify({event:"vidiq_research_tick",status:"blocked"}));}
     try {const {syncIndicatorLab}=await import("../../../lib/business-os/indicator-lab");console.info(JSON.stringify({event:"indicator_lab_tick",...await observed("indicators",()=>syncIndicatorLab())}));}
