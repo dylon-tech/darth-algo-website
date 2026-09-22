@@ -27,10 +27,12 @@ jobs:
       - run: npm ci --ignore-scripts
       - name: Evidence and security regression checks
         run: node scripts/test-owner-operations.mjs
+      - name: Whop account and publication contract checks
+        run: node scripts/test-whop-connection.mjs
       - name: Type check
         run: npx tsc --noEmit
       - name: Lint changed implementation
-        run: npx eslint app/owner/live-operations.tsx app/lib/business-os/operations-model.ts app/api/owner/operations/route.ts app/lib/business-os/whop-daily.ts app/lib/business-os/indicator-research.ts
+        run: npx eslint app/owner/live-operations.tsx app/lib/business-os/operations-model.ts app/api/owner/operations/route.ts app/lib/business-os/whop-daily.ts app/lib/business-os/whop.ts app/lib/business-os/indicator-research.ts
       - name: Build without production secrets
         run: npm run build
       - name: Install test browser
