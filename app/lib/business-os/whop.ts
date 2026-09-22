@@ -72,7 +72,7 @@ export async function whopStatus(): Promise<WhopConnection> {
   // This verifies read access only, not forum:post:create permission.
   // https://docs.whop.com/api-reference/beta/accounts/retrieve-account
   const result = await whopRequest<WhopAccount>(`/accounts/${encodeURIComponent(explicitCompanyId || "me")}`);
-  if (!result.ok) return {...state,error:result.code};
+  if ("code" in result) return {...state,error:result.code};
   if (!result.data || !accountIdValid(result.data.id)) return {...state,error:"WHOP_ACCOUNT_RESPONSE_INVALID"};
   if (explicitCompanyId && result.data.id !== explicitCompanyId) return {...state,error:"WHOP_ACCOUNT_MISMATCH"};
   return {...state,connected:true,companyId:result.data.id,companyName:result.data.title || result.data.name || null,ownerUserId:result.data.owner?.id || null};
