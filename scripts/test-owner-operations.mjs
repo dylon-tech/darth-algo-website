@@ -1,0 +1,38 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import ts from 'typescript';
+let count=0;
+function check(name,fn){fn();count++;console.log(`PASS ${name}`);}
+async function moduleFrom(source){const {outputText}=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}});return import('data:text/javascript;base64,'+Buffer.from(outputText).toString('base64'));}
+const model=await moduleFrom(await readFile('app/lib/business-os/operations-model.ts','utf8'));
+const now=Date.parse('2026-09-22T08:00:00Z');
+check('recent heartbeat',()=>assert.equal(model.recentTimestamp('2026-09-22T07:59:30Z',now),true));
+check('stale heartbeat',()=>assert.equal(model.recentTimestamp('2026-09-22T07:00:00Z',now),false));
+check('future heartbeat rejected',()=>assert.equal(model.recentTimestamp('2026-09-23T08:00:00Z',now),false));
+check('invalid heartbeat rejected',()=>assert.equal(model.recentTimestamp('invalid',now),false));
+check('prepared is not published',()=>assert.notEqual(model.operationState('ready_for_daily_window').label,'Published'));
+check('status string alone is not publication proof',()=>assert.notEqual(model.operationState('published').tone,'good'));
+check('confirmed receipt is published',()=>assert.equal(model.operationState('sent',true).label,'Published'));
+check('no executable URL',()=>assert.equal(model.publicOperationUrl('javascript:alert(1)','x'),null));
+check('no lookalike host',()=>assert.equal(model.publicOperationUrl('https://x.com.evil.example/post','x'),null));
+check('no URL credentials',()=>assert.equal(model.publicOperationUrl('https://secret@x.com/example','x'),null));
+check('actual provider URL allowed',()=>assert.equal(model.publicOperationUrl('https://x.com/DarthAlgos/status/123','x'),'https://x.com/DarthAlgos/status/123'));
+check('only social asset route allowed',()=>assert.equal(model.publicOperationUrl('https://www.darthalgo.com/api/owner/session','asset'),null));
+const research=await readFile('app/lib/business-os/indicator-research.ts','utf8');
+const extractor=await moduleFrom(research.slice(research.indexOf('const clean='),research.indexOf('async function readPublic')));
+const summary='Publicly described feature. '.repeat(30);
+const html=`<title>TradingView ideas</title><script>PRIVATE_SCRIPT</script><pre>PRIVATE_PINE</pre><a href='/script/abc-Test/'>Test title</a><a href='/script/abc-Test/'>${summary}</a>`;
+const meta=extractor.extractPublicMetadata(html,'https://www.tradingview.com/scripts/');
+check('script descriptions deduplicated',()=>assert.equal(meta.links.length,1));
+check('descriptions bounded',()=>assert.ok(meta.links[0].summary.length<=600&&meta.links[0].summary.length>0));
+check('code blocks not retained',()=>assert.ok(!JSON.stringify(meta).includes('PRIVATE_')));
+const rss=`<feed><title>Requests</title><entry><title>Session reset request</title><link href="https://www.reddit.com/r/TradingView/comments/abcd/request/"/><updated>2026-09-21T12:00:00Z</updated><content>&lt;p&gt;A public request.&lt;/p&gt;&lt;code&gt;PRIVATE_PINE&lt;/code&gt;</content></entry><entry><title>Offsite</title><link href="https://evil.example/r/TradingView/comments/x/"/></entry></feed>`;
+const feed=extractor.extractPublicMetadata(rss,'https://www.reddit.com/r/TradingView/search.rss');
+check('dated RSS evidence extracted',()=>{assert.equal(feed.discussions.length,1);assert.equal(feed.discussions[0].published,'2026-09-21T12:00:00.000Z');assert.ok(!feed.discussions[0].summary.includes('PRIVATE_PINE'));});
+const route=await readFile('app/api/owner/operations/route.ts','utf8');
+check('owner authentication precedes reads',()=>assert.ok(route.indexOf('if (!ownerSessionFromRequest(request))')<route.indexOf('const sql = db()')));
+check('read-only route has no execution or raw secrets',()=>{assert.ok(!route.includes('export async function POST'));assert.ok(!/select\s+secret\s*,/i.test(route));assert.ok(route.includes('headers: privateHeaders'));});
+const whop=await readFile('app/lib/business-os/whop-daily.ts','utf8');
+check('Whop connection preflight precedes ready window',()=>assert.ok(whop.indexOf('if(!preflight.connected')<whop.indexOf('if(hour<9)')));
+check('uncertain Whop writes are not repeated',()=>assert.ok(whop.includes('if(started)return {state:"unknown",published:false}')));
+console.log(`All ${count} owner operations checks passed. No paid API or production mutation was used.`);
