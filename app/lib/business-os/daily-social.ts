@@ -12,6 +12,9 @@ import {dailySocialPolicy,dailySocialPayload,isDailySocialPayload,socialPostUrl,
 import {selectSocialChannel,socialPreflight,createSocialPost,getSocialPost,socialPostMatches} from './buffer-social';
 import {syncDailyWhop} from './whop-daily';
 import {currentCreativeVersion,isCurrentCreative} from './creative-version';
+// Owner rejected the v4 layout. Hold fresh social sends until its replacement
+// matches the actual September 21 master (libfile_1491c511dbfc81919041da4e3e062d28).
+const creativeRevisionRequired=true;
 const dayFor=(now:Date)=>new Intl.DateTimeFormat('en-CA',{timeZone:dailySocialPolicy.timezone,year:'numeric',month:'2-digit',day:'2-digit'}).format(now);
 export async function prepareDailyCampaign(now=new Date()):Promise<DailyCampaign>{
  const sql=db(),day=dayFor(now);
@@ -98,6 +101,7 @@ export async function executeSocialDelivery(id:string){
  if(receipt)return checkSocialDelivery(id,{scheduled:true});
  const [started]=await sql`select id from os_activity where entity_id=${id} and event='buffer_publish_started' limit 1`;
  if(started)return {state:'unknown',published:false};
+ if(creativeRevisionRequired)return {state:'creative_revision_required',published:false};
  if(!isCurrentCreative(payload.campaign))return {state:'retired_creative_held',published:false};
  // Avoid downloading the carousel every cron tick while a platform is within its cadence window.
  const [cooldown]=await sql`select id from os_activity where event='media_auto_authorized' and details->>'network'=${payload.network} and (created_at>now()-interval '20 hours' or (created_at at time zone 'America/New_York')::date=(now() at time zone 'America/New_York')::date) limit 1`;
@@ -142,6 +146,7 @@ export async function syncDailySocial(now=new Date()){
  // Re-read saved provider receipts; never recreate an accepted post.
  const waiting=await sql`select a.id from os_approvals a where payload->>'executor'='buffer_social_v2' and created_at>now()-interval '7 days' and exists(select 1 from os_activity where entity_id=a.id::text and event='buffer_publish_receipt') and not exists(select 1 from os_activity where entity_id=a.id::text and event='buffer_publish_checked' and (details->>'published'='true' or created_at>now()-interval '5 minutes')) order by created_at limit 3`;
  for(const r of waiting)await checkSocialDelivery(r.id,{scheduled:true});
+ if(creativeRevisionRequired)return {status:'creative_revision_required',reason:'Owner rejected v4 composition; replace with September 21 cinematic promotional master. Existing receipts are preserved.'};
  const creative=await syncDailyCreative(now);
  const hour=Number(new Intl.DateTimeFormat('en-US',{timeZone:dailySocialPolicy.timezone,hour:'numeric',hourCycle:'h23'}).format(now));
  if(creative.waiting)return {status:'preparing_daily_caption'};
