@@ -1,6 +1,11 @@
-// Run: tsc app/lib/business-os/desk-state.ts --target ES2021 --module commonjs --outDir /tmp/da-desk-test && node tests/ceo-desk.test.cjs /tmp/da-desk-test/desk-state.js
+// Can be passed a precompiled module path, or compiles its fixture automatically.
 const assert = require('node:assert/strict');
-const {agentView,serviceView,freshAt,safeReceiptUrl}=require(process.argv[2]);
+const {execFileSync}=require('node:child_process');
+const {mkdtempSync}=require('node:fs');
+const {tmpdir}=require('node:os');
+const {join}=require('node:path');
+const compiled=process.argv[2]||(()=>{const dir=mkdtempSync(join(tmpdir(),'da-desk-test-'));execFileSync('node_modules/.bin/tsc',['app/lib/business-os/desk-state.ts','--target','ES2021','--module','commonjs','--moduleResolution','node','--esModuleInterop','--skipLibCheck','--rootDir','app/lib/business-os','--outDir',dir],{stdio:'pipe'});return join(dir,'desk-state.js');})();
+const {agentView,serviceView,freshAt,safeReceiptUrl}=require(compiled);
 const now=Date.parse('2026-09-22T08:00:00Z');
 const stamp=ago=>new Date(now-ago).toISOString();
 const base={id:'research',name:'Research',mandate:'Research',configured:true,latest:null,completed:null,current:null,next:null,waiting:0,task:null};
