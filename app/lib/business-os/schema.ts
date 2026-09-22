@@ -88,6 +88,17 @@ create table if not exists os_briefs (
  day date primary key, created_at timestamptz not null default now(),
  body text not null, evidence jsonb not null
 );
+create table if not exists os_open_loops (
+ id uuid primary key, loop_key text not null unique, category text not null,
+ title text not null, why text not null, service text not null,
+ founder_action text, resume_action text not null,
+ severity text not null check(severity in ('info','warning','critical')),
+ status text not null default 'open' check(status in ('open','resolved')),
+ source_type text not null, source_id text,
+ first_seen_at timestamptz not null default now(), last_seen_at timestamptz not null default now(),
+ resolved_at timestamptz, details jsonb not null default '{}'::jsonb
+);
+create index if not exists os_open_loops_active on os_open_loops(severity,last_seen_at desc) where status='open';
 `;
 
 export async function initializeOS() {

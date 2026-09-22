@@ -24,7 +24,7 @@ export async function GET(request: Request) {
     const sql = db();
     // Every query is bounded and read-only. Opening the dashboard does not run an
     // agent, contact a provider, send a post, or increase any spending allowance.
-    const [controls, heartbeats, events, receipts, whop, candidates, ideas, browser, handoffs, runs, queues] = await Promise.all([
+    const [controls, heartbeats, events, receipts, whop, candidates, ideas, browser, handoffs, runs, queues, openLoops] = await Promise.all([
       read('control', () => sql`select paused from os_control where id=1`),
       read('scheduler', () => sql`select status,last_seen_at from os_worker_heartbeat where id=1`),
       read('content', () => sql`select distinct on(event) event,details,created_at from os_activity where event in ('daily_social_ready','daily_social_status') and entity_id=${day} order by event,id desc`),
@@ -36,6 +36,7 @@ export async function GET(request: Request) {
       read('indicator_handoff', () => sql`select details,created_at from os_activity where event='indicator_handoff' order by id desc limit 1`),
       read('team', () => sql`select distinct on(department) department,status,finished_at from os_runs order by department,created_at desc`),
       read('queue', () => sql`select department,count(*) filter(where status='queued')::int as queued,count(*) filter(where status='running' and started_at>now()-interval '5 minutes')::int as running,count(*) filter(where status='running' and (started_at is null or started_at<=now()-interval '5 minutes'))::int as stale from os_jobs where status in ('queued','running') group by department`),
+      read('open_loops', () => sql`select id,category,title,why,service,founder_action,resume_action,severity,last_seen_at from os_open_loops where status='open' order by case severity when 'critical' then 0 when 'warning' then 1 else 2 end,last_seen_at desc limit 20`),
     ]);
     const campaignEvent = events.find(row => row.event === 'daily_social_ready');
     const campaign = object(campaignEvent?.details);
@@ -78,6 +79,7 @@ export async function GET(request: Request) {
         const queued = number(queue?.queued) || 0, running = number(queue?.running) || 0;
         return {id, state: partial.includes('team') || partial.includes('queue') ? 'unknown' : (number(queue?.stale) || 0) > 0 ? 'stale' : running && fresh ? 'running' : running ? 'stale' : queued ? 'queued' : paused === true ? 'paused' : text(run?.status) || 'no_record', finishedAt: text(run?.finished_at), queued, running, error: null};
       }),
+      openLoops: openLoops.map(row=>({id:String(row.id),category:String(row.category),title:String(row.title),why:String(row.why),service:String(row.service),founderAction:text(row.founder_action),resumeAction:String(row.resume_action),severity:String(row.severity),lastSeenAt:text(row.last_seen_at)})),
     };
     return Response.json(snapshot, {headers: privateHeaders});
   } catch { return Response.json({error: 'OPERATIONS_UNAVAILABLE', message: 'Live operations could not be read. No work was started.'}, {status: 503, headers: privateHeaders}); }

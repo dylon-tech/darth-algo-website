@@ -103,6 +103,10 @@ export default function LiveOperations({workspace}: {workspace: ReactNode}) {
         <p className={styles.note}>A finished request is not proof of a successful external action. Separate ChatGPT scheduled tasks are not represented as live app workers.</p>
         <button className={styles.secondary} onClick={()=>setShowWorkspace(true)}>Tasks, approvals & business numbers <ChevronRight size={16}/></button>
       </section>
+      <section className={styles.card}>
+        <div className={styles.sectionHeading}><div className={styles.sectionIcon}><CircleAlert size={21}/></div><div><h2>Open loops</h2><p>Only unfinished work and decisions that still matter</p></div><Badge state={snapshot.openLoops.length?{label:`${snapshot.openLoops.length} open`,tone:'wait'}:{label:'Clear',tone:'good'}}/></div>
+        <div className={styles.deliveryList}>{snapshot.openLoops.length?snapshot.openLoops.map(loop=><div className={styles.delivery} key={loop.id}><div><strong>{loop.title}</strong><span>{loop.why}</span><span>{loop.founderAction?`Needs you: ${loop.founderAction}`:`Next: ${loop.resumeAction}`}</span></div><div className={styles.deliveryRight}><Badge state={{label:loop.founderAction?'Needs you':'Team follow-up',tone:loop.severity==='critical'?'bad':'wait'}}/></div></div>):<p className={styles.note}>No unresolved work is currently recorded.</p>}</div>
+      </section>
       <footer className={styles.footer}>Private owner access · Existing spending limits unchanged · Refreshes while visible</footer>
     </div>
     <nav className={styles.bottomNav} aria-label='Command center navigation'><a href='#publication'><Send size={19}/><span>Publishing</span></a><a href='#lab'><FlaskConical size={20}/><span>Indicators</span></a><a href='#team'><Bot size={20}/><span>Team</span></a><Link href='/owner/connections'><Settings2 size={19}/><span>Connections</span></Link></nav>
