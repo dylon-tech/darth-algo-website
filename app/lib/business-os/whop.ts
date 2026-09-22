@@ -89,39 +89,26 @@ export async function whopStatus(): Promise<WhopConnection> {
   return state;
 }
 
-async function createUserToken(companyId:string,userId:string) {
-  const result = await whopRequest<{token?:string;expires_at?:string}>("/access_tokens", {
-    method:"POST",
-    body:JSON.stringify({
-      company_id: companyId,
-      user_id: userId,
-      scoped_actions:["chat:read","chat:message:create"],
-    }),
-  });
-  if (!result.ok || !result.data.token) throw new Error(result.ok ? "WHOP_TOKEN_MISSING" : result.code);
-  return result.data.token;
-}
-
-export async function createWhopChatPost(content:string) {
+export async function createWhopHomePost(content:string, options:{title?:string;pinned?:boolean;idempotencyKey:string}) {
   if (process.env.WHOP_PUBLISHING_ENABLED !== "true") throw new Error("WHOP_PUBLISHING_DISABLED");
   const status = await whopStatus();
   if (!status.connected || !status.companyId) throw new Error(status.error || "WHOP_NOT_CONNECTED");
-  const userId = process.env.WHOP_POSTING_USER_ID?.trim() || status.ownerUserId || "";
-  const channelId = process.env.WHOP_CHAT_CHANNEL_ID?.trim() || "";
-  if (!userId.startsWith("user_")) throw new Error("WHOP_POSTING_USER_ID_MISSING");
-  if (!channelId.startsWith("chat_feed_") && !channelId.startsWith("chat_")) throw new Error("WHOP_CHAT_CHANNEL_ID_MISSING");
-  const text = content.trim();
-  if (!text || text.length > 12000) throw new Error("WHOP_POST_TEXT_INVALID");
-  const token = await createUserToken(status.companyId,userId);
-  const response = await fetch(`${baseUrl()}/messages`, {
+  if (!/^[a-zA-Z0-9_-]{8,120}$/.test(options.idempotencyKey)) throw new Error("WHOP_IDEMPOTENCY_KEY_INVALID");
+  const text=content.trim();
+  if(!text || text.length>12000) throw new Error("WHOP_POST_TEXT_INVALID");
+  const response=await fetch(`${baseUrl()}/forum_posts`,{
     method:"POST",
-    headers:{Authorization:`Bearer ${token}`,"Content-Type":"application/json"},
-    body:JSON.stringify({channel_id:channelId,content:text}),
-    cache:"no-store",
-    signal:AbortSignal.timeout(15000),
+    headers:{
+      Authorization:`Bearer ${companyKey()}`,
+      "Content-Type":"application/json",
+      "Api-Version-Date":process.env.WHOP_API_VERSION_DATE?.trim()||"2026-08-21-1",
+      "Idempotency-Key":options.idempotencyKey,
+    },
+    body:JSON.stringify({experience_id:"public",account_id:status.companyId,content:text,title:options.title?.trim()||undefined,pinned:options.pinned===true,is_mention:false,paywall_amount:0}),
+    cache:"no-store",signal:AbortSignal.timeout(15000),
   });
-  if (!response.ok) throw new Error(response.status===403?"WHOP_CHAT_PERMISSION_MISSING":`WHOP_MESSAGE_HTTP_${response.status}`);
-  const body = await response.json() as {id?:string;created_at?:string;content?:string|null};
-  if (!body.id) throw new Error("WHOP_MESSAGE_REJECTED");
-  return {id:body.id,channelId,createdAt:body.created_at || null};
+  if(!response.ok)throw new Error(response.status===401?"WHOP_KEY_REJECTED":response.status===403?"WHOP_FORUM_PERMISSION_MISSING":response.status===429?"WHOP_RATE_LIMITED":`WHOP_FORUM_HTTP_${response.status}`);
+  const body=await response.json() as {id?:string;created_at?:string;user?:{id?:string;username?:string}};
+  if(!body.id)throw new Error("WHOP_POST_REJECTED");
+  return {id:body.id,companyId:status.companyId,createdAt:body.created_at||null,username:body.user?.username||null};
 }
