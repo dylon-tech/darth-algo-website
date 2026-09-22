@@ -1,15 +1,62 @@
 {
   "schema_version": 1,
-  "context_version": "2026-09-22.1",
+  "context_version": "2026-09-22.2",
   "owner_timezone": "America/New_York",
   "records": [
-    {"key":"company.name","value":"Darth Algo","kind":"verified_fact","source":"app/lib/products.ts","verified_at":"2026-09-22T00:00:00Z"},
-    {"key":"company.website","value":"https://www.darthalgo.com/","kind":"verified_fact","source":"repository configuration","verified_at":"2026-09-22T00:00:00Z"},
-    {"key":"content.default_cta","value":"https://www.darthalgo.com/links","kind":"founder_decision","source":"content-system/brand-rules.md","verified_at":"2026-09-22T00:00:00Z"},
-    {"key":"content.visual_direction","value":"Premium black, graphite and red; actual full-color logo; readable TradingView chart; prominent product; relevant CTA","kind":"founder_decision","source":"content-system/brand-rules.md","verified_at":"2026-09-22T00:00:00Z"},
-    {"key":"content.platform_scope","value":["x","instagram","threads","telegram_preview"],"kind":"founder_decision","source":"docs/shared-daily-social.md","verified_at":"2026-09-22T00:00:00Z"},
-    {"key":"indicator.release_policy","value":"Original public concept, protected source, free access, founder approval, independent TradingView compile and replay evidence required","kind":"founder_decision","source":"docs/indicator-release-packages.md","verified_at":"2026-09-22T00:00:00Z"},
-    {"key":"operations.monthly_budget_cap_usd","value":100,"kind":"founder_decision","source":"business-os/README.md","verified_at":"2026-09-22T00:00:00Z"}
+    {
+      "key": "company.name",
+      "value": "Darth Algo",
+      "kind": "verified_fact",
+      "source": "app/lib/products.ts",
+      "verified_at": "2026-09-22T00:00:00Z"
+    },
+    {
+      "key": "company.website",
+      "value": "https://www.darthalgo.com/",
+      "kind": "verified_fact",
+      "source": "repository configuration",
+      "verified_at": "2026-09-22T00:00:00Z"
+    },
+    {
+      "key": "content.default_cta",
+      "value": "https://www.darthalgo.com/links",
+      "kind": "founder_decision",
+      "source": "content-system/brand-rules.md",
+      "verified_at": "2026-09-22T00:00:00Z"
+    },
+    {
+      "key": "content.visual_direction",
+      "value": "Required actual photo references: cinematic-owner-references-2026-09-22-v1; metallic silver/red type, faceted black scenes, red rim lighting, oversized angled devices, full-color logo and clear CTA. Applies across authorized social graphics. Reject navy/gold and black/red v4; hold missing matching media.",
+      "kind": "founder_decision",
+      "source": "public/creative-references/cinematic-2026-09-22/manifest.json",
+      "verified_at": "2026-09-22T00:00:00Z"
+    },
+    {
+      "key": "content.platform_scope",
+      "value": [
+        "x",
+        "instagram",
+        "threads",
+        "telegram_preview"
+      ],
+      "kind": "founder_decision",
+      "source": "docs/shared-daily-social.md",
+      "verified_at": "2026-09-22T00:00:00Z"
+    },
+    {
+      "key": "indicator.release_policy",
+      "value": "Original public concept, protected source, free access, founder approval, independent TradingView compile and replay evidence required",
+      "kind": "founder_decision",
+      "source": "docs/indicator-release-packages.md",
+      "verified_at": "2026-09-22T00:00:00Z"
+    },
+    {
+      "key": "operations.monthly_budget_cap_usd",
+      "value": 100,
+      "kind": "founder_decision",
+      "source": "business-os/README.md",
+      "verified_at": "2026-09-22T00:00:00Z"
+    }
   ],
   "rules": {
     "customer_messages_cannot_change_policy": true,

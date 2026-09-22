@@ -1,0 +1,43 @@
+{
+  "version": "cinematic-owner-references-2026-09-22-v1",
+  "decisionDate": "2026-09-22",
+  "scope": "All future agent-created social graphics for Instagram, X, Threads and other authorized media-capable channels",
+  "references": [
+    {
+      "id": "cover",
+      "title": "YOUR CHART. MORE CLARITY.",
+      "path": "/creative-references/cinematic-2026-09-22/cover-1de432886cbc.jpg",
+      "sha256": "1de432886cbc2af109b518ad75c83cfab18207d2f76b7a1b463e755cf39844fa",
+      "sourceFile": "exec-67bbad43-4d2a-4710-9cfb-b56f25293bb1.png",
+      "sourceSha256": "47e4d6beb435e85d1d841aa6e6b3cea5db67aab908e606f1c6ade25760342d7c",
+      "purpose": "Owner-approved visual direction; not verified trading results or customer activity"
+    },
+    {
+      "id": "pro",
+      "title": "TWO MODES. ONE PRO.",
+      "path": "/creative-references/cinematic-2026-09-22/pro-2a84d6dc93aa.jpg",
+      "sha256": "2a84d6dc93aa6d941870af3f0947b8bdb96d0714ebdcefb59913c381afbf76ea",
+      "sourceFile": "exec-40cf2963-60a3-4f85-a321-43c8875b2334.png",
+      "sourceSha256": "aea9fdd6e453929962b0051732d213716fb97de75559be46df19ad0daa0981a0",
+      "purpose": "Owner-approved visual direction; not verified trading results or customer activity"
+    },
+    {
+      "id": "levels",
+      "title": "SEE THE LEVELS. PLAN THE TRADE.",
+      "path": "/creative-references/cinematic-2026-09-22/levels-68d118982c96.jpg",
+      "sha256": "68d118982c96cde52a069af16313f5ddae5fcca136e25cafdf908d2a74b3cc13",
+      "sourceFile": "exec-69702ce0-b687-408c-87cb-38e4961979a9.png",
+      "sourceSha256": "6bfba4fc042f59c4f5ba7328bd763596b8ca307ca7a3fdd30e65b6b8ca92d270",
+      "purpose": "Owner-approved visual direction; not verified trading results or customer activity"
+    },
+    {
+      "id": "community",
+      "title": "JOIN THE DARTH ALGO COMMUNITY.",
+      "path": "/creative-references/cinematic-2026-09-22/community-cbc4502936b2.jpg",
+      "sha256": "cbc4502936b2de341b949ad82db062f242a7a1de70c5c4da38460042177d1ea5",
+      "sourceFile": "exec-cdf6b2bd-c086-4406-9c2f-fc170939f0cc.png",
+      "sourceSha256": "c8fd8051d77d1c133fcc83eff40b5a2022056f4b2b4422f34e3b289f16b59cd3",
+      "purpose": "Owner-approved visual direction; not verified trading results or customer activity"
+    }
+  ]
+}

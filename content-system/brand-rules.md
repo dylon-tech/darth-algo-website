@@ -1,5 +1,25 @@
 # Darth Algo Brand Rules
 
+## Required image references — founder decision, September 22, 2026
+
+The owner requires all future agent-created social posts on Instagram, X, Threads and other authorized destinations to follow these actual approved photos. This direction overrides older generic palette or template guidance.
+
+- Reference pack: [manifest](/creative-references/cinematic-2026-09-22/manifest.json).
+- Reference version: `cinematic-owner-references-2026-09-22-v1`.
+- Cover: YOUR CHART. MORE CLARITY.
+- Pro: TWO MODES. ONE PRO.
+- Levels: SEE THE LEVELS. PLAN THE TRADE.
+- Community: JOIN THE DARTH ALGO COMMUNITY.
+
+Use the image files as visual inputs, not just their titles. Match metallic silver/red typography, faceted black/glass backgrounds, red rim lighting, oversized angled realistic devices, compact glowing feature panels, varied compositions, the actual full-color logo and clear CTA. Adapt subject matter and platform framing while retaining this direction. Inspect every final image beside the references and record the reference version plus final asset SHA-256 hashes. Style approval is not approval of unseen output.
+
+Reject the old navy/gold layout AND its black/red v4 reskin. A headline, paragraph and flat rectangular screenshot stack does not qualify. Hold a campaign if matching images are unavailable; no old-template or text-only promotional fallback. A text-only destination can carry matching campaign copy only where already authorized and supported; do not claim its post contains these visuals. This does not authorize new channels, paid services, agent-created video, or unscheduled extra posts.
+
+Keep recorded, illustrative and community-preview scenes accurately labeled. Generated displays are not real trading or customer-activity evidence. Do not copy unsupported profits, member counts, testimonials or product claims from references.
+
+The current automatic renderer remains rejected and fresh sends remain held. Reference ingestion into the Content worker supports planning/caption work; it does not generate finished images. Resume publishing only after complete matching campaign assets are connected to the guarded delivery path and checked.
+
+
 ## Brand Positioning
 
 Darth Algo is a premium TradingView indicator brand for futures traders who want cleaner structure, clearer buy/sell signals, and faster decision support.

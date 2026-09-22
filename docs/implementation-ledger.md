@@ -11,7 +11,7 @@ This ledger records verified evidence, not intended state. `live` requires a pro
 | Durable OS schema | Operations | tested | Production `DATABASE_URL` | PGlite-backed schema, queue, approval, handoff, Telegram, content, and indicator tests | Full safe-fixture suite passes | Observe production migration and heartbeat |
 | Owner command center | Operations | tested | Owner runtime configuration | `/owner`, PWA manifest, session and private-route tests | Phone-sized authenticated command creates durable job | Verify on production iPhone Safari |
 | Recurring executor | Operations | live with attention | Vercel cron plus production flags | Independent production `/api/cron/owner-work` runs every minute and `/api/cron/owner-health` runs every five minutes; current public health is `attention` | Fresh cloud heartbeat and successful cron HTTP result | Resolve the exact health issues shown in authenticated owner view |
-| Premium carousel workflow | Content | active, awaiting window | Buffer credentials and healthy destinations | Production log records exact three-network campaign assets ready and X/Instagram/Threads `ready_for_daily_window` | Provider receipt and public URL match approved hashes | Verify next provider receipt after the authorized window |
+| Premium carousel workflow | Content | held for creative replacement | Matching final campaign assets and visual QA | Owner rejected v4; fresh sends blocked while existing receipts remain reconcilable | Complete matching campaign, exact hashes and provider receipt | Connect checked cinematic assets before resuming |
 | Indicator prototype workflow | Research | partial | Hosted TradingView session | Production log records one candidate; private testing is blocked, release executor is not connected, and social discovery is waiting for credits | TradingView compile/replay evidence attached to exact source hash | Run supervised private validation; do not release yet |
 | Customer support/retention | Support | tested | Support inbox adapter for outbound work | Deterministic routing and retention tables/tests | Verified inbound event creates deduplicated case; resolution cancels follow-up | Connect/verify inbox executor |
 | Native reusable skill | Operations | installed | Skills directory | Version `1.0.0` validates and is saved to the reusable skill directory | Validator passes and installed package retains workflow references | Refresh Skills view if it is not immediately visible |
@@ -33,3 +33,15 @@ Workflow: Premium carousel + creative QA; skill version 1.0.0. Dedupe key: DA-CO
 - Creative: product-led five-theme rotation, premium black/red, actual raster logo on every slide, bundled licensed bold font, owned chart captures, phone product mockup, explicit TradingView context and relevant /links CTA. No fabricated performance.
 - Tested: PGlite-backed concurrent migration, no provider writes during replacement, expired approvals, new payload dedupe, legacy attempt holds, existing three-platform/Telegram receipt and lost-response safeguards; caption limits; TypeScript and changed-file lint. Rendered campaign images inspected locally.
 - Deployment and actual next-post receipt must be verified separately. Do not label a generated preview as a published replacement.
+
+## Mandatory social reference pack — 2026-09-22
+
+Workflow: Company context and policy + creative QA; skill 1.0.0. Dedupe key: DA-SOCIAL-REFERENCES-20260922-v1.
+
+- Founder decision: “from now on” all agent social posts should use the approved photos as references, including Instagram, X and Threads.
+- Four approved images packaged as durable JPEG reference copies, preserving full dimensions; manifest records source PNG hashes and reference JPEG hashes. These are visual references, not publication receipts.
+- Recurring Content model requests now include two bounded thumbnails selected from the four reference images (cover plus a deterministic rotating companion), preserving the existing image and spend limits alongside the shared mandatory direction. Brand rules, agent prompts and trusted company context require the same reference version. Text-only promotional fallback removed from instructions.
+- Fresh-publication hold remains in both the scheduled and direct daily executor paths. Existing v4 is not renamed as approved. No new social send or paid image generation is part of this change.
+- Next execution dependency: matching final campaign images must be connected to the publisher and reviewed by exact hash before fresh sends resume. Attaching references to a planning/caption worker does not install an image-generation engine.
+
+- Validation: reference JPEG SHA-256 hashes match the manifest; all four photos participate in deterministic bounded Content inputs; existing budget-envelope checks, TypeScript and changed-file lint passed. Production deployment and runtime execution require separate readback.
