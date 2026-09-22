@@ -2,13 +2,14 @@ import { db } from "../affiliate-db";
 import { collectEvidence } from "./sources";
 import { coordinationStatus } from "./coordination";
 import { bufferStatus } from "./buffer";
+import { whopStatus } from "./whop";
 
 const requiredTables = ["os_device_links", "os_runs", "os_tasks", "os_approvals", "os_activity", "os_messages", "os_control", "os_jobs", "os_telegram_updates", "os_telegram_state", "os_outbox", "os_callback_actions", "os_briefs"];
 
 // Read-only preflight: no schema initialization, AI request, or external action.
 // Configuration presence is deliberately separate from verified connectivity.
 export async function readiness() {
-  const [evidence, store, buffer] = await Promise.all([
+  const [evidence, store, buffer, whop] = await Promise.all([
     collectEvidence(),
     (async () => {
       try {
@@ -24,6 +25,7 @@ export async function readiness() {
       }
     })(),
     (async()=>{ try { return await bufferStatus(); } catch { return { configured:Boolean(process.env.BUFFER_API_KEY?.trim()), connected:false, ready:false, xChannel:null, error:"BUFFER_CHECK_FAILED" }; } })(),
+    (async()=>{ try { return await whopStatus(); } catch { return { configured:Boolean(process.env.WHOP_COMPANY_API_KEY?.trim()), connected:false, companyId:null, companyName:null, ownerUserId:null, publishingConfigured:false, publishChannelId:null, error:"WHOP_CHECK_FAILED" }; } })(),
   ]);
   const ai = {
     enabled: process.env.AI_OS_AI_ENABLED === "true",
@@ -35,11 +37,11 @@ export async function readiness() {
     checkedAt: new Date().toISOString(), mode: "read_only_preflight",
     environment: process.env.VERCEL_ENV || "local",
     dataScope: process.env.VERCEL_ENV === "preview" ? "Preview database branch copy; not a continuous production feed." : "Configured database and Stripe account; source-specific scopes apply.",
-    evidence, store, ai, coordination: await coordinationStatus(), buffer,
+    evidence, store, ai, coordination: await coordinationStatus(), buffer, whop,
     configuration: { databaseUrlPresent: Boolean(process.env.DATABASE_URL), stripeKeyPresent: Boolean(process.env.STRIPE_SECRET_KEY),
       privateTelegramTokenPresent: Boolean(process.env.AI_OS_TELEGRAM_TOKEN), ownerTelegramIdPresent: Boolean(process.env.AI_OS_TELEGRAM_OWNER_ID),
       communityBotIdPresent: Boolean(process.env.AI_OS_COMMUNITY_BOT_ID), privateWebhookSecretPresent: Boolean(process.env.AI_OS_TELEGRAM_WEBHOOK_SECRET),
-      privatePublicUrlPresent: Boolean(process.env.AI_OS_PUBLIC_URL), bufferApiKeyPresent: Boolean(process.env.BUFFER_API_KEY), autonomyEnabled: process.env.AI_OS_AUTONOMY_ENABLED === "true",
+      privatePublicUrlPresent: Boolean(process.env.AI_OS_PUBLIC_URL), bufferApiKeyPresent: Boolean(process.env.BUFFER_API_KEY), whopApiKeyPresent: Boolean(process.env.WHOP_COMPANY_API_KEY), whopCompanyIdPresent: Boolean(process.env.WHOP_COMPANY_ID), autonomyEnabled: process.env.AI_OS_AUTONOMY_ENABLED === "true",
       privateTelegramEnabled: process.env.AI_OS_TELEGRAM_ENABLED === "true", dailyBriefEnabled: process.env.AI_OS_DAILY_BRIEF_ENABLED === "true" },
     blockers: [
       ...(store.status === "unavailable" ? ["OS_STORE_UNAVAILABLE"] : store.tablesPresent ? [] : ["OS_TABLES_MISSING"]),
@@ -48,6 +50,7 @@ export async function readiness() {
       ...(!ai.credentialPresent ? ["AI_CREDENTIAL_MISSING"] : []),
       ...(!ai.modelConfigured ? ["AI_MODEL_MISSING"] : []),
       ...(!buffer.ready ? [buffer.error || "BUFFER_CONNECTION_UNVERIFIED"] : []),
+      ...(!whop.connected ? [whop.error || "WHOP_CONNECTION_UNVERIFIED"] : []),
       "AI_CONNECTIVITY_NOT_TESTED",
     ],
   };
