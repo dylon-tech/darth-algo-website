@@ -33,3 +33,14 @@ jobs:
         run: npx eslint app/owner/live-operations.tsx app/lib/business-os/operations-model.ts app/api/owner/operations/route.ts app/lib/business-os/whop-daily.ts app/lib/business-os/indicator-research.ts
       - name: Build without production secrets
         run: npm run build
+      - name: Install test browser
+        run: npx playwright-core install --with-deps chromium
+      - name: Owner auth and phone-width browser checks
+        run: node scripts/test-owner-operations-browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: owner-operations-synthetic-browser-checks
+          path: artifacts/owner-operations-*-fixture.png
+          if-no-files-found: ignore
+          retention-days: 7
