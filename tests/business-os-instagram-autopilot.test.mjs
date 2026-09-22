@@ -76,7 +76,7 @@ try {
  assert.ok(!validCreativeHook('Visit https://evil.test for setups.'));
  const creativeDay=new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()),runId=randomUUID(),jobId=randomUUID(),hook='Read the context before acting on a signal.';
  await database.query("insert into os_runs(id,request_key,status,department,result,snapshot) values($1::uuid,$1::text,'completed','content',$2,$3)",[runId,JSON.stringify({xDraft:{text:hook,evidence:['business_knowledge']}}),JSON.stringify([{id:'business_knowledge',status:'verified'}])]);
- await database.query("insert into os_jobs(id,request_key,department,message,source,status,run_id) values($1,$2,'content','Daily shared caption','schedule','succeeded',$3)",[jobId,`daily-shared-creative:${creativeDay}`,runId]);
+ await database.query("insert into os_jobs(id,request_key,department,message,source,status,run_id) values($1,$2,'content','Daily shared caption','schedule','succeeded',$3)",[jobId,`daily-shared-creative:${require(join(dir,'lib/business-os/creative-version.js')).currentCreativeVersion}:${creativeDay}`,runId]);
  assert.ok((await dailyCreativeCaption()).startsWith(hook));
  await database.query("update os_runs set snapshot='[]'::jsonb where id=$1",[runId]);assert.ok(!(await dailyCreativeCaption()).startsWith(hook));
  await database.query("update os_runs set snapshot=$1 where id=$2",[JSON.stringify([{id:'business_knowledge',status:'verified'}]),runId]);
@@ -164,4 +164,33 @@ try {
  await database.exec("update os_activity set details=jsonb_build_object('retryAt',(now()-interval '1 minute')::text) where event='buffer_rate_limited'");
  globalThis.fetch=providerFetch;assert.equal(await bufferCooldown(),undefined);await bufferStatus({fresh:true});
  console.log('PASS: persistent discovery cache, fresh publishing preflight, receipt throttle, Retry-After cooldown, health signal and safe recovery.');
+
+ // Regression: a renderer deployment must not silently reuse old daily images.
+ process.env.AI_OS_AI_ENABLED='false';
+ const {currentCreativeVersion}=require(join(dir,'lib/business-os/creative-version.js'));
+ const {dailySocialPayload}=require(join(dir,'lib/business-os/daily-social-policy.js'));
+ const {fingerprint}=require(join(dir,'lib/business-os/policy.js'));
+ const legacyDate=new Date('2031-02-01T16:00:00Z');
+ const fresh=await prepareDailyCampaign(legacyDate),legacy={...fresh};delete legacy.creativeVersion;
+ await database.query("update os_activity set details=$1 where event='daily_social_ready' and entity_id=$2",[JSON.stringify(legacy),legacy.day]);
+ const legacyId=randomUUID(),legacyPayload=dailySocialPayload(legacy,'x',mediaAutopilot.channels.x),legacyHash=fingerprint(legacyPayload);
+ await database.query("insert into os_approvals(id,payload,payload_hash,status,decided_by,expires_at) values($1,$2,$3,'approved','owner_policy',now()+interval '1 day')",[legacyId,JSON.stringify(legacyPayload),legacyHash]);
+ await database.query("insert into os_activity(actor,event,entity_id,details) values('owner','daily_social_prepared',$1,$2)",[legacy.day+':x',JSON.stringify({approvalId:legacyId,payloadHash:legacyHash})]);
+ const writesBefore=writes;
+ assert.equal((await executeSocialDelivery(legacyId)).state,'retired_creative_held');
+ const [rebuilt,raced]=await Promise.all([prepareDailyCampaign(legacyDate),prepareDailyCampaign(legacyDate)]);
+ assert.deepEqual(rebuilt,raced);assert.equal(rebuilt.creativeVersion,currentCreativeVersion);assert.notEqual(rebuilt.assetId,legacy.assetId);
+ assert.equal((await database.query('select status from os_approvals where id=$1',[legacyId])).rows[0].status,'expired');
+ const replacementId=await prepareSocialDelivery(rebuilt,'x',mediaAutopilot.channels.x);assert.notEqual(replacementId,legacyId);
+ assert.equal(await prepareSocialDelivery(rebuilt,'x',mediaAutopilot.channels.x),replacementId);
+ assert.equal((await database.query("select count(*)::int as n from os_activity where event='social_media_asset' and entity_id=$1",[legacy.assetId])).rows[0].n,1,'Old immutable asset retained');
+ assert.equal(writes,writesBefore,'Migration makes no provider writes');
+ // Ambiguous/already-sent legacy campaigns retain exact receipts and never re-post.
+ const attemptedDate=new Date('2031-02-02T16:00:00Z'),attemptedFresh=await prepareDailyCampaign(attemptedDate),attemptedLegacy={...attemptedFresh};delete attemptedLegacy.creativeVersion;
+ await database.query("update os_activity set details=$1 where event='daily_social_ready' and entity_id=$2",[JSON.stringify(attemptedLegacy),attemptedLegacy.day]);
+ await database.query("insert into os_activity(actor,event,entity_id,details) values('owner','whop_home_publish_started',$1,'{}')",['daily-whop:'+attemptedLegacy.day]);
+ assert.deepEqual(await prepareDailyCampaign(attemptedDate),attemptedLegacy);
+ assert.equal((await syncDailySocial(attemptedDate)).status,'retired_creative_held');
+ assert.equal(writes,writesBefore);
+ console.log('PASS: legacy creative is held, unsent cache rebuilt once, old approvals expired, immutable assets retained, exact new payload deduplicated, attempted campaigns never regenerated or resent.');
 }finally{globalThis.fetch=originalFetch;for(const k of Object.keys(process.env))if(!(k in env))delete process.env[k];Object.assign(process.env,env);if(database)await database.close();rmSync(dir,{recursive:true,force:true});}

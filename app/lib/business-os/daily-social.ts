@@ -11,23 +11,36 @@ import {syncDailyCreative,dailyCreativeCaption} from './daily-creative';
 import {dailySocialPolicy,dailySocialPayload,isDailySocialPayload,socialPostUrl,type DailyCampaign,type SocialNetwork,type DailySocialPayload} from './daily-social-policy';
 import {selectSocialChannel,socialPreflight,createSocialPost,getSocialPost,socialPostMatches} from './buffer-social';
 import {syncDailyWhop} from './whop-daily';
+import {currentCreativeVersion,isCurrentCreative} from './creative-version';
 const dayFor=(now:Date)=>new Intl.DateTimeFormat('en-CA',{timeZone:dailySocialPolicy.timezone,year:'numeric',month:'2-digit',day:'2-digit'}).format(now);
 export async function prepareDailyCampaign(now=new Date()):Promise<DailyCampaign>{
  const sql=db(),day=dayFor(now);
- const [saved]=await sql`select details from os_activity where event='daily_social_ready' and entity_id=${day} limit 1`;
- if(saved)return saved.details as DailyCampaign;
+ const [saved]=await sql`select details from os_activity where event='daily_social_ready' and entity_id=${day} order by id desc limit 1`;
+ if(saved&&isCurrentCreative(saved.details))return saved.details as DailyCampaign;
+ // Never replace a campaign after any destination has begun sending it. An
+ // uncertain outcome is also an attempt; retain its exact bytes for readback.
+ const attempted=async (q:typeof sql)=>{
+  const [attempt]=await q`select id from os_activity where (event in ('buffer_publish_started','buffer_publish_receipt') and entity_id in (select id::text from os_approvals where payload->'campaign'->>'day'=${day})) or (event in ('whop_home_publish_started','whop_home_publish_receipt') and entity_id=${`daily-whop:${day}`}) limit 1`;
+  return Boolean(attempt);
+ };
+ if(saved&&await attempted(sql))return saved.details as DailyCampaign;
  const plan=photoPlanForDay(now),text=await dailyCreativeCaption(now),assetId=randomUUID();
  const [preference]=await sql`select details from os_activity where event='media_style_changed' order by id desc limit 1`;
  const {renderSocialCarousel}=await import('./social-art');
  const images=await renderSocialCarousel(plan,preference?.details.style||'crimson');
  const slides=images.map(({png,altText})=>({sha256:createHash('sha256').update(png).digest('hex'),png:png.toString('base64'),altText}));
- const campaign:DailyCampaign={day,assetId,theme:plan.id,text,assets:slides.map(({sha256,altText})=>({sha256,altText,url:`https://www.darthalgo.com/api/social-media/${assetId}/${sha256}`}))};
+ const campaign:DailyCampaign={day,assetId,theme:plan.id,text,creativeVersion:currentCreativeVersion,assets:slides.map(({sha256,altText})=>({sha256,altText,url:`https://www.darthalgo.com/api/social-media/${assetId}/${sha256}`}))};
  return sql.begin(async tx=>{
   await tx`select pg_advisory_xact_lock(730924)`;
-  const [existing]=await tx`select details from os_activity where event='daily_social_ready' and entity_id=${day} limit 1`;
-  if(existing)return existing.details as DailyCampaign;
+  await tx`select pg_advisory_xact_lock(730928)`;
+  const [existing]=await tx`select details from os_activity where event='daily_social_ready' and entity_id=${day} order by id desc limit 1`;
+  if(existing&&(isCurrentCreative(existing.details)||await attempted(tx as unknown as typeof sql)))return existing.details as DailyCampaign;
   const [control]=await tx`select paused from os_control where id=1 for share`;if(!control||control.paused)throw Error('OS_PAUSED');
-  await tx`insert into os_activity(actor,event,entity_id,details) values('content','social_media_asset',${assetId},${tx.json({...slides[0],slides,text,caption:text,creativePlan:plan.id,creativeVersion:3})})`;
+  if(existing){
+   await tx`update os_approvals set status='expired',decision_note='Superseded by the owner-approved premium creative version' where payload->'campaign'->>'day'=${day} and payload->>'executor'='buffer_social_v2' and status in ('pending','approved')`;
+   await tx`insert into os_activity(actor,event,entity_id,details) values('content','daily_social_creative_superseded',${day},${tx.json({oldAssetId:existing.details.assetId,newAssetId:assetId,creativeVersion:currentCreativeVersion,skillVersion:'1.0.0'})})`;
+  }
+  await tx`insert into os_activity(actor,event,entity_id,details) values('content','social_media_asset',${assetId},${tx.json({...slides[0],slides,text,caption:text,creativePlan:plan.id,creativeVersion:currentCreativeVersion})})`;
   await tx`insert into os_activity(actor,event,entity_id,details) values('content','daily_social_ready',${day},${tx.json(campaign)})`;
   return campaign;
  });
@@ -36,8 +49,14 @@ export async function prepareSocialDelivery(campaign:DailyCampaign,network:Socia
  const sql=db(),payload=dailySocialPayload(campaign,network,channelId),hash=fingerprint(payload),key=`${campaign.day}:${network}`;
  return sql.begin(async tx=>{
   await tx`select pg_advisory_xact_lock(730924)`;
-  const [existing]=await tx`select details from os_activity where event='daily_social_prepared' and entity_id=${key} limit 1`;
-  if(existing)return String(existing.details.approvalId);
+  const [existing]=await tx`select details from os_activity where event='daily_social_prepared' and entity_id=${key} order by id desc limit 1`;
+  if(existing&&existing.details.payloadHash===hash)return String(existing.details.approvalId);
+  if(existing){
+   const [attempt]=await tx`select id from os_activity where entity_id=${String(existing.details.approvalId)} and event in ('buffer_publish_started','buffer_publish_receipt') limit 1`;
+   if(attempt)throw Error('DAILY_SOCIAL_EXISTING_ATTEMPT');
+   await tx`update os_approvals set status='expired',decision_note='Superseded creative payload' where id=${String(existing.details.approvalId)} and status in ('pending','approved')`;
+  }
+  if(!isCurrentCreative(campaign))throw Error('DAILY_SOCIAL_CREATIVE_RETIRED');
   const [control]=await tx`select paused from os_control where id=1 for share`;if(!control||control.paused)throw Error('OS_PAUSED');
   const id=randomUUID();
   await tx`insert into os_approvals(id,payload,payload_hash,status,decided_by,decided_at,decision_note,expires_at) values(${id},${tx.json(payload)},${hash},'approved','owner_policy',now(),'Owner: same daily photo on X, Instagram and Threads',now()+interval '24 hours')`;
@@ -79,6 +98,7 @@ export async function executeSocialDelivery(id:string){
  if(receipt)return checkSocialDelivery(id,{scheduled:true});
  const [started]=await sql`select id from os_activity where entity_id=${id} and event='buffer_publish_started' limit 1`;
  if(started)return {state:'unknown',published:false};
+ if(!isCurrentCreative(payload.campaign))return {state:'retired_creative_held',published:false};
  // Avoid downloading the carousel every cron tick while a platform is within its cadence window.
  const [cooldown]=await sql`select id from os_activity where event='media_auto_authorized' and details->>'network'=${payload.network} and (created_at>now()-interval '20 hours' or (created_at at time zone 'America/New_York')::date=(now() at time zone 'America/New_York')::date) limit 1`;
  if(cooldown)return {state:'waiting_for_daily_window',published:false};
@@ -91,6 +111,7 @@ export async function executeSocialDelivery(id:string){
   await tx`select pg_advisory_xact_lock(730924)`;
   const [current]=await tx`select * from os_approvals where id=${id} for update`;authorized(current);
   if(current.payload_hash!==row.payload_hash)throw Error('DAILY_SOCIAL_VERSION_CHANGED');
+  if(!isCurrentCreative((current.payload as DailySocialPayload).campaign))throw Error('DAILY_SOCIAL_CREATIVE_RETIRED');
   const [control]=await tx`select paused from os_control where id=1 for share`;if(!control||control.paused)throw Error('OS_PAUSED');
   if(new Date(current.expires_at).getTime()<=Date.now())throw Error('DAILY_SOCIAL_EXPIRED');
   const [prepared]=await tx`select id from os_activity where event='daily_social_prepared' and details->>'approvalId'=${id} and details->>'payloadHash'=${String(row.payload_hash)} and details->>'policyId'=${dailySocialPolicy.id} limit 1`;
@@ -125,6 +146,7 @@ export async function syncDailySocial(now=new Date()){
  const hour=Number(new Intl.DateTimeFormat('en-US',{timeZone:dailySocialPolicy.timezone,hour:'numeric',hourCycle:'h23'}).format(now));
  if(creative.waiting)return {status:'preparing_daily_caption'};
  const campaign=await prepareDailyCampaign(now);
+ if(!isCurrentCreative(campaign))return {status:'retired_creative_held',day:campaign.day,theme:campaign.theme,reason:'Earlier creative already attempted; receipts preserved. No further legacy sends. Next day uses current creative.',creativeVersion:currentCreativeVersion};
  if(await bufferCooldown())throw Error('BUFFER_RATE_LIMIT_COOLDOWN');
  const state=await bufferStatus(),community=await communityReadiness(),deliveries:Record<string,string>={};
  const [checkedAssets]=await sql`select id from os_activity where event='daily_social_assets_checked' and entity_id=${campaign.assetId} limit 1`;
@@ -151,5 +173,5 @@ export async function syncDailySocial(now=new Date()){
  deliveries.whop=whop.published?'published':whop.state;
  const [previous]=await sql`select details from os_activity where event='daily_social_status' and entity_id=${campaign.day} order by id desc limit 1`;
  if(fingerprint({deliveries:previous?.details.deliveries,community:previous?.details.community})!==fingerprint({deliveries,community:community.state}))await sql`insert into os_activity(actor,event,entity_id,details) values('operations','daily_social_status',${campaign.day},${sql.json({deliveries,theme:campaign.theme,community:community.state})})`;
- return {status:hour<dailySocialPolicy.hour?'prepared_for_daily_window':'active',day:campaign.day,theme:campaign.theme,deliveries,communityReadiness:community.state,assetsReady,previewUrl:campaign.assets[0].url};
+ return {status:hour<dailySocialPolicy.hour?'prepared_for_daily_window':'active',day:campaign.day,theme:campaign.theme,creativeVersion:campaign.creativeVersion,deliveries,communityReadiness:community.state,assetsReady,previewUrl:campaign.assets[0].url};
 }

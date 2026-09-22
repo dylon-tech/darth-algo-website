@@ -1,7 +1,7 @@
 import type {InstagramAsset} from './instagram-policy';
 export const dailySocialPolicy={id:'owner-same-post-2026-09-20-v2',enabled:true,hour:9,timezone:'America/New_York'} as const;
 export type SocialNetwork='x'|'instagram'|'threads';
-export type DailyCampaign={day:string;assetId:string;theme:string;text:string;assets:InstagramAsset[]};
+export type DailyCampaign={day:string;assetId:string;theme:string;text:string;assets:InstagramAsset[];creativeVersion?:string};
 export function dailySocialPayload(campaign:DailyCampaign,network:SocialNetwork,channelId:string){
  if(!/^\d{4}-\d{2}-\d{2}$/.test(campaign.day)||!['x','instagram','threads'].includes(network)||!campaign.text.trim()||campaign.text.length>280||campaign.assets.length!==3||!/^[a-zA-Z0-9_-]{1,100}$/.test(channelId))throw Error('DAILY_SOCIAL_PAYLOAD_INVALID');
  if(!/^[a-f0-9-]{36}$/.test(campaign.assetId))throw Error('DAILY_SOCIAL_ASSET_INVALID');
