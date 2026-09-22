@@ -86,7 +86,7 @@ try {
  await database.query("update os_jobs set status='succeeded' where id=$1",[jobId]);
  const [campaign,parallel]=await Promise.all([prepareDailyCampaign(),prepareDailyCampaign()]);assert.deepEqual(campaign,parallel);assert.ok(campaign.text.startsWith(hook));
  const early=new Date();early.setUTCHours(12,0,0,0);
- const prepared=await syncDailySocial(early);assert.equal(prepared.status,'prepared_for_daily_window');assert.equal(prepared.assetsReady,true);assert.deepEqual(Object.values(prepared.deliveries),['ready_for_daily_window','ready_for_daily_window','ready_for_daily_window']);assert.equal(writes,0,'Preparing the visible queue before 9 ET does not publish');
+ const prepared=await syncDailySocial(early);assert.equal(prepared.status,'prepared_for_daily_window');assert.equal(prepared.assetsReady,true);assert.deepEqual(Object.values(prepared.deliveries).slice(0,3),['ready_for_daily_window','ready_for_daily_window','ready_for_daily_window']);assert.equal(prepared.deliveries.whop,'WHOP_COMPANY_API_KEY_MISSING');assert.equal(writes,0,'Preparing the visible queue before 9 ET does not publish');
  assert.equal((await database.query("select count(*)::int as n from os_approvals where payload->>'executor'='buffer_social_v2'")).rows[0].n,3);
  assert.ok((await socialHealthIssues()).some(s=>s.includes('Community preview')));
  const ids={};
