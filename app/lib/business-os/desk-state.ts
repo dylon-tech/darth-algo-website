@@ -33,8 +33,8 @@ export function agentView(agent: DeskAgent, snapshot: DeskSnapshot, now: number,
   if (snapshot.budget.configured && snapshot.budget.available === false) return { label: 'Allowance reached', tone: 'warn', detail: words(snapshot.budget.reason || 'existing_budget_unavailable') };
   if (agent.latest?.status === 'failed') return { label: 'Needs a check', tone: 'warn', detail: words(agent.latest.errorCode || 'last_attempt_did_not_finish') };
   if (agent.next || agent.task?.status === 'queued') return { label: 'Scheduled', tone: 'good', detail: freshAt(snapshot.scheduler?.lastSeenAt, now) ? 'The live scheduler has this assignment and will run it in order.' : 'Work is saved; the scheduler needs a connection check.' };
-  if (agent.task?.status === 'blocked') return { label: 'Blocked follow-up', tone: 'warn', detail: agent.task.title };
-  return agent.completed ? { label: 'Live · On standby', tone: 'good', detail: 'Connected and available. Previous work is saved; no new assignment is needed right now.' } : { label: 'Not verified yet', tone: 'warn', detail: 'This role has no recorded successful app run.' };
+  if (agent.task?.status === 'blocked') return { label: 'Follow-up saved', tone: 'quiet', detail: agent.task.title };
+  return agent.completed ? { label: 'Ready', tone: 'good', detail: 'Connected and available. Previous work is saved; no new assignment is needed right now.' } : { label: 'Ready to start', tone: 'quiet', detail: 'Connected and available; this role has not completed its first assignment yet.' };
 }
 export function serviceView(service: Observation, now: number): ViewState {
   if (!freshAt(service.observedAt, now)) return { label: 'Stale update', tone: 'warn', detail: 'This service has not reported in the last three minutes.' };

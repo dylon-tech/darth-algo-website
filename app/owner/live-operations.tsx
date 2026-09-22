@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Activity, ArrowUpRight, Bot, ChevronRight, CircleAlert, FlaskConical, LayoutDashboard, RefreshCw, Send, Settings2, ShieldCheck } from 'lucide-react';
+import { Activity, ArrowUpRight, Bot, ChevronRight, CircleAlert, FlaskConical, House, Inbox, LayoutDashboard, RefreshCw, Send, ShieldCheck } from 'lucide-react';
 import { operationState, recentTimestamp, type OperationsSnapshot, type OperationState } from '../lib/business-os/operations-model';
 import styles from './live-operations.module.css';
 
@@ -60,7 +60,7 @@ export default function LiveOperations({workspace}: {workspace: ReactNode}) {
   const browserBlocked=lab.browserStartsRemaining===0;
   const schedulerState:OperationState = snapshot.scheduler.paused===true?operationState('paused'):!snapshot.scheduler.enabled?operationState('disabled'):!schedulerFresh?operationState('stale'):{label:'Scheduler checking in',tone:'good'};
   const contentState=snapshot.partial.includes('content')?operationState('unknown'):stale?operationState('stale'):snapshot.content.prepared?operationState('prepared'):operationState('queued');
-  return <main className={styles.shell}>
+  return <main id='top' className={styles.shell}>
     <div className={styles.wrap}>
       <header className={styles.header}>
         <div className={styles.wordmark}><span className={styles.mark}>DA</span><div><strong>DARTH ALGO</strong><span>CEO COMMAND CENTER</span></div></div>
@@ -71,11 +71,11 @@ export default function LiveOperations({workspace}: {workspace: ReactNode}) {
         <h1>See the work.<br/><span>Run the business.</span></h1>
         <p>What the team has done, what comes next, and where you are needed.</p>
         <div className={styles.heroFooter}><Badge state={schedulerState}/><span>Worker: {stamp(snapshot.scheduler.lastSeenAt)}</span></div>
-        <button className={styles.primary} onClick={()=>setShowWorkspace(true)}>Manage my business <ArrowUpRight size={18}/></button>
+        <button className={styles.primary} onClick={()=>setShowWorkspace(true)}>Open CEO inbox <Inbox size={18}/></button>
       </section>
       <div className={styles.checkLine} aria-live='polite'><ShieldCheck size={15}/><span>{stale?'STALE VIEW — refresh required':`Read ${stamp(snapshot.checkedAt)}`} · {snapshot.environment}</span></div>
       {error&&<div className={styles.warning} role='alert'>{error}</div>}
-      {snapshot.partial.length>0&&<div className={styles.warning}>Some sources could not be read: {snapshot.partial.join(', ').replaceAll('_',' ')}. Missing data is not zero activity.</div>}
+      {snapshot.partial.length>0&&<div className={styles.notice}>A few live sources are reconnecting. Saved work is still shown; missing data is never counted as zero.</div>}
       <section className={styles.metrics} aria-label='Today at a glance'>
         <div><span>Confirmed posts today</span><strong>{publicationsKnown?published:'—'}<small> / 4</small></strong><p>Instagram · X · Threads · Whop</p></div>
         <div><span>Indicator review queue</span><strong>{snapshot.partial.includes('indicators')?'—':lab.candidates.filter(item=>item.status==='pending').length}</strong><p>Among the six latest prototypes</p></div>
@@ -104,11 +104,11 @@ export default function LiveOperations({workspace}: {workspace: ReactNode}) {
         <button className={styles.secondary} onClick={()=>setShowWorkspace(true)}>Tasks, approvals & business numbers <ChevronRight size={16}/></button>
       </section>
       <section className={styles.card}>
-        <div className={styles.sectionHeading}><div className={styles.sectionIcon}><CircleAlert size={21}/></div><div><h2>Open loops</h2><p>Only unfinished work and decisions that still matter</p></div><Badge state={snapshot.openLoops.length?{label:`${snapshot.openLoops.length} open`,tone:'wait'}:{label:'Clear',tone:'good'}}/></div>
+        <div className={styles.sectionHeading}><div className={styles.sectionIcon}><Inbox size={21}/></div><div><h2>CEO inbox</h2><p>Only unfinished work and decisions that still matter</p></div><Badge state={snapshot.openLoops.length?{label:`${snapshot.openLoops.length} open`,tone:'wait'}:{label:'Clear',tone:'good'}}/></div>
         <div className={styles.deliveryList}>{snapshot.openLoops.length?snapshot.openLoops.map(loop=><div className={styles.delivery} key={loop.id}><div><strong>{loop.title}</strong><span>{loop.why}</span><span>{loop.founderAction?`Needs you: ${loop.founderAction}`:`Next: ${loop.resumeAction}`}</span></div><div className={styles.deliveryRight}><Badge state={{label:loop.founderAction?'Needs you':'Team follow-up',tone:loop.severity==='critical'?'bad':'wait'}}/></div></div>):<p className={styles.note}>No unresolved work is currently recorded.</p>}</div>
       </section>
       <footer className={styles.footer}>Private owner access · Existing spending limits unchanged · Refreshes while visible</footer>
     </div>
-    <nav className={styles.bottomNav} aria-label='Command center navigation'><a href='#publication'><Send size={19}/><span>Publishing</span></a><a href='#lab'><FlaskConical size={20}/><span>Indicators</span></a><a href='#team'><Bot size={20}/><span>Team</span></a><Link href='/owner/connections'><Settings2 size={19}/><span>Connections</span></Link></nav>
+    <nav className={styles.bottomNav} aria-label='Command center navigation'><a href='#top'><House size={19}/><span>Home</span></a><a href='#team'><Bot size={20}/><span>Team</span></a><a href='#publication'><Send size={19}/><span>Content</span></a><Link href='/owner/indicators'><FlaskConical size={20}/><span>Indicators</span></Link><button type='button' onClick={()=>setShowWorkspace(true)}><Inbox size={20}/><span>Inbox</span></button></nav>
   </main>;
 }
