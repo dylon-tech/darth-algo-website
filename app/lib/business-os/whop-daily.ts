@@ -12,16 +12,16 @@ export async function syncDailyWhop(campaign:DailyCampaign, hour:number){
   if(done)return {...done.details,state:"published",published:true};
   const [started]=await sql`select id from os_activity where event='whop_home_publish_started' and entity_id=${key} limit 1`;
   if(started)return {state:"unknown",published:false};
-  // Read-only preflight is cached for 15 minutes, including failures. A posting
-  // window is not proof of a valid credential, company, or publication permission.
-  const [cached]=await sql`select details from os_activity where event='whop_home_preflight' and entity_id=${key} and created_at>now()-interval '15 minutes' order by id desc limit 1`;
-  let preflight: {connected:boolean;companyId:string|null;error:string|null;checkedAt:string};
+  // Cache the read-only Accounts API preflight, including failures. The version
+  // invalidates only old connection reads; it never resets publication receipts.
+  const [cached]=await sql`select details from os_activity where event='whop_home_preflight' and entity_id=${key} and details->>'version'='2' and created_at>now()-interval '15 minutes' order by id desc limit 1`;
+  let preflight: {version:number;connected:boolean;companyId:string|null;error:string|null;checkedAt:string};
   if(cached)preflight=cached.details as typeof preflight;
   else {
     try {
       const status=await whopStatus();
-      preflight={connected:status.connected,companyId:status.companyId,error:status.error||null,checkedAt:new Date().toISOString()};
-    } catch {preflight={connected:false,companyId:null,error:'WHOP_CONNECTION_CHECK_FAILED',checkedAt:new Date().toISOString()};}
+      preflight={version:2,connected:status.connected,companyId:status.companyId,error:status.error||null,checkedAt:new Date().toISOString()};
+    } catch {preflight={version:2,connected:false,companyId:null,error:'WHOP_CONNECTION_CHECK_FAILED',checkedAt:new Date().toISOString()};}
     await sql`insert into os_activity(actor,event,entity_id,details) values('operations','whop_home_preflight',${key},${sql.json(preflight)})`;
   }
   if(!preflight.connected||!preflight.companyId||preflight.error)return {state:preflight.error||"connection_required",published:false};
