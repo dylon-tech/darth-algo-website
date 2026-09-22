@@ -1,55 +1,160 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Link from "next/link";
+import { ArrowUpRight, ArrowDown, BarChart3, Users, Layers, Compass, Target, Eye } from "lucide-react";
+import styles from "./founder.module.css";
 
-const imageUrl="https://www.darthalgo.com/founder/dylon-d-feagin.jpg";
+const origin = "https://www.darthalgo.com";
+const profileUrl = `${origin}/company/founder/dylon-d-feagin`;
+const portraitUrl = `${origin}/founder/dylon-d-feagin.jpg`;
+const logoUrl = `${origin}/founder/darth-algo-dark.png`;
+const description = "Meet Dylon D. Feagin, Founder & CEO of Darth Algo. Building TradingView indicators with a focus on clear tools, thoughtful design, and a connected trading community.";
+
+export const viewport: Viewport = { themeColor: "#f8f3eb", colorScheme: "light" };
 export const metadata: Metadata = {
- title:"Dylon D. Feagin | Founder & CEO of Darth Algo",
- description:"Official profile of Dylon D. Feagin, Founder & CEO of Darth Algo, a TradingView indicator software brand.",
- alternates:{canonical:"/company/founder/dylon-d-feagin"},
- robots:{index:true,follow:true},
- openGraph:{title:"Dylon D. Feagin | Founder & CEO of Darth Algo",description:"Official founder profile for Dylon D. Feagin.",type:"profile",url:"https://www.darthalgo.com/company/founder/dylon-d-feagin",images:[{url:imageUrl,width:512,height:512,alt:"Dylon D. Feagin"}]},
- twitter:{card:"summary_large_image",title:"Dylon D. Feagin | Founder & CEO of Darth Algo",description:"Official founder profile for Dylon D. Feagin.",images:[imageUrl]}
+  title: { absolute: "Dylon D. Feagin | Founder & CEO of Darth Algo" },
+  description,
+  alternates: { canonical: profileUrl },
+  robots: { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large" } },
+  openGraph: {
+    title: "Dylon D. Feagin — Founder & CEO of Darth Algo",
+    description, type: "profile", url: profileUrl, siteName: "Darth Algo",
+    images: [{ url: portraitUrl, width: 1254, height: 1254, alt: "Dylon D. Feagin, Founder & CEO of Darth Algo" }],
+  },
+  twitter: { card: "summary", title: "Dylon D. Feagin | Darth Algo", description, images: [portraitUrl] },
 };
-const person={"@context":"https://schema.org","@type":"Person",name:"Dylon D. Feagin",jobTitle:"Founder & CEO",url:"https://www.darthalgo.com/company/founder/dylon-d-feagin",image:imageUrl,worksFor:{"@type":"Organization",name:"Darth Algo",url:"https://www.darthalgo.com"},founder:{"@type":"Organization",name:"Darth Algo",url:"https://www.darthalgo.com"}};
-export default function FounderPage(){
- return <main className="relative min-h-screen overflow-hidden bg-[#030303] text-white">
-  <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(person)}}/>
-  <div className="pointer-events-none absolute inset-0 opacity-40" style={{backgroundImage:"linear-gradient(rgba(239,68,68,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(239,68,68,.07) 1px,transparent 1px)",backgroundSize:"54px 54px",transform:"perspective(700px) rotateX(58deg) scale(1.5)",transformOrigin:"50% 0%"}}/>
-  <div className="pointer-events-none absolute left-1/2 top-[-16rem] h-[34rem] w-[34rem] -translate-x-1/2 rounded-full bg-red-600/20 blur-[120px]"/>
-  <article className="relative mx-auto max-w-6xl px-6 py-16 sm:py-24">
-   <div className="mb-10 flex items-center justify-between">
-    <span className="text-xs font-black uppercase tracking-[.3em] text-red-500">Official founder profile</span>
-    <span className="rounded-full border border-white/10 bg-white/[.03] px-3 py-1 text-[10px] uppercase tracking-[.2em] text-zinc-500">Darth Algo</span>
-   </div>
-   <section className="grid items-center gap-12 lg:grid-cols-[.85fr_1.15fr]">
-    <div className="group relative mx-auto w-full max-w-md">
-     <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-red-600/30 via-transparent to-white/10 blur-2xl transition duration-700 group-hover:scale-105"/>
-     <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-zinc-950 p-2 shadow-2xl shadow-red-950/30 transition duration-700 group-hover:-translate-y-2 group-hover:rotate-[.4deg]">
-      <img src="/founder/dylon-d-feagin.jpg" alt="Dylon D. Feagin, Founder and CEO of Darth Algo" className="aspect-square w-full rounded-[1.6rem] object-cover"/>
-      <div className="absolute inset-x-5 bottom-5 rounded-2xl border border-white/10 bg-black/70 p-4 backdrop-blur-xl">
-       <p className="font-black">Dylon D. Feagin</p><p className="text-sm text-zinc-400">Founder & CEO · Darth Algo</p>
-      </div>
-     </div>
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    { "@type": "ProfilePage", "@id": `${profileUrl}#profile`, url: profileUrl,
+      name: "Dylon D. Feagin — Founder & CEO of Darth Algo", description,
+      mainEntity: { "@id": `${profileUrl}#person` },
+      primaryImageOfPage: { "@id": `${profileUrl}#portrait` },
+      isPartOf: { "@id": `${origin}/#website` } },
+    { "@type": "Person", "@id": `${profileUrl}#person`, name: "Dylon D. Feagin",
+      givenName: "Dylon", familyName: "Feagin", jobTitle: "Founder & CEO", url: profileUrl,
+      description, image: { "@id": `${profileUrl}#portrait` },
+      worksFor: { "@id": `${origin}/#organization` } },
+    { "@type": "ImageObject", "@id": `${profileUrl}#portrait`, url: portraitUrl,
+      contentUrl: portraitUrl, width: 1254, height: 1254,
+      caption: "Dylon D. Feagin, Founder & CEO of Darth Algo" },
+    { "@type": "Organization", "@id": `${origin}/#organization`, name: "Darth Algo",
+      url: origin, founder: { "@id": `${profileUrl}#person` },
+      logo: { "@type": "ImageObject", url: logoUrl, width: 1132, height: 1132 } },
+  ],
+};
+
+const principles = [
+  { icon: BarChart3, title: "Trader first", text: "Built around the chart." },
+  { icon: Layers, title: "Builder always", text: "Focused on useful tools." },
+  { icon: Users, title: "Community driven", text: "People behind the product." },
+  { icon: Compass, title: "Long-term vision", text: "A business built to grow." },
+];
+
+export default function FounderPage() {
+  return (
+    <div className={styles.page}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }} />
+      <header className={styles.header}>
+        <div className={styles.headerInner}>
+          <Link href="/about-darth-algo" className={styles.brand} aria-label="About Darth Algo">
+            {/* The supplied official artwork, recolored without redrawing. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/founder/darth-algo-dark.png" alt="Darth Algo" width={1132} height={1132} className={styles.logo} />
+            <span className={styles.brandLabel}>Darth Algo<span>Official founder profile</span></span>
+          </Link>
+          <nav className={styles.nav} aria-label="Founder page navigation">
+            <a href="#story">My story</a>
+            <a href="#company">The company</a>
+            <Link href="/support">Contact</Link>
+          </nav>
+          <Link href="/start" className={styles.headerCta}>Explore Darth Algo <ArrowUpRight size={16} aria-hidden="true" /></Link>
+        </div>
+      </header>
+
+      <main id="main-content" className={styles.main}>
+        <section className={styles.hero} aria-labelledby="founder-name">
+          <figure className={styles.portraitCard}>
+            <div className={styles.photoFrame}>
+              {/* The user's actual photograph: no AI portrait, filters, crop, or overlays. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/founder/dylon-d-feagin.jpg" alt="Dylon D. Feagin wearing a black suit and glasses" width={1254} height={1254} fetchPriority="high" loading="eager" decoding="async" className={styles.portrait} />
+            </div>
+            <figcaption className={styles.caption}>
+              <span className={styles.captionRule} aria-hidden="true" />
+              <h1 id="founder-name">Dylon D. Feagin</h1>
+              <p>Founder &amp; CEO <span aria-hidden="true">·</span> Darth Algo</p>
+            </figcaption>
+          </figure>
+
+          <div className={styles.intro}>
+            <p className={styles.eyebrow}><span aria-hidden="true" />The person behind Darth Algo</p>
+            <h2>Clearer tools.<br /><span>A bigger vision.</span></h2>
+            <p className={styles.lead}>A trader. A builder. A founder focused on making trading software more useful.</p>
+            <p className={styles.bio}>Dylon D. Feagin is the founder and CEO of Darth Algo, an independent brand creating indicators for TradingView. He leads the company&apos;s product direction, brand, and customer experience—with a focus on clarity, practical tools, and community.</p>
+            <div className={styles.principles}>
+              {principles.map(({ icon: Icon, title, text }) => (
+                <div className={styles.principle} key={title}>
+                  <Icon size={25} strokeWidth={1.6} aria-hidden="true" />
+                  <h3>{title}</h3><p>{text}</p>
+                </div>
+              ))}
+            </div>
+            <div className={styles.actions}>
+              <a href="#company" className={styles.primaryButton}>Meet Darth Algo <ArrowUpRight size={18} aria-hidden="true" /></a>
+              <a href="#story" className={styles.textButton}>Read my story <ArrowDown size={16} aria-hidden="true" /></a>
+            </div>
+          </div>
+        </section>
+
+        <section className={styles.focusStrip} aria-label="At a glance">
+          <div><strong>TradingView</strong><span>The platform</span></div>
+          <div><strong>Swing · Scalp · Pro</strong><span>The tool family</span></div>
+          <div><strong>Clarity &amp; community</strong><span>The focus</span></div>
+        </section>
+
+        <section className={styles.values} aria-label="Mission and vision">
+          <article className={styles.valueCard}>
+            <Target size={35} strokeWidth={1.5} aria-hidden="true" />
+            <div><h2>My mission</h2><p>Make chart tools easier to understand and use, while building a community where traders can learn, share, and stay connected.</p></div>
+          </article>
+          <article className={styles.valueCard}>
+            <Eye size={35} strokeWidth={1.5} aria-hidden="true" />
+            <div><h2>My vision</h2><p>Grow Darth Algo into an established software brand known for thoughtful design, useful products, and a customer experience that earns trust.</p></div>
+          </article>
+        </section>
+
+        <section id="story" className={styles.story} aria-labelledby="story-title">
+          <div className={styles.sectionHeading}><p className={styles.eyebrow}>The founder journey</p><h2 id="story-title">From the chart.<br className={styles.mobileBreak} /> To the company.</h2></div>
+          <div className={styles.timeline}>
+            <article><span className={styles.timelineDot} aria-hidden="true" /><p className={styles.step}>01 / Trading</p><h3>A practical perspective</h3><p>An interest in the markets and the tools traders use to understand them.</p></article>
+            <article><span className={styles.timelineDot} aria-hidden="true" /><p className={styles.step}>02 / Building</p><h3>Turning ideas into tools</h3><p>Bringing signals, market context, and visual trade planning into one workflow.</p></article>
+            <article><span className={styles.timelineDot} aria-hidden="true" /><p className={styles.step}>03 / Darth Algo</p><h3>Building the business</h3><p>Connecting product development, customer experience, and a trading community.</p></article>
+            <article><span className={styles.timelineDot} aria-hidden="true" /><p className={styles.step}>04 / What&apos;s next</p><h3>Thinking long term</h3><p>The goal: keep improving the tools and the company around them.</p></article>
+          </div>
+        </section>
+
+        <section id="company" className={styles.company} aria-labelledby="company-title">
+          <div><p className={styles.eyebrow}>The company behind the work</p><h2 id="company-title">Darth Algo.</h2><p>TradingView indicators designed to bring buy and sell signals, trend context, alerts, and visual trade-planning levels into a clearer chart workflow.</p><div className={styles.companyLinks}><Link href="/about-darth-algo">About the company <ArrowUpRight size={16} aria-hidden="true" /></Link><Link href="/community">Meet the community <ArrowUpRight size={16} aria-hidden="true" /></Link></div></div>
+          <div className={styles.companyMark} aria-hidden="true">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/founder/darth-algo-dark.png" alt="" width={1132} height={1132} loading="lazy" />
+          </div>
+        </section>
+        <p className={styles.disclaimer}>Darth Algo is independent of TradingView. Its indicators are analytical tools, not a promise of trading results. Trading involves risk.</p>
+      </main>
+
+      <footer className={styles.footer}>
+        <div className={styles.footerInner}>
+          <Link href="/about-darth-algo" className={styles.footerBrand} aria-label="About Darth Algo">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/founder/darth-algo-dark.png" alt="Darth Algo" width={1132} height={1132} loading="lazy" />
+            <span>Clear tools.<br />A thoughtful approach.</span>
+          </Link>
+          <div className={styles.footerLinks}><Link href="/links">Official links</Link><Link href="/support">Contact</Link><Link href="/privacy-policy">Privacy</Link></div>
+        </div>
+        <div className={styles.footerBottom}><span>© 2026 Darth Algo. All rights reserved.</span><span>Dylon D. Feagin · Official founder profile</span></div>
+      </footer>
     </div>
-    <div>
-     <p className="mb-4 text-sm font-bold uppercase tracking-[.24em] text-red-500">Founder · Builder · Trader</p>
-     <h1 className="text-5xl font-black leading-[.92] tracking-[-.055em] sm:text-7xl lg:text-8xl">Dylon D.<br/><span className="bg-gradient-to-r from-white via-zinc-300 to-red-500 bg-clip-text text-transparent">Feagin.</span></h1>
-     <p className="mt-7 max-w-2xl text-lg leading-8 text-zinc-300">Founder and CEO of Darth Algo, building TradingView tools designed to make market signals, context, and risk planning easier to read in one workflow.</p>
-     <div className="mt-8 flex flex-wrap gap-3">
-      {["Founder & CEO","TradingView tools","Darth Algo"].map(x=><span key={x} className="rounded-full border border-white/10 bg-white/[.04] px-4 py-2 text-sm text-zinc-300">{x}</span>)}
-     </div>
-    </div>
-   </section>
-   <section className="mt-24 grid gap-5 md:grid-cols-3">
-    {[["01","The vision","Build trading software that feels clear, useful, and focused instead of overloaded."],["02","The company","Darth Algo develops TradingView indicators for traders who want signals, trend context, alerts, and visual trade-planning levels."],["03","The role","Feagin leads the company’s product direction, brand, customer experience, and growth systems."]].map(([n,t,d])=><div key={n} className="group rounded-3xl border border-white/10 bg-white/[.035] p-7 backdrop-blur transition duration-500 hover:-translate-y-1 hover:border-red-500/30 hover:bg-red-500/[.04]"><p className="text-xs font-black text-red-500">{n}</p><h2 className="mt-5 text-2xl font-black">{t}</h2><p className="mt-4 leading-7 text-zinc-400">{d}</p></div>)}
-   </section>
-   <section className="mt-20 rounded-[2rem] border border-white/10 bg-gradient-to-br from-white/[.06] to-transparent p-8 sm:p-12">
-    <p className="text-xs font-black uppercase tracking-[.28em] text-red-500">Building Darth Algo</p>
-    <h2 className="mt-4 max-w-3xl text-3xl font-black tracking-tight sm:text-5xl">Technology built around a cleaner trading workflow.</h2>
-    <p className="mt-6 max-w-3xl text-lg leading-8 text-zinc-400">Darth Algo is an independent TradingView indicator brand. Its product family includes Scalper, Swing, and Pro tools. The software is analytical and educational; trading involves risk and no outcome is guaranteed.</p>
-    <Link href="/about-darth-algo" className="mt-8 inline-flex rounded-xl border border-red-500/30 bg-red-600/10 px-5 py-3 font-bold text-red-300 transition hover:bg-red-600/20">About Darth Algo →</Link>
-   </section>
-   <p className="mt-16 text-center text-[11px] uppercase tracking-[.22em] text-zinc-700">Official founder profile · Darth Algo</p>
-  </article>
- </main>
+  );
 }
