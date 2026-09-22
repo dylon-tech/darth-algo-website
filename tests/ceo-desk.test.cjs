@@ -1,0 +1,27 @@
+// Run: tsc app/lib/business-os/desk-state.ts --target ES2021 --module commonjs --outDir /tmp/da-desk-test && node tests/ceo-desk.test.cjs /tmp/da-desk-test/desk-state.js
+const assert = require('node:assert/strict');
+const {agentView,serviceView,freshAt,safeReceiptUrl}=require(process.argv[2]);
+const now=Date.parse('2026-09-22T08:00:00Z');
+const stamp=ago=>new Date(now-ago).toISOString();
+const base={id:'research',name:'Research',mandate:'Research',configured:true,latest:null,completed:null,current:null,next:null,waiting:0,task:null};
+const snapshot={paused:false,budget:{configured:true,available:true},scheduler:{lastSeenAt:stamp(1000),status:'idle'}};
+const run={id:'r1',department:'research',status:'running',createdAt:stamp(10000),finishedAt:null,errorCode:null,brief:null};
+let assertions=0; const equal=(a,b)=>{assert.equal(a,b);assertions++;};
+equal(agentView({...base,latest:run},snapshot,now,true).label,'Working');
+equal(agentView({...base,latest:run},snapshot,now,false).tone,'warn');
+equal(agentView({...base,latest:{...run,createdAt:stamp(300001)}},snapshot,now,true).tone,'warn');
+equal(agentView({...base,latest:run},{...snapshot,paused:true},now,true).label,'Paused');
+equal(agentView({...base,next:{message:'Draft',status:'queued'}},snapshot,now,true).label,'Queued');
+equal(agentView({...base,latest:{...run,status:'failed',errorCode:'AI_PROVIDER_429'}},snapshot,now,true).tone,'warn');
+equal(agentView(base,snapshot,now,true).label,'Not verified yet');
+equal(agentView({...base,completed:{...run,status:'completed'}},snapshot,now,true).label,'Waiting');
+equal(agentView(base,{...snapshot,budget:{configured:true,available:false}},now,true).label,'Allowance reached');
+equal(agentView({...base,configured:false},snapshot,now,true).label,'Needs setup');
+equal(freshAt(stamp(-6000),now),false);equal(freshAt('bad',now),false);equal(freshAt(stamp(0),now),true);
+equal(serviceView({id:'social',observedAt:stamp(1000),details:{status:'prepared_for_daily_window'}},now).label,'Prepared');
+equal(serviceView({id:'indicators',observedAt:stamp(1000),details:{status:'active',privateTesting:'blocked',publishing:'release_executor_not_connected'}},now).tone,'warn');
+equal(serviceView({id:'social',observedAt:stamp(1000),details:{status:'active',deliveries:{x:'waiting_for_prior_receipt'}}},now).tone,'warn');
+equal(serviceView({id:'social',observedAt:stamp(180001),details:{status:'published'}},now).tone,'warn');
+equal(safeReceiptUrl('javascript:alert(1)'),null);equal(safeReceiptUrl('https://x.com.attacker.test/foo'),null);
+equal(safeReceiptUrl('https://a:b@x.com/foo'),null);equal(safeReceiptUrl('https://www.instagram.com/p/example/'),'https://www.instagram.com/p/example/');
+console.log(`${assertions} CEO desk state, freshness, and URL safety assertions passed.`);
