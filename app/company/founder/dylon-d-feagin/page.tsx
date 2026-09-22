@@ -6,7 +6,7 @@ import styles from "./founder.module.css";
 const origin = "https://www.darthalgo.com";
 const profileUrl = `${origin}/company/founder/dylon-d-feagin`;
 const portraitUrl = `${origin}/founder/dylon-d-feagin.jpg`;
-const logoUrl = `${origin}/founder/darth-algo-dark.png`;
+const logoUrl = `${origin}/founder/darth-algo-color.jpg`;
 const description = "Meet Dylon D. Feagin, Founder & CEO of Darth Algo. Building TradingView indicators with a focus on clear tools, thoughtful design, and a connected trading community.";
 
 export const viewport: Viewport = { themeColor: "#f8f3eb", colorScheme: "light" };
@@ -40,7 +40,7 @@ const structuredData = {
       caption: "Dylon D. Feagin, Founder & CEO of Darth Algo" },
     { "@type": "Organization", "@id": `${origin}/#organization`, name: "Darth Algo",
       url: origin, founder: { "@id": `${profileUrl}#person` },
-      logo: { "@type": "ImageObject", url: logoUrl, width: 1132, height: 1132 } },
+      logo: { "@type": "ImageObject", url: logoUrl, width: 1254, height: 1254 } },
   ],
 };
 
@@ -58,9 +58,9 @@ export default function FounderPage() {
       <header className={styles.header}>
         <div className={styles.headerInner}>
           <Link href="/about-darth-algo" className={styles.brand} aria-label="About Darth Algo">
-            {/* The supplied official artwork, recolored without redrawing. */}
+            {/* The supplied official artwork in its original full colors. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/founder/darth-algo-dark.png" alt="Darth Algo" width={1132} height={1132} className={styles.logo} />
+            <img src="/founder/darth-algo-color.jpg" alt="Darth Algo" width={1254} height={1254} className={styles.logo} />
             <span className={styles.brandLabel}>Darth Algo<span>Official founder profile</span></span>
           </Link>
           <nav className={styles.nav} aria-label="Founder page navigation">
@@ -138,7 +138,7 @@ export default function FounderPage() {
           <div><p className={styles.eyebrow}>The company behind the work</p><h2 id="company-title">Darth Algo.</h2><p>TradingView indicators designed to bring buy and sell signals, trend context, alerts, and visual trade-planning levels into a clearer chart workflow.</p><div className={styles.companyLinks}><Link href="/about-darth-algo">About the company <ArrowUpRight size={16} aria-hidden="true" /></Link><Link href="/community">Meet the community <ArrowUpRight size={16} aria-hidden="true" /></Link></div></div>
           <div className={styles.companyMark} aria-hidden="true">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/founder/darth-algo-dark.png" alt="" width={1132} height={1132} loading="lazy" />
+            <img src="/founder/darth-algo-color.jpg" alt="" width={1254} height={1254} loading="lazy" />
           </div>
         </section>
         <p className={styles.disclaimer}>Darth Algo is independent of TradingView. Its indicators are analytical tools, not a promise of trading results. Trading involves risk.</p>
@@ -148,7 +148,7 @@ export default function FounderPage() {
         <div className={styles.footerInner}>
           <Link href="/about-darth-algo" className={styles.footerBrand} aria-label="About Darth Algo">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/founder/darth-algo-dark.png" alt="Darth Algo" width={1132} height={1132} loading="lazy" />
+            <img src="/founder/darth-algo-color.jpg" alt="Darth Algo" width={1254} height={1254} loading="lazy" />
             <span>Clear tools.<br />A thoughtful approach.</span>
           </Link>
           <div className={styles.footerLinks}><Link href="/links">Official links</Link><Link href="/support">Contact</Link><Link href="/privacy-policy">Privacy</Link></div>

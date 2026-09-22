@@ -14,6 +14,11 @@ const assets = {
     sha256: "4401f07347f7eab6f30d8f468cafee33c69de17d181f4ecccbb0af87611043f1",
     type: "image/png",
   },
+  "darth-algo-color.jpg": {
+    url: "https://d2ol7oe51mr4n9.cloudfront.net/user_3GjCrDqrkf77RLg2koyExGkjpYm/e8cea262-a83c-42d9-b081-1ad164f2185f.jpg",
+    sha256: "f0f3db4f49a31c0e6fc96d2a0f03723d28a5636f4f32c4b9582c8bc8599a608f",
+    type: "image/jpeg",
+  },
 } as const;
 
 export const runtime = "nodejs";
