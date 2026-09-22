@@ -27,7 +27,7 @@ async function main(){
  assert.equal((await worker.runHostedChecks()).status,'idle');assert.equal(runs,1);assert.equal((await hosted.browserStatus()).tradingViewVerified,true);
  const [saved]=await sql`select * from os_browser_checks`;assert.equal(saved.status,'checked');assert.deepEqual(saved.evidence.checks,evidence.checks);assert(!JSON.stringify(saved).includes('test-private-key'));
  // Explicit owner retry can reverify; simultaneous duplicate queue attempts collapse.
- releases=0;await sql`update os_browser_connection set hold_until=now()+interval '15 minutes'`;
+ releases=0;await sql`update os_browser_connection set hold_until=now()+interval '15 minutes',attempts=3`;
  assert.equal((await worker.queueHostedCheck()).queued,true);assert.equal((await worker.queueHostedCheck()).queued,false);
  failure='TRADINGVIEW_LOGIN_REQUIRED';assert.equal((await worker.runHostedChecks()).code,'TRADINGVIEW_LOGIN_REQUIRED');assert.equal((await hosted.browserStatus()).tradingViewVerified,false);
  assert.equal((await sql`select status from os_browser_checks`)[0].status,'blocked');assert.equal((await worker.runHostedChecks()).status,'idle');assert(notices.some(n=>n.body.includes('sign-in')));
