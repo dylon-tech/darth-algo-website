@@ -20,6 +20,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
+      url: `${siteUrl}/company/founder/dylon-d-feagin`,
+      changeFrequency: "monthly",
+      priority: 0.2,
+    },
+    {
       url: `${siteUrl}/products/scalper`,
       changeFrequency: "weekly",
       priority: 0.9,
