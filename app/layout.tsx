@@ -6,7 +6,7 @@ import CampaignAttribution from "./components/campaign-attribution";
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.darthalgo.com";
 const canonicalSite = siteUrl.replace(/\/$/, "");
 const brandLogo = `${canonicalSite}/darth-algo-link-logo.svg`;
-const brandIcon = `${canonicalSite}/darth-algo-icon.svg`;
+const brandIcon = `${canonicalSite}/icon`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(canonicalSite),
@@ -33,10 +33,10 @@ export const metadata: Metadata = {
   category: "Trading software",
   icons: {
     icon: [
-      { url: "/darth-algo-icon.svg", type: "image/svg+xml" },
+      { url: "/icon", type: "image/png", sizes: "512x512" },
       { url: "/darth-algo-link-logo.svg", type: "image/svg+xml", sizes: "any" },
     ],
-    shortcut: "/darth-algo-icon.svg",
+    shortcut: "/icon",
     apple: "/darth-algo-link-logo.svg",
   },
   robots: { index: true, follow: true },
@@ -97,7 +97,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en">
       <head>
-        <link rel="icon" href={brandIcon} type="image/svg+xml" />
+        <link rel="icon" href={brandIcon} type="image/png" sizes="512x512" />
         <link rel="apple-touch-icon" href={brandLogo} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organization) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(website) }} />
