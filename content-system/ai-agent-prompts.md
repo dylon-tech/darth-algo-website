@@ -17,7 +17,7 @@ Reject the old navy/gold layout AND its black/red v4 reskin. A headline, paragra
 
 Keep recorded, illustrative and community-preview scenes accurately labeled. Generated displays are not real trading or customer-activity evidence. Do not copy unsupported profits, member counts, testimonials or product claims from references.
 
-The current automatic renderer remains rejected and fresh sends remain held. Reference ingestion into the Content worker supports planning/caption work; it does not generate finished images. Resume publishing only after complete matching campaign assets are connected to the guarded delivery path and checked.
+The legacy renderer remains rejected. As of the September 22 twice-daily cutover, reviewed final images enter the guarded publisher through social-campaign-queue.ts. The production app sends at 9 AM and 3 PM Eastern; the separate photo producer replenishes artwork without publishing. Missing matching assets hold only the affected slot. Reference ingestion into the website Content worker supports planning/caption work; it does not generate finished images.
 
 
 These prompts are the operating instructions for Darth Algo's autonomous content system. The premium promotional style below is the default for all future social posts unless the owner explicitly asks for a different campaign.
@@ -289,3 +289,7 @@ When a post is approved for distribution, prepare a Whop-native version in addit
 If the Whop connection is verified and publishing is enabled, send the approved Whop-specific content to the verified Darth Algo Whop destination and record the returned post identifier/receipt.
 
 If the connection is not verified, mark the item WHOP_READY_NOT_CONNECTED rather than silently skipping it or claiming it was posted.
+
+### Twice-daily execution — September 22, 2026
+
+The latest owner instruction is one morning and one afternoon post daily. Use 9 AM and 3 PM America/New_York, sharing each campaign across Instagram, X and Threads, with community previews and existing Whop copy delivery. See docs/social-creative-producer.md. The reviewed-asset queue supersedes the blanket v4 hold above; the rejected renderer is still forbidden.

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "context_version": "2026-09-22.2",
+  "context_version": "2026-09-22.3",
   "owner_timezone": "America/New_York",
   "records": [
     {
@@ -55,6 +55,13 @@
       "value": 100,
       "kind": "founder_decision",
       "source": "business-os/README.md",
+      "verified_at": "2026-09-22T00:00:00Z"
+    },
+    {
+      "key": "content.schedule",
+      "value": "Two posts daily at 9 AM and 3 PM America/New_York; same reviewed campaign across X/Instagram/Threads per slot; morning and afternoon use distinct artwork.",
+      "kind": "founder_decision",
+      "source": "docs/shared-daily-social.md",
       "verified_at": "2026-09-22T00:00:00Z"
     }
   ],

@@ -7,5 +7,5 @@ export async function GET(_request:Request,context:{params:Promise<{id:string;ha
   const selected=(asset?.details.slides || (asset ? [asset.details] : [])).find((slide:{sha256:string;png:string})=>slide.sha256===hash);
   if(!selected)return new Response(null,{status:404});
   const bytes=Buffer.from(selected.png,"base64");
-  return new Response(bytes,{headers:{"Content-Type":"image/png","Content-Length":String(bytes.length),"Cache-Control":"public, max-age=31536000, immutable","X-Content-Type-Options":"nosniff"}});
+  return new Response(bytes,{headers:{"Content-Type":selected.mimeType==='image/jpeg'?'image/jpeg':'image/png',"Content-Length":String(bytes.length),"Cache-Control":"public, max-age=31536000, immutable","X-Content-Type-Options":"nosniff"}});
 }

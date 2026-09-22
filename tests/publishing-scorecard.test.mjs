@@ -24,12 +24,14 @@ try {
  await database.query("update os_approvals set expires_at=now()-interval '1 day' where id=$1",[pending]);
  assert.equal((await publishingQueueSnapshot()).waiting,0);
  assert.equal(nextContentWindow(new Date('2026-09-20T12:00:00Z')),'9 AM ET');
- assert.equal(nextContentWindow(new Date('2026-09-20T18:00:00Z')),'tomorrow at 9 AM ET');
+ assert.equal(nextContentWindow(new Date('2026-09-20T18:00:00Z')),'3 PM ET');
+ assert.equal(nextContentWindow(new Date('2026-09-20T20:00:00Z')),'tomorrow at 9 AM ET');
  const assetId=randomUUID(),slides=['first','second','third'].map(text=>({png:Buffer.from(text).toString('base64'),sha256:createHash('sha256').update(text).digest('hex')}));
  await database.query("insert into os_activity(actor,event,entity_id,details) values('content','social_media_asset',$1,$2)",[assetId,JSON.stringify({slides})]);
  const get=hash=>GET(new Request('https://www.darthalgo.com'),{params:Promise.resolve({id:assetId,hash})});
  for(const [index,slide] of slides.entries()){const response=await get(slide.sha256);assert.equal(response.status,200);assert.equal(await response.text(),['first','second','third'][index]);}
  assert.equal((await get('0'.repeat(64))).status,404);
+ slides[0].mimeType='image/jpeg';await database.query("update os_activity set details=$1 where entity_id=$2",[JSON.stringify({slides}),assetId]);assert.equal((await get(slides[0].sha256)).headers.get('content-type'),'image/jpeg');
  await database.query("update os_activity set details=$1 where entity_id=$2",[JSON.stringify(slides[0]),assetId]);
  assert.equal(await (await get(slides[0].sha256)).text(),'first','Existing single-image URLs remain valid');
  console.log('PASS: PostgreSQL queue separates ready, sending, uncertain and published; expired work excluded; all carousel hashes serve exact bytes; wrong hash rejected; legacy media preserved.');

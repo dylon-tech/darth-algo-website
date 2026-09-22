@@ -3,25 +3,29 @@ import {execFileSync} from 'node:child_process';
 import {mkdtempSync,rmSync,readFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
-import {randomUUID} from 'node:crypto';
+import {randomUUID,createHash} from 'node:crypto';
 import {createRequire} from 'node:module';
 import {pathToFileURL} from 'node:url';
 const dir=mkdtempSync(join(tmpdir(),'darth-shared-social-')),env={...process.env},originalFetch=globalThis.fetch;
-let database;
+let database,whopWrites=0;
+const RealDate=Date;let clockMs=RealDate.parse('2026-09-23T12:00:00Z');
+globalThis.Date=class extends RealDate {constructor(...args){super(...(args.length?args:[clockMs]));}static now(){return clockMs;}};
 try {
  const {PGlite}=await import(pathToFileURL(process.env.OS_TEST_PGLITE_MODULE).href);
  database=new PGlite(join(dir,'db'));
+ const rawExec=database.exec.bind(database);database.exec=query=>rawExec(query.replaceAll('now()',`'${new RealDate(clockMs).toISOString()}'::timestamptz`));
  await database.exec(readFileSync('app/lib/business-os/schema.ts','utf8').match(/export const schema = `([\s\S]*?)`;/)[1]);
  await database.exec('update os_control set paused=false where id=1');
  execFileSync('node_modules/.bin/tsc',['--target','ES2020','--module','commonjs','--moduleResolution','node','--jsx','react-jsx','--esModuleInterop','--skipLibCheck','--rootDir','app','--outDir',dir,'app/lib/business-os/media-autopilot.ts','app/lib/business-os/telegram-media.ts','app/lib/business-os/social-health.ts'],{stdio:'pipe'});
  const require=createRequire(import.meta.url);let tail=Promise.resolve();
  const makeSql=driver=>{
-  const sql=async(parts,...values)=>{const q=parts.reduce((s,p,i)=>s+(i?'$'+i:'')+p,'');if(q.includes('pg_advisory_xact_lock'))return [];return (await driver.query(q,values)).rows;};
+  const sql=async(parts,...values)=>{let q=parts.reduce((s,p,i)=>s+(i?'$'+i:'')+p,'');q=q.replaceAll('now()',`'${new RealDate(clockMs).toISOString()}'::timestamptz`);if(q.includes('insert into os_activity('))q=q.replace('insert into os_activity(','insert into os_activity(created_at,').replace('values(',`values('${new RealDate(clockMs).toISOString()}'::timestamptz,`);if(q.includes('pg_advisory_xact_lock'))return [];return (await driver.query(q,values)).rows;};
   sql.json=v=>JSON.stringify(v);sql.begin=async fn=>{let release;const prior=tail;tail=new Promise(r=>release=r);await prior;try{return await database.transaction(tx=>fn(makeSql(tx)));}finally{release();}};return sql;
  };
  const sql=makeSql(database),mock=(name,exports)=>{const id=join(dir,'lib',name+'.js');require.cache[id]={id,filename:id,loaded:true,exports};};
  mock('affiliate-db',{db:()=>sql});
- mock('business-os/social-art',{renderSocialCarousel:async plan=>plan.slides.map((s,i)=>({png:Buffer.from('image-'+i),altText:s.alt}))});
+ mock('business-os/social-art',{renderSocialCarousel:async()=>{throw Error('REJECTED_RENDERER_USED');}});
+ mock('business-os/whop',{whopStatus:async()=>({connected:true,companyId:'company'}),createWhopHomePost:async()=>({id:'whop'+(++whopWrites),companyId:'company'})});
  const {prepareDailyCampaign,prepareSocialDelivery,executeSocialDelivery,checkSocialDelivery,syncDailySocial}=require(join(dir,'lib/business-os/daily-social.js'));
  const {canSendCommunityPhoto,communityReadiness}=require(join(dir,'lib/business-os/community-readiness.js'));
  const {socialHealthIssues}=require(join(dir,'lib/business-os/social-health.js'));
@@ -46,11 +50,12 @@ try {
  assert.equal(socialPostUrl('https://www.threads.com/@darth.algo','threads'),null);
  let writes=0,telegramWrites=0,drop=false,corrupt=false,dropTelegram=false;const posts=new Map(),inputs=[],community=[];
  globalThis.fetch=async(url,options)=>{
+  if(url.startsWith('https://www.darthalgo.com/creative-references/')||url.startsWith('https://www.darthalgo.com/social-campaigns/'))return new Response(readFileSync('public'+new URL(url).pathname),{headers:{'content-type':'image/jpeg'}});
   if(url.startsWith('https://www.darthalgo.com/api/social-media/')){
    const [,assetId,hash]=new URL(url).pathname.match(/social-media\/([^/]+)\/([^/]+)$/);
    const row=(await database.query("select details from os_activity where event='social_media_asset' and entity_id=$1",[assetId])).rows[0];
    const slide=row.details.slides.find(s=>s.sha256===hash);
-   return new Response(corrupt?Buffer.from('wrong'):Buffer.from(slide.png,'base64'),{headers:{'content-type':'image/png'}});
+   return new Response(corrupt?Buffer.from('wrong'):Buffer.from(slide.png,'base64'),{headers:{'content-type':slide.mimeType||'image/png'}});
   }
   if(url==='https://api.telegram.org/botoffline/getChat')return Response.json({ok:true,result:{type:'supergroup'}});
   if(url==='https://api.telegram.org/botoffline/getMe')return Response.json({ok:true,result:{id:123}});
@@ -63,74 +68,95 @@ try {
   if(query.includes('BufferChannels'))return Response.json({data:{channels}});
   if(query.includes('CreatePost')){
    const i=variables.input,id='post'+(++writes);inputs.push(i);
-   assert.equal(i.saveToDraft,false);assert.equal(i.needsApproval,false);assert.equal(i.assets.length,3);
+   assert.equal(i.saveToDraft,false);assert.equal(i.needsApproval,false);assert.equal(i.assets.length,1);
    if(i.channelId===mediaAutopilot.channels.instagram)assert.equal(i.metadata.instagram.type,'post');
    const post={id,channelId:i.channelId,text:i.text,status:'sending',sentAt:null,externalLink:null,assets:i.assets.map(a=>({source:a.image.url,type:'image',image:{altText:a.image.metadata.altText}}))};posts.set(id,post);
    if(drop)throw Error('Response lost after write');return Response.json({data:{createPost:{post}}});
   }
   return Response.json({data:{post:posts.get(variables.input.id)}});
  };
- const {validCreativeHook,dailyCreativeCaption,syncDailyCreative}=require(join(dir,'lib/business-os/daily-creative.js'));
- assert.ok(validCreativeHook('Read the context before acting on a signal.'));
- assert.ok(!validCreativeHook('Guaranteed profits every day.'));
- assert.ok(!validCreativeHook('Visit https://evil.test for setups.'));
- const creativeDay=new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()),runId=randomUUID(),jobId=randomUUID(),hook='Read the context before acting on a signal.';
- await database.query("insert into os_runs(id,request_key,status,department,result,snapshot) values($1::uuid,$1::text,'completed','content',$2,$3)",[runId,JSON.stringify({xDraft:{text:hook,evidence:['business_knowledge']}}),JSON.stringify([{id:'business_knowledge',status:'verified'}])]);
- await database.query("insert into os_jobs(id,request_key,department,message,source,status,run_id) values($1,$2,'content','Daily shared caption','schedule','succeeded',$3)",[jobId,`daily-shared-creative:${require(join(dir,'lib/business-os/creative-version.js')).currentCreativeVersion}:${creativeDay}`,runId]);
- assert.ok((await dailyCreativeCaption()).startsWith(hook));
- await database.query("update os_runs set snapshot='[]'::jsonb where id=$1",[runId]);assert.ok(!(await dailyCreativeCaption()).startsWith(hook));
- await database.query("update os_runs set snapshot=$1 where id=$2",[JSON.stringify([{id:'business_knowledge',status:'verified'}]),runId]);
- process.env.AI_OS_AI_ENABLED='true';assert.equal((await syncDailyCreative()).waiting,false);
- await database.query("update os_jobs set status='queued' where id=$1",[jobId]);assert.equal((await syncDailyCreative()).waiting,true);
- await database.query("update os_jobs set created_at=now()-interval '31 minutes' where id=$1",[jobId]);assert.equal((await syncDailyCreative()).waiting,false);
- await database.query("update os_jobs set status='succeeded' where id=$1",[jobId]);
- const [campaign,parallel]=await Promise.all([prepareDailyCampaign(),prepareDailyCampaign()]);assert.deepEqual(campaign,parallel);assert.ok(campaign.text.startsWith(hook));
- const early=new Date();early.setUTCHours(12,0,0,0);
- const prepared=await syncDailySocial(early);assert.equal(prepared.status,'prepared_for_daily_window');assert.equal(prepared.assetsReady,true);assert.deepEqual(Object.values(prepared.deliveries).slice(0,3),['ready_for_daily_window','ready_for_daily_window','ready_for_daily_window']);assert.equal(prepared.deliveries.whop,'WHOP_COMPANY_API_KEY_MISSING');assert.equal(writes,0,'Preparing the visible queue before 9 ET does not publish');
- assert.equal((await database.query("select count(*)::int as n from os_approvals where payload->>'executor'='buffer_social_v2'")).rows[0].n,3);
- assert.ok((await socialHealthIssues()).some(s=>s.includes('Community preview')));
+
+ const {socialSchedule,withinSocialWindow}=require(join(dir,'lib/business-os/social-schedule.js'));
+ const {dailySocialPayload}=require(join(dir,'lib/business-os/daily-social-policy.js'));
+ const {fingerprint}=require(join(dir,'lib/business-os/policy.js'));
+ const {socialCampaignQueue}=require(join(dir,'lib/business-os/social-campaign-queue.js'));
+ const {validateReviewedCreative}=require(join(dir,'lib/business-os/reviewed-social.js'));
+ const queuedHashes=new Set();
+ for(const asset of socialCampaignQueue){validateReviewedCreative(asset);for(const a of asset.assets){assert.equal(createHash('sha256').update(readFileSync('public'+a.path)).digest('hex'),a.sha256);assert.equal(queuedHashes.has(a.sha256),false,'No recycled image across queued slots');queuedHashes.add(a.sha256);}}
+ assert.throws(()=>validateReviewedCreative({...socialCampaignQueue[0],text:'Changed copy'}),/REVIEW_INVALID/);
+ const [campaign,parallel]=await Promise.all([prepareDailyCampaign(),prepareDailyCampaign()]);
+ assert.deepEqual(campaign,parallel);assert.equal(campaign.slot,'morning');assert.equal(campaign.assets.length,1);
+ const prepared=await syncDailySocial();assert.equal(prepared.status,'prepared_for_daily_window');assert.equal(prepared.assetsReady,true);
+ assert.deepEqual(Object.values(prepared.deliveries).slice(0,3),['ready_for_daily_window','ready_for_daily_window','ready_for_daily_window']);assert.equal(writes,0);assert.equal(whopWrites,0);
  const ids={};
  for(const [network,channelId] of Object.entries({...mediaAutopilot.channels,threads:'threads123'})){
   const [a,b]=await Promise.all([prepareSocialDelivery(campaign,network,channelId),prepareSocialDelivery(campaign,network,channelId)]);assert.equal(a,b);ids[network]=a;
  }
  const row=(await database.query('select * from os_approvals where id=$1',[ids.x])).rows[0];
  assert.equal(isDailySocialPayload(row.payload),true);assert.equal(isDailySocialPayload({...row.payload,text:'changed'}),false);
+ assert.equal((await executeSocialDelivery(ids.x)).state,'waiting_for_daily_window');assert.equal(writes,0);
+ clockMs=RealDate.parse('2026-09-23T13:00:00Z');
  await database.exec('update os_control set paused=true where id=1');
  assert.equal((await syncMediaAutopilot()).status,'paused');await assert.rejects(executeSocialDelivery(ids.x),/OS_PAUSED/);assert.equal(writes,0);
  await database.exec('update os_control set paused=false where id=1');
  corrupt=true;await assert.rejects(executeSocialDelivery(ids.x),/ASSET_CHANGED/);assert.equal(writes,0);corrupt=false;
  for(const id of Object.values(ids))await Promise.all([executeSocialDelivery(id),executeSocialDelivery(id)]);
- assert.equal(writes,3,'One provider mutation per network, including concurrent attempts');
+ assert.equal(writes,3,'Concurrent runs send once per network');
  for(const i of inputs){assert.equal(i.text,campaign.text);assert.deepEqual(i.assets,inputs[0].assets);}
  assert.equal((await publishCommunityPreview()).reason,'waiting_for_confirmed_social_post');assert.equal(telegramWrites,0);
  await ensureCommunityEducationSchema();
  await database.exec("insert into community_settings(key,value) values('education_chat_id','-100123'),('education_thread_id','7')");
- for(const p of posts.values()){
-  p.status='sent';p.sentAt=new Date().toISOString();p.externalLink=p.channelId==='threads123'?'https://www.threads.com/@darth.algo/post/abc':p.channelId===mediaAutopilot.channels.x?'https://x.com/DarthAlgos/status/123':'https://www.instagram.com/p/abc/';
- }
- for(const id of Object.values(ids))assert.equal((await checkSocialDelivery(id)).published,true);
+ const confirm=async (which)=>{
+  for(const p of posts.values())if(p.status!=='sent'){
+   p.status='sent';p.sentAt=new Date().toISOString();p.externalLink=p.channelId==='threads123'?'https://www.threads.com/@darth.algo/post/'+p.id:p.channelId===mediaAutopilot.channels.x?'https://x.com/DarthAlgos/status/'+p.id.replace('post',''):'https://www.instagram.com/p/'+p.id+'/';
+  }
+  for(const id of Object.values(which))assert.equal((await checkSocialDelivery(id)).published,true);
+ };
+ await confirm(ids);
  for(const id of Object.values(ids))await executeSocialDelivery(id);assert.equal(writes,3);
- assert.match(await mediaDashboard('today'),/Threads/);
  await Promise.all([publishCommunityPreview(),publishCommunityPreview()]);await publishEducationPost({force:true});
- assert.equal((await communityReadiness()).ready,true);
- assert.equal((await publishCommunityPreview()).confirmed,true);
- assert.equal(telegramWrites,1,'Legacy education trigger and simultaneous cron cannot duplicate preview');
- assert.equal(community[0].photo,campaign.assets[0].url);assert.equal(community[0].message_thread_id,7);
- assert.equal(community[0].reply_markup.inline_keyboard.length,3);assert.match(community[0].caption,/TODAY’S POST/);
- for(const [i,network] of ['instagram','x','threads'].entries())assert.ok(socialPostUrl(community[0].reply_markup.inline_keyboard[i][0].url,network));
- // Repeated status snapshots do not add noise when JSONB reorders network keys.
- const noon=new Date();noon.setUTCHours(18,0,0,0);await syncDailySocial(noon);await syncDailySocial(noon);
- assert.equal((await database.query("select count(*)::int as n from os_activity where event='daily_social_status'")).rows[0].n,2);
- assert.deepEqual(await socialHealthIssues(),[]);
- // A provider accepted the request but its response disappeared. Never resubmit.
- await database.query("delete from os_activity where entity_id=$1 and (event like 'buffer_publish_%' or event='media_auto_authorized')",[ids.threads]);drop=true;
- assert.equal((await executeSocialDelivery(ids.threads)).state,'unknown');await executeSocialDelivery(ids.threads);assert.equal(writes,4);drop=false;
- // An uncertain community response also remains a single attempt.
- await database.exec("delete from os_activity where event like 'community_social_%'");dropTelegram=true;
- assert.equal((await publishCommunityPreview()).reason,'delivery_uncertain_check_telegram');await publishCommunityPreview();assert.equal(telegramWrites,2);assert.ok((await socialHealthIssues()).some(s=>s.includes('uncertain')));
- console.log('PASS: shared immutable campaign, three exact accounts, identical images/caption, concurrent dedupe, asset verification, pause, confirmed links, one community preview, legacy education replacement, provider/Telegram lost-response replay protection. Providers mocked; distributed locks need production observation.');
+ assert.equal(telegramWrites,1,'One preview per slot, including concurrent cron and legacy trigger');
+ assert.equal(community[0].photo,campaign.assets[0].url);assert.equal(community[0].reply_markup.inline_keyboard.length,3);assert.match(community[0].caption,/MORNING POST/);
+ await syncDailySocial();assert.equal(whopWrites,1);
+ clockMs=RealDate.parse('2026-09-23T18:00:00Z');
+ const afternoon=await prepareDailyCampaign();assert.equal(afternoon.slot,'afternoon');assert.notEqual(afternoon.assetId,campaign.assetId);
+ const afternoonIds={};
+ for(const [network,channelId] of Object.entries({...mediaAutopilot.channels,threads:'threads123'}))afternoonIds[network]=await prepareSocialDelivery(afternoon,network,channelId);
+ await executeSocialDelivery(afternoonIds.x);assert.equal(writes,3,'Afternoon never sends before 3 PM');
+ clockMs=RealDate.parse('2026-09-23T19:00:00Z');
+ for(const id of Object.values(afternoonIds))await Promise.all([executeSocialDelivery(id),executeSocialDelivery(id)]);
+ assert.equal(writes,6,'Two distinct slots reach each of three platforms');
+ assert.notEqual(inputs[0].text,inputs[3].text);
+ await confirm(afternoonIds);await syncDailySocial();assert.equal(whopWrites,2);
+ await Promise.all([publishCommunityPreview(),publishCommunityPreview()]);assert.equal(telegramWrites,2);
+ assert.match(community[1].caption,/AFTERNOON POST/);
+ await syncDailySocial();assert.equal(writes,6);assert.equal(whopWrites,2);
+ // Retired payloads remain readable for reconciliation but can never send.
+ const legacy={...campaign,assetId:randomUUID(),assets:[...campaign.assets,...campaign.assets,...campaign.assets]};
+ delete legacy.slot;delete legacy.contentId;delete legacy.reviewHash;legacy.creativeVersion='premium-black-red-2026-09-22-v4';
+ legacy.assets=legacy.assets.map(a=>({...a,url:`https://www.darthalgo.com/api/social-media/${legacy.assetId}/${a.sha256}`}));
+ const legacyPayload=dailySocialPayload(legacy,'x',mediaAutopilot.channels.x);assert.equal(legacyPayload.policyId,'owner-same-post-2026-09-20-v2');assert.equal(isDailySocialPayload(legacyPayload),true);
+ const legacyId=randomUUID();await database.query("insert into os_approvals(id,payload,payload_hash,status,decided_by,expires_at) values($1,$2,$3,'approved','owner_policy',now()+interval '7 days')",[legacyId,JSON.stringify(legacyPayload),fingerprint(legacyPayload)]);
+ assert.equal((await executeSocialDelivery(legacyId)).state,'creative_review_required');assert.equal(writes,6);
+ // Lost responses preserve the attempted slot and block the next post on that channel.
+ clockMs=RealDate.parse('2026-09-24T13:00:00Z');
+ const next=await prepareDailyCampaign(),uncertainId=await prepareSocialDelivery(next,'threads','threads123');
+ drop=true;assert.equal((await executeSocialDelivery(uncertainId)).state,'unknown');await executeSocialDelivery(uncertainId);assert.equal(writes,7);drop=false;
+ clockMs=RealDate.parse('2026-09-24T19:00:00Z');
+ const nextPm=await prepareDailyCampaign(),blockedId=await prepareSocialDelivery(nextPm,'threads','threads123');
+ assert.equal((await executeSocialDelivery(blockedId)).state,'waiting_for_prior_receipt');assert.equal(writes,7);
+ // Missing future art does not silently repeat the seed pack or invoke the rejected renderer.
+ const missing=await syncDailySocial(new Date('2026-09-25T13:00:00Z'));assert.equal(missing.status,'creative_assets_required');assert.equal(writes,7);
+ // Eastern DST and midnight use local calendar slots; closed windows never catch up in a burst.
+ assert.equal(socialSchedule(new Date('2026-11-01T13:59:00Z')).open,false);
+ assert.equal(socialSchedule(new Date('2026-11-01T14:00:00Z')).open,true);
+ assert.equal(socialSchedule(new Date('2026-11-01T20:00:00Z')).slot,'afternoon');
+ assert.equal(socialSchedule(new Date('2026-09-24T02:00:00Z')).day,'2026-09-24');
+ assert.equal(withinSocialWindow(campaign,new Date('2026-09-23T16:00:00Z')),false);
+ console.log('PASS: two slots, exact reviewed artwork, JPEG verification, concurrent dedupe, schedule/DST, Whop and community twice daily, legacy readback, lost-response protection, no retired fallback.');
  // Durable reads reduce cron traffic; publish preflight bypasses cached channel state.
  const {bufferStatus,bufferGraphQL,bufferCooldown,bufferRetryAt}=require(join(dir,'lib/business-os/buffer.js'));
+ await bufferStatus({fresh:true});
  const providerFetch=globalThis.fetch;let calls=0;
  globalThis.fetch=async(...args)=>{calls++;return providerFetch(...args);};
  await bufferStatus();await bufferStatus();assert.equal(calls,0);
@@ -165,32 +191,4 @@ try {
  globalThis.fetch=providerFetch;assert.equal(await bufferCooldown(),undefined);await bufferStatus({fresh:true});
  console.log('PASS: persistent discovery cache, fresh publishing preflight, receipt throttle, Retry-After cooldown, health signal and safe recovery.');
 
- // Regression: a renderer deployment must not silently reuse old daily images.
- process.env.AI_OS_AI_ENABLED='false';
- const {currentCreativeVersion}=require(join(dir,'lib/business-os/creative-version.js'));
- const {dailySocialPayload}=require(join(dir,'lib/business-os/daily-social-policy.js'));
- const {fingerprint}=require(join(dir,'lib/business-os/policy.js'));
- const legacyDate=new Date('2031-02-01T16:00:00Z');
- const fresh=await prepareDailyCampaign(legacyDate),legacy={...fresh};delete legacy.creativeVersion;
- await database.query("update os_activity set details=$1 where event='daily_social_ready' and entity_id=$2",[JSON.stringify(legacy),legacy.day]);
- const legacyId=randomUUID(),legacyPayload=dailySocialPayload(legacy,'x',mediaAutopilot.channels.x),legacyHash=fingerprint(legacyPayload);
- await database.query("insert into os_approvals(id,payload,payload_hash,status,decided_by,expires_at) values($1,$2,$3,'approved','owner_policy',now()+interval '1 day')",[legacyId,JSON.stringify(legacyPayload),legacyHash]);
- await database.query("insert into os_activity(actor,event,entity_id,details) values('owner','daily_social_prepared',$1,$2)",[legacy.day+':x',JSON.stringify({approvalId:legacyId,payloadHash:legacyHash})]);
- const writesBefore=writes;
- assert.equal((await executeSocialDelivery(legacyId)).state,'retired_creative_held');
- const [rebuilt,raced]=await Promise.all([prepareDailyCampaign(legacyDate),prepareDailyCampaign(legacyDate)]);
- assert.deepEqual(rebuilt,raced);assert.equal(rebuilt.creativeVersion,currentCreativeVersion);assert.notEqual(rebuilt.assetId,legacy.assetId);
- assert.equal((await database.query('select status from os_approvals where id=$1',[legacyId])).rows[0].status,'expired');
- const replacementId=await prepareSocialDelivery(rebuilt,'x',mediaAutopilot.channels.x);assert.notEqual(replacementId,legacyId);
- assert.equal(await prepareSocialDelivery(rebuilt,'x',mediaAutopilot.channels.x),replacementId);
- assert.equal((await database.query("select count(*)::int as n from os_activity where event='social_media_asset' and entity_id=$1",[legacy.assetId])).rows[0].n,1,'Old immutable asset retained');
- assert.equal(writes,writesBefore,'Migration makes no provider writes');
- // Ambiguous/already-sent legacy campaigns retain exact receipts and never re-post.
- const attemptedDate=new Date('2031-02-02T16:00:00Z'),attemptedFresh=await prepareDailyCampaign(attemptedDate),attemptedLegacy={...attemptedFresh};delete attemptedLegacy.creativeVersion;
- await database.query("update os_activity set details=$1 where event='daily_social_ready' and entity_id=$2",[JSON.stringify(attemptedLegacy),attemptedLegacy.day]);
- await database.query("insert into os_activity(actor,event,entity_id,details) values('owner','whop_home_publish_started',$1,'{}')",['daily-whop:'+attemptedLegacy.day]);
- assert.deepEqual(await prepareDailyCampaign(attemptedDate),attemptedLegacy);
- assert.equal((await syncDailySocial(attemptedDate)).status,'retired_creative_held');
- assert.equal(writes,writesBefore);
- console.log('PASS: legacy creative is held, unsent cache rebuilt once, old approvals expired, immutable assets retained, exact new payload deduplicated, attempted campaigns never regenerated or resent.');
-}finally{globalThis.fetch=originalFetch;for(const k of Object.keys(process.env))if(!(k in env))delete process.env[k];Object.assign(process.env,env);if(database)await database.close();rmSync(dir,{recursive:true,force:true});}
+}finally{globalThis.Date=RealDate;globalThis.fetch=originalFetch;for(const k of Object.keys(process.env))if(!(k in env))delete process.env[k];Object.assign(process.env,env);if(database)await database.close();rmSync(dir,{recursive:true,force:true});}

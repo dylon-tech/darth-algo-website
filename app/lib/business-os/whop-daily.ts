@@ -1,13 +1,15 @@
 import {createHash} from "node:crypto";
 import {db} from "../affiliate-db";
 import {createWhopHomePost,whopStatus} from "./whop";
+import {campaignKey,withinSocialWindow} from './social-schedule';
+import {campaignMatchesReview} from './reviewed-social';
 import type {DailyCampaign} from "./daily-social-policy";
 
 const dayKey=(day:string)=>`daily-whop:${day}`;
 
-export async function syncDailyWhop(campaign:DailyCampaign, hour:number){
+export async function syncDailyWhop(campaign:DailyCampaign, now=new Date()){
   if(process.env.VERCEL_ENV!=="production"||process.env.AI_OS_AUTONOMY_ENABLED!=="true"||process.env.WHOP_PUBLISHING_ENABLED==="false")return {state:"disabled",published:false};
-  const sql=db(),key=dayKey(campaign.day);
+  const sql=db(),key=dayKey(campaignKey(campaign));
   const [done]=await sql`select details from os_activity where event='whop_home_publish_receipt' and entity_id=${key} limit 1`;
   if(done)return {...done.details,state:"published",published:true};
   const [started]=await sql`select id from os_activity where event='whop_home_publish_started' and entity_id=${key} limit 1`;
@@ -25,17 +27,17 @@ export async function syncDailyWhop(campaign:DailyCampaign, hour:number){
     await sql`insert into os_activity(actor,event,entity_id,details) values('operations','whop_home_preflight',${key},${sql.json(preflight)})`;
   }
   if(!preflight.connected||!preflight.companyId||preflight.error)return {state:preflight.error||"connection_required",published:false};
-  if(hour<9)return {state:"connection_checked_waiting_for_window",published:false,permissionVerified:false};
+  if(!campaignMatchesReview(campaign)||!withinSocialWindow(campaign,now))return {state:"connection_checked_waiting_for_window",published:false,permissionVerified:false};
   const text=campaign.text.trim();
   if(!text)return {state:"caption_missing",published:false};
-  const idem=createHash("sha256").update(`darth-whop-home-v1:${campaign.day}:${text}`).digest("hex").slice(0,48);
+  const idem=createHash("sha256").update(`darth-whop-home-v2:${campaignKey(campaign)}:${text}`).digest("hex").slice(0,48);
   const claimed=await sql.begin(async tx=>{
     await tx`select pg_advisory_xact_lock(730928)`;
     const [control]=await tx`select paused from os_control where id=1 for share`;
-    if(!control||control.paused)return false;
+    if(!control||control.paused||!campaignMatchesReview(campaign)||!withinSocialWindow(campaign))return false;
     const [existing]=await tx`select id from os_activity where event in ('whop_home_publish_started','whop_home_publish_receipt') and entity_id=${key} limit 1`;
     if(existing)return false;
-    await tx`insert into os_activity(actor,event,entity_id,details) values('owner','whop_home_publish_started',${key},${tx.json({day:campaign.day,policy:"owner_daily_whop_2026-09-21",companyId:preflight.companyId,state:"sending"})})`;
+    await tx`insert into os_activity(actor,event,entity_id,details) values('owner','whop_home_publish_started',${key},${tx.json({day:campaign.day,slot:campaign.slot,policy:"owner_twice_daily_2026-09-22",companyId:preflight.companyId,state:"sending"})})`;
     return true;
   });
   if(!claimed)return {state:"waiting_or_started",published:false};

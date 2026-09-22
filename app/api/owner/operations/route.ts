@@ -1,3 +1,4 @@
+import {campaignKey,socialSchedule} from '../../../lib/business-os/social-schedule';
 import { db } from '../../../lib/affiliate-db';
 import { ownerSessionFromRequest, privateHeaders } from '../../../lib/business-os/owner-session';
 import { dailySessionLimit } from '../../../lib/business-os/hosted-browser';
@@ -15,6 +16,7 @@ export async function GET(request: Request) {
   if (!ownerSessionFromRequest(request)) return Response.json({error: 'Unauthorized'}, {status: 401, headers: privateHeaders});
   const checkedAt = new Date().toISOString();
   const day = new Intl.DateTimeFormat('en-CA', {timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit'}).format(new Date());
+  const socialKey=campaignKey(socialSchedule());
   const partial: string[] = [];
   async function read(name: string, query: () => PromiseLike<Row[]>) {
     try { return Array.from(await query()); }
@@ -27,9 +29,9 @@ export async function GET(request: Request) {
     const [controls, heartbeats, events, receipts, whop, candidates, ideas, browser, handoffs, runs, queues, openLoops] = await Promise.all([
       read('control', () => sql`select paused from os_control where id=1`),
       read('scheduler', () => sql`select status,last_seen_at from os_worker_heartbeat where id=1`),
-      read('content', () => sql`select distinct on(event) event,details,created_at from os_activity where event in ('daily_social_ready','daily_social_status') and entity_id=${day} order by event,id desc`),
-      read('social_receipts', () => sql`select p.entity_id,r.details,r.created_at from os_activity p left join lateral (select details,created_at from os_activity where entity_id=p.details->>'approvalId' and event='buffer_publish_checked' order by (details->>'published'='true') desc nulls last,id desc limit 1) r on true where p.event='daily_social_prepared' and p.entity_id in (${day+':x'},${day+':instagram'},${day+':threads'}) order by p.id desc limit 3`),
-      read('whop_receipts', () => sql`select event,details,created_at from os_activity where event in ('whop_home_publish_receipt','whop_home_publish_unknown','whop_home_publish_started','whop_home_preflight') and entity_id=${'daily-whop:'+day} order by id desc limit 8`),
+      read('content', () => sql`select distinct on(event) event,details,created_at from os_activity where event in ('daily_social_ready','daily_social_status') and entity_id=${socialKey} order by event,id desc`),
+      read('social_receipts', () => sql`select p.entity_id,r.details,r.created_at from os_activity p left join lateral (select details,created_at from os_activity where entity_id=p.details->>'approvalId' and event='buffer_publish_checked' order by (details->>'published'='true') desc nulls last,id desc limit 1) r on true where p.event='daily_social_prepared' and p.entity_id in (${socialKey+':x'},${socialKey+':instagram'},${socialKey+':threads'}) order by p.id desc limit 3`),
+      read('whop_receipts', () => sql`select event,details,created_at from os_activity where event in ('whop_home_publish_receipt','whop_home_publish_unknown','whop_home_publish_started','whop_home_preflight') and entity_id=${'daily-whop:'+socialKey} order by id desc limit 8`),
       read('indicators', () => sql`select id,candidate->>'name' as name,status,created_at,tradingview_url from os_indicator_candidates order by created_at desc limit 6`),
       read('indicator_jobs', () => sql`select j.request_key,j.status,r.result->>'brief' as brief from os_jobs j left join os_runs r on r.id=j.run_id where j.request_key in (${`indicator-ideas:${day}:research`},${`indicator-ideas:${day}:growth`}) or j.request_key like ${`indicator:${day}:%`} order by j.created_at desc limit 8`),
       read('browser', () => sql`select secret is not null as connected,verification_status,verified_at,case when session_day=(now() at time zone 'America/New_York')::date then sessions_today else 0 end as sessions_today from os_browser_connection where id=1`),
@@ -48,7 +50,7 @@ export async function GET(request: Request) {
     const lastSeenAt = text(heartbeat?.last_seen_at);
     const fresh = recentTimestamp(lastSeenAt);
     const deliveries = ['x','instagram','threads','whop'].map(network => {
-      const receipt = network === 'whop' ? whop.find(row => row.event === 'whop_home_publish_receipt') : receipts.find(row => row.entity_id === `${day}:${network}`);
+      const receipt = network === 'whop' ? whop.find(row => row.event === 'whop_home_publish_receipt') : receipts.find(row => row.entity_id === `${socialKey}:${network}`);
       const details = object(receipt?.details);
       const postId = text(details.postId);
       const published = details.published === true && Boolean(postId);

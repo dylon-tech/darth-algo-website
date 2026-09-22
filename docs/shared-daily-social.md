@@ -1,45 +1,14 @@
-# Shared daily photo publishing
+# Shared morning and afternoon social campaigns
 
-Owner instruction, September 20, 2026: include Threads; use the same post on X, Instagram and Threads; replace the standalone community educational post with one daily preview and link to the social post. Videos remain owner-produced.
+Owner authorization: September 22, 2026. Policy `owner-twice-daily-2026-09-22-v3` supersedes the one-post/day schedule.
 
-## Result
+- 9 AM and 3 PM America/New_York, every day. The same campaign goes to X DarthAlgos, Instagram darth.algo and Threads darth.algo for each slot. Morning and afternoon have distinct artwork and copy.
+- Only reviewed cinematic artwork from `social-campaign-queue.ts` is eligible. Each review is bound to the reference version and exact caption/asset digest. Every downloaded byte is checked against its SHA-256 hash before storage and delivery.
+- No legacy renderer, palette-only reskin, text-only social fallback or automatic recycling when the queue is empty.
+- Morning window: 9 AM–noon; afternoon: 3–6 PM. No missed-slot catch-up bursts. Four-hour platform spacing, separate date/slot keys, transactional locks, exact-payload checks and attempt receipts prevent duplicate sends.
+- Already accepted historical payloads retain their original policy IDs and can be reconciled. Retired creative cannot create a new submission.
+- Whop Home receives campaign copy through its existing adapter. Its text-only output is not represented as an image post.
+- Telegram community gets one preview and actual confirmed social links per slot. No separate daily lesson or duplicate ChatGPT publisher.
+- The photo producer only appends reviewed assets to the queue; the deployed app alone sends posts. See `social-creative-producer.md` for the complete creation contract and no-additional-spend boundary.
 
-- One immutable three-image campaign and one caption, shared verbatim across all three networks.
-- The Content agent writes a fresh shared caption hook using current research evidence, recent captions and owner topic/style suggestions. Existing AI budget limits still apply. Unsupported or unavailable output falls back to the recorded-chart lesson caption; a queued job has up to 30 minutes before that fallback.
-- Five rotating owned-chart lessons: context, signals, risk planning, tools and community. Real product screenshots remain unaltered; captions identify recorded examples. Every caption points to the links page.
-- Daily window opens at 9 AM America/New_York. One campaign per platform/day and at least 20 hours between automatic platform submissions. Existing recent posts can delay the first campaign after cutover. Channels publish independently; connecting Threads later can deliver that day's saved campaign without resending X/Instagram.
-- X and Instagram retain their pinned account IDs. Threads must match the exact darth.algo handle, or an explicitly configured BUFFER_THREADS_CHANNEL_ID. Missing, ambiguous, disconnected, locked or paused channels are blocked.
-- Community: one first-slide preview plus buttons to actual confirmed published post URLs. Uses the existing community education topic. It can link the first confirmed platform without waiting for disconnected platforms. It does not send a separate lesson or link to an unpublished draft.
-- Old unsent independent X/Instagram approvals are superseded; accepted deliveries are reconciled. The legacy education trigger calls the new preview workflow and cannot force an extra send.
-- Telegram queue, today's posts, CEO brief and owner receipt view include Threads.
-
-## Reliability
-
-Existing activity/approval tables retain exact payload hashes, immutable asset hashes, standing authorization and provider receipts. Transactional advisory locks serialize preparation and claim operations. Attempts are committed before external writes. A lost Buffer or Telegram response is flagged for review and never blindly retried. Provider readback must match caption, channel, image order and alt text. Public post links must use the matching platform's HTTPS post URL format.
-
-No new credentials, schema migration, paid service or public posting endpoint. Pause continues to stop new sends. Photo generation uses the existing owned-chart renderer.
-
-## Validation
-
-- Full Next production build and TypeScript check passed.
-- PGlite integration exercises concurrent preparation/submission, exact same content on all three platforms, account selection, immutable bytes, pause, readback, validated social links, daily community dedupe, legacy education replacement and lost-response handling.
-- Existing legacy manual handoff contract remains tested with the new policy explicitly disabled in that isolated fixture; default policy is separately asserted to suppress it.
-- Photo-plan tests cover five themes, Eastern midnight/DST, caption limits and owned assets. Five covers and all signal slides were rendered; the signal cover was visually inspected.
-- Queue/hash-route tests cover the new executor and legacy assets. Competitor parser coverage retained separately.
-- External services are mocked in integration tests. Production activation and Threads login are verified separately; tests do not establish a real Threads publication.
-
-Buffer reference: https://developers.buffer.com/reference.html
-
-## Execution readiness follow-up
-
-Campaign preparation and public asset-byte checks run before the daily window, making all three prepared posts visible in the app queue without publishing early. Buffer API account/connection checks include Threads. Community preflight uses read-only getChat/getMe/getChatMember checks and caches the result for 15 minutes; it does not claim to prove the forum topic is open or that a future send succeeded.
-
-Runtime health and the CEO desk now identify missing channels, blocked community photo permissions, failed asset preparation and social submissions unconfirmed after 15 minutes. Existing health-transition dedupe avoids repeat healthy messages. Today's-posts views include the verified social URL. Indicator Lab logs expose its actual idea stage and hosted-browser credential connection separately from the unimplemented publishing worker.
-
-Telegram permission reference: https://core.telegram.org/bots/api#chatmember
-
-## Buffer allowance follow-up — September 20
-
-The authenticated Buffer API page showed 0/100 requests in 15 minutes, 250/250 in 24 hours and 327/3,000 in 30 days. This is a daily provider allowance exhaustion, not a disconnected social channel. No upgrade or replacement key was purchased.
-
-Connection discovery now caches for two hours; immediate publishing preflight still fetches fresh channel state. Receipt reconciliation runs every five minutes initially, then hourly after an accepted post is over an hour old. Failed legacy reads also record a check so a provider failure cannot create an every-minute polling loop. A previous uncertain submission is checked in the database before downloading assets or querying channels for a new post. This preserves exact-payload and single-attempt behavior while reducing unused polling. Cooldown logs include the next permitted check time; that timestamp is not a promise that the rolling provider quota has reset.
+Read `daily_social_status` and provider receipts for the date/slot. A saved asset, active cron, deployment, or empty Buffer queue is not proof of publication.

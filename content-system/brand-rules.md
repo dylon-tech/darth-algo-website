@@ -17,7 +17,7 @@ Reject the old navy/gold layout AND its black/red v4 reskin. A headline, paragra
 
 Keep recorded, illustrative and community-preview scenes accurately labeled. Generated displays are not real trading or customer-activity evidence. Do not copy unsupported profits, member counts, testimonials or product claims from references.
 
-The current automatic renderer remains rejected and fresh sends remain held. Reference ingestion into the Content worker supports planning/caption work; it does not generate finished images. Resume publishing only after complete matching campaign assets are connected to the guarded delivery path and checked.
+The legacy renderer remains rejected. As of the September 22 twice-daily cutover, reviewed final images enter the guarded publisher through social-campaign-queue.ts. The production app sends at 9 AM and 3 PM Eastern; the separate photo producer replenishes artwork without publishing. Missing matching assets hold only the affected slot. Reference ingestion into the website Content worker supports planning/caption work; it does not generate finished images.
 
 
 ## Brand Positioning
@@ -153,3 +153,7 @@ Production fresh social sends are held because v4 was rejected. Existing receipt
 ### Owner confirmation — September 22, 2026
 
 The owner approved the corrected cinematic cover with “yess more post like this.” This confirms the actual image-based September 21 master direction, not the rejected code-rendered v4 layout. Three companion assets were then created: Pro (Two Modes. One Pro.), Trade Levels (See the Levels. Plan the Trade.), and Community (Join the Darth Algo Community.). Keep metallic silver/red typography, faceted black scenery, oversized angled realistic devices, red rim lighting, actual full-color logo, visible TradingView context, varied compositions and clear CTA as mandatory visual criteria. These are created creative assets, not provider-confirmed publications. Screens marked illustrative/community preview must not be described as real performance or customer activity. Preserve the v4 rejection; do not remove the publishing hold merely because a style was approved without connecting the matching final assets.
+
+### Twice-daily execution — September 22, 2026
+
+The latest owner instruction is one morning and one afternoon post daily. Use 9 AM and 3 PM America/New_York, sharing each campaign across Instagram, X and Threads, with community previews and existing Whop copy delivery. See docs/social-creative-producer.md. The reviewed-asset queue supersedes the blanket v4 hold above; the rejected renderer is still forbidden.

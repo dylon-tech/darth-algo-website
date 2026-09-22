@@ -15,5 +15,5 @@ export async function publishingQueueSnapshot() {
 }
 export function nextContentWindow(now=new Date()) {
  const hour=Number(new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',hour:'numeric',hourCycle:'h23'}).format(now));
- return hour<9?'9 AM ET':'tomorrow at 9 AM ET';
+ return hour<9?'9 AM ET':hour<15?'3 PM ET':'tomorrow at 9 AM ET';
 }

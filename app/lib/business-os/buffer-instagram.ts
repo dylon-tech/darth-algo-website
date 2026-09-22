@@ -13,7 +13,7 @@ export async function verifyInstagramAssets(payload: InstagramPublication) {
   if (!isInstagramPublication(payload)) throw new Error("INSTAGRAM_PAYLOAD_INVALID");
   await Promise.all(payload.assets.map(async asset => {
     const response = await fetch(asset.url, {cache:"no-store", redirect:"error", signal:AbortSignal.timeout(15000)});
-    if (!response.ok || response.headers.get("content-type")?.split(";")[0]!=="image/png" || Number(response.headers.get("content-length"))>8_000_000) throw new Error("INSTAGRAM_ASSET_UNAVAILABLE");
+    if (!response.ok || !["image/png","image/jpeg"].includes(response.headers.get("content-type")?.split(";")[0]||"") || Number(response.headers.get("content-length"))>8_000_000) throw new Error("INSTAGRAM_ASSET_UNAVAILABLE");
     // Bound the download even if content-length is missing or incorrect.
     const reader=response.body?.getReader(); if(!reader) throw new Error("INSTAGRAM_ASSET_UNAVAILABLE");
     const hash=createHash("sha256"); let size=0;
