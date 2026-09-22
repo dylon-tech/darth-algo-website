@@ -7,14 +7,25 @@ const dayKey=(day:string)=>`daily-whop:${day}`;
 
 export async function syncDailyWhop(campaign:DailyCampaign, hour:number){
   if(process.env.VERCEL_ENV!=="production"||process.env.AI_OS_AUTONOMY_ENABLED!=="true"||process.env.WHOP_PUBLISHING_ENABLED==="false")return {state:"disabled",published:false};
-  if(hour<9)return {state:"ready_for_daily_window",published:false};
   const sql=db(),key=dayKey(campaign.day);
   const [done]=await sql`select details from os_activity where event='whop_home_publish_receipt' and entity_id=${key} limit 1`;
   if(done)return {...done.details,state:"published",published:true};
-  const status=await whopStatus();
-  if(!status.connected||!status.companyId)return {state:status.error||"connection_required",published:false};
   const [started]=await sql`select id from os_activity where event='whop_home_publish_started' and entity_id=${key} limit 1`;
   if(started)return {state:"unknown",published:false};
+  // Read-only preflight is cached for 15 minutes, including failures. A posting
+  // window is not proof of a valid credential, company, or publication permission.
+  const [cached]=await sql`select details from os_activity where event='whop_home_preflight' and entity_id=${key} and created_at>now()-interval '15 minutes' order by id desc limit 1`;
+  let preflight: {connected:boolean;companyId:string|null;error:string|null;checkedAt:string};
+  if(cached)preflight=cached.details as typeof preflight;
+  else {
+    try {
+      const status=await whopStatus();
+      preflight={connected:status.connected,companyId:status.companyId,error:status.error||null,checkedAt:new Date().toISOString()};
+    } catch {preflight={connected:false,companyId:null,error:'WHOP_CONNECTION_CHECK_FAILED',checkedAt:new Date().toISOString()};}
+    await sql`insert into os_activity(actor,event,entity_id,details) values('operations','whop_home_preflight',${key},${sql.json(preflight)})`;
+  }
+  if(!preflight.connected||!preflight.companyId||preflight.error)return {state:preflight.error||"connection_required",published:false};
+  if(hour<9)return {state:"connection_checked_waiting_for_window",published:false,permissionVerified:false};
   const text=campaign.text.trim();
   if(!text)return {state:"caption_missing",published:false};
   const idem=createHash("sha256").update(`darth-whop-home-v1:${campaign.day}:${text}`).digest("hex").slice(0,48);
@@ -24,7 +35,7 @@ export async function syncDailyWhop(campaign:DailyCampaign, hour:number){
     if(!control||control.paused)return false;
     const [existing]=await tx`select id from os_activity where event in ('whop_home_publish_started','whop_home_publish_receipt') and entity_id=${key} limit 1`;
     if(existing)return false;
-    await tx`insert into os_activity(actor,event,entity_id,details) values('owner','whop_home_publish_started',${key},${tx.json({day:campaign.day,policy:"owner_daily_whop_2026-09-21",companyId:status.companyId,state:"sending"})})`;
+    await tx`insert into os_activity(actor,event,entity_id,details) values('owner','whop_home_publish_started',${key},${tx.json({day:campaign.day,policy:"owner_daily_whop_2026-09-21",companyId:preflight.companyId,state:"sending"})})`;
     return true;
   });
   if(!claimed)return {state:"waiting_or_started",published:false};
