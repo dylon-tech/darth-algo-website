@@ -82,3 +82,12 @@ Work DA-INDICATOR-CAPTURE-20260923, operations skill 1.0.0. Commit `28a7de8349ea
 Verified locally: TypeScript, production build, capture storage/auth/CSRF/version/provenance/scheduler/pause/retry tests, and Indicator Lab regression tests. Corrected the old duplicate-logic fixture count after removal of the historical seed from public source; duplicate candidates remain rejected. Existing Swing/Scalp/Pro/Lifetime prices, billing and access paths were not modified.
 
 A supervised real Session VWAP capture was made in TradingView on the dedicated preview layout. The screenshot is held privately outside this public repository. The owner website browser is signed out; the shared TradingView browser reports a competing active device. Saving the unreleased source in TradingView was rejected by approval review and was not retried. The new worker uses temporary unsaved editor text. Production READY status, scheduler execution and the actual capture outcome require fresh post-deployment readback; queue entries are not successful captures.
+
+
+## Agent and publication incident recovery — 2026-09-23
+
+Work DA-RECOVERY-20260923; Darth Algo operations 1.0.0. Production cron was healthy, but all eight early daily runs failed locally with AI_INPUT_LIMIT at 04:01–04:08 UTC. Added byte-bounded, omission-labelled model context while retaining complete run snapshots, exact safe failure codes, one deduplicated internal recovery job per incident failure, and corrected the roster size after Indicator Builder was added. Indicator structured output now has its existing 5,000-token allowance admitted by the unchanged dollar/request budget guard. No price, access, budget or publish permission changed.
+
+Production evidence also shows Threads waiting_for_prior_receipt and Whop HTTP 400 at 13:00 UTC, followed by unknown. A bounded read-only provider diagnostic records unresolved receipts and matching post IDs; it does not resend or clear uncertainty. Publishing repair/readback remains in progress.
+
+Validation: production build, bounded UTF-8 context checks, budget guards, and real PGlite queue/service/model/handoff regression passed. Provider is mocked in tests. Fixed stale fixture assumptions for multimodal inputs and nine-role roster. Source commit 33467043abdaa63b9d35024c24a51a5307ebd674. Production recovery completion must be verified from actual runs after deployment.
