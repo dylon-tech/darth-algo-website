@@ -23,7 +23,16 @@ export async function POST(request:Request){
     const event=action==="request_changes"?"indicator_revision_requested":action==="reject"?"indicator_rejected":action==="test_feedback"?"indicator_owner_test_feedback":"indicator_paid_proposal_requested";
     const [existing]=await tx`select id from os_activity where event=${event} and entity_id=${id} and details->>'sourceHash'=${sourceHash} limit 1`;
     if(existing && action!=="test_feedback")return {saved:true,duplicate:true,stage:candidate.status};
-    await tx`insert into os_activity(actor,event,entity_id,details) values('owner',${event},${id},${tx.json({sourceHash,note:note.trim(),requestedAt:new Date().toISOString(),proposalId:action==="make_paid"?randomUUID():null,commercialTermsApproved:false})})`;
+    const proposal=action==="make_paid"?{
+      differentiation:candidate.candidate.differentiation,
+      demandEvidence:candidate.candidate.demand,
+      paidCatalogOverlap:"Requires review against Swing, Scalp, Pro and Lifetime; no overlap assessment has been approved.",
+      supportBurden:"Unmeasured; test setup questions and access fulfillment before proposing a charge.",
+      pricingRationale:"No price proposed. Existing product prices and entitlements remain unchanged.",
+      recommendation:"Keep this candidate free unless independent demand and distinct paid scope justify exact new terms.",
+      status:"proposal_requested_no_terms_approved"
+    }:null;
+    await tx`insert into os_activity(actor,event,entity_id,details) values('owner',${event},${id},${tx.json({sourceHash,note:note.trim(),requestedAt:new Date().toISOString(),proposalId:action==="make_paid"?randomUUID():null,proposal,commercialTermsApproved:false})})`;
     if(action==="reject")await tx`update os_indicator_candidates set status='declined' where id=${id}`;
     if(action==="request_changes")await tx`update os_indicator_candidates set status='revision_requested' where id=${id}`;
     return {saved:true,stage:action==="reject"?"declined":action==="request_changes"?"revision_requested":"paid_proposal_requested",published:false,charged:false};
