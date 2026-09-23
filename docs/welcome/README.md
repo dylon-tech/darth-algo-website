@@ -88,3 +88,7 @@ PGlite verifies actual PostgreSQL SQL semantics and disk restart, with transacti
 - https://docs.stripe.com/changelog/2013-10-29/coupons-apply-invoice-total-balance — zero-cost behavior; does not replace sandbox trial test.
 
 Incremental spend initiated: $0 new subscriptions, $0 paid social API calls, $0 language-model calls. Existing hosting/database usage may incur plan-dependent charges; exact incremental hosting bill is not observable. No plan upgraded or auto-recharge enabled.
+
+## Release verification checkpoint
+
+2026-09-23: implementation commit `83f16e4dc10013c95d13c652cdf4fcb5e7c1d0b3`. Final local production build, TypeScript, Welcome SQL/fixture suite, campaign attribution and owner-security regressions passed. The Pro checkout's WELCOME field was filled/applied but the visible total remained $29; no confirmed discount application is claimed. No payment submitted. Mobile frame testing was blocked by the browser URL security policy; no physical-device or mobile viewport result is claimed. Production deployment/cron receipt is the next verification step.
