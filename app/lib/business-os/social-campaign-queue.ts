@@ -83,5 +83,47 @@ export const socialCampaignQueue:ReviewedCreative[] = [
       "reviewer": "Codex visual review; owner-approved photo direction",
       "reviewedAt": "2026-09-22T23:17:35.730Z"
     }
+  },
+  {
+    "id": "2026-09-25-morning-swing-context",
+    "day": "2026-09-25",
+    "slot": "morning",
+    "theme": "Swing: broader trend context",
+    "text": "See the bigger picture. Darth Algo Swing combines broader trend context, swing signals and trade levels.\n\nIllustrative display. Trading involves risk.\nExplore Swing: https://www.darthalgo.com/products/swing #TradingView",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-09-25/swing-context-70d1cbae9e22.jpg",
+        "sha256": "70d1cbae9e22f13e023777a9c0227327701f26fd330def4c870c92142792b4be",
+        "altText": "Cinematic black-and-red Darth Algo Swing poster: SEE THE BIGGER MOVE. An angled monitor shows an illustrative trend-cloud chart. Feature panels read Broader Trend, Swing Signals and Trade Levels. Explore Swing at darthalgo.com/products/swing. Trading involves substantial risk.",
+        "mimeType": "image/jpeg"
+      }
+    ],
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "2414730e1676b7afb7800e879d22da7c5d890d803d8d7bd8f3e6e8e29adf7920",
+      "reviewer": "Codex visual review; owner-approved photo direction",
+      "reviewedAt": "2026-09-23T12:48:15.415Z"
+    }
+  },
+  {
+    "id": "2026-09-25-afternoon-scalper-alerts",
+    "day": "2026-09-25",
+    "slot": "afternoon",
+    "theme": "Scalper: TradingView alerts and signal review",
+    "text": "Your setup. Your alert. Darth Algo Scalper supports TradingView alerts—review each signal alongside trend context.\n\nIllustrative display. Trading involves risk.\nExplore Scalper: https://www.darthalgo.com/products/scalper #TradingView",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-09-25/scalper-alerts-d17d9a18b5a6.jpg",
+        "sha256": "d17d9a18b5a6dc42d21681d6bb4587dcbd981b51546b19ab517b81071c598eeb",
+        "altText": "Cinematic Darth Algo Scalper poster with metallic YOUR SETUP. YOUR ALERT. lettering and an angled phone labelled Illustrative display. Red-lit panels show TradingView Alerts, Short-Term Signals and Trend Context. Explore Scalper at darthalgo.com/products/scalper. Trading involves substantial risk.",
+        "mimeType": "image/jpeg"
+      }
+    ],
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "392d99d7c578265026de3033119178a6e2414298b4346c3528830f7d371b1682",
+      "reviewer": "Codex visual review; owner-approved photo direction",
+      "reviewedAt": "2026-09-23T12:48:15.415Z"
+    }
   }
 ];
