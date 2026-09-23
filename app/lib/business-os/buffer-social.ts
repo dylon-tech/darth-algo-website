@@ -28,4 +28,13 @@ export async function getSocialPost(id:string){
  if(!/^[a-zA-Z0-9_-]{1,100}$/.test(id))throw Error('BUFFER_POST_ID_INVALID');
  return (await bufferGraphQL<{post:SocialPost}>(`query DailySocialPost($input:PostInput!){post(input:$input){${fields}}}`,{input:{id}})).post;
 }
-export function socialPostMatches(post:SocialPost,p:DailySocialPayload){return post.channelId===p.channelId&&post.text===p.text&&post.assets?.length===p.assets.length&&post.assets.every((a,i)=>a.type==='image'&&a.source===p.assets[i].url&&a.image?.altText===p.assets[i].altText);}
+// Threads converts its first hashtag to a Topic and omits the # in readback.
+// Normalize only that documented formatting change. All words, URLs, ordering,
+// assets still have to match. Threads does not support alt-text readback;
+// missing alt text is unavailable, whereas conflicting nonempty text is held.
+// https://support.buffer.com/article/857-using-threads-with-buffer
+export function threadsTopicText(text:string){return text.replace(/(^|\s)#([\p{L}\p{N}_]+)(?=\s|$)/u,'$1$2');}
+export function socialPostMatches(post:SocialPost,p:DailySocialPayload){
+ const textMatches=post.text===p.text||(p.network==='threads'&&threadsTopicText(post.text)===threadsTopicText(p.text));
+ return post.channelId===p.channelId&&textMatches&&post.assets?.length===p.assets.length&&post.assets.every((a,i)=>a.type==='image'&&a.source===p.assets[i].url&&(a.image?.altText===p.assets[i].altText||(p.network==='threads'&&!a.image?.altText)));
+}

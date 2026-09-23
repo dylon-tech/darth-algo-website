@@ -25,7 +25,9 @@ export async function syncDailyWhop(campaign:DailyCampaign, now=new Date()){
   // One corrected attempt only after a recorded 400 validation rejection. A
   // timeout, server error, or missing response continues to hold the send.
   const [repair]=await sql`select id from os_activity where event='whop_payload_repair_started' and entity_id=${key} limit 1`;
-  const repairable=started&&failure&&BigInt(failure.id)>BigInt(started.id)&&failure.details.code==='WHOP_FORUM_HTTP_400'&&!repair;
+  const [diagnostic]=await sql`select id from os_activity where event='whop_rejection_diagnostic_started' and entity_id=${key} limit 1`;
+  const diagnosticRetry=Boolean(repair&&!diagnostic&&incidentCatchup(campaign,now));
+  const repairable=started&&failure&&BigInt(failure.id)>BigInt(started.id)&&failure.details.code==='WHOP_FORUM_HTTP_400'&&(!repair||diagnosticRetry);
   if(started&&!repairable)return {state:failure?.details.code||'unknown',published:false};
   // Cache the read-only Accounts API preflight, including failures. The version
   // invalidates only old connection reads; it never resets publication receipts.
@@ -51,9 +53,10 @@ export async function syncDailyWhop(campaign:DailyCampaign, now=new Date()){
     const [existing]=await tx`select id from os_activity where event in ('whop_home_publish_started','whop_home_publish_receipt') and entity_id=${key} limit 1`;
     if(existing&&!repairable)return false;
     if(repairable){
-      const [again]=await tx`select id from os_activity where event='whop_payload_repair_started' and entity_id=${key} limit 1`;
+      const repairEvent=diagnosticRetry?'whop_rejection_diagnostic_started':'whop_payload_repair_started';
+      const [again]=await tx`select id from os_activity where event=${repairEvent} and entity_id=${key} limit 1`;
       if(again)return false;
-      await tx`insert into os_activity(actor,event,entity_id,details) values('owner','whop_payload_repair_started',${key},${tx.json({reason:'Recorded HTTP 400; corrected free-post payload',priorAttempt:started.id,incident:'DA-RECOVERY-20260923',reviewHash:campaign.reviewHash})})`;
+      await tx`insert into os_activity(actor,event,entity_id,details) values('owner',${repairEvent},${key},${tx.json({reason:diagnosticRetry?'Recorded HTTP 400; replay same idempotency key once to capture sanitized rejection detail':'Recorded HTTP 400; corrected free-post payload',priorAttempt:started.id,incident:'DA-RECOVERY-20260923',reviewHash:campaign.reviewHash})})`;
     }
     await tx`insert into os_activity(actor,event,entity_id,details) values('owner','whop_home_publish_started',${key},${tx.json({day:campaign.day,slot:campaign.slot,policy:"owner_twice_daily_2026-09-22",companyId:preflight.companyId,state:"sending"})})`;
     return true;

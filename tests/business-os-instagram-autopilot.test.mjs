@@ -36,6 +36,15 @@ try {
  const {publishCommunityPreview}=require(join(dir,'lib/business-os/community-social.js'));
  const {ensureCommunityEducationSchema,publishEducationPost}=require(join(dir,'lib/community-education.js'));
  const {selectSocialChannel}=require(join(dir,'lib/business-os/buffer-social.js'));
+ const {threadsTopicText,socialPostMatches}=require(join(dir,'lib/business-os/buffer-social.js'));
+ const matchPayload={network:'threads',channelId:'channel',text:'Words #DarthAlgo',assets:[{url:'https://example.com/immutable.jpg',altText:'Image caption'}]};
+ const topicPost={channelId:'channel',text:'Words DarthAlgo',assets:[{type:'image',source:matchPayload.assets[0].url,image:{altText:''}}]};
+ assert.equal(socialPostMatches(topicPost,matchPayload),true);
+ assert.equal(socialPostMatches({...topicPost,text:'Other words DarthAlgo'},matchPayload),false);
+ assert.equal(socialPostMatches({...topicPost,assets:[{...topicPost.assets[0],source:'https://example.com/different.jpg'}]},matchPayload),false);
+ assert.equal(socialPostMatches({...topicPost,assets:[{...topicPost.assets[0],image:{altText:'Wrong alt text'}}]},matchPayload),false);
+ assert.equal(threadsTopicText('Words #DarthAlgo #second'),'Words DarthAlgo #second');
+ assert.notEqual(threadsTopicText('Changed words #DarthAlgo'),threadsTopicText('Words #DarthAlgo'));
  const {mediaDashboard}=require(join(dir,'lib/business-os/telegram-media.js'));
  const {mediaAutopilot}=require(join(dir,'lib/business-os/media-policy.js'));
  const {isDailySocialPayload,socialPostUrl}=require(join(dir,'lib/business-os/daily-social-policy.js'));

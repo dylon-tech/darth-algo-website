@@ -102,7 +102,9 @@ export async function createWhopHomePost(content:string, options:{title?:string;
     const error=await response.json().catch(()=>null);
     const fields=['experience_id','account_id','content','title','paywall_amount','paywall_currency','pinned','is_mention'];
     const param=fields.includes(error?.error?.param)?error.error.param:null;
-    console.warn(JSON.stringify({event:'whop_request_rejected',status:response.status,param}));
+    const raw=typeof error?.error==='string'?error.error:error?.error?.message||error?.message||error?.detail||null;
+    const detail=typeof raw==='string'?raw.split(companyKey()).join('[redacted]').split(text).join('[caption]').replace(/Bearer\s+\S+/gi,'Bearer [redacted]').replace(/(?:sk_|whop_)[A-Za-z0-9_-]{16,}/g,'[redacted]').slice(0,700):null;
+    console.warn(JSON.stringify({event:'whop_request_rejected',status:response.status,param,detail,errorKeys:error&&typeof error==='object'?Object.keys(error).slice(0,8):[]}));
     throw new Error(response.status===401?"WHOP_KEY_REJECTED":response.status===403?"WHOP_FORUM_PERMISSION_MISSING":response.status===429?"WHOP_RATE_LIMITED":`WHOP_FORUM_HTTP_${response.status}`);
   }
   const body=await response.json() as {id?:string;created_at?:string;user?:{id?:string;username?:string}};

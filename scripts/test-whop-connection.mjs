@@ -35,7 +35,7 @@ try {
   await test('Home publication retains exact account, version and idempotency',async()=>{
     const post=await createWhopHomePost('Synthetic content',{idempotencyKey:'test-key-123',pinned:false});
     assert.equal(post.id,'post_fixture');const call=calls.find(item=>item.init.method==='POST');const body=JSON.parse(call.init.body);
-    assert.equal(call.url,'https://api.whop.com/api/v1/forum_posts');assert.equal(call.init.headers['Idempotency-Key'],'test-key-123');assert.equal(call.init.headers['Api-Version-Date'],'2026-08-21-1');assert.equal(body.experience_id,'public');assert.equal(body.account_id,'biz_Test123');assert.equal(body.is_mention,false);assert.equal(body.paywall_amount,0);
+    assert.equal(call.url,'https://api.whop.com/api/v1/forum_posts');assert.equal(call.init.headers['Idempotency-Key'],'test-key-123');assert.equal(call.init.headers['Api-Version-Date'],'2026-08-21-1');assert.equal(body.experience_id,'public');assert.equal(body.account_id,'biz_Test123');assert.equal(body.is_mention,false);assert.equal(body.paywall_amount,undefined);
   });
   mock((url,init)=>init.method==='POST'?Response.json({error:{}},{status:500}):Response.json({id:'biz_Test123'}));
   await test('uncertain provider write is not retried',async()=>{await assert.rejects(createWhopHomePost('Fixture',{idempotencyKey:'test-key-123'}),/WHOP_FORUM_HTTP_500/);assert.equal(calls.filter(call=>call.init.method==='POST').length,1);});
