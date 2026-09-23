@@ -41,8 +41,10 @@ const immediatePrototype:IndicatorCandidate={
 indicator("Darth Algo Session VWAP Reclaim", overlay=true)
 tradeSession = input.session("0930-1600", "Trading session")
 emaLength = input.int(21, "Trend EMA", minval=2, maxval=200)
-inSession = not na(time(timeframe.period, tradeSession))
-vwapLine = ta.vwap(hlc3)
+inSession = not na(time(timeframe.period, tradeSession, "America/New_York"))
+sessionStart = inSession and not inSession[1]
+anchoredVwap = ta.vwap(hlc3, sessionStart)
+vwapLine = inSession ? anchoredVwap : na
 trendEma = ta.ema(close, emaLength)
 longSetup = inSession and barstate.isconfirmed and ta.crossover(close, vwapLine) and close > trendEma
 shortSetup = inSession and barstate.isconfirmed and ta.crossunder(close, vwapLine) and close < trendEma
@@ -138,9 +140,10 @@ async function seedPrototype(candidate:IndicatorCandidate){
  const qa=pineChecks(candidate.pine);if(!qa.passed)throw Error("BUILTIN_PROTOTYPE_QA_FAILED");
  const sql=db(),logic=pineLogicHash(candidate.pine),hash=pineHash(candidate.pine);
  const [prior]=await sql`select id from os_indicator_candidates where logic_hash=${logic}`;if(prior)return String(prior.id);
+ const [parent]=await sql`select id,source_hash from os_indicator_candidates where candidate->>'name'=${candidate.name} order by created_at desc limit 1`;
  const id=randomUUID();
  const [row]=await sql`insert into os_indicator_candidates(id,run_id,candidate,source_hash,logic_hash,qa,score,status)
-  values(${id},null,${sql.json(candidate)},${hash},${logic},${sql.json({...qa,origin:"exploratory_original_draft",reviewState:"code_ready_static_qa_only"})},${sql.json(scoreIndicator(candidate))},'qa_blocked') on conflict do nothing returning id`;
+  values(${id},null,${sql.json(candidate)},${hash},${logic},${sql.json({...qa,origin:"exploratory_original_draft",reviewState:"code_ready_static_qa_only",parentCandidateId:parent?.id||null,parentSourceHash:parent?.source_hash||null})},${sql.json(scoreIndicator(candidate))},'qa_blocked') on conflict do nothing returning id`;
  if(row)await sql`insert into os_activity(actor,event,entity_id,details) values('indicator_builder','indicator_prototype_ready',${id},${sql.json({name:candidate.name,sourceHash:hash,reviewState:"static_qa_passed"})})`;
  return row?String(row.id):null;
 }
