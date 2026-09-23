@@ -1,0 +1,57 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),Module=require('node:module'),ts=require('typescript');
+const {randomUUID,createHash}=require('node:crypto');
+const root=process.cwd(),base=path.join(root,'app/lib/business-os'),cache=new Map();
+let sql;const stubs={};
+function load(filename){filename=path.resolve(filename);if(cache.has(filename))return cache.get(filename);const mod=new Module(filename,module);mod.filename=filename;mod.paths=module.paths;cache.set(filename,mod.exports);
+ mod.require=id=>{if(stubs[id])return stubs[id];if(id.startsWith('.'))return load(path.resolve(path.dirname(filename),id)+'.ts');return require(id);};
+ mod._compile(ts.transpileModule(fs.readFileSync(filename,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,esModuleInterop:true}}).outputText,filename);cache.set(filename,mod.exports);return mod.exports;}
+async function main(){
+ const {PGlite}=await import(require('node:url').pathToFileURL(process.env.OS_TEST_PGLITE_MODULE).href),pg=new PGlite();
+ function adapter(client){const s=async(strings,...values)=>{const q=strings.reduce((a,b,i)=>a+b+(i<values.length?'$'+(i+1):''),'');if(q.includes('pg_advisory_xact_lock'))return [];return (await client.query(q,values)).rows;};s.json=JSON.stringify;s.unsafe=q=>client.exec(q);s.begin=fn=>client.transaction(tx=>fn(adapter(tx)));return s;}
+ sql=adapter(pg);
+ const schema=fs.readFileSync(path.join(base,'schema.ts'),'utf8').match(/export const schema = `([\s\S]*?)`;/)[1];await pg.exec(schema);
+ const labSchema=fs.readFileSync(path.join(base,'indicator-lab.ts'),'utf8').match(/export const indicatorSchema=`([\s\S]*?)`;/)[1];
+ stubs['./indicator-lab']={ensureIndicatorSchema:()=>pg.exec(labSchema)};
+ stubs['../affiliate-db']={db:()=>sql};
+ stubs['./hosted-browser']={browserStatus:async()=>({connected:false})};
+ const captures=load(path.join(base,'indicator-captures.ts')),worker=load(path.join(base,'indicator-capture-worker.ts'));
+ await captures.ensureCaptureSchema();await captures.ensureCaptureSchema();
+ const pine='//@version=6\nindicator("Darth Algo Test",overlay=true)\nplot(close)\nalertcondition(barstate.isconfirmed,"Close","Closed")',hash=createHash('sha256').update(pine).digest('hex'),id=randomUUID();
+ await sql`insert into os_indicator_candidates(id,candidate,source_hash,logic_hash,qa,score,status) values(${id},${JSON.stringify({name:'Darth Algo Test',pine})},${hash},${hash},'{}','{}','qa_blocked')`;
+ const image=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aY9sAAAAASUVORK5CYII=','base64');
+ const metadata={chartUrl:'https://www.tradingview.com/chart/Example123/',symbol:'CME_MINI:MNQ1!',timeframe:'1 minute',settings:'Default inputs',visibleRange:'2026-09-23, 09:30–11:00 America/New_York',capturedAt:'2026-09-23T16:00:00Z',marketContext:'Delayed market data, no replay',notes:'Actual chart test screenshot supplied by owner.',compiled:true,replay:false,reopened:false,view:'indicator'};
+ assert.throws(()=>captures.captureMime(Buffer.from('<svg>'+'.'.repeat(200)+'</svg>')),/PNG_OR_JPEG_REQUIRED/);
+ assert.throws(()=>captures.captureMime(Buffer.alloc(captures.maxCaptureBytes+1)),/CAPTURE_SIZE_LIMIT/);
+ for(const bad of [{...metadata,chartUrl:'https://evil.example/a'},{...metadata,capturedAt:'invalid'},{...metadata,compiled:'true'},{...metadata,visibleRange:''}])assert.throws(()=>captures.validateCaptureMetadata(bad));
+ await assert.rejects(captures.saveIndicatorCapture(id,'0'.repeat(64),image,metadata,'owner_submission'),/VERSION_OR_STAGE_CHANGED/);
+ const saved=await captures.saveIndicatorCapture(id,hash,image,metadata,'owner_submission');
+ assert.equal((await captures.saveIndicatorCapture(id,hash,image,metadata,'browser_worker')).id,saved.id);
+ assert.equal((await sql`select * from os_indicator_captures`).length,1);
+ const stored=await captures.readIndicatorCapture(id,saved.id);assert.deepEqual(Buffer.from(stored.image_bytes),image);assert.equal(stored.origin,'owner_submission');
+ const [candidate]=await sql`select * from os_indicator_candidates where id=${id}`;assert.equal(candidate.status,'qa_blocked');assert.equal(candidate.private_preview,null);assert.equal(candidate.approval_id,null);
+ await sql`update os_indicator_candidates set source_hash=${'1'.repeat(64)} where id=${id}`;assert.equal(await captures.readIndicatorCapture(id,saved.id),null);
+ await sql`update os_indicator_candidates set source_hash=${hash} where id=${id}`;
+ Object.assign(process.env,{AI_OS_ENABLED:'true',AI_OS_INDICATOR_LAB_ENABLED:'true',VERCEL_ENV:'production',AI_OS_OWNER_KEY:'test-only-owner-key-'.repeat(4)});
+ const session=load(path.join(base,'owner-session.ts')),cookie=`${session.ownerCookie}=${session.createOwnerSession(process.env.AI_OS_OWNER_KEY)}`;
+ const post=load(path.join(root,'app/api/owner/indicators/captures/route.ts'));
+ const get=load(path.join(root,'app/api/owner/indicators/[id]/captures/[captureId]/route.ts'));
+ const requestRoute=load(path.join(root,'app/api/owner/indicators/captures/request/route.ts'));
+ assert.equal((await post.POST(new Request('https://www.darthalgo.com/api/owner/indicators/captures',{method:'POST'}))).status,401);
+ assert.equal((await post.POST(new Request('https://www.darthalgo.com/api/owner/indicators/captures',{method:'POST',headers:{cookie,origin:'https://evil.example'}}))).status,403);
+ const params={params:Promise.resolve({id,captureId:saved.id})};
+ assert.equal((await get.GET(new Request('https://www.darthalgo.com/test'),params)).status,401);
+ const response=await get.GET(new Request('https://www.darthalgo.com/test',{headers:{cookie}}),params);
+ assert.equal(response.status,200);assert.equal(response.headers.get('cache-control'),'no-store');assert.equal(response.headers.get('x-content-type-options'),'nosniff');assert.deepEqual(Buffer.from(await response.arrayBuffer()),image);
+ const form=new FormData();form.set('id',id);form.set('sourceHash',hash);form.set('metadata',JSON.stringify({...metadata,view:'before'}));form.set('origin','browser_worker');const second=Buffer.concat([image.subarray(0,-1),Buffer.from([1])]);form.set('image',new File([second],'example.png',{type:'image/png'}));
+ const upload=await post.POST(new Request('https://www.darthalgo.com/api/owner/indicators/captures',{method:'POST',headers:{cookie,origin:'https://www.darthalgo.com'},body:form}));assert.equal(upload.status,200);const uploadId=(await upload.json()).id;assert.equal((await captures.readIndicatorCapture(id,uploadId)).origin,'owner_submission');
+ assert.equal((await requestRoute.POST(new Request('https://www.darthalgo.com/test',{method:'POST'}))).status,401);
+ await worker.ensureCaptureJobSchema();assert.equal((await worker.requestIndicatorCapture(id,hash)).status,'queued');
+ const run=await worker.runIndicatorCaptures();assert.equal(run.status,'blocked');assert.equal(run.reason,'BROWSER_CONNECTION_REQUIRED');
+ assert.equal((await worker.runIndicatorCaptures()).reason,'BROWSER_CONNECTION_REQUIRED');
+ assert.equal((await sql`select attempts from os_indicator_capture_jobs where candidate_id=${id}`)[0].attempts,0);
+ await sql`update os_control set paused=true`;assert.equal((await worker.runIndicatorCaptures()).status,'paused');await sql`update os_control set paused=false`;
+ await sql`update os_indicator_capture_jobs set attempts=3 where candidate_id=${id}`;await assert.rejects(worker.requestIndicatorCapture(id,hash),/ATTEMPT_LIMIT_REACHED/);
+ await sql`update os_indicator_candidates set status='declined' where id=${id}`;await assert.rejects(captures.saveIndicatorCapture(id,hash,image,metadata,'owner_submission'),/VERSION_OR_STAGE_CHANGED/);
+ await pg.close();console.log('PASS: private image access, CSRF, source binding, byte readback, duplicate capture, owner provenance, separate release QA, scheduler blocking, pause and bounded retries.');
+}
+main().catch(e=>{console.error(e);process.exitCode=1;});

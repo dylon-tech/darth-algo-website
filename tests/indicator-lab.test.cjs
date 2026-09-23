@@ -57,7 +57,7 @@ async function main(){
  await sql`update os_indicator_candidates set status='declined' where id=${row.id}`;
  await assert.rejects(lab.recordPrivateIndicatorPreview(row.id,row.source_hash,privatePreview));
  await sql`update os_indicator_candidates set status='pending' where id=${row.id}`;
- await output({...candidate,name:'Darth Algo Renamed',pine:pine.replace('Darth Algo Test','Darth Algo Renamed')});await lab.syncIndicatorLab();assert.equal((await sql`select * from os_indicator_candidates`).length,2);
+ await output({...candidate,name:'Darth Algo Renamed',pine:pine.replace('Darth Algo Test','Darth Algo Renamed')});await lab.syncIndicatorLab();assert.equal((await sql`select * from os_indicator_candidates`).length,1); // Renaming does not create new logic; historical public seed was removed.
  const checks={privacy:'public',visibility:'protected',freeToUse:true,inviteRequired:false,communitySearchVerified:true,addToChartVerified:true,compiled:true,replay:true,notes:'Verified two symbols and three timeframes with closed-bar alert replay.',screenshotUrl:'https://www.tradingview.com/x/Abcd123/',educationUrl:'https://www.tradingview.com/chart/AAPL/Abcd-Educational-example/',packageHash:ready.release_package.hash};
  await assert.rejects(lab.recordIndicatorRelease(row.id,row.source_hash,'https://www.tradingview.com/script/Abcd-Test/',checks));
  const [approval]=await sql`select * from os_approvals where id=${row.approval_id}`;

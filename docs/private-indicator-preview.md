@@ -1,5 +1,51 @@
 # Private TradingView preview handoff
 
+## Version captures — September 23, 2026
+
+Work `DA-INDICATOR-CAPTURE-20260923`, operations skill `1.0.0`.
+
+The owner gallery now accepts actual PNG/JPEG captures independently of complete
+release validation. Images live as bounded private database records, never public
+repository files. The source hash, image hash, symbol/feed, interval, settings,
+visible-range information, capture time, data context and provenance are retained.
+Authenticated image routes reject stale versions and unauthenticated requests,
+and return no-store, nosniff and sandbox headers. Owner uploads remain labeled
+owner submissions; they cannot certify agent validation or create approval cards.
+
+`POST /api/owner/indicators/captures` accepts multipart `id`, `sourceHash`, `image`
+and JSON `metadata`. Cookie writes require same-origin checks. The existing owner
+bearer can record `origin=assisted_browser`; browser uploads cannot claim worker
+provenance. Images are limited to 2 MB and 12 captures per source version. Duplicates
+preserve their original provenance. The authenticated detail view offers this form.
+
+The existing five-minute indicator-browser cron now also runs a distinct,
+per-candidate capture worker after the legacy check is idle. It schedules up to
+three latest distinct draft names, binds jobs to exact hashes, observes global
+pause, reserves a worker lease, uses the existing Browserbase start allowance,
+and stops on authentication, active-session or configuration conflicts. It never
+attaches to an owner's reserved sign-in session or raises the allowance. Interrupted
+runs are held for review. Owner retries are capped at three browser attempts per
+version, and queue status is displayed as queue status.
+
+The worker opens only the owner-created `Darth Algo Indicator Lab Preview` layout
+under `Darth_Algo`. It requires standard candles and an untitled Pine editor,
+cleans only that dedicated test layout, fills and reads back the full exact source,
+adds it to the chart, and records before/after raster captures after TradingView
+confirms insertion. It never clicks Save script, Publish, alerts or trading
+controls. A saved named editor blocks the run. Compiler insertion does not complete
+replay/repaint/reopening validation; exact visible dates and feed delay status are
+marked unavailable when not readable. Selector or context uncertainty blocks capture.
+
+Local validation: type check and production build; isolated Postgres tests for
+image authorization, CSRF, byte readback, source binding, duplicates, provenance,
+separation from release approval, pause, worker blocking and bounded retries. A
+supervised real Session VWAP chart screenshot exists outside the public repository.
+The cloud owner browser was signed out and TradingView reported an active session
+on another device. Production rollout and autonomous capture readback must be
+recorded separately; these local tests are not evidence of a successful hosted capture.
+
+The earlier complete-release evidence contract below remains strict and separate.
+
 Owner flow: build privately, compile/replay, capture actual chart, let owner try, obtain publication approval, publish. This change records the private testing artifact; it does not automate TradingView or represent test completion by itself.
 
 An authorized operator or connected browser worker must save the script and a dedicated layout inside the authorized TradingView account, reopen the saved layout, and verify the current indicator loads. Record only observed URLs. Preserve existing user layouts. Do not use the generic /chart/ URL as a completed preview.

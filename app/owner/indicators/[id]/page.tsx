@@ -6,22 +6,47 @@ import {notFound} from "next/navigation";
 import {pineHash,validPrivatePreview,type IndicatorCandidate} from "../../../lib/business-os/indicator-policy";
 import {SourceActions} from "./source-actions";
 import {ReviewActions} from "./review-actions";
+import {CaptureUpload} from "./capture-upload";
+import {CaptureRetry} from "./capture-retry";
+import {ensureCaptureJobSchema,captureBlockMessage} from "../../../lib/business-os/indicator-capture-worker";
+import {type CaptureMetadata,type CaptureOrigin} from "../../../lib/business-os/indicator-captures";
 export const dynamic="force-dynamic";
 export const metadata={title:"Darth Algo · Indicator preview",robots:{index:false,follow:false}};
 export default async function IndicatorPreview({params}:{params:Promise<{id:string}>}){
   if(process.env.AI_OS_ENABLED!=="true" || !validOwnerSession((await cookies()).get(ownerCookie)?.value,process.env.AI_OS_OWNER_KEY))return <main className="mx-auto max-w-3xl p-8"><h1>Private indicator preview</h1><p>Open your Telegram Command Center and choose Settings → Connect browser to view this prototype.</p></main>;
   const {id}=await params;if(!/^[a-f0-9-]{36}$/.test(id))notFound();
+  await ensureCaptureJobSchema();
   const [r]=await db()`select * from os_indicator_candidates where id=${id}`;if(!r)notFound();
   const [approval]=r.approval_id?await db()`select id,payload_hash from os_approvals where id=${r.approval_id}`:[];
   const [paidRequest]=await db()`select details from os_activity where event='indicator_paid_proposal_requested' and entity_id=${id} and details->>'sourceHash'=${r.source_hash} order by id desc limit 1`;
+  const captures=await db()`select id,source_hash,image_hash,metadata,origin,created_at from os_indicator_captures where candidate_id=${id} and source_hash=${r.source_hash} order by created_at desc limit 12` as {id:string;source_hash:string;image_hash:string;metadata:CaptureMetadata;origin:CaptureOrigin;created_at:string}[];
+  const [captureJob]=await db()`select status,error_code,attempts,started_at,finished_at from os_indicator_capture_jobs where candidate_id=${id} and source_hash=${r.source_hash}`;
+  const [captureControl]=await db()`select blocked_reason from os_indicator_capture_control where id=1`;
   const c=r.candidate as IndicatorCandidate;
   const preview=validPrivatePreview(r.private_preview,r.source_hash) && pineHash(c.pine)===r.source_hash ? r.private_preview : null;
   return <main className="mx-auto max-w-4xl space-y-8 px-6 py-12">
-    <Link href="/owner" className="text-sm text-zinc-400">← Command Center</Link>
+    <Link href="/owner/indicators" className="text-sm text-zinc-400">← Indicator gallery</Link>
     <header><p className="text-xs tracking-widest text-violet-300">DARTH ALGO · PRIVATE INDICATOR LAB</p><h1 className="mt-4 text-4xl font-bold">{c.name}</h1><p className="mt-4 max-w-2xl text-lg text-zinc-400">{c.purpose}</p></header>
     <section className="rounded-2xl border border-white/10 bg-white/[0.025] p-7">
-      <h2 className="text-xl font-semibold">Try it before publication</h2>
-      {preview ? <><p className="mt-3 text-sm text-zinc-400">Compilation, chart replay and reopening this saved chart were recorded for this exact version. The link uses your TradingView account’s access.</p><div className="mt-6 flex flex-wrap gap-4"><a href={preview.chartUrl} target="_blank" rel="noopener noreferrer" className="rounded-lg bg-violet-300 px-5 py-3 font-semibold text-black">Open loaded TradingView chart ↗</a><a href={preview.screenshotUrl} target="_blank" rel="noopener noreferrer" className="rounded-lg border border-white/20 px-5 py-3">View actual chart capture ↗</a></div><p className="mt-4 text-xs text-zinc-500">Verification recorded {new Date(preview.checkedAt).toLocaleString("en-US",{timeZone:"America/New_York"})} Eastern. Saved charts can change after verification.</p></> : <><p className="mt-3 text-sm leading-7 text-zinc-400">The private chart is not ready yet. Once this version has been compiled, tested and saved in TradingView, its chart link and real capture will appear here.</p><button disabled className="mt-6 cursor-not-allowed rounded-lg border border-white/10 px-5 py-3 text-zinc-500">Open loaded chart · Setup pending</button></>}
+      <h2 className="text-xl font-semibold">Chart previews</h2>
+      <p className="mt-2 text-sm text-zinc-400">Free draft · Version {r.source_hash.slice(0,8)} · {r.status==="qa_blocked"?"Needs testing":r.status.replaceAll("_"," ")}</p>
+      {captures.map((capture)=><figure key={capture.id} className="mt-6 space-y-3">
+        <a href={`/api/owner/indicators/${id}/captures/${capture.id}`} target="_blank" rel="noopener noreferrer"><img src={`/api/owner/indicators/${id}/captures/${capture.id}`} alt={`${c.name}: ${capture.metadata.view==="before"?"chart before indicator":"indicator on chart"}`} className="w-full rounded-xl border border-white/10"/></a>
+        <figcaption className="space-y-2 text-sm text-zinc-400">
+          <p className="font-semibold text-zinc-200">{capture.metadata.view==="before"?"Before adding indicator · ":""}{capture.origin==="owner_submission"?"Owner-submitted screenshot · not agent validated":capture.origin==="assisted_browser"?"Actual TradingView capture · assisted browser":"Actual TradingView capture · browser worker"}</p>
+          <p>{capture.metadata.symbol} · {capture.metadata.timeframe} · {capture.metadata.visibleRange}</p>
+          <p>Inputs: {capture.metadata.settings}</p><p>Context: {capture.metadata.marketContext}</p>
+          <p>Captured {new Date(capture.metadata.capturedAt).toLocaleString("en-US",{timeZone:"America/New_York"})} Eastern.</p>
+          <p>{capture.origin==="owner_submission"?"Owner reports":"Recorded checks"}: compilation {capture.metadata.compiled?"passed":"not confirmed"}; replay {capture.metadata.replay?"checked":"pending"}; reopening {capture.metadata.reopened?"checked":"pending"}.</p>
+          <p>{capture.metadata.notes}</p>
+          {capture.metadata.chartUrl&&<a className="inline-block text-violet-300 underline" href={capture.metadata.chartUrl} target="_blank" rel="noopener noreferrer">Open chart layout ↗ (may have changed since capture)</a>}
+        </figcaption>
+      </figure>)}
+      {!captures.length&&<p className="mt-4 text-sm text-amber-300">TradingView preview pending. Copy or download the complete Pine below to test this draft.</p>}
+      {r.status==="qa_blocked"&&<div className="mt-5 rounded-xl border border-white/10 p-4"><p className="font-semibold">Automatic chart capture: {captureJob?.status==="captured"?"captured":captureControl?.blocked_reason?"blocked":captureJob?.status||"awaiting scheduled check"}</p><p className="mt-2 text-sm text-zinc-400">{captureJob?.status==="captured"?"The image is stored for this exact source. Replay and release are separate.":captureBlockMessage(captureControl?.blocked_reason||captureJob?.error_code)}</p><p className="mt-2 text-xs text-zinc-500">Checked every five minutes within the existing hosted-browser allowance. {captureJob?.attempts||0} of 3 attempts used for this version.</p>{captureJob?.status!=="captured"&&(captureJob?.attempts||0)<3&&<CaptureRetry id={id} sourceHash={r.source_hash}/>}<Link href="/owner/browser" className="mt-3 inline-block text-sm text-violet-300 underline">Open TradingView browser connection</Link></div>}
+      {["qa_blocked","pending","approved"].includes(r.status)&&<CaptureUpload id={id} sourceHash={r.source_hash}/>}
+      <h3 className="mt-6 font-semibold">Release testing</h3>
+      {preview ? <><p className="mt-3 text-sm text-zinc-400">Compilation, chart replay and reopening this saved chart were recorded for this exact version. The link uses your TradingView account’s access.</p><div className="mt-6 flex flex-wrap gap-4"><a href={preview.chartUrl} target="_blank" rel="noopener noreferrer" className="rounded-lg bg-violet-300 px-5 py-3 font-semibold text-black">Open loaded TradingView chart ↗</a><a href={preview.screenshotUrl} target="_blank" rel="noopener noreferrer" className="rounded-lg border border-white/20 px-5 py-3">View actual chart capture ↗</a></div><p className="mt-4 text-xs text-zinc-500">Verification recorded {new Date(preview.checkedAt).toLocaleString("en-US",{timeZone:"America/New_York"})} Eastern. Saved charts can change after verification.</p></> : <><p className="mt-3 text-sm leading-7 text-zinc-400">Complete release validation is pending. Captures above remain available while compilation, replay and reopening checks are reviewed.</p></>}
     </section>
     <ReviewActions id={id} sourceHash={r.source_hash} stage={r.status} approvalId={approval?.id} payloadHash={approval?.payload_hash}/>
     {paidRequest&&<section className="rounded-2xl border border-white/10 p-5"><h2 className="text-xl font-semibold">Paid proposal request</h2><p className="mt-2 text-sm text-zinc-400">No commercial terms are approved. Existing plans and access are unchanged.</p><p className="mt-3 text-sm">Your rationale: {paidRequest.details.note}</p><p className="mt-2 text-sm text-zinc-400">{paidRequest.details.proposal?.recommendation}</p><p className="mt-2 text-sm text-zinc-400">Overlap: {paidRequest.details.proposal?.paidCatalogOverlap}</p><p className="mt-2 text-sm text-zinc-400">Support: {paidRequest.details.proposal?.supportBurden}</p></section>}
