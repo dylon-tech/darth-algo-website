@@ -1,6 +1,6 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 
-export const departments = ["ceo", "growth", "content", "support", "affiliates", "analytics", "research", "operations"] as const;
+export const departments = ["ceo", "growth", "content", "support", "affiliates", "analytics", "research", "indicator_builder", "operations"] as const;
 export type Department = typeof departments[number];
 export const actionKinds = ["spending", "publishing", "customer_sensitive", "refund", "account_change", "outreach", "deployment", "other_external"] as const;
 export type ActionKind = typeof actionKinds[number];
@@ -13,6 +13,7 @@ export const registry = [
   { id: "affiliates", mandate: "Recruitment preparation, first-sale attribution and refund-aware commissions; no automatic payouts." },
   { id: "analytics", mandate: "Source-backed measurement with explicit denominators, coverage and freshness." },
   { id: "research", mandate: "Customer and competitor evidence that leads to testable improvements." },
+  { id: "indicator_builder", mandate: "Create complete original Pine drafts from research briefs and record exact-version testing; never claim compilation without proof." },
   { id: "operations", mandate: "Integration health, fulfillment reliability, incidents and automation." },
 ] as const;
 

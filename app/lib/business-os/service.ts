@@ -105,7 +105,7 @@ export async function runAgent(department: Department, requestKey: string, messa
       sql`select role,left(body,3000) as body from (select role,body,created_at from os_messages where department=${department} and run_id<>${id} order by created_at desc limit 4) h order by created_at`,
     ]);
     if (coordinationEnabled() && !approvedPilot) evidence.push(...await teamEvidence(taskId));
-    if(["research","growth"].includes(department) && /^\[INDICATOR_(LAB|IDEAS)\]/.test(message) && process.env.AI_OS_INDICATOR_LAB_ENABLED==="true") {
+    if(["research","growth","indicator_builder"].includes(department) && /^\[INDICATOR_(LAB|IDEAS)\]/.test(message) && process.env.AI_OS_INDICATOR_LAB_ENABLED==="true") {
       const {indicatorMarketEvidence}=await import("./indicator-research");
       const {labContext}=await import("./indicator-lab");
       const {indicatorIdeaEvidence}=await import("./indicator-ideas");
