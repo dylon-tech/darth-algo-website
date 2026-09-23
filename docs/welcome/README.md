@@ -92,3 +92,9 @@ Incremental spend initiated: $0 new subscriptions, $0 paid social API calls, $0 
 ## Release verification checkpoint
 
 2026-09-23: implementation commit `83f16e4dc10013c95d13c652cdf4fcb5e7c1d0b3`. Final local production build, TypeScript, Welcome SQL/fixture suite, campaign attribution and owner-security regressions passed. The Pro checkout's WELCOME field was filled/applied but the visible total remained $29; no confirmed discount application is claimed. No payment submitted. Mobile frame testing was blocked by the browser URL security policy; no physical-device or mobile viewport result is claimed. Production deployment/cron receipt is the next verification step.
+
+## Verified production receipt — 2026-09-23 03:38 UTC
+
+Release `157679ecc3b8013840fb05bc3d8a12051abd62fc`, Vercel `dpl_3jctxwo9ffLFZoRvDfes1HCHW3Ur`, READY and aliased to www.darthalgo.com. Production minute cron returned HTTP 200 at 03:35 and 03:36 UTC; actual SQL tables existed and `welcome_tick` reported blocked/PROVIDER_CONNECTION_AND_DISCOUNT_REVIEW, sendingAdapters=0, processed=0. Existing Telegram desk and media scheduling continued in the same tick.
+
+Production browser check: `/owner/welcome` rendered the real logo/card and refused private status without the existing owner session. No authentication bypass. A marked test visit (`utm_content=welcome_test`) reached #pricing at viewport top 88px; both visit and checkout-click endpoints returned HTTP 200. The actual Pro checkout URL retained `client_reference_id=daw_<opaque UUID>`, instagram/welcome25/welcome_test parameters. Test visits are excluded from attribution. No payment submitted; no paid-conversion evidence or real social-message ID exists. Mobile viewport and authenticated dashboard screenshots remain unverified due to browser/session limitations.
