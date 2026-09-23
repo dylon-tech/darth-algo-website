@@ -3,8 +3,10 @@ import type {Evidence} from "./sources";
 
 const publicSources=[
   {name:"TradingView community indicators",url:"https://www.tradingview.com/scripts/",kind:"indicator discovery"},
+  {name:"Opening range publication",url:"https://www.tradingview.com/script/l5UakOY7-Opening-Range-basic/",kind:"author description of an opening-range tool"},
   {name:"LuxAlgo pricing",url:"https://www.luxalgo.com/pricing/",kind:"advertised pricing"},
   {name:"Trader discussions",url:"https://www.reddit.com/r/TradingView/search.rss?q=indicator&restrict_sr=on&sort=new",kind:"demand anecdotes"},
+  {name:"Opening range discussion",url:"https://www.reddit.com/r/TradingView/comments/z78gza/",kind:"historical user anecdote"},
 ];
 const clean=(s:string)=>s.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/<!\[CDATA\[|\]\]>/g,'').replace(/<(script|style|pre|code)\b[^>]*>[\s\S]*?<\/\1>/gi,' ').replace(/<[^>]*>/g," ").replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&nbsp;/g," ").replace(/\s+/g," ").trim();
 export function extractPublicMetadata(html:string,url:string) {
@@ -49,7 +51,7 @@ async function readPublic(url:string) {
 }
 export async function indicatorMarketEvidence():Promise<Evidence> {
   const sql=db();
-  let [saved]=await sql`select details,created_at from os_activity where event='indicator_market_snapshot_v2' and created_at>now()-interval '24 hours' order by id desc limit 1`;
+  let [saved]=await sql`select details,created_at from os_activity where event='indicator_market_snapshot_v3' and created_at>now()-interval '24 hours' order by id desc limit 1`;
   if(!saved) {
     const sources=await Promise.all(publicSources.map(async source=>{
       try {const metadata=extractPublicMetadata(await readPublic(source.url),source.url);
@@ -59,9 +61,9 @@ export async function indicatorMarketEvidence():Promise<Evidence> {
     }));
     saved=await sql.begin(async tx=>{
       await tx`select pg_advisory_xact_lock(730931)`;
-      const [existing]=await tx`select details,created_at from os_activity where event='indicator_market_snapshot_v2' and created_at>now()-interval '24 hours' order by id desc limit 1`;
+      const [existing]=await tx`select details,created_at from os_activity where event='indicator_market_snapshot_v3' and created_at>now()-interval '24 hours' order by id desc limit 1`;
       if(existing)return existing;
-      const details={version:2,sources};await tx`insert into os_activity(actor,event,details) values('research','indicator_market_snapshot_v2',${tx.json(details)})`;
+      const details={version:3,sources};await tx`insert into os_activity(actor,event,details) values('research','indicator_market_snapshot_v3',${tx.json(details)})`;
       return {details,created_at:new Date().toISOString()};
     });
   }
