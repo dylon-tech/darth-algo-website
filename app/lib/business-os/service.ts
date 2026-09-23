@@ -174,11 +174,11 @@ export async function runAgent(department: Department, requestKey: string, messa
     const databaseCode = error && typeof error === "object" && "code" in error && typeof error.code === "string" && /^[A-Z0-9]{5}$/.test(error.code) ? error.code : undefined;
     console.warn(JSON.stringify({event:"agent_run_failed",department,runId:id,failure,databaseCode}));
     await sql.begin(async tx => {
-      await tx`update os_runs set status='failed',finished_at=now(),error_code=${errorCode} where id=${id} and status='running'`;
+      await tx`update os_runs set status='failed',finished_at=now(),error_code=${failure} where id=${id} and status='running'`;
       if (taskId) await tx`update os_tasks set status='blocked',updated_at=now() where id=${taskId} and status='in_progress'`;
-      await tx`insert into os_activity(actor,event,entity_id,details) values(${department},'agent_run_failed',${id},'{"message":"Run failed; inspect source availability and AI configuration. No external action executed."}'::jsonb)`;
+      await tx`insert into os_activity(actor,event,entity_id,details) values(${department},'agent_run_failed',${id},${tx.json({code:failure,message:'Internal run failed; no external action executed.'})})`;
     });
-    throw new Error(errorCode);
+    throw new Error(failure);
   }
 }
 

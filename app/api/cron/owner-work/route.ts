@@ -40,6 +40,8 @@ export async function GET(request:Request) {
     try {console.info(JSON.stringify({event:"telegram_desk_sync",...await observed("telegram",()=>syncTelegramDesk())}));}
     catch {console.warn(JSON.stringify({event:"telegram_desk_sync",status:"needs_check"}));}
     await observed("handoffs",async()=>{await syncContentApprovals();return {status:"checked"};});
+    try {await (await import('../../../lib/business-os/publishing-diagnostics')).publishingDiagnostics();}
+    catch {console.warn(JSON.stringify({event:'publishing_diagnostic',status:'read_failed'}));}
     try {console.info(JSON.stringify({event:"media_autopilot_sync",...await observed("social",()=>syncMediaAutopilot())}));}
     catch(error){console.warn(JSON.stringify({event:"media_autopilot_sync",status:"blocked",code:error instanceof Error && /^(INSTAGRAM_|BUFFER_|AI_)[A-Z0-9_]+$/.test(error.message)?error.message:"MEDIA_SYNC_BLOCKED"}));}
     if (process.env.AI_OS_COORDINATION_ENABLED === "true") {

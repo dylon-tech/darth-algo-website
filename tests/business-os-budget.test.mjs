@@ -21,6 +21,9 @@ try {
   const request = { model:pilot.model,store:false,instructions:'Internal task only.',max_output_tokens:2500,reasoning:{effort:'none'},input:[{role:'user',content:'Draft a checklist.'}],text:{format:{type:'json_schema'}} };
   const body = JSON.stringify(request);
   assert.doesNotThrow(() => policy.assertRecurringEnvelope(body,'openai',config));
+  const indicatorRequest={...request,max_output_tokens:5000,text:{format:{schema:{required:['indicatorCandidate'],properties:{indicatorCandidate:{type:'object'}}}}}};
+  assert.doesNotThrow(()=>policy.assertRecurringEnvelope(JSON.stringify(indicatorRequest),'openai',config));
+  assert.throws(()=>policy.assertRecurringEnvelope(JSON.stringify({...indicatorRequest,max_output_tokens:5001}),'openai',config));
   const image={type:'input_image',detail:'low',image_url:'data:image/jpeg;base64,'+'A'.repeat(24000)};
   const visual={...request,input:[{role:'user',content:[{type:'input_text',text:'Compare two thumbnails.'},image,image]}]};
   assert.doesNotThrow(()=>policy.assertRecurringEnvelope(JSON.stringify(visual),'openai',config));

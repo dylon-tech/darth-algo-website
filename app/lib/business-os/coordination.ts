@@ -80,9 +80,11 @@ export async function coordinationTick(workerId: string) {
   await heartbeat(workerId, "working");
   try {
     const day = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+    const {recoverContextIncident}=await import('./agent-recovery');
+    await recoverContextIncident();
     // Queue all departments before followups so early roles cannot starve later roles.
     const [seedCount] = await sql`select count(*)::int as n from os_jobs where request_key like ${`coord:${day}:%`}`;
-    if (seedCount.n < 8) for (const assignment of seedAssignments(day)) {
+    if (seedCount.n < seedAssignments(day).length) for (const assignment of seedAssignments(day)) {
       await queueJob(assignment.department, assignment.message, assignment.key, "schedule");
     }
     const pending = await sql`select t.id,t.department,t.title from os_tasks t

@@ -84,7 +84,7 @@ try {
   globalThis.fetch=async(url,options)=>{
     assert.equal(url,'https://api.openai.com/v1/responses');
     assert.equal(options.headers.Authorization,'Bearer offline-test-key-never-used');
-    const request=JSON.parse(options.body),input=JSON.parse(request.input[0].content);
+    const request=JSON.parse(options.body),content=request.input[0].content,input=JSON.parse(typeof content==='string'?content:content[0].text);
     providerInputs.push({request,input});
     assert.equal(request.model,pilot.model);
     assert.equal(request.store,false);
@@ -159,7 +159,7 @@ try {
   for(let i=0;i<3;i++) assert.equal((await coordinationTick('offline-test-worker')).status,'budget_blocked');
   assert.equal(providerInputs.length,2,'Exhausted budget cannot make additional calls');
   const [counts]=await sql`select (select count(*)::int from os_runs) as runs,(select count(*)::int from os_jobs) as jobs,(select count(*)::int from os_ai_budget_reservations) as reservations,(select sum(charged_micros)::int from os_ai_budget_reservations) as charged`;
-  assert.deepEqual(counts,{runs:2,jobs:10,reservations:2,charged:640});
+  assert.deepEqual(counts,{runs:2,jobs:seedAssignments(fixtureDay).length+2,reservations:2,charged:640});
   const [pending]=await sql`select count(*)::int as n from os_tasks where status='queued'`;
   assert.equal(pending.n,1,'Next CEO handoff stays queued while budget is exhausted');
   assert.equal(evidenceReads,2);

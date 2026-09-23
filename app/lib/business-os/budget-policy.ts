@@ -32,12 +32,13 @@ export function assertRecurringEnvelope(bodyText: string, provider: string, poli
   const body = JSON.parse(bodyText);
   const allowed = new Set(["model", "store", "instructions", "max_output_tokens", "reasoning", "input", "text"]);
   const content=body?.input?.[0]?.content;
+  const indicatorOutput=body?.text?.format?.schema?.required?.includes('indicatorCandidate') && body?.text?.format?.schema?.properties?.indicatorCandidate;
   const boundedImages=Array.isArray(content) && content.length>=2 && content.length<=3 && content[0]?.type==="input_text" && typeof content[0].text==="string" && Object.keys(content[0]).length===2 && content.slice(1).every((part:Record<string,unknown>)=>part.type==="input_image" && part.detail==="low" && typeof part.image_url==="string" && /^data:image\/jpeg;base64,[A-Za-z0-9+/=]{1,24000}$/.test(part.image_url) && Object.keys(part).length===3);
   if (!body || typeof body !== "object" || Array.isArray(body)
     || Object.keys(body).some(key => !allowed.has(key)) || body.model !== policy.model
     || body.store !== false || typeof body.instructions !== "string"
     || !Number.isSafeInteger(body.max_output_tokens) || body.max_output_tokens < 1
-    || body.max_output_tokens > pilot.maxOutputTokens
+    || body.max_output_tokens > (indicatorOutput ? 5000 : pilot.maxOutputTokens)
     || body.reasoning?.effort !== "none" || Object.keys(body.reasoning).length !== 1
     || !Array.isArray(body.input) || body.input.length !== 1
     || body.input[0]?.role !== "user" || (typeof body.input[0]?.content !== "string" && !boundedImages)
