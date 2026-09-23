@@ -28,125 +28,6 @@ create table if not exists os_indicator_publications (
 `;
 export async function ensureIndicatorSchema(){await db().begin(async tx=>{await tx`select pg_advisory_xact_lock(730932)`;await tx.unsafe(indicatorSchema);});}
 export function labEnabled(){return process.env.AI_OS_INDICATOR_LAB_ENABLED==="true";}
-const immediatePrototype:IndicatorCandidate={
-  name:"Darth Algo Session VWAP Reclaim",
-  purpose:"Highlight a confirmed reclaim or rejection of session VWAP only when price closes back through VWAP with short-term trend alignment.",
-  differentiation:"A deliberately small, readable prototype: session filter, closed-bar VWAP cross, EMA direction filter, one marker per direction until price crosses back, and explicit alerts. It is a review prototype, not a profitability claim.",
-  audience:"Intraday futures traders who want fewer, context-aware VWAP markers on 1-, 3-, 5- or 15-minute charts.",
-  demand:"Owner requested an immediately reviewable original prototype. Market demand and trading performance have not been measured; the cited sources document implementation primitives only.",
-  pricingRationale:"Owner direction keeps new Indicator Lab releases free and publicly discoverable if they later pass compilation, replay, education and release QA.",
-  tier:"free",monthlyPriceUsd:0,
-  sourceUrls:["https://www.tradingview.com/pine-script-docs/concepts/sessions/","https://www.tradingview.com/pine-script-docs/language/built-ins/"],
-  pine:`//@version=6
-indicator("Darth Algo Session VWAP Reclaim", overlay=true)
-tradeSession = input.session("0930-1600", "Trading session")
-emaLength = input.int(21, "Trend EMA", minval=2, maxval=200)
-inSession = not na(time(timeframe.period, tradeSession, "America/New_York"))
-sessionStart = inSession and not inSession[1]
-anchoredVwap = ta.vwap(hlc3, sessionStart)
-vwapLine = inSession ? anchoredVwap : na
-trendEma = ta.ema(close, emaLength)
-longSetup = inSession and barstate.isconfirmed and ta.crossover(close, vwapLine) and close > trendEma
-shortSetup = inSession and barstate.isconfirmed and ta.crossunder(close, vwapLine) and close < trendEma
-var int lastSide = 0
-longSignal = longSetup and lastSide != 1
-shortSignal = shortSetup and lastSide != -1
-if longSignal
-    lastSide := 1
-if shortSignal
-    lastSide := -1
-if not inSession
-    lastSide := 0
-plot(vwapLine, "Session VWAP", color=color.new(color.purple, 0), linewidth=2)
-plot(trendEma, "Trend EMA", color=color.new(color.gray, 25), linewidth=1)
-plotshape(longSignal, title="VWAP Reclaim", text="RECLAIM", style=shape.labelup, location=location.belowbar, color=color.new(color.lime, 0), textcolor=color.black, size=size.tiny)
-plotshape(shortSignal, title="VWAP Rejection", text="REJECT", style=shape.labeldown, location=location.abovebar, color=color.new(color.red, 0), textcolor=color.white, size=size.tiny)
-alertcondition(longSignal, "Darth Algo VWAP Reclaim", "Confirmed close reclaimed VWAP with EMA alignment")
-alertcondition(shortSignal, "Darth Algo VWAP Rejection", "Confirmed close rejected VWAP with EMA alignment")`
-};
-const exploratoryDrafts:IndicatorCandidate[]=[
-  {
-    name:"Darth Algo Opening Range Context",
-    purpose:"Show the first fifteen minutes of the New York session as clean high, low and midpoint reference levels.",
-    differentiation:"Three simple reference lines with optional closed-bar first break alerts; no trade, target or profitability claims.",
-    audience:"Intraday index and gold futures traders using standard candlestick charts.",
-    demand:"Exploratory: public opening-range publications and discussion suggest interest in clean session context, but customer demand for this exact implementation is unmeasured.",
-    pricingRationale:"A focused free companion; separate owner approval is required before any public release.",
-    tier:"free",monthlyPriceUsd:0,
-    sourceUrls:["https://www.tradingview.com/script/l5UakOY7-Opening-Range-basic/","https://www.reddit.com/r/TradingView/comments/z78gza/"],
-    pine:`//@version=6
-indicator("Darth Algo Opening Range Context", overlay=true)
-// Use intraday charts with bars no longer than the selected range window.
-zone = input.string("America/New_York", "Session timezone")
-rangeWindow = input.session("0930-0945", "Opening range")
-tradeWindow = input.session("0930-1600", "Display session")
-showMarks = input.bool(true, "Show first closed-bar breaks")
-inside = not na(time(timeframe.period, rangeWindow, zone))
-displaying = not na(time(timeframe.period, tradeWindow, zone))
-begins = inside and not inside[1]
-var float rangeHigh = na
-var float rangeLow = na
-var int firstSide = 0
-if begins
-    rangeHigh := high
-    rangeLow := low
-    firstSide := 0
-else if inside
-    rangeHigh := math.max(nz(rangeHigh, high), high)
-    rangeLow := math.min(nz(rangeLow, low), low)
-ready = displaying and not inside and not na(rangeHigh) and not na(rangeLow)
-above = ready and barstate.isconfirmed and close > rangeHigh and firstSide == 0
-below = ready and barstate.isconfirmed and close < rangeLow and firstSide == 0
-if above
-    firstSide := 1
-if below
-    firstSide := -1
-plot(displaying ? rangeHigh : na, "Range high", color=color.red, style=plot.style_linebr)
-plot(displaying ? rangeLow : na, "Range low", color=color.aqua, style=plot.style_linebr)
-plot(displaying ? (rangeHigh + rangeLow) / 2 : na, "Range midpoint", color=color.gray, style=plot.style_linebr)
-plotshape(showMarks and above, "First high break", shape.triangleup, location.belowbar, color.lime, size=size.tiny)
-plotshape(showMarks and below, "First low break", shape.triangledown, location.abovebar, color.orange, size=size.tiny)
-alertcondition(above, "First high break", "Closed above the opening range high")
-alertcondition(below, "First low break", "Closed below the opening range low")`
-  },
-  {
-    name:"Darth Algo Range Efficiency",
-    purpose:"Show whether recent price movement is directional or choppy without adding entry signals to the chart.",
-    differentiation:"A separate pane compares net movement with the sum of bar-to-bar movement, with simple state alerts and no directional forecast.",
-    audience:"Futures scalpers reviewing whether a recent window is clean or noisy.",
-    demand:"Exploratory: owner requested useful standalone free companions. Demand and thresholds for this specific tool have not been measured.",
-    pricingRationale:"A free market-context companion that does not reproduce the paid Darth Algo signal tools.",
-    tier:"free",monthlyPriceUsd:0,
-    sourceUrls:["https://www.tradingview.com/pine-script-docs/language/built-ins/","https://www.tradingview.com/pine-script-docs/visuals/plots/"],
-    pine:`//@version=6
-indicator("Darth Algo Range Efficiency", overlay=false, precision=1)
-length = input.int(20, "Lookback bars", minval=2, maxval=200)
-threshold = input.float(35, "Directional threshold %", minval=1, maxval=99, step=1)
-// Ratio of net close displacement to the sum of close-to-close movement.
-stepMove = math.abs(close - close[1])
-travel = math.sum(stepMove, length)
-efficiency = not na(close[length]) and travel > 0 ? 100 * math.abs(close - close[length]) / travel : na
-directional = not na(efficiency) and efficiency >= threshold
-crossUp = barstate.isconfirmed and ta.crossover(efficiency, threshold)
-crossDown = barstate.isconfirmed and ta.crossunder(efficiency, threshold)
-plot(efficiency, "Efficiency %", color=directional ? color.lime : color.orange, linewidth=2)
-hline(35, "35% reference", color=color.gray, linestyle=hline.style_dotted)
-plot(threshold, "Selected threshold", color=color.new(color.white, 45))
-alertcondition(crossUp, "More directional", "Range efficiency crossed above the chosen threshold on a closed bar")
-alertcondition(crossDown, "More choppy", "Range efficiency crossed below the chosen threshold on a closed bar")`
-  }
-];
-async function seedPrototype(candidate:IndicatorCandidate){
- const qa=pineChecks(candidate.pine);if(!qa.passed)throw Error("BUILTIN_PROTOTYPE_QA_FAILED");
- const sql=db(),logic=pineLogicHash(candidate.pine),hash=pineHash(candidate.pine);
- const [prior]=await sql`select id from os_indicator_candidates where logic_hash=${logic}`;if(prior)return String(prior.id);
- const [parent]=await sql`select id,source_hash from os_indicator_candidates where candidate->>'name'=${candidate.name} order by created_at desc limit 1`;
- const id=randomUUID();
- const [row]=await sql`insert into os_indicator_candidates(id,run_id,candidate,source_hash,logic_hash,qa,score,status)
-  values(${id},null,${sql.json(candidate)},${hash},${logic},${sql.json({...qa,origin:"exploratory_original_draft",reviewState:"code_ready_static_qa_only",parentCandidateId:parent?.id||null,parentSourceHash:parent?.source_hash||null})},${sql.json(scoreIndicator(candidate))},'qa_blocked') on conflict do nothing returning id`;
- if(row)await sql`insert into os_activity(actor,event,entity_id,details) values('indicator_builder','indicator_prototype_ready',${id},${sql.json({name:candidate.name,sourceHash:hash,reviewState:"static_qa_passed"})})`;
- return row?String(row.id):null;
-}
 export async function labContext(revisionId?:string):Promise<Evidence>{
   const rows=await db()`select id,candidate->>'name' as name,candidate->>'purpose' as purpose,status from os_indicator_candidates order by created_at desc limit 25`;
   const original=revisionId?await db()`select candidate from os_indicator_candidates where id=${revisionId}`:[];
@@ -158,10 +39,8 @@ export async function syncIndicatorLab(){
   await queueOwnerNotice("indicator-lab-installed-v2","Indicator Lab is connected to this Command Center. Research → Growth → Indicator Builder uses the server schedule and your existing AI allowance when agents are resumed. Target: up to 3 original prototypes per day. Complete packages receive Approve / Decline. TradingView testing/publishing and broad Instagram/TikTok discovery still need connections; unfinished prototypes are held, not sent as ready releases.",[[{text:"🧪 Indicator Lab",callback_data:"ui:nav:lab"}]]);
   const sql=db();const [control]=await sql`select paused from os_control where id=1`;
   if(!control || control.paused)return {status:"paused"};
-  // Owner-authorized, deterministic starter prototype. This keeps prototype
-  // creation moving when paid discovery or the hosted TradingView browser is
-  // unavailable. Publication remains blocked until real compiler/replay QA.
-  for(const candidate of [immediatePrototype,...exploratoryDrafts])await seedPrototype(candidate);
+  // Earlier draft versions remain in the private database. Never embed
+  // unreleased Pine source in this public repository.
   // Recover output-to-approval handoffs after crashes before adding more work.
   const runs=await sql`select r.id,r.result,r.snapshot,j.request_key from os_runs r join os_jobs j on j.run_id=r.id
     where r.status='completed' and (j.request_key like 'indicator:%' or j.request_key like 'indicator-revision:%')
