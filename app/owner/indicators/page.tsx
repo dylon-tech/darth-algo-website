@@ -38,6 +38,7 @@ export default async function IndicatorLab() {
         <p className="mt-7 text-xs font-bold tracking-[.18em] text-zinc-400">PRODUCT PIPELINE</p>
         <h1 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">Indicator Lab</h1>
         <p className="mt-4 max-w-2xl leading-7 text-zinc-400">Original concepts move from research to prototype, private chart testing, approval, and release. Nothing is marked live without evidence.</p>
+        <Link href="/owner/research" className="mt-5 inline-block rounded-xl border border-white/20 px-5 py-3 text-sm text-violet-300">View research and sources →</Link>
       </header>
       <section className="mt-6 grid gap-4">
         {rows.length ? rows.map((item) => <Link key={item.id} href={`/owner/indicators/${item.id}`} className="group rounded-2xl border border-white/10 bg-[#11141b] p-6 transition hover:border-white/20">
