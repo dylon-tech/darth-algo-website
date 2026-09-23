@@ -3,6 +3,7 @@ import {db} from "../affiliate-db";
 import {createWhopHomePost,whopStatus,verifyWhopPost} from "./whop";
 import {campaignKey,withinSocialWindow} from './social-schedule';
 import {incidentCatchup} from './publishing-recovery-policy';
+import {whopPermissionState,recordWhopPermission} from './whop-permissions';
 const sendWindow=(c:DailyCampaign,now=new Date())=>withinSocialWindow(c,now)||incidentCatchup(c,now);
 import {campaignMatchesReview} from './reviewed-social';
 import type {DailyCampaign} from "./daily-social-policy";
@@ -20,6 +21,7 @@ export async function syncDailyWhop(campaign:DailyCampaign, now=new Date()){
     if(recent)return {state:'readback_pending',published:false};
     return confirmWhop(key,campaign,accepted.details);
   }
+  if((await whopPermissionState()).blocked)return {state:'WHOP_FORUM_PERMISSION_MISSING',published:false};
   const [started]=await sql`select id from os_activity where event='whop_home_publish_started' and entity_id=${key} order by id desc limit 1`;
   const [failure]=await sql`select id,details from os_activity where event='whop_home_publish_unknown' and entity_id=${key} order by id desc limit 1`;
   // One corrected attempt only after a recorded 400 validation rejection. A
@@ -66,9 +68,11 @@ export async function syncDailyWhop(campaign:DailyCampaign, now=new Date()){
     const post=await createWhopHomePost(text,{idempotencyKey:repairable?idem+"-free-v3":idem,pinned:false});
     const details={day:campaign.day,postId:post.id,companyId:post.companyId,username:post.username||null,createdAt:post.createdAt||null,published:false};
     await sql`insert into os_activity(actor,event,entity_id,details) values('operations','whop_home_publish_accepted',${key},${sql.json(details)})`;
+    await recordWhopPermission(false);
     return confirmWhop(key,campaign,details);
   }catch(error){
     const code=error instanceof Error&&/^WHOP_[A-Z0-9_]+$/.test(error.message)?error.message:"WHOP_PUBLISH_UNKNOWN";
+    if(code==='WHOP_FORUM_PERMISSION_MISSING')await recordWhopPermission(true);
     await sql`insert into os_activity(actor,event,entity_id,details) values('operations','whop_home_publish_unknown',${key},${sql.json({day:campaign.day,code})})`;
     return {state:code,published:false};
   }

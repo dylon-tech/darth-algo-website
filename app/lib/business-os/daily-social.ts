@@ -164,7 +164,7 @@ export async function syncDailySocial(now=new Date()){
   if(recovery[0]){
    try{
     const result=await executeSocialDelivery(recovery[0].id);
-    console.info(JSON.stringify({event:'social_incident_catchup',network:'threads',state:result.state,published:result.published}));
+    console.info(JSON.stringify({event:'social_incident_catchup',network:'threads',...result}));
    }catch{console.warn(JSON.stringify({event:'social_incident_catchup',network:'threads',state:'needs_check',published:false}));}
   }
   try{

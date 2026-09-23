@@ -222,6 +222,24 @@ try {
  await sql`insert into os_activity(actor,event,entity_id,details) values('owner','whop_home_publish_started',${whopKey},'{}'::jsonb)`;
  await sql`insert into os_activity(actor,event,entity_id,details) values('operations','whop_home_publish_unknown',${whopKey},' {"code":"WHOP_PUBLISH_UNKNOWN"}'::jsonb)`;
  assert.equal((await syncDailyWhop(pm)).published,false);assert.equal(whopWrites,beforeRepair+1,'Unknown external outcome is never retried');
- console.log('PASS: persistent discovery cache, fresh publishing preflight, receipt throttle, Retry-After cooldown, health signal and safe recovery.');
+ // A provider permission denial holds future writes until owner reports an update.
+ const {whopPermissionState,recordWhopPermission,requestWhopPermissionRecheck}=require(join(dir,'lib/business-os/whop-permissions.js'));
+ process.env.WHOP_COMPANY_API_KEY='permission-test-key';
+ await recordWhopPermission(true);
+ assert.equal((await whopPermissionState()).blocked,true);
+ const beforePermissionCheck=whopWrites;
+ assert.equal((await syncDailyWhop(pm)).state,'WHOP_FORUM_PERMISSION_MISSING');
+ assert.equal(whopWrites,beforePermissionCheck);
+ assert.ok((await socialHealthIssues()).some(s=>s.includes('forum:post:create')));
+ await Promise.all([requestWhopPermissionRecheck(),requestWhopPermissionRecheck()]);
+ const permission=await whopPermissionState();
+ assert.equal(permission.blocked,false);assert.equal(permission.verified,false);assert.equal(permission.recheckRequested,true);
+ assert.equal((await database.query("select count(*)::int as n from os_activity where event='whop_permission_recheck_requested'")).rows[0].n,1);
+ assert.equal(whopWrites,beforePermissionCheck,'Owner permission report never publishes immediately');
+ await recordWhopPermission(true);
+ process.env.WHOP_COMPANY_API_KEY='replacement-test-key';
+ assert.equal((await whopPermissionState()).blocked,false,'A replacement credential is unverified, not permanently blocked');
+ assert.equal((await whopPermissionState()).verified,false);
+ console.log('PASS: persistent discovery cache, fresh publishing preflight, receipt throttle, Retry-After cooldown, permission gate/recheck dedupe, health signal and safe recovery.');
 
 }finally{globalThis.Date=RealDate;globalThis.fetch=originalFetch;for(const k of Object.keys(process.env))if(!(k in env))delete process.env[k];Object.assign(process.env,env);if(database)await database.close();rmSync(dir,{recursive:true,force:true});}

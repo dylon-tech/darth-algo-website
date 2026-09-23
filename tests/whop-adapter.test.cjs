@@ -25,6 +25,8 @@ const assert=require('node:assert/strict');
   assert.equal(accepted.id,'post1');assert.equal(writes,1);
   assert.equal((await verifyWhopPost(accepted.id,'Approved copy')).published,true);
   await assert.rejects(verifyWhopPost(accepted.id,'Changed copy'),/MISMATCH/);
-  console.log('Whop free payload and independent exact-content readback passed; provider mocked.');
+  global.fetch=async(url)=>url.endsWith('/accounts/biz_test')?Response.json({id:'biz_test'}):Response.json({error:'Unauthorized: Actor is missing all required permissions: forum:post:create'},{status:400});
+  await assert.rejects(createWhopHomePost('Approved copy',{idempotencyKey:'permission-test'}),/WHOP_FORUM_PERMISSION_MISSING/);
+  console.log('Whop free payload, permission classification and independent exact-content readback passed; provider mocked.');
  }finally{global.fetch=oldFetch;process.env=env;rmSync(dir,{recursive:true,force:true});}
 })().catch(e=>{console.error(e);process.exitCode=1;});

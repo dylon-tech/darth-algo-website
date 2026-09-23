@@ -3,7 +3,7 @@ import { registry } from './policy';
 import { coordinationStatus } from './coordination';
 import { latestObservations } from './runtime-observations';
 import type { DeskAgent, DeskJob, DeskRun, DeskSnapshot } from './desk-state';
-const names: Record<string,string> = {ceo:'Team Leader',growth:'Growth',content:'Content Creator',support:'Customer Support',affiliates:'Affiliates',analytics:'Analytics',research:'Research',operations:'Operations'};
+const names: Record<string,string> = {ceo:'Team Leader',growth:'Growth',content:'Content Creator',support:'Customer Support',affiliates:'Affiliates',analytics:'Analytics',research:'Research',operations:'Operations',indicator_builder:'Indicator Builder'};
 export async function liveOverview(): Promise<DeskSnapshot> {
   const sql = db();
   const [control, runs, completed, jobs, tasks, queueCounts, totals, decisions, activity, receipts, coordination, telemetry] = await Promise.all([

@@ -93,8 +93,7 @@ export async function createWhopHomePost(content:string, options:{title?:string;
       "Api-Version-Date":apiVersion(),
       "Idempotency-Key":options.idempotencyKey,
     },
-    // A free post has no paywall fields. Zero is still a supplied paywall price
-    // and can trigger the provider's paid-post validation.
+    // A free Home post does not need optional paywall fields.
     body:JSON.stringify({experience_id:"public",account_id:status.companyId,content:text,title:options.title?.trim()||undefined,pinned:options.pinned===true,is_mention:false}),
     cache:"no-store",redirect:"error",signal:AbortSignal.timeout(15000),
   });
@@ -105,6 +104,7 @@ export async function createWhopHomePost(content:string, options:{title?:string;
     const raw=typeof error?.error==='string'?error.error:error?.error?.message||error?.message||error?.detail||null;
     const detail=typeof raw==='string'?raw.split(companyKey()).join('[redacted]').split(text).join('[caption]').replace(/Bearer\s+\S+/gi,'Bearer [redacted]').replace(/(?:sk_|whop_)[A-Za-z0-9_-]{16,}/g,'[redacted]').slice(0,700):null;
     console.warn(JSON.stringify({event:'whop_request_rejected',status:response.status,param,detail,errorKeys:error&&typeof error==='object'?Object.keys(error).slice(0,8):[]}));
+    if(detail?.includes('forum:post:create')&&/missing.*permissions/i.test(detail))throw Error('WHOP_FORUM_PERMISSION_MISSING');
     throw new Error(response.status===401?"WHOP_KEY_REJECTED":response.status===403?"WHOP_FORUM_PERMISSION_MISSING":response.status===429?"WHOP_RATE_LIMITED":`WHOP_FORUM_HTTP_${response.status}`);
   }
   const body=await response.json() as {id?:string;created_at?:string;user?:{id?:string;username?:string}};
