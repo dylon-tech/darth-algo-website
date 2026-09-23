@@ -1,0 +1,22 @@
+{
+  "status": "requires_owner_approval_and_sandbox_test",
+  "stripe_account": "acct_1TeNcILAuZzjYekv",
+  "customer_facing_code": "WELCOME",
+  "percent_off": 25,
+  "duration": "once",
+  "first_time_transaction": true,
+  "product_exclusions": [],
+  "expiration": null,
+  "global_redemption_cap": null,
+  "replaces_promotion": "promo_1UIgHgLAuZzjYekvpsP5oKRF",
+  "preserve_old_coupon_and_redemptions": true,
+  "trial_test": "Zero-dollar Swing trial invoice must not consume first paid invoice discount",
+  "no_other_coupon_price_subscription_or_access_changes": true,
+  "local_calculation_examples_cents": [
+    {"before":1899,"after":1424},
+    {"before":1499,"after":1124},
+    {"before":2900,"after":2175},
+    {"before":13499,"after":10124}
+  ],
+  "calculation_evidence": "Illustrative integer rounding only, NOT Stripe sandbox or live checkout acceptance"
+}

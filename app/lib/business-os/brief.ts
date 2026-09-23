@@ -8,7 +8,8 @@ export async function createDailyBrief() {
  const [already]=await sql`select id from os_outbox where dedupe_key=${`ceo-brief-v2:${day}:0`} limit 1`;
  if(already){const [brief]=await sql`select * from os_briefs where day=${day}`;return brief || {day};}
  const score=await ceoScorecard();
- const body=score.body.replace('CEO DESK','DAILY BRIEF');
+ const welcome=await (await import('../welcome/service')).welcomeBrief();
+ const body=score.body.replace('CEO DESK','DAILY BRIEF')+'\n\n'+welcome;
  const [brief]=await sql`insert into os_briefs(day,body,evidence) values(${day},${body},${sql.json({customers:score.customers,posts:score.posts,queue:score.queue,checkedAt:new Date().toISOString(),version:2})}) on conflict(day) do update set body=excluded.body,evidence=excluded.evidence returning *`;
  // Exactly one daily notification. Interactive views continue editing their own panel.
  await queueOwnerNotice(`ceo-brief-v2:${day}`,body,homeMenu());

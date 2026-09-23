@@ -1,0 +1,65 @@
+import assert from 'node:assert/strict';
+import {execFileSync} from 'node:child_process';
+import {mkdtempSync,readFileSync,rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {createRequire} from 'node:module';
+import {pathToFileURL} from 'node:url';
+import {createHmac,randomUUID} from 'node:crypto';
+const dir=mkdtempSync(join(tmpdir(),'welcome-test-')),require=createRequire(import.meta.url);let database;
+try{
+ execFileSync(process.execPath,['node_modules/typescript/bin/tsc','--target','ES2020','--module','commonjs','--moduleResolution','node','--esModuleInterop','--skipLibCheck','--rootDir','app','--outDir',dir,'app/lib/welcome/engine.ts','app/lib/welcome/payments.ts','app/lib/welcome/service.ts','app/api/owner/welcome/route.ts','app/api/welcome/visit/route.ts']);
+ const policy=require(join(dir,'lib/welcome/policy.js'));
+ assert.equal(policy.intent('please STOP messaging me'),'stop');assert.equal(policy.intent('welcome'),'welcome');assert.equal(policy.intent('Which tool should I buy?'),'support');
+ assert.notEqual(policy.contactKey('x','a','b'),policy.contactKey('instagram','a','b'));assert.notEqual(policy.contactKey('x','a','b'),policy.contactKey('x','c','b'));
+ const now=Date.now(),secret='a'.repeat(40),ts=String(Math.floor(now/1000)),raw='{}',sig='sha256='+createHmac('sha256',secret).update(ts+'.'+raw).digest('hex');
+ assert.equal(policy.validSignature(raw,ts,sig,secret,now),true);assert.equal(policy.validSignature('tampered',ts,sig,secret,now),false);assert.equal(policy.validSignature(raw,ts,sig,secret,now+600000),false);
+ const good={paused:false,owner:'backend',connected:true,eligible:true,verifiedUntil:now+60000,credentialExpires:null,discountVerified:true,optedOut:false,windowUntil:now+60000,now};
+ assert.equal(policy.gate(good),null);for(const field of ['paused','optedOut'])assert.notEqual(policy.gate({...good,[field]:true}),null);for(const field of ['connected','eligible','discountVerified'])assert.notEqual(policy.gate({...good,[field]:false}),null);
+ assert.equal(policy.gate({...good,owner:'provider'}),'not_sending_owner');assert.equal(policy.gate({...good,credentialExpires:now}),'credential_expired');assert.equal(policy.gate({...good,windowUntil:now}),'window_expired');
+ assert.equal(policy.netRevenue(10000,800,0,null),9200);assert.equal(policy.netRevenue(10000,800,10000,null),0);assert.equal(policy.netRevenue(10000,800,2500,null),null);assert.equal(policy.netRevenue(10000,800,2500,200),6900);
+ for(const p of policy.platforms){const u=new URL(policy.offerUrl(p));assert.equal(u.hash,'#pricing');assert.equal(u.searchParams.get('utm_source'),p);assert.equal(policy.validateMessage(policy.message(p)),true);}
+ const {PGlite}=await import(pathToFileURL(process.env.OS_TEST_PGLITE_MODULE).href);database=new PGlite(join(dir,'db'));
+ await database.exec(readFileSync('app/lib/business-os/schema.ts','utf8').match(/export const schema = `([\s\S]*?)`;/)[1]);
+ let tail=Promise.resolve();const makeSql=driver=>{
+  const sql=async(parts,...values)=>{const text=parts.reduce((out,part,i)=>out+(i?'$'+i:'')+part,'');if(text.includes('pg_try_advisory_xact_lock'))return [{acquired:true}];if(text.includes('pg_advisory_xact_lock'))return [];return (await driver.query(text,values)).rows;};
+  sql.json=v=>JSON.stringify(v);sql.unsafe=q=>driver.exec(q);sql.begin=async fn=>{let release;const prior=tail;tail=new Promise(r=>release=r);await prior;try{return await database.transaction(tx=>fn(makeSql(tx)));}finally{release();}};return sql;
+ };
+ const sql=makeSql(database),dbPath=join(dir,'lib/affiliate-db.js');require.cache[dbPath]={id:dbPath,filename:dbPath,loaded:true,exports:{db:()=>sql}};
+ const engine=require(join(dir,'lib/welcome/engine.js')),schema=require(join(dir,'lib/welcome/schema.js'));
+ await Promise.all([schema.ensureWelcomeSchema(),schema.ensureWelcomeSchema()]);await database.exec("update os_control set paused=false;update os_welcome_platforms set account_id='owner',sending_owner='backend',paused=false,connected=true,eligible=true,verified_until=now()+interval '1 day';insert into os_welcome_checks(id,details) values('discount','{\"ready\":true}')");
+ const event=(recipient,eventId,text='WELCOME')=>({platform:'instagram',account:'owner',recipient,eventId,at:Date.now(),kind:'message',text,windowUntil:Date.now()+3600000});
+ const e=event('test1','e1');const duplicate=await Promise.all([engine.ingestVerifiedEvent(e),engine.ingestVerifiedEvent(e)]);assert.deepEqual(duplicate.map(r=>r.status).sort(),['duplicate','queued']);
+ let sends=0;const adapter={platform:'instagram',check:async()=>({eligible:true,credentialExpires:null,windowUntil:Date.now()+3600000,optedOut:false}),send:async()=>{sends++;return {status:'accepted',id:'test-receipt-'+sends}}};
+ await Promise.all([engine.runWelcomeQueue(adapter),engine.runWelcomeQueue(adapter)]);assert.equal(sends,1);
+ await engine.ingestVerifiedEvent(event('test1','e2'));await engine.runWelcomeQueue(adapter);assert.equal(sends,2,'New explicit requests can be answered');
+ await engine.ingestVerifiedEvent(event('test2','e3'));await engine.ingestVerifiedEvent(event('test2','e4','STOP'));await engine.runWelcomeQueue(adapter);assert.equal(sends,2);
+ await engine.ingestVerifiedEvent(event('test2','e5'));assert.equal((await database.query("select count(*)::int n from os_welcome_outbox where status='queued'")).rows[0].n,0);
+ await engine.ingestVerifiedEvent(event('test3','e6'));const unknown={...adapter,send:async()=>{sends++;throw Error('lost response')}};assert.equal((await engine.runWelcomeQueue(unknown)).status,'unknown');await engine.runWelcomeQueue(adapter);assert.equal(sends,3);
+ await engine.ingestVerifiedEvent(event('test4','e7'));const rate={...adapter,send:async()=>({status:'rejected',retryable:true,retryAfter:300,reason:'rate_limited'})};assert.equal((await engine.runWelcomeQueue(rate)).status,'retry_scheduled');assert.ok((await database.query("select next_attempt_at>now()+interval '290 seconds' as bounded from os_welcome_outbox where status='queued'")).rows[0].bounded);
+ await database.exec("update os_welcome_outbox set next_attempt_at=now(),attempts=4 where status='queued'");await engine.runWelcomeQueue(rate);assert.equal((await database.query("select status from os_welcome_outbox where reason='rate_limited'")).rows[0].status,'failed');
+ await engine.ingestVerifiedEvent(event('test5','e8'));await engine.runWelcomeQueue({...adapter,check:async()=>({...await adapter.check(),windowUntil:Date.now()-1})});assert.equal(sends,3);
+ await engine.ingestVerifiedEvent(event('test6','e9'));await engine.runWelcomeQueue({...adapter,check:async()=>{await engine.ingestVerifiedEvent(event('test6','stop-during-preflight','STOP'));return adapter.check();}});assert.equal(sends,3,'STOP during preflight suppresses send');
+ await engine.ingestVerifiedEvent(event('question','question1','I need a refund'));assert.equal((await database.query("select requires_founder from os_support_conversations")).rows[0].requires_founder,true);
+ assert.equal(engine.productionAdapters.length,0,'No unverified provider can send');
+ const stripePath=join(dir,'lib/stripe.js');require.cache[stripePath]={id:stripePath,filename:stripePath,loaded:true,exports:{stripe:()=>{throw Error('NO_NETWORK_IN_TEST');}}};
+ const service=require(join(dir,'lib/welcome/service.js')),snapshot=await service.welcomeSnapshot();assert.equal(snapshot.purchases,null);assert.equal((await service.welcomeControl('x','resume')).blocked,true);assert.equal((await service.welcomeControl('x','test')).blocked,true);
+ const payments=require(join(dir,'lib/welcome/payments.js'));
+ const purchase={key:'invoice:inv_test',customer:'cus_test',sub:'sub_test',pi:'pi_test',source:'instagram',visit:null,welcome:true,paid:10000,tax:800,refunded:0,currency:'usd',at:Math.floor(Date.now()/1000),first:true};
+ await payments.savePurchase(purchase);await payments.savePurchase(purchase);assert.equal((await database.query('select count(*)::int n from os_welcome_purchases')).rows[0].n,1);
+ await payments.savePurchase({...purchase,refunded:10000});await payments.savePurchase(purchase);assert.equal(Number((await database.query('select net_cents from os_welcome_purchases')).rows[0].net_cents),0,'Older payment never reverses refund');
+ await payments.captureWelcomeStripeEvent({id:'evt_test',type:'invoice.paid',livemode:false,data:{object:{id:'inv_test'}}});assert.equal((await database.query('select * from os_welcome_stripe_inbox')).rows.length,0);
+ const route=require(join(dir,'api/owner/welcome/route.js'));assert.equal((await route.GET(new Request('https://example.test/api/owner/welcome'))).status,401);
+
+ process.env.AI_OS_OWNER_KEY='isolated-test-secret-not-a-real-credential-123';
+ const visitRoute=require(join(dir,'api/welcome/visit/route.js')),visitId=randomUUID();
+ const visitRequest=body=>new Request('https://example.test/api/welcome/visit',{method:'POST',headers:{origin:'https://example.test','Content-Type':'application/json'},body:JSON.stringify(body)});
+ const visitResult=await visitRoute.POST(visitRequest({platform:'instagram',visitId}));assert.equal(visitResult.status,200);const visit=await visitResult.json();
+ await visitRoute.POST(visitRequest({platform:'instagram',visitId}));assert.equal((await database.query('select count(*)::int n from os_welcome_visits')).rows[0].n,1,'Concurrent/repeated visit registration is idempotent');
+ assert.equal((await visitRoute.POST(visitRequest({platform:'instagram',token:visit.token,action:'checkout'}))).status,200);
+ assert.equal((await visitRoute.POST(visitRequest({platform:'instagram',token:visit.token.slice(0,-1)+'z'}))).status,400);
+ assert.equal((await visitRoute.POST(new Request('https://example.test/api/welcome/visit',{method:'POST',body:'{}'}))).status,403);
+ delete process.env.AI_OS_OWNER_KEY;
+ await database.close();database=new PGlite(join(dir,'db'));assert.equal((await database.query("select status from os_welcome_outbox where reason='provider_result_unknown'")).rows[0].status,'unknown');assert.equal((await database.query("select opted_out from os_welcome_contacts where recipient_id='test2'")).rows[0].opted_out,true);
+ console.log('PASS: 36+ policy assertions, PostgreSQL-engine schema/dedupe/concurrent claim fixtures, fresh requests, STOP before/during preflight, retries, expired windows, unknown send hold, support escalation, authentication, payment dedupe/refunds, missing analytics and disk restart. Provider calls mocked; distributed locks and live platform triggers NOT verified.');
+}finally{if(database)await database.close();rmSync(dir,{recursive:true,force:true});}

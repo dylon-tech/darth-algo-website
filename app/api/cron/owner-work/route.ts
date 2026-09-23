@@ -18,6 +18,11 @@ export async function GET(request:Request) {
     await heartbeat("vercel-cron","checking");
     const {processOwnerUpdates}=await import("../../../lib/business-os/telegram-command");
     const {deliverOwnerNotices}=await import("../../../lib/business-os/delivery");
+    try {
+      const welcome=await (await import("../../../lib/welcome/service")).welcomeTick();
+      const payments=await (await import("../../../lib/welcome/payments")).reconcileWelcomePayments();
+      console.info(JSON.stringify({event:"welcome_tick",...welcome,...payments}));
+    } catch { console.warn(JSON.stringify({event:"welcome_tick",status:"unavailable"})); }
     await processOwnerUpdates();
     await deliverOwnerNotices(2);
     try {const {syncOpenLoops}=await import("../../../lib/business-os/open-loops");console.info(JSON.stringify({event:"open_loops_tick",...await observed("open_loops",()=>syncOpenLoops())}));}

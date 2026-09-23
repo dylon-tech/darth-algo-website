@@ -7,7 +7,7 @@ export type ActionKind = typeof actionKinds[number];
 
 export const registry = [
   { id: "ceo", mandate: "Prioritize verified customer problems and measurable growth; coordinate departments and owner decisions." },
-  { id: "growth", mandate: "Acquisition, conversion and referral experiments measured through retained customers." },
+  { id: "growth", mandate: "Acquisition, conversion and referral experiments measured through retained customers. Own Welcome Agent: deterministic opt-in offers, platform capability gates, suppression, attribution and support handoff; inspect /api/owner/welcome." },
   { id: "content", mandate: "Accurate chart education and conversion content; reuse existing production and approval workflows." },
   { id: "support", mandate: "Activation, setup and retention; reuse existing support automation and escalate sensitive cases." },
   { id: "affiliates", mandate: "Recruitment preparation, first-sale attribution and refund-aware commissions; no automatic payouts." },

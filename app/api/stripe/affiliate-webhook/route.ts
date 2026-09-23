@@ -14,6 +14,7 @@ export async function POST(request:Request){
   const signature=request.headers.get('stripe-signature');const secret=process.env.STRIPE_AFFILIATE_WEBHOOK_SECRET;
   if(!signature||!secret)return new Response('Webhook not configured',{status:503});
   let event:Stripe.Event;try{event=stripe().webhooks.constructEvent(await request.text(),signature,secret);}catch{return new Response('Invalid signature',{status:400});}
+  try { await (await import("../../../lib/welcome/payments")).captureWelcomeStripeEvent(event); } catch { return Response.json({error:"Analytics inbox temporarily unavailable"},{status:503}); }
   await ensureAffiliateSchema();
   if(event.type==='checkout.session.completed'||event.type==='invoice.paid'){
     const object=event.data.object as unknown as AffiliateStripeObject;const promoId=promotionId(object.discounts);

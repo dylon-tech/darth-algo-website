@@ -1,6 +1,7 @@
 'use client';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import Image from 'next/image';
+import WelcomePanel from './welcome-panel';
 import Link from 'next/link';
 import { Activity, ArrowUpRight, Bot, ChevronRight, CircleAlert, FlaskConical, House, Inbox, LayoutDashboard, RefreshCw, Send, ShieldCheck } from 'lucide-react';
 import { operationState, recentTimestamp, type OperationsSnapshot, type OperationState } from '../lib/business-os/operations-model';
@@ -97,6 +98,7 @@ export default function LiveOperations({workspace}: {workspace: ReactNode}) {
         {lab.lastHandoff&&<p className={styles.note}>Last build handoff: {lab.lastHandoff.replaceAll('_',' ')} · {stamp(lab.lastHandoffAt)}</p>}
         <div className={styles.actions}><Link href='/owner/indicators'>Open Indicator Lab <ChevronRight size={16}/></Link><Link href='/owner/browser'>TradingView connection <ArrowUpRight size={15}/></Link></div>
       </section>
+      <WelcomePanel compact/>
       <section id='team' className={styles.card}>
         <div className={styles.sectionHeading}><div className={styles.sectionIcon}><Bot size={21}/></div><div><h2>Your specialist team</h2><p>Actual app jobs and the latest saved run</p></div></div>
         <div className={styles.team}>{snapshot.team.map(agent=><div key={agent.id}><div><strong>{roleNames[agent.id]||agent.id}</strong><span>{agent.running?`${agent.running} active request(s)`:agent.queued?`${agent.queued} waiting request(s)`:stamp(agent.finishedAt)}</span></div><Badge state={stale?operationState('stale'):operationState(agent.state)}/></div>)}</div>

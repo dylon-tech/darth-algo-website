@@ -1,0 +1,6 @@
+import {ownerSessionFromRequest,privateHeaders,sameOrigin} from '../../../lib/business-os/owner-session';
+import {welcomeSnapshot,welcomeControl} from '../../../lib/welcome/service';
+import type {Platform} from '../../../lib/welcome/policy';
+export const runtime='nodejs';export const dynamic='force-dynamic';
+export async function GET(request:Request){if(!ownerSessionFromRequest(request))return Response.json({error:'Unauthorized'},{status:401,headers:privateHeaders});try{return Response.json(await welcomeSnapshot(),{headers:privateHeaders});}catch{return Response.json({error:'Welcome Agent data unavailable'},{status:503,headers:privateHeaders});}}
+export async function POST(request:Request){if(!ownerSessionFromRequest(request))return Response.json({error:'Unauthorized'},{status:401,headers:privateHeaders});if(!sameOrigin(request))return Response.json({error:'Same-origin request required'},{status:403,headers:privateHeaders});try{const raw=await request.text();if(raw.length>5000)throw Error('INPUT_TOO_LARGE');const b=JSON.parse(raw);return Response.json(await welcomeControl(b.platform as Platform,b.action,b.message),{headers:privateHeaders});}catch{return Response.json({error:'Invalid request. Message must preserve WELCOME, 25%, TradingView, pricing link, STOP and the displayed terms.'},{status:400,headers:privateHeaders});}}
