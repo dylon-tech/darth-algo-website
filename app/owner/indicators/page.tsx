@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import { ArrowLeft, ArrowUpRight, FlaskConical } from 'lucide-react';
 import { ownerCookie, validOwnerSession } from '../../lib/business-os/owner-session';
 import { db } from '../../lib/affiliate-db';
-import {ensureCaptureSchema} from '../../lib/business-os/indicator-captures';
+import {ensureCaptureJobSchema,captureBlockMessage} from '../../lib/business-os/indicator-capture-worker';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Darth Algo · Indicator Lab', robots: { index: false, follow: false } };
@@ -16,6 +16,8 @@ type CandidateRow = {
   source_hash: string;
   capture_id: string | null;
   capture_origin: string | null;
+  capture_status: string | null;
+  capture_error: string | null;
   score: { total?: number; outOf?: number } | null;
   created_at: string;
 };
@@ -33,9 +35,11 @@ export default async function IndicatorLab() {
   const authorized = process.env.AI_OS_ENABLED === 'true' && validOwnerSession((await cookies()).get(ownerCookie)?.value, process.env.AI_OS_OWNER_KEY);
   if (!authorized) return <main className="mx-auto max-w-3xl p-8"><h1 className="text-3xl font-bold">Private Indicator Lab</h1><p className="mt-4 text-zinc-400">Open the CEO Command Center and sign in to review prototypes.</p><Link href="/owner" className="mt-6 inline-block rounded-xl bg-red-600 px-5 py-3 font-semibold">Open Command Center</Link></main>;
 
-  await ensureCaptureSchema();
-  const rows = await db()`select c.id, c.candidate->>'name' as name, c.candidate->>'purpose' as purpose, c.status, c.score, c.created_at, c.source_hash, p.id as capture_id, p.origin as capture_origin
+  await ensureCaptureJobSchema();
+  const [captureControl]=await db()`select blocked_reason from os_indicator_capture_control where id=1`;
+  const rows = await db()`select c.id, c.candidate->>'name' as name, c.candidate->>'purpose' as purpose, c.status, c.score, c.created_at, c.source_hash, p.id as capture_id, p.origin as capture_origin,j.status as capture_status,j.error_code as capture_error
     from os_indicator_candidates c left join lateral (select id,origin from os_indicator_captures where candidate_id=c.id and source_hash=c.source_hash and metadata->>'view'='indicator' order by created_at desc limit 1) p on true
+    left join os_indicator_capture_jobs j on j.candidate_id=c.id and j.source_hash=c.source_hash
     order by c.created_at desc limit 30` as CandidateRow[];
   return <main className="min-h-screen bg-[#08090c] px-5 pb-28 pt-8 text-zinc-50">
     <div className="mx-auto max-w-5xl">
@@ -47,9 +51,10 @@ export default async function IndicatorLab() {
         <p className="mt-4 max-w-2xl leading-7 text-zinc-400">Original concepts move from research to prototype, private chart testing, approval, and release. Nothing is marked live without evidence.</p>
         <Link href="/owner/research" className="mt-5 inline-block rounded-xl border border-white/20 px-5 py-3 text-sm text-violet-300">View research and sources →</Link>
       </header>
+      {captureControl?.blocked_reason&&<aside className="mt-5 rounded-xl border border-amber-500/30 p-5 text-sm text-amber-200"><p className="font-semibold">Chart captures are blocked</p><p className="mt-2">{captureBlockMessage(captureControl.blocked_reason)}</p><p className="mt-2">Drafts and full Pine scripts remain available. You can upload a real screenshot or compiler error inside each draft.</p><Link href="/owner/browser" className="mt-3 inline-block underline">Open TradingView connection</Link></aside>}
       <section className="mt-6 grid gap-4 sm:grid-cols-2">
         {rows.length ? rows.map((item) => <Link key={item.id} href={`/owner/indicators/${item.id}`} className="group rounded-2xl border border-white/10 bg-[#11141b] p-6 transition hover:border-white/20">
-          {item.capture_id?<div className="mb-5 overflow-hidden rounded-xl border border-white/10"><img src={`/api/owner/indicators/${item.id}/captures/${item.capture_id}`} alt={`${item.name} chart capture`} className="aspect-[3/2] w-full object-contain bg-black"/><p className="p-2 text-xs text-zinc-400">{item.capture_origin==="owner_submission"?"Owner-submitted chart · not agent validated":"Actual TradingView capture · release testing is separate"}</p></div>:<div className="mb-5 flex aspect-[3/2] items-center justify-center rounded-xl border border-dashed border-white/15 bg-black/30 p-5 text-center text-sm text-zinc-500">TradingView preview pending<br/>Full Pine source is available inside.</div>}
+          {item.capture_id?<div className="mb-5 overflow-hidden rounded-xl border border-white/10"><img src={`/api/owner/indicators/${item.id}/captures/${item.capture_id}`} alt={`${item.name} chart capture`} className="aspect-[3/2] w-full object-contain bg-black"/><p className="p-2 text-xs text-zinc-400">{item.capture_origin==="owner_submission"?"Owner-submitted chart · not agent validated":"Actual TradingView capture · release testing is separate"}</p></div>:<div className="mb-5 flex aspect-[3/2] items-center justify-center rounded-xl border border-dashed border-white/15 bg-black/30 p-5 text-center text-sm text-zinc-500"><span>{captureControl?.blocked_reason||item.capture_error?"TradingView capture blocked":item.capture_status==="running"?"Capture attempt in progress":"TradingView preview pending"}<br/>{captureControl?.blocked_reason||item.capture_error?captureBlockMessage(captureControl?.blocked_reason||item.capture_error):"Full Pine source is available inside."}</span></div>}
           <div className="flex items-start justify-between gap-4"><div><span className="inline-flex rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-xs font-semibold capitalize text-zinc-300">{label(item.status)}</span><h2 className="mt-4 text-xl font-semibold">{item.name || 'Untitled indicator concept'}</h2><p className="mt-2 line-clamp-2 text-sm leading-6 text-zinc-400">{item.purpose || 'Open the private review for concept and verification details.'}</p></div><ArrowUpRight className="mt-1 shrink-0 text-zinc-500 transition group-hover:text-white" size={20}/></div>
           <div className="mt-5 flex flex-wrap gap-4 text-xs text-zinc-500"><span>Free draft</span><span>Version {item.source_hash.slice(0,8)}</span><span>{new Date(item.created_at).toLocaleDateString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric',year:'numeric'})}</span>{item.score?.total != null && <span>Opportunity screen {item.score.total}/{item.score.outOf || 100}</span>}</div>
         </Link>) : <div className="rounded-2xl border border-white/10 bg-[#11141b] p-8"><h2 className="text-xl font-semibold">No prototypes yet</h2><p className="mt-3 text-sm leading-6 text-zinc-400">The research agent will add an original candidate when evidence clears the opportunity threshold.</p></div>}

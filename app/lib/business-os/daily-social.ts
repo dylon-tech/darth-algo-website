@@ -12,6 +12,8 @@ import {syncDailyWhop} from './whop-daily';
 import {currentCreativeVersion,isCurrentCreative} from './creative-version';
 import {socialSchedule,campaignKey,withinSocialWindow} from './social-schedule';
 import {reviewedCreativeFor,campaignMatchesReview,loadReviewedImages} from './reviewed-social';
+import {incidentCatchup} from './publishing-recovery-policy';
+const sendWindow=(c:DailyCampaign)=>withinSocialWindow(c)||incidentCatchup(c);
 export async function prepareDailyCampaign(now=new Date()):Promise<DailyCampaign>{
  const sql=db(),schedule=socialSchedule(now),day=schedule.day,key=campaignKey(schedule);
  const reviewed=reviewedCreativeFor(day,schedule.slot);
@@ -71,17 +73,29 @@ export async function checkSocialDelivery(id:string,options:{scheduled?:boolean}
  if(!receipt)return {state:'unknown',published:false};
  if(options.scheduled){
   const checked=await cachedScheduledReceipt(id);
-  if(checked)return checked;
+  if(checked?.reconciliationVersion===2)return checked;
  }
  try{
   const postId=String(receipt.details.postId),post=await getSocialPost(postId);
-  if(post.id!==postId||!socialPostMatches(post,payload))throw Error('BUFFER_RECEIPT_MISMATCH');
+  if(post.id!==postId||post.channelId!==payload.channelId)throw Error('BUFFER_RECEIPT_MISMATCH');
+  const matches=socialPostMatches(post,payload);
+  if((post.status==='sent'&&post.sentAt&&!matches)||post.status==='error'){
+   const details={payloadHash:row.payload_hash,channelId:payload.channelId,network:payload.network,postId,
+    state:post.status==='sent'?'sent_content_changed':'provider_failed',published:false,outcomeResolved:true,
+    sentAt:post.sentAt||null,externalLink:socialPostUrl(post.externalLink,payload.network),checkedAt:new Date().toISOString(),
+    contentMatches:matches,reconciliationVersion:2,reason:post.status==='sent'?'Provider confirms this receipt was sent, but exact approved content differs. Do not resend.':'Provider confirms terminal failure. No automatic replay.'};
+   await sql`insert into os_activity(actor,event,entity_id,details) values('operations','buffer_publish_reconciled',${id},${sql.json(details)})`;
+   await sql`insert into os_activity(actor,event,entity_id,details) values('operations','buffer_publish_checked',${id},${sql.json(details)})`;
+   console.info(JSON.stringify({event:'social_receipt_reconciled',approvalId:id,...details}));
+   return details;
+  }
+  if(!matches)throw Error('BUFFER_RECEIPT_MISMATCH');
   const published=post.status==='sent'&&Boolean(post.sentAt),externalLink=published?socialPostUrl(post.externalLink,payload.network):null;
-  const details={payloadHash:row.payload_hash,channelId:payload.channelId,network:payload.network,postId,state:post.status,published,sentAt:post.sentAt||null,externalLink,checkedAt:new Date().toISOString()};
+  const details={payloadHash:row.payload_hash,channelId:payload.channelId,network:payload.network,postId,state:post.status,published,sentAt:post.sentAt||null,externalLink,checkedAt:new Date().toISOString(),reconciliationVersion:2};
   await sql`insert into os_activity(actor,event,entity_id,details) values('operations','buffer_publish_checked',${id},${sql.json(details)})`;
   return details;
  }catch{
-  const details={state:'unconfirmed',published:false,checkedAt:new Date().toISOString()};
+  const details={state:'unconfirmed',published:false,checkedAt:new Date().toISOString(),reconciliationVersion:2};
   await sql`insert into os_activity(actor,event,entity_id,details) values('operations','buffer_publish_checked',${id},${sql.json(details)})`;
   return details;
  }
@@ -96,13 +110,13 @@ export async function executeSocialDelivery(id:string){
  const [started]=await sql`select id from os_activity where entity_id=${id} and event='buffer_publish_started' limit 1`;
  if(started)return {state:'unknown',published:false};
  if(!campaignMatchesReview(payload.campaign))return {state:'creative_review_required',published:false};
- if(!withinSocialWindow(payload.campaign))return {state:'waiting_for_daily_window',published:false};
+ if(!sendWindow(payload.campaign))return {state:'waiting_for_daily_window',published:false};
  if(!isCurrentCreative(payload.campaign))return {state:'retired_creative_held',published:false};
  // Avoid downloading the carousel every cron tick while a platform is within its cadence window.
  const [cooldown]=await sql`select id from os_activity where event='media_auto_authorized' and details->>'network'=${payload.network} and created_at>now()-interval '4 hours' limit 1`;
  if(cooldown)return {state:'waiting_for_daily_window',published:false};
  // A previous uncertain submission blocks this channel before any API/asset reads.
- const [priorUncertain]=await sql`select a.id from os_approvals a where a.id<>${id} and a.payload->>'channelId'=${payload.channelId} and exists(select 1 from os_activity where entity_id=a.id::text and event='buffer_publish_started') and not exists(select 1 from os_activity where entity_id=a.id::text and event='buffer_publish_checked' and details->>'published'='true') limit 1`;
+ const [priorUncertain]=await sql`select a.id from os_approvals a where a.id<>${id} and a.payload->>'channelId'=${payload.channelId} and exists(select 1 from os_activity where entity_id=a.id::text and event='buffer_publish_started') and not exists(select 1 from os_activity where entity_id=a.id::text and (event='buffer_publish_checked' and details->>'published'='true' or event='buffer_publish_reconciled' and details->>'outcomeResolved'='true')) limit 1`;
  if(priorUncertain)return {state:'waiting_for_prior_receipt',published:false};
  // Missing connections/assets are preflight failures, not ambiguous external writes.
  await socialPreflight(payload);
@@ -111,13 +125,13 @@ export async function executeSocialDelivery(id:string){
   const [current]=await tx`select * from os_approvals where id=${id} for update`;authorized(current);
   if(current.payload_hash!==row.payload_hash)throw Error('DAILY_SOCIAL_VERSION_CHANGED');
   if(!campaignMatchesReview((current.payload as DailySocialPayload).campaign))throw Error('DAILY_SOCIAL_CREATIVE_RETIRED');
-  if(!withinSocialWindow((current.payload as DailySocialPayload).campaign))return false;
+  if(!sendWindow((current.payload as DailySocialPayload).campaign))return false;
   const [control]=await tx`select paused from os_control where id=1 for share`;if(!control||control.paused)throw Error('OS_PAUSED');
   if(new Date(current.expires_at).getTime()<=Date.now())throw Error('DAILY_SOCIAL_EXPIRED');
   const [prepared]=await tx`select id from os_activity where event='daily_social_prepared' and details->>'approvalId'=${id} and details->>'payloadHash'=${String(row.payload_hash)} and details->>'policyId'=${dailySocialPolicy.id} limit 1`;
   if(!prepared)throw Error('DAILY_SOCIAL_NOT_AUTHORIZED');
   const [attempt]=await tx`select id from os_activity where entity_id=${id} and event='buffer_publish_started' limit 1`;if(attempt)return false;
-  const [uncertain]=await tx`select a.id from os_approvals a where a.id<>${id} and a.payload->>'channelId'=${payload.channelId} and exists(select 1 from os_activity where entity_id=a.id::text and event='buffer_publish_started') and not exists(select 1 from os_activity where entity_id=a.id::text and event='buffer_publish_checked' and details->>'published'='true') limit 1`;
+  const [uncertain]=await tx`select a.id from os_approvals a where a.id<>${id} and a.payload->>'channelId'=${payload.channelId} and exists(select 1 from os_activity where entity_id=a.id::text and event='buffer_publish_started') and not exists(select 1 from os_activity where entity_id=a.id::text and (event='buffer_publish_checked' and details->>'published'='true' or event='buffer_publish_reconciled' and details->>'outcomeResolved'='true')) limit 1`;
   if(uncertain)return false;
   // One campaign per slot and platform. Shared lock prevents overlapping submissions.
   const [recent]=await tx`select id from os_activity where event='media_auto_authorized' and details->>'network'=${payload.network} and created_at>now()-interval '4 hours' limit 1`;
@@ -140,8 +154,18 @@ export async function syncDailySocial(now=new Date()){
  if(process.env.VERCEL_ENV!=='production'||process.env.AI_OS_AUTONOMY_ENABLED!=='true'||!dailySocialPolicy.enabled)return {status:'disabled'};
  const sql=db(),[control]=await sql`select paused from os_control where id=1`;if(!control||control.paused)return {status:'paused'};
  // Re-read saved provider receipts; never recreate an accepted post.
- const waiting=await sql`select a.id from os_approvals a where payload->>'executor'='buffer_social_v2' and created_at>now()-interval '7 days' and exists(select 1 from os_activity where entity_id=a.id::text and event='buffer_publish_receipt') and not exists(select 1 from os_activity where entity_id=a.id::text and event='buffer_publish_checked' and (details->>'published'='true' or created_at>now()-interval '5 minutes')) order by created_at limit 3`;
+ const waiting=await sql`select a.id from os_approvals a where payload->>'executor'='buffer_social_v2' and created_at>now()-interval '7 days' and exists(select 1 from os_activity where entity_id=a.id::text and event='buffer_publish_receipt') and not exists(select 1 from os_activity where entity_id=a.id::text and event='buffer_publish_checked' and (details->>'published'='true' or details->>'outcomeResolved'='true' or created_at>now()-interval '5 minutes')) order by created_at limit 3`;
  for(const r of waiting)await checkSocialDelivery(r.id,{scheduled:true});
+ const [missed]=await sql`select details from os_activity where event='daily_social_ready' and entity_id='2026-09-23-afternoon' order by id desc limit 1`;
+ if(missed&&incidentCatchup(missed.details,now)&&campaignMatchesReview(missed.details)){
+  const recovery=await sql`select id from os_approvals where payload->>'executor'='buffer_social_v2' and payload->>'network'='threads' and payload->'campaign'->>'day'='2026-09-23' and payload->'campaign'->>'slot'='afternoon' and status='approved' order by created_at desc limit 1`;
+  if(recovery[0]){
+   const result=await executeSocialDelivery(recovery[0].id);
+   console.info(JSON.stringify({event:'social_incident_catchup',network:'threads',state:result.state,published:result.published}));
+  }
+  const whop=await syncDailyWhop(missed.details,now);
+  console.info(JSON.stringify({event:'social_incident_catchup',network:'whop',...whop}));
+ }
  const schedule=socialSchedule(now),key=campaignKey(schedule);
  let campaign:DailyCampaign;
  try{campaign=await prepareDailyCampaign(now);}

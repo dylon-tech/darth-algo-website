@@ -93,11 +93,27 @@ export async function createWhopHomePost(content:string, options:{title?:string;
       "Api-Version-Date":apiVersion(),
       "Idempotency-Key":options.idempotencyKey,
     },
-    body:JSON.stringify({experience_id:"public",account_id:status.companyId,content:text,title:options.title?.trim()||undefined,pinned:options.pinned===true,is_mention:false,paywall_amount:0}),
+    // A free post has no paywall fields. Zero is still a supplied paywall price
+    // and can trigger the provider's paid-post validation.
+    body:JSON.stringify({experience_id:"public",account_id:status.companyId,content:text,title:options.title?.trim()||undefined,pinned:options.pinned===true,is_mention:false}),
     cache:"no-store",redirect:"error",signal:AbortSignal.timeout(15000),
   });
-  if(!response.ok)throw new Error(response.status===401?"WHOP_KEY_REJECTED":response.status===403?"WHOP_FORUM_PERMISSION_MISSING":response.status===429?"WHOP_RATE_LIMITED":`WHOP_FORUM_HTTP_${response.status}`);
+  if(!response.ok){
+    const error=await response.json().catch(()=>null);
+    const fields=['experience_id','account_id','content','title','paywall_amount','paywall_currency','pinned','is_mention'];
+    const param=fields.includes(error?.error?.param)?error.error.param:null;
+    console.warn(JSON.stringify({event:'whop_request_rejected',status:response.status,param}));
+    throw new Error(response.status===401?"WHOP_KEY_REJECTED":response.status===403?"WHOP_FORUM_PERMISSION_MISSING":response.status===429?"WHOP_RATE_LIMITED":`WHOP_FORUM_HTTP_${response.status}`);
+  }
   const body=await response.json() as {id?:string;created_at?:string;user?:{id?:string;username?:string}};
   if(!body.id)throw new Error("WHOP_POST_REJECTED");
   return {id:body.id,companyId:status.companyId,createdAt:body.created_at||null,username:body.user?.username||null};
+}
+
+export async function verifyWhopPost(id:string,content:string){
+ if(!id||id.length>200)throw Error('WHOP_POST_ID_INVALID');
+ const result=await whopRequest<{id:string;content:string|null;created_at:string}>(`/forum_posts/${encodeURIComponent(id)}`);
+ if('code' in result)throw Error(result.code);
+ if(result.data.id!==id||result.data.content?.trim()!==content.trim()||!result.data.created_at)throw Error('WHOP_RECEIPT_MISMATCH');
+ return {postId:id,createdAt:result.data.created_at,published:true};
 }

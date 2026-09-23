@@ -25,7 +25,7 @@ try {
  const sql=makeSql(database),mock=(name,exports)=>{const id=join(dir,'lib',name+'.js');require.cache[id]={id,filename:id,loaded:true,exports};};
  mock('affiliate-db',{db:()=>sql});
  mock('business-os/social-art',{renderSocialCarousel:async()=>{throw Error('REJECTED_RENDERER_USED');}});
- mock('business-os/whop',{whopStatus:async()=>({connected:true,companyId:'company'}),createWhopHomePost:async()=>({id:'whop'+(++whopWrites),companyId:'company'})});
+ mock('business-os/whop',{whopStatus:async()=>({connected:true,companyId:'company'}),createWhopHomePost:async()=>({id:'whop'+(++whopWrites),companyId:'company'}),verifyWhopPost:async(id)=>({postId:id,createdAt:new Date().toISOString(),published:true})});
  const {prepareDailyCampaign,prepareSocialDelivery,executeSocialDelivery,checkSocialDelivery,syncDailySocial}=require(join(dir,'lib/business-os/daily-social.js'));
  const {canSendCommunityPhoto,communityReadiness}=require(join(dir,'lib/business-os/community-readiness.js'));
  const {socialHealthIssues}=require(join(dir,'lib/business-os/social-health.js'));
@@ -145,8 +145,17 @@ try {
  clockMs=RealDate.parse('2026-09-24T19:00:00Z');
  const nextPm=await prepareDailyCampaign(),blockedId=await prepareSocialDelivery(nextPm,'threads','threads123');
  assert.equal((await executeSocialDelivery(blockedId)).state,'waiting_for_prior_receipt');assert.equal(writes,7);
+ // Reconcile a known provider receipt with changed content without replaying it.
+ const oldPayload=(await database.query('select payload,payload_hash from os_approvals where id=$1',[uncertainId])).rows[0];
+ await sql`insert into os_activity(actor,event,entity_id,details) values('operations','buffer_publish_receipt',${uncertainId},${sql.json({postId:'post7',payloadHash:oldPayload.payload_hash})})`;
+ Object.assign(posts.get('post7'),{status:'sent',sentAt:new Date().toISOString(),text:'Provider returned modified copy',externalLink:'https://www.threads.com/@darth.algo/post/fixture'});
+ const reconciled=await checkSocialDelivery(uncertainId);
+ assert.equal(reconciled.state,'sent_content_changed');assert.equal(reconciled.published,false);assert.equal(reconciled.outcomeResolved,true);
+ await executeSocialDelivery(uncertainId);assert.equal(writes,7,'Terminal reconciliation never resends the old post');
+ assert.notEqual((await executeSocialDelivery(blockedId)).state,'waiting_for_prior_receipt');assert.equal(writes,8,'Fresh authorized campaign can continue');
+ await executeSocialDelivery(blockedId);assert.equal(writes,8,'Fresh attempt is still deduplicated');
  // Missing future art does not silently repeat the seed pack or invoke the rejected renderer.
- const missing=await syncDailySocial(new Date('2026-09-25T13:00:00Z'));assert.equal(missing.status,'creative_assets_required');assert.equal(writes,7);
+ const missing=await syncDailySocial(new Date('2026-10-25T13:00:00Z'));assert.equal(missing.status,'creative_assets_required');assert.equal(writes,8);
  // Eastern DST and midnight use local calendar slots; closed windows never catch up in a burst.
  assert.equal(socialSchedule(new Date('2026-11-01T13:59:00Z')).open,false);
  assert.equal(socialSchedule(new Date('2026-11-01T14:00:00Z')).open,true);
@@ -189,6 +198,21 @@ try {
  assert.equal(bufferRetryAt(null,clock),'2026-09-20T19:00:00.000Z');
  await database.exec("update os_activity set details=jsonb_build_object('retryAt',(now()-interval '1 minute')::text) where event='buffer_rate_limited'");
  globalThis.fetch=providerFetch;assert.equal(await bufferCooldown(),undefined);await bufferStatus({fresh:true});
+ // A definite Whop 400 allows exactly one corrected attempt; unknown writes do not.
+ clockMs=RealDate.parse('2026-09-23T23:00:00Z');
+ const {syncDailyWhop}=require(join(dir,'lib/business-os/whop-daily.js'));
+ const pm=(await database.query("select details from os_activity where event='daily_social_ready' and entity_id='2026-09-23-afternoon' order by id desc limit 1")).rows[0].details;
+ const whopKey='daily-whop:2026-09-23-afternoon';
+ await database.query('delete from os_activity where entity_id=$1',[whopKey]);
+ await sql`insert into os_activity(actor,event,entity_id,details) values('owner','whop_home_publish_started',${whopKey},'{}'::jsonb)`;
+ await sql`insert into os_activity(actor,event,entity_id,details) values('operations','whop_home_publish_unknown',${whopKey},' {"code":"WHOP_FORUM_HTTP_400"}'::jsonb)`;
+ const beforeRepair=whopWrites;
+ await Promise.all([syncDailyWhop(pm),syncDailyWhop(pm)]);await syncDailyWhop(pm);
+ assert.equal(whopWrites,beforeRepair+1,'Concurrent repair claims do not duplicate the corrected post');
+ await database.query('delete from os_activity where entity_id=$1',[whopKey]);
+ await sql`insert into os_activity(actor,event,entity_id,details) values('owner','whop_home_publish_started',${whopKey},'{}'::jsonb)`;
+ await sql`insert into os_activity(actor,event,entity_id,details) values('operations','whop_home_publish_unknown',${whopKey},' {"code":"WHOP_PUBLISH_UNKNOWN"}'::jsonb)`;
+ assert.equal((await syncDailyWhop(pm)).published,false);assert.equal(whopWrites,beforeRepair+1,'Unknown external outcome is never retried');
  console.log('PASS: persistent discovery cache, fresh publishing preflight, receipt throttle, Retry-After cooldown, health signal and safe recovery.');
 
 }finally{globalThis.Date=RealDate;globalThis.fetch=originalFetch;for(const k of Object.keys(process.env))if(!(k in env))delete process.env[k];Object.assign(process.env,env);if(database)await database.close();rmSync(dir,{recursive:true,force:true});}
