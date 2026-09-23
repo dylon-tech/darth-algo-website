@@ -13,6 +13,7 @@ export const revenueGoals: Record<Department, string> = {
  support: "Remove customer frustration that leads to cancellations and lost trust.",
  affiliates: "Help suitable partners bring in paying referrals with measurable attribution.",
  analytics: "Find where the path from content impression to paying, retained customer breaks.",
+ indicator_builder: "Develop original, testable Pine drafts from research evidence while preserving existing products.",
  research: "Find the best audiences, communities, competitor patterns and messaging opportunities before the team spends time or money.",
  operations: "Keep the agent team, fulfillment, integrations and customer access reliable."
 };

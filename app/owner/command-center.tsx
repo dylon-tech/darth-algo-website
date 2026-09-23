@@ -127,9 +127,9 @@ type Ready = {
     };
     configuration: Record<string, boolean>;
 };
-const names: Record<Department, string> = { ceo: "CEO", growth: "Growth", content: "Content", support: "Support", affiliates: "Affiliates", analytics: "Analytics", research: "Research", operations: "Operations" };
-const missions: Record<Department, string> = { ceo: "Keeps the whole crew focused.", growth: "Finds ways to bring in customers.", content: "Creates things people want to read.", support: "Helps customers feel looked after.", affiliates: "Helps partners bring in referrals.", analytics: "Finds the story in your numbers.", research: "Looks for your next good idea.", operations: "Keeps everyday work organized." };
-const colors: Record<Department, string> = { ceo: "purple", growth: "orange", content: "pink", support: "green", affiliates: "blue", analytics: "blue", research: "yellow", operations: "purple" };
+const names: Record<Department, string> = { ceo: "CEO", growth: "Growth", content: "Content", support: "Support", affiliates: "Affiliates", analytics: "Analytics", research: "Research", indicator_builder: "Indicator Builder", operations: "Operations" };
+const missions: Record<Department, string> = { ceo: "Keeps the whole crew focused.", growth: "Finds ways to bring in customers.", content: "Creates things people want to read.", support: "Helps customers feel looked after.", affiliates: "Helps partners bring in referrals.", analytics: "Finds the story in your numbers.", research: "Looks for your next good idea.", indicator_builder: "Builds original Pine drafts.", operations: "Keeps everyday work organized." };
+const colors: Record<Department, string> = { ceo: "purple", growth: "orange", content: "pink", support: "green", affiliates: "blue", analytics: "blue", research: "yellow", indicator_builder: "purple", operations: "purple" };
 const sourceNames: Record<string, string> = { buffer_publications_30d: "X publishing receipts · 30 days", x_campaign_events_30d: "X community campaign events · 30 days", stripe_payments_60d: "Payments received · 30-day comparison", growth_30d: "Community visits & clicks", affiliate_ledger: "Partner commissions", affiliate_applications: "Partner applications", stripe_subscriptions: "Stripe subscriptions", tradingview_fulfillment: "Customer access", content_workflows: "Content tools", support_cases: "Customer support", retention: "Customer retention", paid_conversion: "Sales attribution" };
 const suggestions: Record<Department, Array<{
     title: string;
@@ -141,6 +141,7 @@ const suggestions: Record<Department, Array<{
     support: [{ title: "Help a stuck customer", message: "Help me draft a helpful reply to a customer who is struggling to get started. Ask for any missing case details and do not assume you can see support tickets." }, { title: "Make setup easier", message: "Suggest ways to make customer onboarding simpler using available evidence. Identify unknowns and customer-sensitive changes that need approval." }],
     affiliates: [{ title: "Check partner activity", message: "Summarize the recorded affiliate applications and commission activity. Explain gaps. Do not authorize payouts or assume an empty result means zero referrals." }, { title: "Help partners sell", message: "Draft a useful partner message and a small referral improvement idea. Keep it for review; do not send or publish anything." }],
     analytics: [{ title: "Explain my numbers", message: "Explain the verified business numbers in plain English, including date range, source, and what cannot be concluded. Do not treat subscriptions as unique customers." }, { title: "What can’t we measure?", message: "Which important acquisition, conversion, retention, and referral metrics cannot we reliably measure yet? Prioritize the next data connection." }],
+    indicator_builder: [{ title: "Review indicator drafts", message: "Review saved indicator drafts, source evidence and outstanding TradingView tests. Report concrete corrections without claiming unverified compilation." }],
     research: [{ title: "Find a useful question", message: "Identify one valuable customer or market question we should research next, based on the available evidence. Describe how to verify it; do not invent web research." }, { title: "Test a new idea", message: "Propose one small business improvement hypothesis, explain the evidence and uncertainty, and define a test before we commit time or money." }],
     operations: [{ title: "What’s blocked?", message: "Review available tasks and evidence. What is blocked or unconnected, and what is the next safe step? Do not claim a system is healthy without a check." }, { title: "Save us time", message: "Identify one repetitive task we could automate using the systems we already have. Explain the missing connection, approval needs, and measurable benefit." }],
 };
@@ -368,6 +369,7 @@ function PixelCrew({ role = "ceo" }: {
         support: "M7 4h10v2h3v3h2v8h-2v3h-3v2H7v-2H4v-3H2V9h2V6h3z",
         affiliates: "M2 5h8v2h2v11h-2v3H2v-3H0V7h2zM15 3h6v2h3v13h-3v3h-6v-3h-2V5h2z",
         analytics: "M5 3h14v3h2v13h-2v2H5v-2H3V6h2zM1 8h2v7H1zM21 8h2v7h-2zM6 21h4v2H6zM14 21h4v2h-4z",
+        indicator_builder: "M11 1h3v3h2v3h2v3h3v3h-2v6h-3v3H8v-3H5v-6H2v-3h3V7h3z",
         research: "M11 1h3v3h2v3h2v3h3v3h-2v6h-3v3H8v-3H5v-6H2v-3h3V7h3V4h3z",
         operations: "M6 4h12v2h3v4h2v3h-2v7h-3v2H6v-2H3v-7H1v-3h2V6h3z"
     };

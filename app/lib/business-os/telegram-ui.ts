@@ -1,7 +1,7 @@
 import { departments, type Department } from "./policy";
 import { workAssignments } from "../../owner/work-assignments";
 export type MenuButtons=Array<Array<{text:string;callback_data:string}|{text:string;url:string}>>;
-export const agentNames:Record<Department,string>={ceo:"👑 CEO",growth:"🚀 Growth",content:"🎨 Content",support:"💚 Support",affiliates:"🤝 Affiliates",analytics:"📊 Analytics",research:"🔎 Research",operations:"🛠 Operations"};
+export const agentNames:Record<Department,string>={ceo:"👑 CEO",growth:"🚀 Growth",content:"🎨 Content",support:"💚 Support",affiliates:"🤝 Affiliates",analytics:"📊 Analytics",research:"🔎 Research",indicator_builder:"🧪 Indicator Builder",operations:"🛠 Operations"};
 export const centerLink={text:"Website dashboard",url:"https://www.darthalgo.com/owner"};
 export const connectButton={text:"Connect browser",callback_data:"ui:nav:connect"};
 export const homeButton={text:"‹ CEO desk",callback_data:"ui:nav:home"};
@@ -14,7 +14,7 @@ export function homeMenu():MenuButtons{return [
 export function backMenu():MenuButtons{return [[homeButton]];}
 export function postsMenu():MenuButtons{return [[{text:"Today",callback_data:"ui:nav:posts"},{text:"Upcoming",callback_data:"ui:nav:queue"}],[homeButton]];}
 export function settingsMenu(paused=false):MenuButtons{return [[{text:paused?"▶ Resume agents":"⏸ Pause agents",callback_data:paused?"ui:nav:resume":"ui:nav:pause"},{text:"Connections",callback_data:"ui:nav:buffer"}],[centerLink,connectButton],[homeButton]];}
-export function agentsMenu():MenuButtons{return [...Array.from({length:4},(_,i)=>departments.slice(i*2,i*2+2).map(d=>({text:agentNames[d],callback_data:`ui:agent:${d}`}))),[{text:"🧪 Indicator Builder",callback_data:"ui:nav:lab"}],[{text:"Live work",callback_data:"ui:nav:status"},homeButton]];}
+export function agentsMenu():MenuButtons{return [...Array.from({length:Math.ceil(departments.length/2)},(_,i)=>departments.slice(i*2,i*2+2).map(d=>({text:agentNames[d],callback_data:`ui:agent:${d}`}))),[{text:"🧪 Indicator Builder",callback_data:"ui:nav:lab"}],[{text:"Live work",callback_data:"ui:nav:status"},homeButton]];}
 const quick:Record<Department,Array<[string,string]>>={
  ceo:[["today-plan","Choose our next move"],["growth-review","Find the main problem"]],
  growth:[["acquisition-test","Find customer ideas"],["signup-friction","Improve signups"]],
@@ -22,6 +22,7 @@ const quick:Record<Department,Array<[string,string]>>={
  support:[["onboarding-checklist","Improve onboarding"],["support-replies","Draft a reply"]],
  affiliates:[["partner-review","Check partners"],["partner-kit","Make a starter kit"]],
  analytics:[["numbers-brief","Explain our numbers"],["content-scorecard","Review post results"]],
+ indicator_builder:[["draft-review","Review current drafts"]],
  research:[["competitor-intelligence","Study competitors"],["audience-map","Find our audience"]],
  operations:[["blocker-review","Check blockers"],["access-checklist","Check access process"]],
 };

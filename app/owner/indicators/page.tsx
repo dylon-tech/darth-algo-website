@@ -19,7 +19,9 @@ type CandidateRow = {
 function label(status: string) {
   if (status === 'pending') return 'Ready for review';
   if (status === 'prototype_ready') return 'Prototype ready';
-  if (/published|released|approved/.test(status)) return 'Released';
+  if (status === 'released') return 'Release recorded';
+  if (status === 'approved') return 'Approved · awaiting release';
+  if (status === 'qa_blocked') return 'Draft · chart test pending';
   return status.replaceAll('_', ' ');
 }
 
