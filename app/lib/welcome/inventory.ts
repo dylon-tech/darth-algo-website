@@ -5,7 +5,7 @@ export const capabilityInventory=[
  {platform:'tiktok',account:'Business account/region not verified',provider:'TikTok native preferred',trigger:'User starts chat or sends exact WELCOME keyword; not follower-triggered',permissions:'Advanced Access and Verified Business Account; messages from Everyone',eligibility:'Business Center sign-in required; region and commercial-content eligibility unverified',restrictions:'Welcome 250 characters, keyword reply 500, keyword 40; moderation 1–5 business days. STOP behavior must be tested before activation.',cost:'No purchase made; account-specific native/provider cost unavailable',blocker:'Verified business/region inspection, message moderation and opt-out test',verifiedAt}
 ];
 export const ownerActions=[
- 'Approve replacing the single-use-total WELCOME configuration with 25% off once for first-time customers, no product exclusions or expiry, and no global redemption cap; preserve other discounts and existing redemptions.',
+ 'WELCOME replacement terms approved on September 23: 25% off once for first-time customers, no product exclusions or expiry, and no global redemption cap. Stripe sandbox validation is still required before the live replacement.',
  'Sign in to Manychat for @darth.algo so Follow-to-DM eligibility and existing free capacity can be checked.',
  'Connect the X developer account and TikTok Business Center; any additional spend or new permissions will be presented before activation.',
  'Connect a Stripe test environment for checkout and trial-to-paid verification; select an owner-controlled messaging test recipient after provider connection.'
