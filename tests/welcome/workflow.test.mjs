@@ -43,7 +43,11 @@ try{
  await engine.ingestVerifiedEvent(event('question','question1','I need a refund'));assert.equal((await database.query("select requires_founder from os_support_conversations")).rows[0].requires_founder,true);
  assert.equal(engine.productionAdapters.length,0,'No unverified provider can send');
  const stripePath=join(dir,'lib/stripe.js');require.cache[stripePath]={id:stripePath,filename:stripePath,loaded:true,exports:{stripe:()=>{throw Error('NO_NETWORK_IN_TEST');}}};
+ await database.exec("update os_welcome_platforms set sending_owner='none' where platform='instagram'");
  const service=require(join(dir,'lib/welcome/service.js')),snapshot=await service.welcomeSnapshot();assert.equal(snapshot.purchases,null);assert.equal((await service.welcomeControl('x','resume')).blocked,true);assert.equal((await service.welcomeControl('x','test')).blocked,true);
+ const observed=snapshot.platforms.find(p=>p.platform==='instagram');assert.equal(observed.sending_owner,'provider');assert.equal(observed.status,'Paused');assert.equal(observed.acceptedToday,null,'Absent native telemetry is not zero');
+ assert.equal((await service.welcomeControl('instagram','pause')).blocked,true,'Backend must not pretend to pause provider');
+ await database.exec("update os_welcome_platforms set mode='owner_changed' where platform='instagram'");await service.recordInstagramDraft();assert.equal((await database.query("select mode from os_welcome_platforms where platform='instagram'")).rows[0].mode,'owner_changed','Observation import cannot overwrite later changes');
  const payments=require(join(dir,'lib/welcome/payments.js'));
  const purchase={key:'invoice:inv_test',customer:'cus_test',sub:'sub_test',pi:'pi_test',source:'instagram',visit:null,welcome:true,paid:10000,tax:800,refunded:0,currency:'usd',at:Math.floor(Date.now()/1000),first:true};
  await payments.savePurchase(purchase);await payments.savePurchase(purchase);assert.equal((await database.query('select count(*)::int n from os_welcome_purchases')).rows[0].n,1);

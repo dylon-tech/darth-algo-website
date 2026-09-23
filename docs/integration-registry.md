@@ -16,3 +16,5 @@ Last audited: 2026-09-22 UTC. Secrets are intentionally excluded.
 | OpenAI / AI Gateway | Bounded internal workers | configuration checks | budget guarded | Deployed app/worker | Offline budget and fail-closed tests pass | production use unverified | Confirm model, recurring cap and heartbeat before enablement |
 
 No connector icon, environment-variable name, fixture, or old status note is treated as proof of a live production connection.
+
+Welcome messaging update — 2026-09-23 10:14 UTC: Manychat Instagram @darth.algo connected in workspace fb5646156; Free, displayed contact capacity 0/25. Follow-to-DM unavailable for this account. Native exact WELCOME draft content20260923101152_967121 saved/reloaded, not activated. Manual evidence only; telemetry, permission expiry, STOP recipient test and support handoff unavailable/unverified. Owner handles Stripe. See docs/welcome/README.md.
