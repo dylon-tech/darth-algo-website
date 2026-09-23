@@ -76,5 +76,11 @@ export function observedIndicatorUrls(evidence:Evidence[]) {
     for(const x of Object.values(row))if(typeof x==="object")walk(x,depth+1);
   }
   for(const e of evidence)if(["indicator_market","competitor_public_posts","indicator_idea_handoffs","indicator_social"].includes(e.id) && e.status==="verified")walk(e.data);
+  // A revision may retain its own previously recorded references. This grants
+  // citation continuity, not a claim that the URLs show current demand.
+  for(const e of evidence)if(e.id==="indicator_inventory"){
+    const prior=(e.data as {revisionOriginal?:{sourceUrls?:unknown}}|null)?.revisionOriginal?.sourceUrls;
+    if(Array.isArray(prior))for(const url of prior)if(typeof url==="string"&&url.startsWith("https://"))urls.add(url);
+  }
   return [...urls];
 }

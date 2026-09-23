@@ -163,8 +163,8 @@ export async function syncIndicatorLab(){
   // unavailable. Publication remains blocked until real compiler/replay QA.
   for(const candidate of [immediatePrototype,...exploratoryDrafts])await seedPrototype(candidate);
   // Recover output-to-approval handoffs after crashes before adding more work.
-  const runs=await sql`select r.id,r.result,r.snapshot from os_runs r join os_jobs j on j.run_id=r.id
-    where r.status='completed' and j.request_key like 'indicator:%'
+  const runs=await sql`select r.id,r.result,r.snapshot,j.request_key from os_runs r join os_jobs j on j.run_id=r.id
+    where r.status='completed' and (j.request_key like 'indicator:%' or j.request_key like 'indicator-revision:%')
     and not exists(select 1 from os_activity a where a.event='indicator_handoff' and a.entity_id=r.id::text)
     order by r.finished_at limit 3`;
   for(const run of runs){
@@ -177,8 +177,10 @@ export async function syncIndicatorLab(){
       let reason="insufficient_evidence_or_invalid_output";
       if(c){
         const id=randomUUID(),qa=pineChecks(c.pine),score=scoreIndicator(c),hash=pineHash(c.pine);
+        const parentId=String(run.request_key).match(/^indicator-revision:([a-f0-9-]{36}):[a-f0-9]{16}$/)?.[1];
+        const [parent]=parentId?await tx`select id,source_hash from os_indicator_candidates where id=${parentId}`:[];
         const [row]=await tx`insert into os_indicator_candidates(id,run_id,candidate,source_hash,logic_hash,qa,score,status)
-          values(${id},${run.id},${tx.json(c)},${hash},${pineLogicHash(c.pine)},${tx.json(qa)},${tx.json(score)},'qa_blocked') on conflict do nothing returning id`;
+          values(${id},${run.id},${tx.json(c)},${hash},${pineLogicHash(c.pine)},${tx.json({...qa,parentCandidateId:parent?.id||null,parentSourceHash:parent?.source_hash||null})},${tx.json(score)},'qa_blocked') on conflict do nothing returning id`;
         reason=row?"static_qa_blocked":"duplicate_logic";
         if(row && qa.passed){
           // Compilation, actual chart example and education precede owner approval.
@@ -199,6 +201,12 @@ export async function syncIndicatorLab(){
   const day=new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
   let ideaStage="ai_disabled";
   if(process.env.AI_OS_AI_ENABLED==="true" && process.env.AI_OS_AUTONOMY_ENABLED==="true"){
+    const [ownerRevision]=await sql`select c.id,c.source_hash,c.candidate,a.details->>'note' as note
+      from os_indicator_candidates c join os_activity a on a.entity_id=c.id::text and a.event='indicator_revision_requested'
+      where c.status='revision_requested' and a.details->>'sourceHash'=c.source_hash
+      and not exists(select 1 from os_jobs j where j.request_key=${'indicator-revision:'} || c.id::text || ':' || left(c.source_hash,16))
+      order by a.id limit 1`;
+    if(ownerRevision)await queueJob('indicator_builder',`[INDICATOR_LAB] Revision ID: ${ownerRevision.id}. Revise the saved original Pine source using owner feedback: ${String(ownerRevision.note).slice(0,1600)}. Use the revisionOriginal inventory, retain source citations or cite freshly observed evidence, preserve complete source and closed-bar semantics. This is an owner-requested exploratory revision, not evidence of current popularity. Return indicatorCandidate:null if a safe, distinct correction cannot be made. No publishing, pricing or performance claims.`, `indicator-revision:${ownerRevision.id}:${String(ownerRevision.source_hash).slice(0,16)}`,'schedule');
     ideaStage=await syncIndicatorIdeas(day);
     if(ideaStage==="no_supported_idea")await queueOwnerNotice(`indicator-ideas-held:${day}`,"Indicator Lab: Research and Growth completed today's review, but found insufficient supported demand for a new build. No indicator is ready for approval. The Lab will research again tomorrow. Social research connection status: https://www.darthalgo.com/owner/connections");
     const n=Number(process.env.AI_OS_INDICATORS_PER_DAY||"1");const limit=Number.isInteger(n)?Math.max(1,Math.min(3,n)):1;
