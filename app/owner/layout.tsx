@@ -6,5 +6,5 @@ export const metadata:Metadata={
   icons:{icon:"/owner/app-icon?size=192",apple:"/owner/app-icon?size=180"},
   robots:{index:false,follow:false},alternates:{canonical:null},referrer:"no-referrer",
 };
-export const viewport:Viewport={width:"device-width",initialScale:1,viewportFit:"cover",themeColor:"#080d15"};
+export const viewport:Viewport={width:"device-width",initialScale:1,viewportFit:"cover",themeColor:"#000000"};
 export default function OwnerLayout({children}:{children:React.ReactNode}){return children;}
