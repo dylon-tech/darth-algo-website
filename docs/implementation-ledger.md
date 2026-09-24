@@ -1,5 +1,15 @@
 # Darth Algo implementation ledger
 
+## Business headquarters and estimated expenses — September 24, 2026
+
+Work DA-HQ-FINANCES-20260924, Darth Algo Operations 1.0.0, CEO reporting + deployment verification. Owner requested automatic best-estimate bill entry, stock-style income/customer analytics and an interactive iPhone-style business headquarters. Isolated branch hq-finances-20260924 starts from verified main 118789bd1a9dcdacff44730720fe5aa7136b90a9; unrelated working changes are preserved.
+
+Eleven known tool costs are prefilled as explicit estimates, $244.03/month total equivalent. Vendor public pricing and prior free-plan observations are distinguished from round planning allowances. Existing confirmed/inactive/non-null private entries win; bill edits remain owner-authenticated and same-origin. No purchase, new provider access, spending-cap change, invoice sync or customer/social action occurs.
+
+Adds a bounded complete 90-day live USD Stripe income history and observed-only customer history, with 7/30/90-day chart controls, pointer/range inspection, exact-value tables and gaps for missing observations. Unknown reads stay unavailable. New system-font layout provides floating HQ/Agents/Studio/Money navigation, responsive cards, swipeable content and accessible sheets while preserving real health/recovery/approval behavior.
+
+Validation: affected financial tests cover cutoff windows, duplicate/test payment rejection, USD-only receipts, zero vs unavailable, incomplete pagination, customer observation deduplication and gaps, monthly normalization, estimated/confirmed totals, saved overrides and render markup. Existing CEO auth/CSRF/health tests pass. TypeScript and production build pass. React review covers hooks, type-only server imports, accessible chart controls, reduced motion, modal focus trap, inert background and body-scroll restoration. Private visual verification remains unavailable because the connected browser is signed out; no screenshot or end-to-end UI claim. Reviewed PR and exact production receipt follow after CI.
+
 Updated: 2026-09-22 UTC. Owner-facing time zone: America/New_York.
 
 This ledger records verified evidence, not intended state. `live` requires a provider or deployment receipt; `tested` means an offline or local test passed; `blocked` names the exact dependency.

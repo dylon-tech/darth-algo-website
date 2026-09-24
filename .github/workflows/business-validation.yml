@@ -30,6 +30,7 @@ jobs:
         env:
           OS_TEST_PGLITE_MODULE: "@electric-sql/pglite"
       - run: node tests/ceo-home.test.cjs
+      - run: node tests/finance-history.test.cjs
       - run: node tests/social-editorial-policy.test.cjs
       - run: node tests/competitor-parser.test.mjs
       - run: node tests/model-context.test.cjs

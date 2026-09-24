@@ -1,13 +1,14 @@
 import type {DeskSnapshot, DeskAgent} from './desk-state';
 export type Health = {rating:'Great'|'Good'|'Poor'|'Unknown';reason:string};
 export type Issue = {id:string;department:string;title:string;reason:string;action:string;href:string;needsOwner:boolean};
-export type Bill = {id:string;name:string;amountCents:number|null;cadence:'monthly'|'annual'|'weekly';status:'confirmed'|'unverified'|'inactive';source:string;verifiedAt:string|null};
+export type Bill = {id:string;name:string;amountCents:number|null;cadence:'monthly'|'annual'|'weekly';status:'confirmed'|'estimated'|'unverified'|'inactive';source:string;verifiedAt:string|null;sourceUrl?:string;estimatedAt?:string};
 export const monthlyCents=(bill:Bill)=>bill.amountCents===null?null:bill.amountCents*(bill.cadence==='annual'?1/12:bill.cadence==='weekly'?52/12:1);
 export function expenseSummary(bills:Bill[],incomeCents:number|null){
  const active=bills.filter(b=>b.status!=='inactive');
- const known=active.filter(b=>b.status==='confirmed'&&b.amountCents!==null);
+ const known=active.filter(b=>(b.status==='confirmed'||b.status==='estimated')&&b.amountCents!==null);
+ const estimated=known.filter(b=>b.status==='estimated');
  const subtotal=known.length?Math.round(known.reduce((n,b)=>n+(monthlyCents(b)||0),0)):null;
- return {monthlyCents:subtotal,missing:active.length-known.length,complete:active.length>0&&known.length===active.length,ratio:subtotal!==null&&incomeCents!==null&&incomeCents>0?subtotal/incomeCents*100:null};
+ return {monthlyCents:subtotal,estimated:estimated.length,estimatedCents:Math.round(estimated.reduce((n,b)=>n+(monthlyCents(b)||0),0)),missing:active.length-known.length,complete:active.length>0&&known.length===active.length&&estimated.length===0,ratio:subtotal!==null&&incomeCents!==null&&incomeCents>0?subtotal/incomeCents*100:null};
 }
 function recent(at:string|null|undefined,now:number,limit:number){const age=now-Date.parse(at||'');return Number.isFinite(age)&&age>=-30000&&age<limit;}
 export function agentHealth(agent:DeskAgent,desk:DeskSnapshot,issues:Issue[],now=Date.now()):Health{
