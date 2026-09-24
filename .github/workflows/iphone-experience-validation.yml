@@ -1,0 +1,64 @@
+name: iPhone experience validation
+on:
+  push:
+    branches: [feat/iphone-experience-20260924]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: iphone-experience-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: test-only
+          POSTGRES_DB: visual_hq_test
+        ports: [5432:5432]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      AI_OS_AI_ENABLED: 'false'
+      AI_OS_AUTONOMY_ENABLED: 'false'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Presence and queue model regressions
+        run: node --experimental-strip-types --test scripts/visual-hq-model.test.mjs scripts/video-studio.test.mjs
+      - name: Isolated content holds and duplicate protection
+        run: node scripts/visual-hq-database.cjs
+        env:
+          DATABASE_URL: postgres://postgres:test-only@127.0.0.1:5432/visual_hq_test
+      - run: npx tsc --noEmit
+      - name: Lint new interface
+        run: npx eslint app/owner/iphone-home.tsx app/owner/iphone-sheet.tsx app/owner/page.tsx app/owner/layout.tsx
+      - run: npm run build
+      - run: npx playwright-core install --with-deps chromium webkit
+      - name: Existing agent and queue button flows
+        run: node scripts/visual-hq-browser.mjs
+      - name: Existing video studio flows
+        run: node scripts/video-studio-browser.mjs
+      - name: WebKit iPhone-width experience
+        run: node scripts/iphone-experience-browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: iphone-experience-validation
+          path: artifacts/
+          if-no-files-found: ignore
+          retention-days: 7
