@@ -73,13 +73,13 @@ export function buildVideoBrief(draft: VideoDraft): string {
   if (result.length > 4000) throw Error('Shorten the visual directions or notes to fit the agent request.');
   return result;
 }
-export type OwnerView = 'home' | 'team' | 'queue' | 'bills';
+export type OwnerView = 'home' | 'team' | 'queue' | 'bills' | 'lab' | 'inbox';
 export function ownerViewFromSearch(search: string): OwnerView {
   const v = new URLSearchParams(search).get('view');
-  return v === 'team' || v === 'agents' ? 'team' : v === 'queue' || v === 'studio' ? 'queue' : v === 'bills' || v === 'money' ? 'bills' : 'home';
+  return v === 'team' || v === 'agents' ? 'team' : v === 'queue' || v === 'studio' ? 'queue' : v === 'bills' || v === 'money' ? 'bills' : v === 'lab' || v === 'indicators' ? 'lab' : v === 'inbox' || v === 'approvals' ? 'inbox' : 'home';
 }
 export function ownerViewParam(view: OwnerView): string {
-  return ({ home: 'home', team: 'agents', queue: 'studio', bills: 'money' })[view];
+  return ({ home: 'home', team: 'agents', queue: 'studio', bills: 'money', lab: 'lab', inbox: 'inbox' })[view];
 }
 export function isVideoJobReceipt(value: unknown): value is { id: string; status: string } {
   if (!value || typeof value !== 'object') return false;

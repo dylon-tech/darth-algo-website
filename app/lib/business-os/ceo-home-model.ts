@@ -8,7 +8,10 @@ export function expenseSummary(bills:Bill[],incomeCents:number|null){
  const known=active.filter(b=>(b.status==='confirmed'||b.status==='estimated')&&b.amountCents!==null);
  const estimated=known.filter(b=>b.status==='estimated');
  const subtotal=known.length?Math.round(known.reduce((n,b)=>n+(monthlyCents(b)||0),0)):null;
- return {monthlyCents:subtotal,estimated:estimated.length,estimatedCents:Math.round(estimated.reduce((n,b)=>n+(monthlyCents(b)||0),0)),missing:active.length-known.length,complete:active.length>0&&known.length===active.length&&estimated.length===0,ratio:subtotal!==null&&incomeCents!==null&&incomeCents>0?subtotal/incomeCents*100:null};
+ // The revenue feed covers exactly 30 days. Prorate recurring budgets to that
+ // same window using a 365.25-day year; these are estimates, not paid invoices.
+ const periodCents=subtotal===null?null:Math.round(subtotal*12*30/365.25);
+ return {monthlyCents:subtotal,periodCents,estimated:estimated.length,estimatedCents:Math.round(estimated.reduce((n,b)=>n+(monthlyCents(b)||0),0)),missing:active.length-known.length,complete:active.length>0&&known.length===active.length&&estimated.length===0,ratio:periodCents!==null&&incomeCents!==null&&incomeCents>0?periodCents/incomeCents*100:null};
 }
 function recent(at:string|null|undefined,now:number,limit:number){const age=now-Date.parse(at||'');return Number.isFinite(age)&&age>=-30000&&age<limit;}
 export function agentHealth(agent:DeskAgent,desk:DeskSnapshot,issues:Issue[],now=Date.now()):Health{

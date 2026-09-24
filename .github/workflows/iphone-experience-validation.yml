@@ -1,7 +1,7 @@
 name: iPhone experience validation
 on:
   push:
-    branches: [feat/iphone-experience-20260924]
+    branches: [feat/iphone-experience-20260924, feat/command-center-completion-20260924]
   workflow_dispatch:
 permissions:
   contents: read
@@ -46,7 +46,7 @@ jobs:
           DATABASE_URL: postgres://postgres:test-only@127.0.0.1:5432/visual_hq_test
       - run: npx tsc --noEmit
       - name: Lint new interface
-        run: npx eslint app/owner/iphone-home.tsx app/owner/iphone-sheet.tsx app/owner/page.tsx app/owner/layout.tsx
+        run: npx eslint app/owner/iphone-home.tsx app/owner/iphone-sheet.tsx app/owner/page.tsx app/owner/layout.tsx app/owner/inbox-panel.tsx app/owner/lab-panel.tsx app/owner/use-owner-feed.ts
       - run: npm run build
       - run: npx playwright-core install --with-deps chromium webkit
       - name: Existing agent and queue button flows
