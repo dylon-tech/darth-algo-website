@@ -7,6 +7,7 @@ import { summarizePayments, type PaymentRow } from "./payment-summary";
 import { businessKnowledge } from "./knowledge";
 import { checkoutConversions } from "./conversions";
 import { creativePlaybookEvidence } from "./creative-playbook";
+import {nativeRevenueEvidence} from './native-revenue-evidence';
 
 export type Evidence = { id: string; status: "verified" | "unavailable"; checkedAt: string; scope: string; data: unknown; error?: string };
 
@@ -16,6 +17,7 @@ async function readSource(id: string, scope: string, read: () => Promise<unknown
 }
 
 export async function collectEvidence(): Promise<Evidence[]> {
+  const nativeRevenue = nativeRevenueEvidence();
   const sources = await Promise.all([
     ...(process.env.AI_OS_INDICATOR_LAB_ENABLED==="true"?[indicatorMarketEvidence().catch(()=>({id:"indicator_market",status:"unavailable" as const,checkedAt:new Date().toISOString(),scope:"Market discovery unavailable.",data:null}))]:[]),
     readSource("content_workflows", "Saved media policy and latest publication observations. These are execution records, not a guarantee of future delivery or content performance.", async()=>await db()`select event,created_at,details - 'png' as details from os_activity where event in ('media_policy_enabled','buffer_publish_checked','instagram_carousel_draft_verified') order by id desc limit 6`),
@@ -85,10 +87,11 @@ export async function collectEvidence(): Promise<Evidence[]> {
       throw new Error("Pagination incomplete");
     }),
   ]);
-  sources.push(...["tradingview_fulfillment", "support_cases", "retention"].map(id => ({
-    id, status: "unavailable" as const, checkedAt: new Date().toISOString(), data: null,
+  sources.push(...await nativeRevenue);
+  sources.push({
+    id: 'tradingview_fulfillment', status: "unavailable" as const, checkedAt: new Date().toISOString(), data: null,
     scope: "No verified read adapter connected in Phase 1. Historical setup and plans are not live evidence.",
-  })));
+  });
   if(process.env.AI_OS_INDICATOR_LAB_ENABLED==="true")sources.push(await vidiqEvidence());
   sources.push(businessKnowledge());
   sources.push(creativePlaybookEvidence());
