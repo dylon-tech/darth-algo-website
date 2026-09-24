@@ -1,0 +1,62 @@
+name: Visual HQ validation
+on:
+  push:
+    branches: [feat/visual-hq-20260924]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: visual-hq-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: test-only
+          POSTGRES_DB: visual_hq_test
+        ports: [5432:5432]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      AI_OS_AI_ENABLED: 'false'
+      AI_OS_AUTONOMY_ENABLED: 'false'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Presence, content policy and existing video model tests
+        run: node --experimental-strip-types --test scripts/visual-hq-model.test.mjs scripts/video-studio.test.mjs
+      - name: Isolated database holds, race protection and idempotency
+        run: node scripts/visual-hq-database.cjs
+        env:
+          DATABASE_URL: postgres://postgres:test-only@127.0.0.1:5432/visual_hq_test
+      - run: npx tsc --noEmit
+      - name: Lint changed implementation
+        run: npx eslint app/owner/business-home.tsx app/owner/visual-team.tsx app/owner/daily-content-queue.tsx app/lib/business-os/agent-presence.ts app/lib/business-os/daily-content-model.ts app/lib/business-os/daily-content-review.ts app/lib/business-os/daily-social.ts app/lib/business-os/whop-daily.ts app/api/owner/content-queue/route.ts
+      - run: npm run build
+      - run: npx playwright-core install --with-deps chromium
+      - name: Phone-width UI and authenticated endpoint protections
+        run: node scripts/visual-hq-browser.mjs
+      - name: Existing video studio regression
+        run: node scripts/video-studio-browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: visual-hq-validation
+          path: artifacts/*synthetic.png
+          if-no-files-found: ignore
+          retention-days: 7

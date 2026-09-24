@@ -17,6 +17,7 @@ try {
  const keys=[];
  // Synthetic fixture only. No customer records, sessions, database writes, or paid providers.
  await page.route('**/api/owner/dashboard',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({checkedAt:new Date().toISOString(),team:[],issues:[],partial:[],desk:null,finances:null,brief:null,suggestions:[],queue:[]})}));
+ await page.route('**/api/owner/content-queue',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({checkedAt:new Date().toISOString(),today:'2026-09-24',items:[]})}));
  await page.route('**/api/owner/command',route=>{
   assert.equal(route.request().method(),'POST');const body=route.request().postDataJSON();
   assert.equal(body.operation,'message');assert.equal(body.department,'content');assert.ok(body.message.length<=4000);assert.match(body.message,/Do not publish/);assert.match(body.requestKey,/^video-studio:[a-f0-9]{64}$/);
@@ -32,9 +33,9 @@ try {
  assert.equal(await page.getByRole('textbox',{name:'On-screen headline'}).inputValue(),'CLARITY BEFORE THE CLICK.');
  await page.getByRole('button',{name:'Send to content agent',exact:true}).click();await page.getByRole('button',{name:'Request saved',exact:true}).waitFor();assert.equal(keys.length,2);assert.equal(keys[0],keys[1],'Reload must reuse the same request key');
  await page.getByRole('button',{name:'HQ',exact:true}).click();await page.getByRole('heading',{name:'Headquarters',exact:true}).waitFor();
- await page.getByRole('button',{name:/Create a video/}).click();await page.getByRole('heading',{name:'Make your next Reel.'}).waitFor();assert.match(page.url(),/view=studio/);
+ await page.getByRole('button',{name:/Create a video/}).click();await page.getByRole('heading',{name:'Make your next Reel.'}).waitFor();assert.match(page.url(),/view=queue/);
  await page.goBack();await page.getByRole('heading',{name:'Headquarters',exact:true}).waitFor();
- await page.getByRole('button',{name:'Studio',exact:true}).click();await page.getByRole('heading',{name:'Make your next Reel.'}).waitFor();
+ await page.getByRole('button',{name:'Queue',exact:true}).click();await page.locator('summary').filter({hasText:'Create a video'}).click();await page.getByRole('heading',{name:'Make your next Reel.'}).waitFor();
  const chart=page.getByAltText('Selected historical Darth Algo product chart; not a live signal');
  await chart.waitFor();await page.waitForFunction(()=>{const i=document.querySelector('img[alt="Selected historical Darth Algo product chart; not a live signal"]');return i?.complete&&i.naturalWidth>0;});
  await chart.evaluate(i=>i.dispatchEvent(new Event('error')));await page.getByRole('button',{name:'Retry chart preview',exact:true}).waitFor();
