@@ -1,0 +1,27 @@
+.polish button{min-width:44px}
+.polish :global(#visual-team-title),.polish :global(#daily-queue-title){position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+.polish section[aria-labelledby=visual-team-title]>div:first-child,.polish section[aria-labelledby=daily-queue-title]>div:first-child{margin-top:-5px;margin-bottom:16px}
+.polish section[aria-labelledby=visual-team-title]>div:first-child p,.polish section[aria-labelledby=daily-queue-title]>div:first-child p{font-size:13px}
+.polish :global(#hq-heading){scroll-margin-top:20px}
+/* The parent font shorthand must not enlarge compact workspace buttons. */
+.polish section[aria-labelledby=visual-team-title] button,.polish section[aria-labelledby=daily-queue-title] button{font-size:13px;line-height:1.35}
+.polish [aria-label='Filter agents']{display:grid;grid-template-columns:44px minmax(0,1fr) minmax(0,1fr) minmax(0,1.55fr);overflow:visible}
+.polish section [aria-label='Filter agents'] button{font-size:12px;padding-inline:6px}
+.polish [aria-label='Filter content queue'] button,.polish [aria-label='Agent workspace'] button{font-size:13px}
+.polish [role=dialog] button{font-size:14px;line-height:1.4}
+.polish section[aria-label='Income and customer analytics']{padding:18px;margin-bottom:14px}
+.polish section[aria-label='Income and customer analytics']>div:first-child>span{display:none}
+.polish section[aria-label='Income and customer analytics']>div:nth-child(2){margin:16px 0 4px}
+.polish section[aria-label='Income and customer analytics']>div:nth-child(2)>span{display:none}
+.polish section[aria-label='Income and customer analytics']>div:has(>[aria-label='Chart period']){flex-wrap:wrap;margin-top:4px;padding:4px 0}
+.polish section[aria-label='Income and customer analytics']>div:has(>svg[viewBox='0 0 720 216']){margin-top:6px}
+.polish section[aria-label='Income and customer analytics']>label{gap:10px}
+@media(max-width:480px){
+ .polish section[aria-label='Income and customer analytics'] svg[viewBox='0 0 720 216']{min-height:108px}
+ .polish section[aria-label='Income and customer analytics'] svg[viewBox='0 0 720 216'] text{font-size:22px}
+ .polish section[aria-label='Income and customer analytics'] h2{font-size:38px}
+}
+@media(max-width:350px){
+ .polish section[aria-label='Income and customer analytics'] h2{font-size:34px}
+ .polish section [aria-label='Filter agents'] button{font-size:11px;padding-inline:4px}
+}
