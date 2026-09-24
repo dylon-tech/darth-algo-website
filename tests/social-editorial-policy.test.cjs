@@ -9,7 +9,7 @@ try {
  execFileSync('node_modules/.bin/tsc',['--target','ES2020','--module','commonjs','--moduleResolution','node','--esModuleInterop','--skipLibCheck','--outDir',dir,'app/lib/business-os/reviewed-social.ts']);
  const {regularContentKind,resultsSlot}=require(join(dir,'social-editorial-policy.js'));
  const {socialCampaignQueue}=require(join(dir,'social-campaign-queue.js'));
- const {creativeDigest,validateReviewedCreative}=require(join(dir,'reviewed-social.js'));
+ const {creativeDigest,validateReviewedCreative,assertFreshCreative,reviewedCreativeFor}=require(join(dir,'reviewed-social.js'));
  assert.equal(regularContentKind('2026-09-24'),'educational');
  assert.equal(regularContentKind('2026-09-25'),'promotional');
  assert.equal(regularContentKind('2026-09-26'),'educational');
@@ -22,12 +22,22 @@ try {
  assert.equal(resultsSlot('2026-09-24','morning'),false);
  for(const c of socialCampaignQueue){validateReviewedCreative(c);for(const a of c.assets)assert.equal(createHash('sha256').update(readFileSync('public'+a.path)).digest('hex'),a.sha256);}
  const base=structuredClone(socialCampaignQueue.find(c=>c.day==='2026-09-25'&&c.slot==='morning'));
+ for(const c of socialCampaignQueue)reviewedCreativeFor(c.day,c.slot);
+ const duplicate=structuredClone(base);duplicate.id='a-new-id';
+ assert.throws(()=>assertFreshCreative(duplicate,[base]),/DUPLICATE_CONTENT/);
+ duplicate.assets[0].sha256='f'.repeat(64);duplicate.text=base.text.toUpperCase().replace('#DARTHALGO','#NEW').replace('HTTPS://WWW.DARTHALGO.COM/PRODUCTS/SWING','https://www.darthalgo.com/links')+' !!!';
+ assert.throws(()=>assertFreshCreative(duplicate,[base]),/DUPLICATE_CONTENT/,'Cosmetic caption changes do not make a fresh post');
+ duplicate.text='A genuinely different useful topic';duplicate.assets[0].sha256=base.assets[0].sha256;
+ assert.throws(()=>assertFreshCreative(duplicate,[base]),/DUPLICATE_CONTENT/,'A changed headline cannot recycle the artwork');
+ assertFreshCreative(base,[base]); // same campaign cross-platform/retry is allowed
  const sign=c=>{c.review.sha256=creativeDigest(c);return c;};
  const wrong=structuredClone(base);wrong.editorial.kind='educational';assert.throws(()=>validateReviewedCreative(sign(wrong)),/DAY_MISMATCH/);
  const disclaimer=structuredClone(base);disclaimer.text='Trading involves risk.';assert.throws(()=>validateReviewedCreative(sign(disclaimer)),/EDITORIAL_REVIEW/);
  const result=structuredClone(base);result.editorial.kind='results';assert.throws(()=>validateReviewedCreative(sign(result)),/RESULTS_EVIDENCE/);
  result.editorial.result={sourceHash:'a'.repeat(64),tradeDate:'2026-09-23',symbol:'MGC',timeframe:'5m',outcomeBasis:'chart_setup',verificationNote:'Test fixture only; not live evidence'};
  validateReviewedCreative(sign(result));
+ const repeatResult=structuredClone(result);repeatResult.id='other-result';repeatResult.text='A new caption';repeatResult.assets[0].sha256='b'.repeat(64);
+ assert.throws(()=>assertFreshCreative(repeatResult,[result]),/DUPLICATE_RESULT/);
  result.editorial.result.tradeDate='2026-09-18';assert.throws(()=>validateReviewedCreative(sign(result)),/RESULTS_EVIDENCE/);
  const tampered=structuredClone(base);tampered.editorial.learning='changed after review';assert.throws(()=>validateReviewedCreative(tampered),/REVIEW_INVALID/);
  console.log('PASS: calendar, Wed/Fri evidence gates, historical compatibility, review tamper checks and all final asset hashes');

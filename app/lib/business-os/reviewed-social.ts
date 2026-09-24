@@ -8,6 +8,17 @@ import {regularContentKind,resultsSlot,socialEditorialVersion,type SocialContent
 export type EditorialReview={version:string;kind:SocialContentKind;sources:string[];learning:string;result?:{sourceHash:string;tradeDate:string;symbol:string;timeframe:string;outcomeBasis:'chart_setup'|'executed_trade';verificationNote:string}};
 export type ReviewedCreative={id:string;day:string;slot:SocialSlot;theme:string;text:string;editorial?:EditorialReview;assets:Array<{path:string;sha256:string;altText:string;mimeType:'image/jpeg'|'image/png'}>;review:{referenceVersion:string;sha256:string;reviewer:string;reviewedAt:string}};
 export function creativeDigest(c:Pick<ReviewedCreative,'text'|'assets'|'editorial'>) {return createHash('sha256').update(JSON.stringify({text:c.text,assets:c.assets,...(c.editorial?{editorial:c.editorial}:{})})).digest('hex');}
+export function assertFreshCreative(c:ReviewedCreative,history:ReviewedCreative[]) {
+ // Same campaign syndicated across channels/reconciled on retries is one post.
+ // Changing URLs, hashtags, punctuation or filename is not fresh content.
+ const copyKey=(text:string)=>text.normalize('NFKC').toLowerCase().replace(/https?:\/\/\S+/g,' ').replace(/#[\p{L}\p{N}_]+/gu,' ').replace(/[^\p{L}\p{N}]+/gu,' ').trim();
+ const key=copyKey(c.text),hashes=new Set(c.assets.map(a=>a.sha256));
+ for(const old of history) {
+  if(old.id===c.id)continue;
+  if((key&&key===copyKey(old.text))||old.assets.some(a=>hashes.has(a.sha256)))throw Error('CREATIVE_DUPLICATE_CONTENT');
+  if(c.editorial?.result&&old.editorial?.result?.sourceHash===c.editorial.result.sourceHash)throw Error('CREATIVE_DUPLICATE_RESULT');
+ }
+}
 export function validateReviewedCreative(c:ReviewedCreative) {
  if(!/^[a-z0-9-]{1,80}$/.test(c.id)||!/^\d{4}-\d{2}-\d{2}$/.test(c.day)||!['morning','afternoon'].includes(c.slot)||!c.text.trim()||c.text.length>280||c.assets.length<1||c.assets.length>3)throw Error('CREATIVE_REVIEW_INVALID');
  if(c.review.referenceVersion!==socialVisualStandard.version||!c.review.reviewer||!Number.isFinite(Date.parse(c.review.reviewedAt))||c.review.sha256!==creativeDigest(c))throw Error('CREATIVE_REVIEW_INVALID');
@@ -29,6 +40,7 @@ export function reviewedCreativeFor(day:string,slot:SocialSlot):ReviewedCreative
  const rows=socialCampaignQueue.filter(c=>c.day===day&&c.slot===slot);
  if(!rows.length)return null;
  if(rows.length!==1)throw Error('CREATIVE_SLOT_CONFLICT');
+ if(day>='2026-09-24')assertFreshCreative(rows[0],socialCampaignQueue.filter(c=>c.day<day||(c.day===day&&c.slot==='morning'&&slot==='afternoon')));
  return validateReviewedCreative(rows[0] as ReviewedCreative);
 }
 export function campaignMatchesReview(c:DailyCampaign) {

@@ -51,5 +51,5 @@ export function creativeDirection(department: Department) {
     analytics:"Evaluate creative tests only with available receipts and measured campaign data. State numerator, denominator, period and coverage before a rate; public views or likes cannot prove customer acquisition.",
     ceo:"Use the shared creative playbook to keep Research, Content and Growth aligned around original product demonstrations and a clear /links journey. Prefer one finished, measurable improvement to another generic redesign plan.",
   };
-  return `${roles[department] || "Use the shared creative references only when relevant to the requested work; do not turn design inspiration into product facts."}\n${ownerMediaDirection}\n${socialEditorialInstructions}`;
+  return `${roles[department] || "Use the shared creative references only when relevant to the requested work; do not turn design inspiration into product facts."}\n${ownerMediaDirection}\n${["content","research","growth","analytics","ceo"].includes(department)?socialEditorialInstructions:""}`;
 }
