@@ -5,7 +5,8 @@
 .polish :global(#hq-heading){scroll-margin-top:20px}
 /* The parent font shorthand must not enlarge compact workspace buttons. */
 .polish section[aria-labelledby=visual-team-title] button,.polish section[aria-labelledby=daily-queue-title] button{font-size:13px;line-height:1.35}
-.polish [aria-label='Filter agents'] button{font-size:12px;padding-inline:8px}
+.polish [aria-label='Filter agents']{display:grid;grid-template-columns:44px minmax(0,1fr) minmax(0,1fr) minmax(0,1.55fr);overflow:visible}
+.polish section [aria-label='Filter agents'] button{font-size:12px;padding-inline:6px}
 .polish [aria-label='Filter content queue'] button,.polish [aria-label='Agent workspace'] button{font-size:13px}
 .polish [role=dialog] button{font-size:14px;line-height:1.4}
 .polish section[aria-label='Income and customer analytics']{padding:18px;margin-bottom:14px}
@@ -20,4 +21,7 @@
  .polish section[aria-label='Income and customer analytics'] svg[viewBox='0 0 720 216'] text{font-size:22px}
  .polish section[aria-label='Income and customer analytics'] h2{font-size:38px}
 }
-@media(max-width:350px){.polish section[aria-label='Income and customer analytics'] h2{font-size:34px}}
+@media(max-width:350px){
+ .polish section[aria-label='Income and customer analytics'] h2{font-size:34px}
+ .polish section [aria-label='Filter agents'] button{font-size:11px;padding-inline:4px}
+}
