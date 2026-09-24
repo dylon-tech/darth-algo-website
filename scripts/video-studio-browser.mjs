@@ -35,9 +35,13 @@ try {
  await page.getByRole('button',{name:/Create a video/}).click();await page.getByRole('heading',{name:'Make your next Reel.'}).waitFor();assert.match(page.url(),/view=studio/);
  await page.goBack();await page.getByRole('heading',{name:'Headquarters',exact:true}).waitFor();
  await page.getByRole('button',{name:'Studio',exact:true}).click();await page.getByRole('heading',{name:'Make your next Reel.'}).waitFor();
+ const chart=page.getByAltText('Selected historical Darth Algo product chart; not a live signal');
+ await chart.waitFor();await page.waitForFunction(()=>{const i=document.querySelector('img[alt="Selected historical Darth Algo product chart; not a live signal"]');return i?.complete&&i.naturalWidth>0;});
+ await chart.evaluate(i=>i.dispatchEvent(new Event('error')));await page.getByRole('button',{name:'Retry chart preview',exact:true}).waitFor();
  await context.setOffline(true);await page.getByText(/You are offline\. Saved figures/).waitFor();await context.setOffline(false);
+ await chart.waitFor();await page.waitForFunction(()=>{const i=document.querySelector('img[alt="Selected historical Darth Algo product chart; not a live signal"]');return i?.complete&&i.naturalWidth>0;});
  await mkdir('artifacts',{recursive:true});
- for(const width of [393,1280]){await page.setViewportSize({width,height:852});await page.waitForTimeout(250);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),`Horizontal overflow at ${width}px`);await page.screenshot({path:`artifacts/video-studio-${width}-synthetic.png`,fullPage:true});}
+ for(const width of [393,1280]){await page.setViewportSize({width,height:852});await page.waitForTimeout(250);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),`Horizontal overflow at ${width}px`);await page.screenshot({path:`artifacts/video-studio-${width}-synthetic.png`,fullPage:true});if(width===393)await page.screenshot({path:'artifacts/video-studio-phone-viewport-synthetic.png'});}
  assert.deepEqual(pageErrors,[],'Browser runtime errors');
  console.log('PASS: private API auth, synthetic mobile UI, persisted drafts, idempotency, back navigation, offline feedback, no overflow at 393/1280px. Not a physical iPhone test.');
 } finally {await browser?.close();server.kill('SIGTERM');}

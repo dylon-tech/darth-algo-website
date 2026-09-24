@@ -29,7 +29,12 @@ export default function VideoStudio({active,disabled,onOpenTeam}:{active:boolean
     const timer = setTimeout(() => { if (scene === draft.scenes.length-1) setPlaying(false); else setScene(scene+1); },draft.scenes[scene].seconds*1000);
     return () => clearTimeout(timer);
   },[playing,active,busy,scene,draft.scenes]);
-  useEffect(() => { if (!active) {setPlaying(false);reviewVideo.current?.pause();} },[active]);
+  useEffect(() => { if (!active) {setPlaying(false);reviewVideo.current?.pause();} else if (navigator.onLine) setFailedImage(''); },[active]);
+  useEffect(() => {
+    const reconnect=()=>setFailedImage('');
+    window.addEventListener('online',reconnect);
+    return()=>window.removeEventListener('online',reconnect);
+  },[]);
   const template = VIDEO_TEMPLATES.find(t => t.id===draft.templateId)!;
   const shot = draft.scenes[scene], errors = videoDraftErrors(draft), total = draft.scenes.reduce((n,s)=>n+s.seconds,0);
   let brief = '';
@@ -74,7 +79,7 @@ export default function VideoStudio({active,disabled,onOpenTeam}:{active:boolean
         <div className={styles.phone} aria-label={`Storyboard scene ${scene+1}: ${shot.headline}`}>
           <div className={styles.phoneBrand}><Image src='/darth-algo-social-logo.png' width={28} height={28} alt='Darth Algo'/><strong>DARTH ALGO</strong><span>STORYBOARD</span></div>
           <p className={styles.sceneNumber}>SCENE {scene+1} / {draft.scenes.length}</p><h3>{shot.headline || 'Your headline'}</h3>
-          <div className={styles.chartFrame}>{failedImage===template.image?<p>Source image unavailable. Review the asset before rendering.</p>:<Image src={template.image} width={1183} height={471} sizes='(max-width: 740px) 300px, 340px' unoptimized alt='Selected historical Darth Algo product chart; not a live signal' onError={()=>setFailedImage(template.image)}/>}</div>
+          <div className={styles.chartFrame}>{failedImage===template.image?<div><p>Source image unavailable. Review the asset before rendering.</p><button type='button' onClick={()=>setFailedImage('')}>Retry chart preview</button></div>:<Image src={template.image} loading='eager' width={1183} height={471} sizes='(max-width: 740px) 300px, 340px' unoptimized alt='Selected historical Darth Algo product chart; not a live signal' onError={()=>setFailedImage(template.image)}/>}</div>
           <p className={styles.previewContext}>FOR USE ON TRADINGVIEW</p><span className={styles.previewCta}>Explore the tools ↗<small>darthalgo.com/links</small></span><small className={styles.disclosure}>{VIDEO_DISCLOSURE}</small>
         </div>
         <div className={styles.previewControls}><button aria-label='Previous scene' disabled={scene===0} onClick={()=>choose(scene-1)}><ChevronLeft size={19}/></button><button onClick={()=>{if(!playing&&scene===draft.scenes.length-1)setScene(0);setPlaying(!playing);}} disabled={busy} aria-pressed={playing}><span>{playing?<Pause size={17}/>:<Play size={17}/>}</span>{playing?'Pause':'Preview timing'}</button><button aria-label='Next scene' disabled={scene===draft.scenes.length-1} onClick={()=>choose(scene+1)}><ChevronRight size={19}/></button></div>
