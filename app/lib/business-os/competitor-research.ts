@@ -12,7 +12,7 @@ export function parseCompetitorPage(html:string,channelId:string,now=Date.now())
   if(data.metadata?.channelMetadataRenderer?.externalId!==channelId)return [];
   const tabs=data.contents?.twoColumnBrowseResultsRenderer?.tabs || [];
   const content=tabs.find((t:{tabRenderer?:{selected?:boolean}})=>t.tabRenderer?.selected)?.tabRenderer?.content;
-  type PublicCard={contentId?:unknown;contentType?:unknown;metadata?:{lockupMetadataViewModel?:{title?:{content?:unknown};metadata?:{contentMetadataViewModel?:{metadataRows?:Array<{metadataParts?:Array<{text?:{content?:string}}>}>}}}}};
+  type PublicCard={contentId?:unknown;contentType?:unknown;metadata?:{lockupMetadataViewModel?:{title?:{content?:unknown};metadata?:{contentMetadataViewModel?:{metadataRows?:Array<{metadataParts?:Array<{text?:{content?:string};accessibilityLabel?:string}>}>}}}}};
   const cards:PublicCard[]=[];
   function walk(value:unknown,depth=0) {
     if(!value || typeof value!=="object" || depth>30)return;
@@ -26,7 +26,9 @@ export function parseCompetitorPage(html:string,channelId:string,now=Date.now())
     const id=card.contentId,metadata=card.metadata?.lockupMetadataViewModel;
     const title=metadata?.title?.content;
     if(typeof id!=="string" || !/^[\w-]{11}$/.test(id) || typeof title!=="string" || seen.has(id) || card.contentType!=="LOCKUP_CONTENT_TYPE_VIDEO")return [];
-    const parts=(metadata?.metadata?.contentMetadataViewModel?.metadataRows || []).flatMap((r:{metadataParts?:Array<{text?:{content?:string}}>})=>(r.metadataParts || []).map(p=>p.text?.content || ""));
+    // Some current channel cards render compact labels (2.1K / 1d ago), while
+    // their accessibility labels retain explicit view units and full dates.
+    const parts=(metadata?.metadata?.contentMetadataViewModel?.metadataRows || []).flatMap(r=>(r.metadataParts || []).flatMap(p=>[p.text?.content || "",(p.accessibilityLabel || "").replace(/ thousand /gi,'K ').replace(/ million /gi,'M ').replace(/ billion /gi,'B ')]));
     const viewsLabel=parts.find((s:string)=>/^(?:[\d,.]+[KMB]?|No) views?$/i.test(s)) || null;
     const ageLabel=parts.find((s:string)=>/^\d+ (?:minute|hour|day|week|month|year)s? ago$/.test(s));
     const age=ageLabel?.match(/^(\d+) (\w+?)s? ago$/);
@@ -60,7 +62,7 @@ async function boundedRead(response:Response,limit:number) {
 }
 export async function competitorEvidence():Promise<Evidence> {
   const sql=db();
-  let [saved]=await sql`select details,created_at from os_activity where event='competitor_snapshot' and details->>'version'='2' and created_at>now()-interval '24 hours' and (details->'sources' @> '[{"status":"verified"}]'::jsonb or created_at>now()-interval '1 hour') order by id desc limit 1`;
+  let [saved]=await sql`select details,created_at from os_activity where event='competitor_snapshot' and details->>'version'='3' and created_at>now()-interval '24 hours' and (details->'sources' @> '[{"status":"verified"}]'::jsonb or created_at>now()-interval '1 hour') order by id desc limit 1`;
   if(!saved) {
     const checkedAt=new Date().toISOString();
     const sources=await Promise.all(channels.map(async channel=>{
@@ -80,10 +82,10 @@ export async function competitorEvidence():Promise<Evidence> {
         }catch{return {name:channel.name,url,status:"unavailable",checkedAt,posts:[]};}
       }
     }));
-    const details={sources,checkedAt,version:2};
+    const details={sources,checkedAt,version:3};
     saved=await sql.begin(async tx=>{
       await tx`select pg_advisory_xact_lock(730924)`;
-      const [existing]=await tx`select details,created_at from os_activity where event='competitor_snapshot' and details->>'version'='2' and created_at>now()-interval '24 hours' and (details->'sources' @> '[{"status":"verified"}]'::jsonb or created_at>now()-interval '1 hour') order by id desc limit 1`;
+      const [existing]=await tx`select details,created_at from os_activity where event='competitor_snapshot' and details->>'version'='3' and created_at>now()-interval '24 hours' and (details->'sources' @> '[{"status":"verified"}]'::jsonb or created_at>now()-interval '1 hour') order by id desc limit 1`;
       if(existing)return existing;
       await tx`insert into os_activity(actor,event,details) values('research','competitor_snapshot',${tx.json(details)})`;
       return {details,created_at:checkedAt};

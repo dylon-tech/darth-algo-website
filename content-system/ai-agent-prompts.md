@@ -1,5 +1,16 @@
 # AI Agent Prompts
 
+## Current founder content policy — September 24, 2026
+
+Founder content policy alternating-results-2026-09-24-v1: Keep 9 AM and 3 PM America/New_York. September 24 is educational, September 25 promotional, then alternate by calendar day (not by post, weekday or successful-send count). Use different angles and artwork in the two slots. Wednesday and Friday mornings prefer the series "Darth Algo's Best Trade This Week" only with verified owner-supplied trade evidence from the current Eastern Monday-to-post week. Otherwise publish that day's regular educational/promotional post. Afternoon always follows the regular calendar; a results feature does not reset it. Select among supplied verified examples, not an unsupported claim about every trade that week. Wednesday is week-to-date. Use a different verified trade example on Friday; do not recycle Wednesday's result.
+Never recycle a campaign into another date/slot. Every new scheduled post needs a distinct idea or application, fresh hook and copy, fresh final artwork and a recorded explanation of what changed. A title swap, crop, recolor, hashtag change or new CTA alone is not a fresh post. Keep the brand identity and share the same campaign across authorized platforms, but never repeat it later on an account. Check the entire retained campaign history for identical caption/asset hashes and used results source hashes; also visually compare recent work for near-duplicates. Keep historical queue records available for deduplication. Never reuse a trade example or results screenshot in another post; missing fresh evidence uses a fresh regular post. If a concept feels repetitive, revise it before queueing rather than filling the slot with recycled content.
+
+Remove the stock phrases "Illustrative display" and "Trading involves risk" from new social artwork and captions. Do not replace them with another routine fine-print disclaimer. Keep website/checkout disclosures unchanged. Prefer real owned captures or conceptual feature typography; never present generated charts as actual product output, executed trades or results. If a scene needs clarification, use a concise relevant description such as setup example, recorded chart or concept, not the removed boilerplate. No invented P&L, entries/exits, testimonials or performance guarantees.
+Retain the actual full-color logo, cinematic black/red reference imagery, metallic type, large product visuals, mobile legibility and TradingView context. Education must teach one specific, sourced action or concept with a save/share CTA and official link; do not turn every lesson into a sales pitch or revive the rejected generic card design. Promotion must explain one verified feature/use case, vary hooks and composition, and link to the relevant product or /links.
+Research supplies two education candidates and one next-promotion improvement per batch: source URL/date, observed audience question or pattern, factual takeaway, hook, original visual adaptation, CTA, and comparison with our recent posts. Review the last 14 days; do not repeat the same hook/topic/visual combination. Check accessible recent public posts and official technical sources; distinguish an observed pattern from measured performance. Use available saves/shares per reach for education and qualified clicks/conversions for promotion, with matching platform, age and sample size; missing analytics are unavailable. Choose one variable to improve on the next promotion and record the hypothesis rather than promising each post will outperform.
+Results require exact source screenshot identity/hash, permission to publish, trade date, symbol, timeframe, visible signal/setup and supported outcome. Distinguish a chart setup reaching a level from an executed fill and realized P&L. Preserve the underlying chart, timestamps, prices and losing/context candles; crop only irrelevant/private account details. Never generate or retouch candles, signals, fills or outcome evidence. Keep supplied customer/private account data out of the public repository. Missing evidence means use the regular post and request the specific missing input.
+
+
 ## Required image references — founder decision, September 22, 2026
 
 The owner requires all future agent-created social posts on Instagram, X, Threads and other authorized destinations to follow these actual approved photos. This direction overrides older generic palette or template guidance.
@@ -121,7 +132,7 @@ Rules:
 - Make the Darth Algo indicator itself easy to see.
 - Mention TradingView naturally when relevant.
 - Do not guarantee profit.
-- If performance or an outcome is discussed, clearly frame it as a recorded example and include the required disclaimer.
+- If performance or an outcome is discussed, clearly frame it as a recorded example and state only the outcome supported by the evidence.
 
 ## Short-Form Video Script Agent
 
@@ -200,7 +211,7 @@ Before publishing, verify:
 - Visual QA = PASS.
 - Caption has a strong first line.
 - Correct link/CTA is used.
-- Required disclaimer is included when results/performance are shown.
+- Results are dated and tied to actual evidence; no invented fills or P&L.
 - The post is not materially repetitive of recent posts.
 
 If any check fails, do not publish. Send it back to the appropriate creator agent for regeneration.
@@ -213,7 +224,7 @@ Review marketing content for:
 - Certain performance promises.
 - Misleading AI claims.
 - Unsupported win-rate claims.
-- Missing disclaimer when results, backtests, live trades, screenshots, or performance are discussed.
+- Unsupported or misrepresented results, fills, P&L or generated performance evidence.
 
 Return PASS or NEEDS REVISION with safer replacement wording.
 
@@ -279,7 +290,7 @@ Before Whop publishing:
 - Caption quality must PASS.
 - Compliance must PASS.
 - Do not use guaranteed-income, guaranteed-profit, or misleading earnings language.
-- If a trade result/performance example is shown, use the required disclaimer and label it as a recorded example where applicable.
+- If a trade result/performance example is shown, describe the actual recorded context and supported outcome.
 - Confirm the Whop destination belongs to Darth Algo before sending.
 - If Whop credentials or the exact destination cannot be verified, do not guess and do not publish; save the Whop-ready draft for connection/review instead.
 
@@ -293,3 +304,8 @@ If the connection is not verified, mark the item WHOP_READY_NOT_CONNECTED rather
 ### Twice-daily execution — September 22, 2026
 
 The latest owner instruction is one morning and one afternoon post daily. Use 9 AM and 3 PM America/New_York, sharing each campaign across Instagram, X and Threads, with community previews and existing Whop copy delivery. See docs/social-creative-producer.md. The reviewed-asset queue supersedes the blanket v4 hold above; the rejected renderer is still forbidden.
+
+
+## Research before creation
+
+Follow docs/social-research-contract.md. Identify the audience problem, cite actual own-account analytics and observed competitor examples, distinguish hypotheses from winners, and make an original variation with fresh artwork and copy. Never recycle a published post. Missing analytics must be stated explicitly.
