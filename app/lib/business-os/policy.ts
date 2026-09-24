@@ -1,3 +1,4 @@
+import {validSuggestions,type AgentSuggestion} from "./agent-suggestions";
 import { createHash, timingSafeEqual } from "node:crypto";
 
 export const departments = ["ceo", "growth", "content", "support", "affiliates", "analytics", "research", "indicator_builder", "operations"] as const;
@@ -33,6 +34,7 @@ export function fingerprint(value: unknown): string {
 }
 
 export type Plan = {
+  suggestions?: AgentSuggestion[];
   xDraft?: { text: string; evidence: string[] } | null;
   brief: string;
   tasks: Array<{ department: Department; title: string; priority: number; evidence: string[] }>;
@@ -42,6 +44,7 @@ export type Plan = {
 export function validatePlan(raw: unknown, sourceIds: string[]): Plan {
   if (!raw || typeof raw !== "object") throw new Error("Invalid CEO output");
   const p = raw as Plan;
+  if(p.suggestions!==undefined&&!validSuggestions(p.suggestions,sourceIds))throw new Error("Invalid suggestions");
   const validText = (s: unknown, max: number) => typeof s === "string" && s.trim().length > 0 && s.length <= max;
   const validEvidence = (v: unknown) => Array.isArray(v) && v.length > 0 && v.length <= 8 && v.every(x => typeof x === "string" && sourceIds.includes(x));
   if (!validText(p.brief, 6000) || !Array.isArray(p.tasks) || p.tasks.length > 5 || !Array.isArray(p.proposals) || p.proposals.length > 5) throw new Error("Invalid CEO output");

@@ -20,7 +20,7 @@ export async function syncOpenLoops(){
  const sql=db();await sql.begin(async tx=>{await tx`select pg_advisory_xact_lock(730934)`;await tx.unsafe(openLoopsSchema);});
  const loops:Loop[]=[];
  const [failed,tasks,approvals,indicator,browser]=await Promise.all([
-  sql`select id,department,status,error_code,created_at from os_jobs where status in ('failed','unknown') and created_at>now()-interval '7 days' order by created_at desc limit 25`,
+  sql`select j.id,j.department,j.status,j.error_code,j.created_at from os_jobs j where j.status in ('failed','unknown') and j.created_at>now()-interval '7 days' and not (j.status='failed' and exists(select 1 from os_jobs n where n.department=j.department and n.status='succeeded' and n.created_at>j.created_at)) order by j.created_at desc limit 25`,
   sql`select id,department,title,status,updated_at from os_tasks where status='blocked' order by updated_at desc limit 25`,
   sql`select id,payload,expires_at from os_approvals where status='pending' and expires_at>now() order by created_at limit 25`,
   sql`select id,candidate->>'name' name,status from os_indicator_candidates where status in ('qa_blocked','pending','approved') order by created_at desc limit 10`.catch(()=>[]),

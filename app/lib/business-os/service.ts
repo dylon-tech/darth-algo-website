@@ -1,3 +1,4 @@
+import {suggestionPayload,enqueueSuggestion} from "./agent-suggestions";
 import { randomUUID } from "node:crypto";
 import { db } from "../affiliate-db";
 import { fingerprint, registry, type Department } from "./policy";
@@ -119,6 +120,8 @@ export async function runAgent(department: Department, requestKey: string, messa
     await sql`insert into os_activity(actor,event,entity_id,details) values(${department},'agent_sources_checked',${id},${sql.json({verifiedSources:evidence.filter(s=>s.status==="verified").length,unavailableSources:evidence.filter(s=>s.status==="unavailable").length})})`;
     await sql`insert into os_activity(actor,event,entity_id,details) values(${department},'agent_preparing_response',${id},'{}'::jsonb)`;
     const { plan, model, usage } = await generatePlan(message, evidence, tasks, history, department, approvedPilot, requestKey);
+    // Approval is for this internal artifact only, never the general publishing handoff.
+    if(message.startsWith('[APPROVED_SUGGESTION]')){plan.xDraft=null;plan.tasks=[];plan.proposals=[];plan.suggestions=[];}
     await sql`insert into os_activity(actor,event,entity_id,details) values(${department},'agent_response_ready',${id},'{}'::jsonb)`;
     await sql.begin(async tx => {
       const [run] = await tx`select status from os_runs where id=${id} for update`;
@@ -131,9 +134,10 @@ export async function runAgent(department: Department, requestKey: string, messa
       const depth = parentTask?.handoff_depth || 0;
       const [rootCount] = coordinating ? await tx`select count(*)::int as n from os_tasks where root_run_id=${rootRun}` : [];
       let workflowCount = rootCount?.n || 0;
-      const assignedTasks = [...plan.tasks];
+      const approvedArtifact=message.startsWith("[APPROVED_SUGGESTION]");
+      const assignedTasks = approvedArtifact ? [] : [...plan.tasks];
       const target = reviewTarget[department];
-      if (coordinating && !/^\[INDICATOR_(LAB|IDEAS)\]/.test(message) && target && !assignedTasks.length && handoffAllowed(department, target, depth, workflowCount)) {
+      if (coordinating && !approvedArtifact && !/^\[INDICATOR_(LAB|IDEAS)\]/.test(message) && target && !assignedTasks.length && handoffAllowed(department, target, depth, workflowCount)) {
         assignedTasks.push({ department: target, title: `Review and build on ${department}'s deliverable`, priority: 3, evidence: ["team_deliverables"] });
       }
       for (const task of assignedTasks) {
@@ -153,7 +157,12 @@ export async function runAgent(department: Department, requestKey: string, messa
           await tx`insert into os_activity(actor,event,entity_id,details) values(${department},'agent_handoff_created',${taskId},${tx.json({to:task.department,rootRun,depth:depth+1})})`;
         }
       }
-      for (const proposal of plan.proposals) {
+      for(const suggestion of department==="research"?(plan.suggestions||[]):[]){
+        if(!suggestion.evidence.every(key=>evidence.some(e=>e.id===key&&e.status==="verified")))continue;
+        const payload=suggestionPayload(suggestion,plan.brief);
+        await tx`insert into os_approvals(id,run_id,payload,payload_hash,expires_at) values(${randomUUID()},${id},${tx.json(payload)},${fingerprint(payload)},now()+interval '48 hours') on conflict do nothing`;
+      }
+      for (const proposal of approvedArtifact?[]:plan.proposals) {
         const approvalId = randomUUID();
         const payload = { ...proposal, executor: "not_connected", policyVersion: 1 };
         const inserted = await tx`insert into os_approvals(id,run_id,payload,payload_hash,expires_at)
@@ -187,6 +196,7 @@ export async function decide(id: string, hash: string, decision: "approved" | "d
     const [row] = await tx`select * from os_approvals where id=${id} for update`;
     if (!row || row.status !== "pending" || new Date(row.expires_at).getTime() <= Date.now()) throw new Error("APPROVAL_NOT_PENDING");
     if (hash !== row.payload_hash || fingerprint(row.payload) !== hash) throw new Error("APPROVAL_VERSION_CHANGED");
+    if(row.payload.executor==="internal_work_v1" && decision==="approved") await enqueueSuggestion(tx as unknown as ReturnType<typeof db>,id,row.payload);
     if(row.payload.executor==="indicator_release_v1" && decision==="approved") {
       const {queueApprovedIndicator}=await import("./indicator-package");
       await queueApprovedIndicator(tx,id,row.payload);
@@ -196,6 +206,7 @@ export async function decide(id: string, hash: string, decision: "approved" | "d
     return { id, status: decision, executed: false, publish: decision === "approved" && (isBufferPublication(row.payload) || isInstagramPublication(row.payload)), instagram: isInstagramPublication(row.payload), message: decision === "revision_requested" && isBufferPublication(row.payload) ? "Revision saved. Content will prepare a fresh X draft for approval while work is resumed." : decision === "revision_requested" && isInstagramPublication(row.payload) ? "Revision saved. This carousel will not publish. Revised slides or caption need a fresh approval." : "Plan saved. This card describes planning work, not a ready-to-publish post. Routine media uses the automatic publishing queue." };
   });
   const [indicator]=await db()`select payload->>'executor' as executor from os_approvals where id=${id}`;
+  if(indicator?.executor==="internal_work_v1") return {...result,message:decision==="approved"?"Approved. The assigned agent will create the artifact and save the result here.":"Decision saved."};
   if(indicator?.executor==="indicator_release_v1") {
     const {indicatorDecisionMessage}=await import("./indicator-lab");
     return {...result,message:await indicatorDecisionMessage(id,decision)};
