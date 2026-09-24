@@ -1,0 +1,52 @@
+name: Video studio and mobile validation
+on:
+  push:
+    branches: [feat/owner-video-studio-20260924]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: video-studio-validation-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      AI_OS_ENABLED: 'false'
+      AI_OS_AI_ENABLED: 'false'
+      AI_OS_AUTONOMY_ENABLED: 'false'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Studio model and safety checks
+        run: node --experimental-strip-types --test scripts/video-studio.test.mjs
+      - name: Type check
+        run: npx tsc --noEmit
+      - name: Lint changed implementation
+        run: npx eslint app/owner/business-home.tsx app/owner/video-studio.tsx app/owner/video-studio-model.ts
+      - name: Build without production secrets
+        run: npm run build
+      - name: Install test browser
+        run: npx playwright-core install --with-deps chromium
+      - name: Private auth and synthetic iPhone-width checks
+        run: node scripts/video-studio-browser.mjs
+      - name: Archive the rendered review clip and contact sheet
+        run: |
+          mkdir -p artifacts
+          curl --fail --location --retry 2 --max-time 60 'https://d2ol7oe51mr4n9.cloudfront.net/user_3GjCrDqrkf77RLg2koyExGkjpYm/6ded79a2-b566-4396-a90f-189cc7668dcc.mp4' -o artifacts/darth-algo-clarity-reel-review.mp4
+          curl --fail --location --retry 2 --max-time 60 'https://d2ol7oe51mr4n9.cloudfront.net/user_3GjCrDqrkf77RLg2koyExGkjpYm/c531fb9d-0096-4e6e-ba93-d0505ab60a66.jpg' -o artifacts/darth-algo-clarity-contact-sheet.jpg
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: video-studio-synthetic-browser-checks
+          path: artifacts/
+          if-no-files-found: ignore
+          retention-days: 7
