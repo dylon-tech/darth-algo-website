@@ -43,87 +43,119 @@ export const socialCampaignQueue:ReviewedCreative[] = [
     }
   },
   {
-    "id": "2026-09-24-morning-levels",
+    "id": "2026-09-24-morning-education-alerts-v2",
     "day": "2026-09-24",
     "slot": "morning",
-    "theme": "SEE THE LEVELS. PLAN THE TRADE.",
-    "text": "Entry. Stop. Targets. See the levels while building your trading plan with Darth Algo on TradingView.\nhttps://www.darthalgo.com/links\nIllustrative display, not a promised outcome. Trading involves risk. #DarthAlgo",
+    "theme": "education-alerts",
+    "text": "Your alert. Your rules. Check the condition, trigger and notifications when setting a TradingView alert. Options vary by alert type. Save this checklist.\nhttps://www.darthalgo.com/links #TradingView",
     "assets": [
       {
-        "path": "/creative-references/cinematic-2026-09-22/levels-68d118982c96.jpg",
-        "sha256": "68d118982c96cde52a069af16313f5ddae5fcca136e25cafdf908d2a74b3cc13",
-        "altText": "See the levels. Plan the trade. An illustrative tablet display with entry, stop and target feature panels.",
-        "mimeType": "image/jpeg"
+        "path": "/social-campaigns/2026-09-24/education-alerts-62ce3450a59c.png",
+        "sha256": "62ce3450a59cc15b8ac8a631c2149e63bb12f011730408474c843bd3f76a6467",
+        "altText": "Educational TradingView alert checklist: choose the condition, set the trigger, check notifications. Darth Algo black/red branding and a conceptual phone learning card.",
+        "mimeType": "image/png"
       }
     ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "educational",
+      "sources": [
+        "https://www.tradingview.com/support/solutions/43000763312-learn-how-to-configure-alerts/"
+      ],
+      "learning": "Replace the prior feature pitch with three actionable setup checks and a save CTA."
+    },
     "review": {
       "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
-      "sha256": "ed9d7ce670297f8ea0b9f3cb684a0f102d898f383f4a775e051b6d196eb7e066",
-      "reviewer": "Codex visual review; owner-approved photo direction",
-      "reviewedAt": "2026-09-22T23:17:35.730Z"
+      "sha256": "463b8bb41f97c8bf0ee2890d1038eaa4c3c26edcd93c6c8d97ced69bcfe8a248",
+      "reviewer": "Codex: final 4:5 artwork visually inspected against actual cinematic reference and full-color logo; exact copy and source review",
+      "reviewedAt": "2026-09-24T03:35:22.904075Z"
     }
   },
   {
-    "id": "2026-09-24-afternoon-community",
+    "id": "2026-09-24-afternoon-education-close-v2",
     "day": "2026-09-24",
     "slot": "afternoon",
-    "theme": "JOIN THE DARTH ALGO COMMUNITY.",
-    "text": "Chart discussions, indicator help and trading education. Explore the free Darth Algo community through our official links page.\nhttps://www.darthalgo.com/links\nCommunity preview. Trading involves risk. #DarthAlgo",
+    "theme": "education-close",
+    "text": "Timing changes the alert. Once per bar may trigger before close; once per bar close checks at bar close. Available options depend on alert type. Save this comparison.\nhttps://www.darthalgo.com/links #TradingView",
     "assets": [
       {
-        "path": "/creative-references/cinematic-2026-09-22/community-cbc4502936b2.jpg",
-        "sha256": "cbc4502936b2de341b949ad82db062f242a7a1de70c5c4da38460042177d1ea5",
-        "altText": "Join the Darth Algo community. A conceptual Telegram phone preview and chart discussion, indicator help, trading education and free community panels.",
-        "mimeType": "image/jpeg"
+        "path": "/social-campaigns/2026-09-24/education-close-f8d1a6fba499.png",
+        "sha256": "f8d1a6fba499fe5f8455cb98fca1e470f5e4691b1870861ed3d876d7254eb26b",
+        "altText": "Darth Algo educational poster compares Once per bar with Once per bar close on a conceptual laptop learning card. Available options depend on alert type.",
+        "mimeType": "image/png"
       }
     ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "educational",
+      "sources": [
+        "https://www.tradingview.com/support/solutions/43000474415-differences-between-alert-frequencies/"
+      ],
+      "learning": "Use a specific comparison answering trigger-timing confusion; test saves rather than sales claims."
+    },
     "review": {
       "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
-      "sha256": "abf0336443cb08cd9a2b74e2010c9b3994c5a25769424b630e9edf2bd637a8c6",
-      "reviewer": "Codex visual review; owner-approved photo direction",
-      "reviewedAt": "2026-09-22T23:17:35.730Z"
+      "sha256": "05b806e08fb69dfff75be83b67ea9647a1c2245099614ffc6758baffdd45c8a9",
+      "reviewer": "Codex: final 4:5 artwork visually inspected against actual cinematic reference and full-color logo; exact copy and source review",
+      "reviewedAt": "2026-09-24T03:35:22.904075Z"
     }
   },
   {
-    "id": "2026-09-25-morning-swing-context",
+    "id": "2026-09-25-morning-promo-swing-v2",
     "day": "2026-09-25",
     "slot": "morning",
-    "theme": "Swing: broader trend context",
-    "text": "See the bigger picture. Darth Algo Swing combines broader trend context, swing signals and trade levels.\n\nIllustrative display. Trading involves risk.\nExplore Swing: https://www.darthalgo.com/products/swing #TradingView",
+    "theme": "promo-swing",
+    "text": "Give the bigger picture space. Darth Algo Swing brings broader trend context, swing signals and trade levels to TradingView. Explore the features:\nhttps://www.darthalgo.com/products/swing #DarthAlgo",
     "assets": [
       {
-        "path": "/social-campaigns/2026-09-25/swing-context-70d1cbae9e22.jpg",
-        "sha256": "70d1cbae9e22f13e023777a9c0227327701f26fd330def4c870c92142792b4be",
-        "altText": "Cinematic black-and-red Darth Algo Swing poster: SEE THE BIGGER MOVE. An angled monitor shows an illustrative trend-cloud chart. Feature panels read Broader Trend, Swing Signals and Trade Levels. Explore Swing at darthalgo.com/products/swing. Trading involves substantial risk.",
-        "mimeType": "image/jpeg"
+        "path": "/social-campaigns/2026-09-25/promo-swing-3e9e28d01209.png",
+        "sha256": "3e9e28d01209a7e85da1ee6103ffd74f44c31e49ca1f1c7aacdda05d8a669b23",
+        "altText": "Darth Algo Swing feature poster with a conceptual compass and panels for broader trend context, swing signals and trade levels. Built for TradingView.",
+        "mimeType": "image/png"
       }
     ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "promotional",
+      "sources": [
+        "https://www.darthalgo.com/products/swing"
+      ],
+      "learning": "Focus on one product and a direct product destination. Friday results slot uses this regular fallback until current-week evidence arrives."
+    },
     "review": {
       "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
-      "sha256": "2414730e1676b7afb7800e879d22da7c5d890d803d8d7bd8f3e6e8e29adf7920",
-      "reviewer": "Codex visual review; owner-approved photo direction",
-      "reviewedAt": "2026-09-23T12:48:15.415Z"
+      "sha256": "7fd5fda1cb0fb0e536782c75c59f0f5715b5ed9a5fec18c38d97b46a0c8d7fa0",
+      "reviewer": "Codex: final 4:5 artwork visually inspected against actual cinematic reference and full-color logo; exact copy and source review",
+      "reviewedAt": "2026-09-24T03:35:22.904075Z"
     }
   },
   {
-    "id": "2026-09-25-afternoon-scalper-alerts",
+    "id": "2026-09-25-afternoon-promo-scalper-v2",
     "day": "2026-09-25",
     "slot": "afternoon",
-    "theme": "Scalper: TradingView alerts and signal review",
-    "text": "Your setup. Your alert. Darth Algo Scalper supports TradingView alerts—review each signal alongside trend context.\n\nIllustrative display. Trading involves risk.\nExplore Scalper: https://www.darthalgo.com/products/scalper #TradingView",
+    "theme": "promo-scalper",
+    "text": "Your setup. On your radar. Darth Algo Scalper combines short-term signals, trend context and TradingView alerts. Review the signal in context.\nhttps://www.darthalgo.com/products/scalper #DarthAlgo",
     "assets": [
       {
-        "path": "/social-campaigns/2026-09-25/scalper-alerts-d17d9a18b5a6.jpg",
-        "sha256": "d17d9a18b5a6dc42d21681d6bb4587dcbd981b51546b19ab517b81071c598eeb",
-        "altText": "Cinematic Darth Algo Scalper poster with metallic YOUR SETUP. YOUR ALERT. lettering and an angled phone labelled Illustrative display. Red-lit panels show TradingView Alerts, Short-Term Signals and Trend Context. Explore Scalper at darthalgo.com/products/scalper. Trading involves substantial risk.",
-        "mimeType": "image/jpeg"
+        "path": "/social-campaigns/2026-09-25/promo-scalper-8c0382c609ae.png",
+        "sha256": "8c0382c609aea52260cd3521e2e156116439fb1c692b01b92c665876c092c240",
+        "altText": "Darth Algo Scalper feature poster: conceptual red bell on a phone, TradingView alerts, short-term signals and trend context. Explore Scalper.",
+        "mimeType": "image/png"
       }
     ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "promotional",
+      "sources": [
+        "https://www.darthalgo.com/products/scalper"
+      ],
+      "learning": "Test a focused alerts benefit and direct product CTA against the previous broad Pro feature comparison."
+    },
     "review": {
       "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
-      "sha256": "392d99d7c578265026de3033119178a6e2414298b4346c3528830f7d371b1682",
-      "reviewer": "Codex visual review; owner-approved photo direction",
-      "reviewedAt": "2026-09-23T12:48:15.415Z"
+      "sha256": "cd2aedbd5b082c8ddd6262758daa6190d483cfdd4e1df5afc13006191c3fbf39",
+      "reviewer": "Codex: final 4:5 artwork visually inspected against actual cinematic reference and full-color logo; exact copy and source review",
+      "reviewedAt": "2026-09-24T03:35:22.904075Z"
     }
   }
 ];

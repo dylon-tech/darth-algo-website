@@ -1,6 +1,7 @@
 import { socialVisualStandard } from "./social-visual-standard";
 import type { Department } from "./policy";
 import type { Evidence } from "./sources";
+import { socialEditorialInstructions } from "./social-editorial-policy";
 
 // Latest owner direction overrides older requests for agent-made social videos.
 export const ownerMediaDirection = "The owner handles social video creation. Focus agent creative work on original promotional photos, static graphics and carousels. Do not generate, commission, queue or publish agent-made TikToks, Reels or Shorts, including the rejected 18-second tools promo, unless the owner explicitly changes this direction. Existing website animations are outside this restriction. Competitor video research may continue, but translate supported findings into original static-image concepts and share them with Content and Growth. Mandatory owner-approved reference set: /creative-references/cinematic-2026-09-22/manifest.json (YOUR CHART. MORE CLARITY.; TWO MODES. ONE PRO.; SEE THE LEVELS. PLAN THE TRADE.; JOIN THE DARTH ALGO COMMUNITY.). Applies to Instagram, X, Threads and every other authorized social destination with graphics. Inspect the actual reference photos and use them as visual inputs for creation or revision; descriptions alone are insufficient. Match their cinematic faceted black/glass scenes, saturated red rim lighting, beveled metallic silver/red headlines, oversized angled realistic devices, glowing compact feature panels, varied compositions, actual full-color Darth Algo logo and clear CTA. Keep product screens legible and TradingView context explicit when relevant. Change the subject and copy while retaining this visual language. Reject both the navy/gold cards and premium-black-red-2026-09-22-v4: the headline/paragraph/flat-chart stack remains rejected even in brand colors. Compare every finished slide against the references before publishing; bind review to exact final asset hashes and this reference version. If matching, inspected assets are unavailable, hold the campaign; do not substitute the retired renderer or a text-only promotional fallback. Platform crops must retain the approved composition, logo, legible text and CTA. A reference image is not proof of results. Never fabricate chart results, winning trades or testimonials, or copy a competitor's finished artwork.";
@@ -23,10 +24,11 @@ export const creativeReferences = [
 
 export function creativePlaybookEvidence(): Evidence {
   return {
-    id:"owner_creative_references", status:"verified", checkedAt:"2026-09-22T00:00:00Z",
+    id:"owner_creative_references", status:"verified", checkedAt:"2026-09-24T00:00:00Z",
     scope:"Founder-approved cinematic social reference pack confirmed September 22; source and reference-image hashes retained. This is visual direction, not publication or trading-performance evidence. Also includes the September 20 curated one-time review of 11 unique owner-supplied TikToks. Coverage is explicit per source; captions can contain transcription errors. Verified means the reference was inspected to the stated extent, not that creator claims, conversion benefits, tool availability or trading results were verified. Not a live competitor feed. No new paid service or subscription authorized.",
     data:{
       ownerMediaDirection,
+      socialEditorialInstructions,
       socialVisualStandard,
       references:creativeReferences.map(({video,creator,...reference})=>({...reference,url:`https://www.tiktok.com/@${creator}/video/${video}`})),
       adaptation:"Preserve Darth Algo branding, prices and existing working integrations. Use real owned chart captures to explain trend, signals and risk, with an obvious next step to /links. The owner explicitly wants dimensional 3D scenes and immersive scroll-driven product storytelling across the existing website. Use the shared perspective engine and owned charts; retain mobile legibility, reduced-motion alternatives and immediate access to purchase options.",
@@ -49,5 +51,5 @@ export function creativeDirection(department: Department) {
     analytics:"Evaluate creative tests only with available receipts and measured campaign data. State numerator, denominator, period and coverage before a rate; public views or likes cannot prove customer acquisition.",
     ceo:"Use the shared creative playbook to keep Research, Content and Growth aligned around original product demonstrations and a clear /links journey. Prefer one finished, measurable improvement to another generic redesign plan.",
   };
-  return `${roles[department] || "Use the shared creative references only when relevant to the requested work; do not turn design inspiration into product facts."}\n${ownerMediaDirection}`;
+  return `${roles[department] || "Use the shared creative references only when relevant to the requested work; do not turn design inspiration into product facts."}\n${ownerMediaDirection}\n${socialEditorialInstructions}`;
 }
