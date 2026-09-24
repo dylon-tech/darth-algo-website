@@ -1,3 +1,4 @@
+import {ownerCampaignHeld} from './daily-content-review';
 import {createHash} from "node:crypto";
 import {db} from "../affiliate-db";
 import {createWhopHomePost,whopStatus,verifyWhopPost} from "./whop";
@@ -21,6 +22,7 @@ export async function syncDailyWhop(campaign:DailyCampaign, now=new Date()){
     if(recent)return {state:'readback_pending',published:false};
     return confirmWhop(key,campaign,accepted.details);
   }
+  if(await ownerCampaignHeld(campaign,sql))return {state:'owner_held',published:false};
   if((await whopPermissionState()).blocked)return {state:'WHOP_FORUM_PERMISSION_MISSING',published:false};
   const [started]=await sql`select id from os_activity where event='whop_home_publish_started' and entity_id=${key} order by id desc limit 1`;
   const [failure]=await sql`select id,details from os_activity where event='whop_home_publish_unknown' and entity_id=${key} order by id desc limit 1`;
@@ -50,6 +52,7 @@ export async function syncDailyWhop(campaign:DailyCampaign, now=new Date()){
   const idem=createHash("sha256").update(`darth-whop-home-v2:${campaignKey(campaign)}:${text}`).digest("hex").slice(0,48);
   const claimed=await sql.begin(async tx=>{
     await tx`select pg_advisory_xact_lock(730928)`;
+    if(await ownerCampaignHeld(campaign,tx as unknown as typeof sql))return false;
     const [control]=await tx`select paused from os_control where id=1 for share`;
     if(!control||control.paused||!campaignMatchesReview(campaign)||!sendWindow(campaign))return false;
     const [existing]=await tx`select id from os_activity where event in ('whop_home_publish_started','whop_home_publish_receipt') and entity_id=${key} limit 1`;

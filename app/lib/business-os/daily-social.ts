@@ -1,3 +1,4 @@
+import {ownerCampaignHeld} from './daily-content-review';
 import {randomUUID} from 'node:crypto';
 import {db} from '../affiliate-db';
 import {fingerprint} from './policy';
@@ -16,6 +17,7 @@ import {incidentCatchup} from './publishing-recovery-policy';
 const sendWindow=(c:DailyCampaign)=>withinSocialWindow(c)||incidentCatchup(c);
 export async function prepareDailyCampaign(now=new Date()):Promise<DailyCampaign>{
  const sql=db(),schedule=socialSchedule(now),day=schedule.day,key=campaignKey(schedule);
+ if(await ownerCampaignHeld(schedule,sql))throw Error('DAILY_CONTENT_OWNER_HELD');
  const reviewed=reviewedCreativeFor(day,schedule.slot);
  if(!reviewed)throw Error('CREATIVE_ASSETS_REQUIRED');
  const [saved]=await sql`select details from os_activity where event='daily_social_ready' and entity_id=${key} order by id desc limit 1`;
@@ -32,6 +34,7 @@ export async function prepareDailyCampaign(now=new Date()):Promise<DailyCampaign
  return sql.begin(async tx=>{
   await tx`select pg_advisory_xact_lock(730924)`;
   await tx`select pg_advisory_xact_lock(730928)`;
+  if(await ownerCampaignHeld(schedule,tx as unknown as typeof sql))throw Error('DAILY_CONTENT_OWNER_HELD');
   const [existing]=await tx`select details from os_activity where event='daily_social_ready' and entity_id=${key} order by id desc limit 1`;
   if(existing&&(campaignMatchesReview(existing.details)||await attempted(tx as unknown as typeof sql)))return existing.details as DailyCampaign;
   const [control]=await tx`select paused from os_control where id=1 for share`;if(!control||control.paused)throw Error('OS_PAUSED');
@@ -48,6 +51,7 @@ export async function prepareSocialDelivery(campaign:DailyCampaign,network:Socia
  const sql=db(),payload=dailySocialPayload(campaign,network,channelId),hash=fingerprint(payload),key=`${campaignKey(campaign)}:${network}`;
  return sql.begin(async tx=>{
   await tx`select pg_advisory_xact_lock(730924)`;
+  if(await ownerCampaignHeld(campaign,tx as unknown as typeof sql))throw Error('DAILY_CONTENT_OWNER_HELD');
   const [existing]=await tx`select details from os_activity where event='daily_social_prepared' and entity_id=${key} order by id desc limit 1`;
   if(existing&&existing.details.payloadHash===hash)return String(existing.details.approvalId);
   if(existing){
@@ -109,6 +113,7 @@ export async function executeSocialDelivery(id:string){
  if(receipt)return checkSocialDelivery(id,{scheduled:true});
  const [started]=await sql`select id from os_activity where entity_id=${id} and event='buffer_publish_started' limit 1`;
  if(started)return {state:'unknown',published:false};
+ if(await ownerCampaignHeld(payload.campaign,sql))return {state:'owner_held',published:false};
  if(!campaignMatchesReview(payload.campaign))return {state:'creative_review_required',published:false};
  if(!sendWindow(payload.campaign))return {state:'waiting_for_daily_window',published:false};
  if(!isCurrentCreative(payload.campaign))return {state:'retired_creative_held',published:false};
@@ -122,6 +127,7 @@ export async function executeSocialDelivery(id:string){
  await socialPreflight(payload);
  const claimed=await sql.begin(async tx=>{
   await tx`select pg_advisory_xact_lock(730924)`;
+  if(await ownerCampaignHeld(payload.campaign,tx as unknown as typeof sql))return false;
   const [current]=await tx`select * from os_approvals where id=${id} for update`;authorized(current);
   if(current.payload_hash!==row.payload_hash)throw Error('DAILY_SOCIAL_VERSION_CHANGED');
   if(!campaignMatchesReview((current.payload as DailySocialPayload).campaign))throw Error('DAILY_SOCIAL_CREATIVE_RETIRED');
@@ -177,6 +183,7 @@ export async function syncDailySocial(now=new Date()){
  try{campaign=await prepareDailyCampaign(now);}
  catch(error){
   const reason=error instanceof Error?error.message:'CREATIVE_PREPARATION_FAILED';
+  if(reason==='DAILY_CONTENT_OWNER_HELD')return {status:'owner_held',day:schedule.day,slot:schedule.slot,reason:'Owner held this slot. No automatic replacement or send is authorized.'};
   const [last]=await sql`select details from os_activity where event='daily_social_status' and entity_id=${key} order by id desc limit 1`;
   if(last?.details.reason!==reason)await sql`insert into os_activity(actor,event,entity_id,details) values('content','daily_social_status',${key},${sql.json({status:'creative_assets_required',reason,day:schedule.day,slot:schedule.slot})})`;
   return {status:'creative_assets_required',day:schedule.day,slot:schedule.slot,reason};
