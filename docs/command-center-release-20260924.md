@@ -29,7 +29,7 @@ Expenses / Income now compares the 30-day revenue window with a prorated 30-day 
 | Remake | Durable internal brief; original remains held | BLOCKED for final artwork: no finished-image renderer in deployed worker |
 | Video create | Existing production brief | BLOCKED for finished video: no deployed final rendering executor |
 | Fix agents | Bounded existing recovery request | Preserved; live recovery evidence requires owner login |
-| Pause / Resume | Existing global control in advanced controls | Preserved; no changes to worker permissions |
+| Pause / Resume | Existing global control directly in the settings sheet | Server-confirmed state; in-flight calls may finish; no changes to worker permissions |
 | Provider publish | Existing exact asset checks and per-provider receipt paths | Not triggered as an external test in this run |
 
 ## Acceptance status
