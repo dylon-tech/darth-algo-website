@@ -32,11 +32,11 @@ try {
  await page.reload();await page.getByRole('heading',{name:'Make your next Reel.'}).waitFor();
  assert.equal(await page.getByRole('textbox',{name:'On-screen headline'}).inputValue(),'CLARITY BEFORE THE CLICK.');
  await page.getByRole('button',{name:'Send to content agent',exact:true}).click();await page.getByRole('button',{name:'Request saved',exact:true}).waitFor();assert.equal(keys.length,2);assert.equal(keys[0],keys[1],'Reload must reuse the same request key');
- await page.getByRole('button',{name:'HQ',exact:true}).click();await page.getByRole('heading',{name:'Headquarters',exact:true}).waitFor();
+ await page.getByRole('button',{name:'Home',exact:true}).click();await page.getByRole('heading',{name:'Headquarters',exact:true}).waitFor();
  await page.getByRole('button',{name:'More controls',exact:true}).click();
  await page.getByRole('dialog').getByRole('button',{name:'Create a video',exact:true}).click();await page.getByRole('heading',{name:'Make your next Reel.'}).waitFor();assert.match(page.url(),/view=queue/);
  await page.goBack();await page.getByRole('heading',{name:'Headquarters',exact:true}).waitFor();
- await page.getByRole('button',{name:'Queue',exact:true}).click();await page.locator('summary').filter({hasText:'Create a video'}).click();await page.getByRole('heading',{name:'Make your next Reel.'}).waitFor();
+ await page.getByRole('button',{name:'Studio',exact:true}).click();await page.locator('summary').filter({hasText:'Create a video'}).click();await page.getByRole('heading',{name:'Make your next Reel.'}).waitFor();
  const chart=page.getByAltText('Selected historical Darth Algo product chart; not a live signal');
  await chart.waitFor();await page.waitForFunction(()=>{const i=document.querySelector('img[alt="Selected historical Darth Algo product chart; not a live signal"]');return i?.complete&&i.naturalWidth>0;});
  await chart.evaluate(i=>i.dispatchEvent(new Event('error')));await page.getByRole('button',{name:'Retry chart preview',exact:true}).waitFor();

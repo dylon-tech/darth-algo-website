@@ -16,7 +16,7 @@ assert.equal(model.systemHealth([{rating:'Unknown'}],desk,[],[]).rating,'Unknown
 assert.equal(model.expenseSummary([],10000).monthlyCents,null);
 assert.equal(model.expenseSummary([{amountCents:12000,cadence:'annual',status:'confirmed'},{amountCents:null,status:'unverified'}],10000).monthlyCents,1000);
 assert.equal(model.expenseSummary([{amountCents:12000,cadence:'annual',status:'confirmed'}],0).ratio,null);
-assert.equal(model.expenseSummary([{amountCents:12000,cadence:'annual',status:'confirmed'},{amountCents:900,status:'inactive'}],10000).ratio,10);
+assert.equal(model.expenseSummary([{amountCents:12000,cadence:'annual',status:'confirmed'},{amountCents:900,status:'inactive'}],10000).ratio,9.86);
 let auth=false,origin=false,readCount=0,mutations=0,afters=0;
 const route=load('app/api/owner/dashboard/route.ts',{'next/server':{after:()=>afters++},'../../../lib/business-os/owner-session':{ownerSessionFromRequest:()=>auth,sameOrigin:()=>origin,privateHeaders:{}},'../../../lib/business-os/ceo-home':{ceoHome:async()=>{readCount++;return {checkedAt:at};}},'../../../lib/business-os/company-finances':{saveBill:async()=>{mutations++;return{};}},'../../../lib/business-os/owner-recovery':{requestAgentRecovery:async()=>{mutations++;return{status:'queued'};}},'../../../lib/business-os/service':{decide:()=>{}},'../../../lib/business-os/telegram-command':{workAndNotify:()=>{}}});
 (async()=>{

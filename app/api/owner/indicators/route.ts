@@ -3,15 +3,22 @@ import {secretMatches} from "../../../lib/business-os/policy";
 import {db} from "../../../lib/affiliate-db";
 import {ensureIndicatorSchema,recordIndicatorRelease,recordPrivateIndicatorPreview} from "../../../lib/business-os/indicator-lab";
 import {prepareIndicatorPackage} from "../../../lib/business-os/indicator-package";
+import {ensureCaptureJobSchema} from "../../../lib/business-os/indicator-capture-worker";
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
 function bearer(r:Request){return process.env.AI_OS_ENABLED==="true" && secretMatches(r.headers.get("authorization"),process.env.AI_OS_OWNER_KEY?`Bearer ${process.env.AI_OS_OWNER_KEY}`:undefined);}
 export async function GET(r:Request){
   if(!bearer(r) && !ownerSessionFromRequest(r))return Response.json({error:"Unauthorized"},{status:401,headers:privateHeaders});
   await ensureIndicatorSchema();
+  await ensureCaptureJobSchema();
   const id=new URL(r.url).searchParams.get("id");
   if(id && !/^[a-f0-9-]{36}$/.test(id))return Response.json({error:"Invalid ID"},{status:400});
-  const rows=id?await db()`select * from os_indicator_candidates where id=${id}`:await db()`select id,candidate->>'name' as name,status,score,created_at from os_indicator_candidates order by created_at desc limit 30`;
+  const rows=id?await db()`select * from os_indicator_candidates where id=${id}`:await db()`select c.id,c.candidate->>'name' as name,c.candidate->>'purpose' as purpose,c.status,c.score,c.created_at,c.source_hash,
+    p.id as capture_id,p.origin as capture_origin,
+    (select blocked_reason from os_indicator_capture_control where id=1) as capture_error
+    from os_indicator_candidates c left join lateral
+    (select id,origin from os_indicator_captures where candidate_id=c.id and source_hash=c.source_hash and metadata->>'view'='indicator' order by created_at desc limit 1) p on true
+    order by c.created_at desc limit 30`;
   return Response.json({candidates:rows},{headers:privateHeaders});
 }
 export async function POST(r:Request){
