@@ -1,0 +1,43 @@
+const assert=require('node:assert/strict'),ts=require('typescript'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
+function load(file,imports={}){const exports={};vm.runInNewContext(ts.transpileModule(fs.readFileSync(path.join(__dirname,'../',file),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText,{exports,require:n=>imports[n]||require(n),Date,Number,Math,JSON,process,Response,console,Set,Map});return exports;}
+const history=load('app/lib/business-os/finance-history.ts'),model=load('app/lib/business-os/ceo-home-model.ts');
+const estimates=load('app/lib/business-os/bill-estimates.ts');
+const now=Date.parse('2026-09-24T07:15:00Z')/1000,day=86400;
+const payment=(id,created,amount_received,extra={})=>({id,created,amount_received,currency:'usd',livemode:true,status:'succeeded',...extra});
+const rows=[payment('a',now-90*day,111),payment('b',now-30*day,222),payment('c',now-day,333),payment('d',now-1,444),payment('e',now,999),payment('f',now-2,555,{status:'processing'}),payment('g',now-3,888,{currency:'eur'})];
+const points=history.incomeHistory(rows,now);
+assert.equal(points.length,90);assert.equal(points[0].value,111);assert.equal(points.at(-1).value,777);
+assert.equal(points.slice(-30).reduce((n,p)=>n+p.value,0),999);
+assert.equal(points.slice(-7).reduce((n,p)=>n+p.value,0),777);
+assert.equal(history.incomeHistory([],now).reduce((n,p)=>n+p.value,0),0);
+assert.throws(()=>history.incomeHistory([...rows,rows[0]],now),/INVALID_PAYMENT_EVIDENCE/);
+assert.throws(()=>history.incomeHistory([payment('test',now-1,10,{livemode:false})],now));
+assert.throws(()=>history.incomeHistory([payment('bad',now-1,-20)],now));
+const customers=history.customerHistory([{checkedAt:'2026-09-20T01:00:00Z',active:5},{checkedAt:'2026-09-20T10:00:00Z',active:7},{checkedAt:'2026-09-21T01:00:00Z',active:null},{checkedAt:'2026-09-23T01:00:00Z',active:0},{checkedAt:'invalid',active:99}],now*1000);
+assert.equal(customers.length,2);assert.equal(customers[0].value,7);assert.equal(customers[1].value,0); // no invented missing dates
+const defaults=estimates.mergeBillEstimates([]),budget=model.expenseSummary(defaults,100000);
+assert.equal(defaults.length,11);assert.equal(budget.monthlyCents,24403);assert.equal(budget.estimated,11);assert.equal(budget.complete,false);assert.equal(budget.missing,0);
+assert.equal(model.expenseSummary(defaults,0).ratio,null);
+const saved=[{...defaults[0],status:'confirmed',amountCents:1000},{...defaults[1],status:'inactive'},{...defaults[2],status:'unverified',amountCents:null},{id:'custom',name:'Custom',amountCents:12000,cadence:'annual',status:'confirmed'}];
+const merged=estimates.mergeBillEstimates(saved);
+assert.equal(merged.find(b=>b.id==='tradingview').amountCents,1000);assert.equal(merged.find(b=>b.id==='vercel').status,'inactive');assert.equal(merged.find(b=>b.id==='neon').status,'estimated');assert.equal(merged.find(b=>b.id==='custom').amountCents,12000);
+assert.equal(new Set(merged.map(b=>b.id)).size,merged.length);
+assert.equal(model.expenseSummary([{amountCents:1200,cadence:'annual',status:'estimated'},{amountCents:1200,cadence:'monthly',status:'confirmed'}],10000).monthlyCents,1300);
+const summary=load('app/lib/business-os/payment-summary.ts');
+let incomplete=false,fail=false,writes=[];
+const sql=async(strings,...values)=>{if(strings[0].startsWith('insert'))writes.push(values.at(-1));return[];};sql.json=x=>x;
+const finance=load('app/lib/business-os/company-finances.ts',{'../affiliate-db':{db:()=>sql},'../stripe':{stripe:()=>({balance:{retrieve:async()=>({livemode:true})},paymentIntents:{list:async()=>{if(fail)throw Error('OFFLINE');return {data:[],has_more:incomplete};}}})},'./ceo-scorecard':{customerSnapshot:async()=>({active:3,checkedAt:new Date().toISOString()})},'./payment-summary':summary,'./ceo-home-model':model,'./bill-estimates':estimates,'./finance-history':history});
+const draft={id:'tool',name:'Tool',cadence:'monthly',status:'estimated',amountCents:1000};
+assert.equal(finance.validateBill(draft).verifiedAt,null);assert.equal(finance.validateBill(draft).status,'estimated');
+assert.throws(()=>finance.validateBill({...draft,amountCents:null}));assert.throws(()=>finance.validateBill({...draft,amountCents:-1}));
+(async()=>{
+ let result=await finance.incomeSnapshot();assert.equal(result.incomeCents,0);assert.equal(result.history.length,90);
+ incomplete=true;result=await finance.incomeSnapshot();assert.equal(result.incomeCents,null);assert.equal(result.history,null);
+ fail=true;result=await finance.incomeSnapshot();assert.equal(result.history,null);assert.equal(result.incomeCents,null);
+ const React=require('react'),{renderToStaticMarkup}=require('react-dom/server');
+ const Chart=load('app/owner/finance-chart.tsx',{'./business-home.module.css':{default:new Proxy({},{get:(_,k)=>String(k)})}}).default;
+ const html=renderToStaticMarkup(React.createElement(Chart,{finances:{income:{history:points,periodEnd:new Date(now*1000).toISOString()},customerHistory:customers}}));
+ assert.match(html,/\$9\.99/);assert.match(html,/Explore chart dates/);assert.match(html,/View exact values/);assert.doesNotMatch(html,/NaN|Infinity/);
+ const empty=renderToStaticMarkup(React.createElement(Chart,{finances:null}));assert.match(empty,/Chart data is unavailable/);assert.doesNotMatch(empty,/\$0\.00/);
+ console.log('PASS actual income windows, observed-only customer history, mixed estimate budgets, preserved overrides, Stripe failure/incomplete holds and chart markup.');
+})().catch(e=>{console.error(e);process.exitCode=1;});
