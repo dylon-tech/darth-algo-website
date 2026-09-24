@@ -53,3 +53,11 @@ The cloud browser's actual `/owner` screen is signed out and requests the existi
 Current Apple HIG consulted: https://developer.apple.com/design/human-interface-guidelines/materials and https://developer.apple.com/design/human-interface-guidelines/accessibility. System fonts, 44px controls, focused material navigation, reduced motion and private in-memory feeds preserve the previous release's accessibility work. No Apple font distribution or native App Store claim.
 
 Rollback: revert this commit through the same Git/Vercel pipeline or promote baseline READY deployment. No destructive migration is required; indicator capture schema initialization uses existing additive routines.
+
+## Verified isolated release checks
+
+Commit f0e8d8b passed Business app validation (run 36057901764) and iPhone experience validation (run 36057895527): Postgres hold/concurrency tests, existing agent/queue Chromium journeys, Video Studio regression and five-tab WebKit checks at 320/375/393/430/1280px. Exact-version Inbox revision, repeated-click guard, history/conversation routing and confirmed pause/resume passed. Home, Agents, Studio, Lab and Inbox screenshots were downloaded and visually inspected. All screenshots use explicitly synthetic records, not private business or live account data. Browser checks report no horizontal overflow, sub-44px important buttons or runtime errors. This is not physical-device testing.
+
+Screenshots and JSON report: https://github.com/dylon-tech/darth-algo-website/actions/runs/36057895527 (artifact iphone-experience-validation). The code produces repeatable screenshots; CI artifacts have seven-day retention. Final readability refinements keep primary link contrast, explain pause scope and use plain-language Lab blockers.
+
+Read-only production checks also confirmed scheduled calls to the existing owner-work, owner-health and indicator-browser endpoints; provider logs still contain permission and validation blockers. No manual external sends were used as tests.
