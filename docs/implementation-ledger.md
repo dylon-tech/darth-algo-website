@@ -1,5 +1,13 @@
 # Darth Algo implementation ledger
 
+## Owner recovery requests 3530 / 3569 — September 24, 2026
+
+Work DA-MAINTENANCE-NATIVE-EVIDENCE-20260924, Operations skill 1.0.0. Read current main 596b0fb75c52c58cc03999f9e3fdaaaf1236abfb and CEO-home contract. Exact production SHA is READY, with no new deployment/runtime failure. Read both successful Operations reports and current failed-job/task records through the production read-only query UI. All nine departments' latest runs completed; older failures were superseded, so no internal retry was warranted. No external or uncertain publication was retried.
+
+Found a repairable evidence gap: sources.ts still declared support_cases and retention universally unavailable despite the deployed native ledgers. A bounded repair reads aggregate native case/opportunity counts, grouped status and timestamps, plus the latest retention-sync status. Native scope, incomplete subscription coverage, stale stored rows and absence of provider inbox coverage are explicit; no customer identities/messages/offers enter this source. TradingView fulfillment remains unavailable rather than inventing a connection.
+
+The isolated repair adds PostgreSQL-backed tests for actual query behavior, empty versus inaccessible ledgers, unavailable recent Stripe sync with retained records, independent source failures, privacy and absence of mutations. No permissions, budgets, subscriptions, account access or messaging behavior changes. Reviewed PR, test/build and exact deployment receipts follow after validation.
+
 ## Business headquarters and estimated expenses — September 24, 2026
 
 Work DA-HQ-FINANCES-20260924, Darth Algo Operations 1.0.0, CEO reporting + deployment verification. Owner requested automatic best-estimate bill entry, stock-style income/customer analytics and an interactive iPhone-style business headquarters. Isolated branch hq-finances-20260924 starts from verified main 118789bd1a9dcdacff44730720fe5aa7136b90a9; unrelated working changes are preserved.
