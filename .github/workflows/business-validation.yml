@@ -1,0 +1,37 @@
+name: Business app validation
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: business-validation-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      AI_OS_AI_ENABLED: 'false'
+      AI_OS_AUTONOMY_ENABLED: 'false'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm install --no-save --package-lock=false --ignore-scripts @electric-sql/pglite@0.5.8
+      - run: node tests/ceo-recovery.test.cjs
+        env:
+          OS_TEST_PGLITE_MODULE: "@electric-sql/pglite"
+      - run: node tests/ceo-home.test.cjs
+      - run: node tests/social-editorial-policy.test.cjs
+      - run: node tests/competitor-parser.test.mjs
+      - run: node tests/model-context.test.cjs
+      - run: npx tsc --noEmit
+      - run: npm run build

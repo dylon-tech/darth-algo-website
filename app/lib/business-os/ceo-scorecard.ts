@@ -16,8 +16,8 @@ export async function customerSnapshot(){
  let result;
  try {
   const client=stripe(),balance=await client.balance.retrieve({},{timeout:5000,maxNetworkRetries:0});if(!balance.livemode)throw new Error("LIVE_DATA_REQUIRED");
-  const rows:SubscriptionRow[]=[];let after:string|undefined,complete=false;
-  for(let page=0;page<10;page++){
+  const rows:SubscriptionRow[]=[];let after:string|undefined,complete=false;const deadline=Date.now()+14000;
+  for(let page=0;page<10&&Date.now()<deadline;page++){
    const batch=await client.subscriptions.list({status:'all',limit:100,...(after?{starting_after:after}:{})},{timeout:5000,maxNetworkRetries:0});
    rows.push(...batch.data);if(!batch.has_more){complete=true;break;}after=batch.data.at(-1)?.id;if(!after)break;
   }

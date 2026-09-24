@@ -1,0 +1,31 @@
+const assert=require('node:assert/strict'),ts=require('typescript'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
+function load(file,imports={}){const exports={};vm.runInNewContext(ts.transpileModule(fs.readFileSync(path.join(__dirname,'../',file),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{exports,require:n=>imports[n]||require(n),Date,Number,Math,JSON,process,Response,console});return exports;}
+const model=load('app/lib/business-os/ceo-home-model.ts');
+const now=Date.now(),at=new Date(now).toISOString();
+const desk={checkedAt:at,paused:false,autonomy:true,scheduler:{lastSeenAt:at,status:'idle'},budget:{available:true}};
+const agent={id:'content',configured:true,completed:{finishedAt:at},latest:{status:'completed'},task:null};
+assert.equal(model.agentHealth(agent,desk,[],now).rating,'Great');
+assert.equal(model.agentHealth(agent,{...desk,paused:true},[],now).rating,'Poor');
+assert.equal(model.agentHealth(agent,{...desk,scheduler:null},[],now).rating,'Unknown');
+assert.equal(model.agentHealth({...agent,latest:{status:'running',createdAt:new Date(now-400000).toISOString()}},desk,[],now).rating,'Poor');
+assert.equal(model.agentHealth(agent,desk,[{department:'content',reason:'Permission denied'}],now).rating,'Good');
+assert.equal(model.agentHealth({...agent,completed:null,latest:{status:'failed'}},desk,[],now).rating,'Poor');
+assert.equal(model.systemHealth([{rating:'Great'}],desk,[],['finance']).rating,'Good');
+assert.equal(model.systemHealth([{rating:'Great'}],desk,[],[]).rating,'Great');
+assert.equal(model.systemHealth([{rating:'Unknown'}],desk,[],[]).rating,'Unknown');
+assert.equal(model.expenseSummary([],10000).monthlyCents,null);
+assert.equal(model.expenseSummary([{amountCents:12000,cadence:'annual',status:'confirmed'},{amountCents:null,status:'unverified'}],10000).monthlyCents,1000);
+assert.equal(model.expenseSummary([{amountCents:12000,cadence:'annual',status:'confirmed'}],0).ratio,null);
+assert.equal(model.expenseSummary([{amountCents:12000,cadence:'annual',status:'confirmed'},{amountCents:900,status:'inactive'}],10000).ratio,10);
+let auth=false,origin=false,readCount=0,mutations=0,afters=0;
+const route=load('app/api/owner/dashboard/route.ts',{'next/server':{after:()=>afters++},'../../../lib/business-os/owner-session':{ownerSessionFromRequest:()=>auth,sameOrigin:()=>origin,privateHeaders:{}},'../../../lib/business-os/ceo-home':{ceoHome:async()=>{readCount++;return {checkedAt:at};}},'../../../lib/business-os/company-finances':{saveBill:async()=>{mutations++;return{};}},'../../../lib/business-os/owner-recovery':{requestAgentRecovery:async()=>{mutations++;return{status:'queued'};}},'../../../lib/business-os/service':{decide:()=>{}},'../../../lib/business-os/telegram-command':{workAndNotify:()=>{}}});
+(async()=>{
+ const req=(body)=>new Request('https://example.test/api/owner/dashboard',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+ assert.equal((await route.GET(new Request('https://example.test/api/owner/dashboard'))).status,401);assert.equal(readCount,0);
+ assert.equal((await route.POST(req({operation:'recover'}))).status,401);assert.equal(mutations,0);
+ auth=true;assert.equal((await route.POST(req({operation:'recover'}))).status,403);assert.equal(mutations,0);
+ origin=true;let r=await route.GET(new Request('https://example.test/api/owner/dashboard'));assert.equal(r.status,200);assert.equal(mutations,0);assert.match(r.headers.get('Cache-Control'),/private, no-store/);assert.equal(r.headers.get('Vary'),'Cookie');
+ assert.equal((await route.POST(req({operation:'recover'}))).status,200);assert.equal(mutations,1);assert.equal(afters,1);
+ assert.equal((await route.POST(req({operation:'bad'}))).status,400);
+ console.log('PASS CEO health, unknowns, stale runs, bill normalization, zero denominator, private reads and CSRF guarded actions.');
+})().catch(e=>{console.error(e);process.exitCode=1;});

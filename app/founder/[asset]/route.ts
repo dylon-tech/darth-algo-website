@@ -1,7 +1,10 @@
 import { createHash } from "node:crypto";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 
 // Fixed, owner-supplied assets. Pre-rendered at build time and served from the
-// Darth Algo domain, without relying on a browser to reach third-party storage.
+// Darth Algo domain. Vendored bytes remove third-party network access from builds.
+// Source URLs below retain provenance; hashes bind the unchanged originals.
 // No user-controlled URLs, uploads, image generation, or photo retouching.
 const assets = {
   "dylon-d-feagin.jpg": {
@@ -34,9 +37,7 @@ export async function GET(_request: Request, context: { params: Promise<{ asset:
   const { asset } = await context.params;
   if (!Object.prototype.hasOwnProperty.call(assets, asset)) return new Response("Not found", { status: 404 });
   const source = assets[asset as keyof typeof assets];
-  const response = await fetch(source.url, { cache: "force-cache", signal: AbortSignal.timeout(20000) });
-  if (!response.ok) throw new Error(`Founder asset unavailable: ${asset} (${response.status})`);
-  const bytes = await response.arrayBuffer();
+  const bytes = new Uint8Array(await readFile(path.join(process.cwd(), "app/founder/assets", asset)));
   if (bytes.byteLength > 2000000 || bytes.byteLength < 1000) throw new Error(`Invalid founder asset size: ${asset}`);
   if (createHash("sha256").update(new Uint8Array(bytes)).digest("hex") !== source.sha256) {
     throw new Error(`Founder asset integrity check failed: ${asset}`);
