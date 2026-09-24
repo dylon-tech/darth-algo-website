@@ -14,12 +14,12 @@ import InstallApp from './install-app';
 import {VisualTeam,AgentPanel,type AgentMode} from './visual-team';
 import IphoneSheet from './iphone-sheet';
 import styles from './iphone-home.module.css';
-
+import polish from './iphone-polish.module.css';
 const money=(cents:number|null|undefined)=>cents==null?'—':new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(cents/100);
 const time=(value:string|null|undefined)=>value?new Date(value).toLocaleString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})+' ET':'Not yet recorded';
 const titles:Record<OwnerView,string>={home:'Headquarters',team:'Your team',queue:'Content queue',bills:'Money overview'};
 type Panel='more'|'health'|'brief'|'ideas'|null;
-
+const pageScroll=()=>document.body.style.position==='fixed'?Math.abs(Number.parseFloat(document.body.style.top)||0):window.scrollY;
 /** A presentation upgrade, not a new agent runtime or an alternate approval path. */
 export default function IphoneHome({workspace}:{workspace:ReactNode}){
  const [view,setView]=useState<OwnerView>('home'),[data,setData]=useState<CeoHome|null>(null),[auth,setAuth]=useState<boolean|null>(null);
@@ -47,7 +47,7 @@ export default function IphoneHome({workspace}:{workspace:ReactNode}){
  useEffect(()=>{
   mounted.current=true;
   const previousRestoration=history.scrollRestoration;history.scrollRestoration='manual';
-  const readLocation=()=>{const next=ownerViewFromSearch(location.search);scroll.current[currentView.current]=window.scrollY;currentView.current=next;setView(next);setStudioOpen(new URLSearchParams(location.search).get('view')==='studio');setAdvanced(false);close();requestAnimationFrame(()=>window.scrollTo({top:scroll.current[next]||0,behavior:'instant'}));};
+  const readLocation=()=>{const next=ownerViewFromSearch(location.search);scroll.current[currentView.current]=pageScroll();currentView.current=next;setView(next);setStudioOpen(new URLSearchParams(location.search).get('view')==='studio');setAdvanced(false);close();requestAnimationFrame(()=>window.scrollTo({top:scroll.current[next]||0,behavior:'instant'}));};
   const connection=()=>{setOffline(!navigator.onLine);setClock(Date.now());if(navigator.onLine)void refresh();};
   const visible=()=>{if(document.visibilityState==='visible'){setClock(Date.now());void refresh();}};
   readLocation();setOffline(!navigator.onLine);void refresh();
@@ -57,9 +57,9 @@ export default function IphoneHome({workspace}:{workspace:ReactNode}){
  },[close,refresh]);
  function navigate(next:OwnerView){
   close();setAdvanced(false);
-  if(currentView.current===next){window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});return;}
-  scroll.current[currentView.current]=window.scrollY;currentView.current=next;setView(next);
-  const url=new URL(location.href);url.searchParams.set('view',ownerViewParam(next));url.hash='';history.pushState(history.state,'',url);
+  if(currentView.current===next){requestAnimationFrame(()=>window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'}));return;}
+  scroll.current[currentView.current]=pageScroll();currentView.current=next;setView(next);
+  const url=new URL(location.href);url.searchParams.set('view',next==='queue'?'queue':ownerViewParam(next));url.hash='';history.pushState(history.state,'',url);
   requestAnimationFrame(()=>{window.scrollTo({top:scroll.current[next]||0,behavior:'instant'});document.getElementById('hq-heading')?.focus({preventScroll:true});});
  }
  const openAgent=(id:string,next:AgentMode='work')=>{setPanel(null);setBill(null);setMode(next);setSelected(id);};
@@ -80,7 +80,7 @@ export default function IphoneHome({workspace}:{workspace:ReactNode}){
  const online=team.filter(a=>agentPresence(a,!stale&&Boolean(data.desk),clock).active).length;
  const pendingIdeas=data.suggestions.filter(s=>s.state==='pending').length;
  const openInternal=(href:string)=>{if(href==='#team'||href==='#queue'||href==='#bills'){navigate(href==='#team'?'team':href==='#queue'?'queue':'bills');return true;}return false;};
- return <main className={styles.app} id='home'>
+ return <main className={`${styles.app} ${polish.polish}`} id='home'>
   <div className={styles.content} inert={modal}>
    <header className={styles.toolbar}><div className={styles.brand}><Image src='/darth-algo-social-logo.png' width={30} height={30} alt='Darth Algo'/><span>Darth Algo</span></div><div><button className={styles.icon} aria-label={refreshing?'Refreshing dashboard':'Refresh dashboard'} disabled={refreshing||offline} onClick={()=>void refresh()}><RefreshCw size={20} className={refreshing?styles.spinning:undefined}/></button><button className={styles.icon} aria-label='More controls' onClick={()=>setPanel('more')}><Ellipsis size={23}/></button></div></header>
    <div className={styles.intro}><h1 id='hq-heading' tabIndex={-1}>{titles[view]}</h1><p>{stale?'Update unavailable':`Updated ${time(data.checkedAt)}`}</p></div>
