@@ -33,7 +33,8 @@ try {
  assert.equal(await page.getByRole('textbox',{name:'On-screen headline'}).inputValue(),'CLARITY BEFORE THE CLICK.');
  await page.getByRole('button',{name:'Send to content agent',exact:true}).click();await page.getByRole('button',{name:'Request saved',exact:true}).waitFor();assert.equal(keys.length,2);assert.equal(keys[0],keys[1],'Reload must reuse the same request key');
  await page.getByRole('button',{name:'HQ',exact:true}).click();await page.getByRole('heading',{name:'Headquarters',exact:true}).waitFor();
- await page.getByRole('button',{name:/Create a video/}).click();await page.getByRole('heading',{name:'Make your next Reel.'}).waitFor();assert.match(page.url(),/view=queue/);
+ await page.getByRole('button',{name:'More controls',exact:true}).click();
+ await page.getByRole('dialog').getByRole('button',{name:'Create a video',exact:true}).click();await page.getByRole('heading',{name:'Make your next Reel.'}).waitFor();assert.match(page.url(),/view=queue/);
  await page.goBack();await page.getByRole('heading',{name:'Headquarters',exact:true}).waitFor();
  await page.getByRole('button',{name:'Queue',exact:true}).click();await page.locator('summary').filter({hasText:'Create a video'}).click();await page.getByRole('heading',{name:'Make your next Reel.'}).waitFor();
  const chart=page.getByAltText('Selected historical Darth Algo product chart; not a live signal');
@@ -44,5 +45,5 @@ try {
  await mkdir('artifacts',{recursive:true});
  for(const width of [393,1280]){await page.setViewportSize({width,height:852});await page.waitForTimeout(250);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),`Horizontal overflow at ${width}px`);await page.screenshot({path:`artifacts/video-studio-${width}-synthetic.png`,fullPage:true});if(width===393)await page.screenshot({path:'artifacts/video-studio-phone-viewport-synthetic.png'});}
  assert.deepEqual(pageErrors,[],'Browser runtime errors');
- console.log('PASS: private API auth, synthetic mobile UI, persisted drafts, idempotency, back navigation, offline feedback, no overflow at 393/1280px. Not a physical iPhone test.');
+ console.log('PASS: private API auth, synthetic mobile UI, persisted drafts, idempotency, new More sheet navigation, back navigation, offline feedback, no overflow at 393/1280px. Not a physical iPhone test.');
 } finally {await browser?.close();server.kill('SIGTERM');}
