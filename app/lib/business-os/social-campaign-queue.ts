@@ -157,5 +157,63 @@ export const socialCampaignQueue:ReviewedCreative[] = [
       "reviewer": "Codex: final 4:5 artwork visually inspected against actual cinematic reference and full-color logo; exact copy and source review",
       "reviewedAt": "2026-09-24T03:35:22.904075Z"
     }
+  },
+  {
+    "id": "2026-09-26-morning-education-object-tree",
+    "day": "2026-09-26",
+    "slot": "morning",
+    "theme": "TradingView Object Tree: group and toggle drawings",
+    "text": "Cleaner review starts with an organized chart. In TradingView’s Object Tree, group related drawings, name the group, then toggle its visibility when comparing ideas. Save this workflow.\nhttps://www.darthalgo.com/links #TradingView",
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "educational",
+      "sources": [
+        "https://www.tradingview.com/blog/en/new-object-tree-15090/"
+      ],
+      "learning": "Introduce Object Tree grouping and visibility as a new chart-organization action; test saves against the prior alert checklist without reusing its phone/checklist composition."
+    },
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-09-26/object-tree-workflow-c99aea418166.jpg",
+        "sha256": "c99aea4181669a742ad7b1f1ce76de84fda617bccf662dda0c1fc32ebbaec3c1",
+        "altText": "Darth Algo educational poster titled Group the Noise. Keep the Plan. A black-glass TradingView Object Tree concept shows three steps: select drawings, create a group, and toggle visibility. Save this workflow at darthalgo.com/links.",
+        "mimeType": "image/jpeg"
+      }
+    ],
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "dbf3c4e2f8949978723d6d4606b502faf5d0541ec091a03d334a10f608011d2f",
+      "reviewer": "Codex: full-size and phone-scale visual review against approved cinematic references, recent retained history, and exact source copy",
+      "reviewedAt": "2026-09-24T12:44:52.314Z"
+    }
+  },
+  {
+    "id": "2026-09-26-afternoon-education-drawing-sync",
+    "day": "2026-09-26",
+    "slot": "afternoon",
+    "theme": "TradingView multi-chart layout: same-symbol drawing sync",
+    "text": "Using a multi-chart layout? TradingView can sync drawings across charts that show the same symbol. Match the symbol first, then turn on drawing sync. Share this with a trader.\nhttps://www.darthalgo.com/links #TradingView",
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "educational",
+      "sources": [
+        "https://www.tradingview.com/support/solutions/43000629992/"
+      ],
+      "learning": "Teach same-symbol drawing synchronization with a new opposing-monitor composition; test shares without repeating alert timing, chart levels, or product promotion."
+    },
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-09-26/same-symbol-sync-faef2d2e2c98.jpg",
+        "sha256": "faef2d2e2c98aff25e9b8c1629fb3994bc46871539aca7ca49e28b9a6dde687e",
+        "altText": "Darth Algo educational poster titled One Symbol. Two Views. Two angled monitors labelled Same Symbol are joined by a sync icon, with callouts for multi-chart layout, sync drawings, and same symbol required. Share at darthalgo.com/links.",
+        "mimeType": "image/jpeg"
+      }
+    ],
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "12bcaa95e4b29b3644a54ceaa0ed0e380c31c411aa22aea37dcd080d875e6028",
+      "reviewer": "Codex: full-size and phone-scale visual review against approved cinematic references, recent retained history, and exact source copy",
+      "reviewedAt": "2026-09-24T12:44:52.314Z"
+    }
   }
 ];
