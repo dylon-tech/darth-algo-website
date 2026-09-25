@@ -1,0 +1,57 @@
+name: HQ World validation
+on:
+  pull_request:
+    branches: [main]
+    paths: ['app/owner/**', 'app/lib/business-os/**', 'app/api/owner/**', 'public/hq-world/**', 'scripts/hq-world-*', '.github/workflows/hq-world-validation.yml', 'package*.json']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: hq-world-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: test-only
+          POSTGRES_DB: hq_world_test
+        ports: [5432:5432]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      AI_OS_AI_ENABLED: 'false'
+      AI_OS_AUTONOMY_ENABLED: 'false'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: node scripts/hq-world-model.test.cjs
+      - run: npx tsc --noEmit
+      - run: npx eslint app/owner/world app/owner/world-link.tsx app/owner/iphone-home.tsx app/owner/visual-team.tsx
+      - run: npm run build
+      - run: npx playwright-core install --with-deps chromium webkit
+      - name: Real isolated database controls and rendered desktop/WebKit mobile world
+        run: node scripts/hq-world-browser.mjs
+        env:
+          HQ_TEST_DATABASE_URL: postgres://postgres:test-only@127.0.0.1:5432/hq_world_test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hq-world-acceptance
+          path: artifacts/hq-world/
+          if-no-files-found: ignore
+          retention-days: 7

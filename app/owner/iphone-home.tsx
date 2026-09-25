@@ -1,4 +1,5 @@
 'use client';
+import WorldLink from './world-link';
 import {useCallback,useEffect,useRef,useState,type ReactNode} from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -23,7 +24,7 @@ const titles:Record<OwnerView,string>={home:'Headquarters',team:'Your team',queu
 type Panel='more'|'health'|'brief'|'ideas'|null;
 const pageScroll=()=>document.body.style.position==='fixed'?Math.abs(Number.parseFloat(document.body.style.top)||0):window.scrollY;
 /** A presentation upgrade, not a new agent runtime or an alternate approval path. */
-export default function IphoneHome({workspace}:{workspace:ReactNode}){
+export default function IphoneHome({workspace,worldEnabled=false}:{workspace:ReactNode;worldEnabled?:boolean}){
  const [view,setView]=useState<OwnerView>('home'),[data,setData]=useState<CeoHome|null>(null),[auth,setAuth]=useState<boolean|null>(null);
  const [error,setError]=useState(''),[notice,setNotice]=useState(''),[refreshing,setRefreshing]=useState(false),[offline,setOffline]=useState(false),[clock,setClock]=useState(0);
  const [panel,setPanel]=useState<Panel>(null),[selected,setSelected]=useState<string|null>(null),[mode,setMode]=useState<AgentMode>('work'),[bill,setBill]=useState<Bill|null>(null);
@@ -86,6 +87,7 @@ export default function IphoneHome({workspace}:{workspace:ReactNode}){
   <div className={styles.content} inert={modal}>
    <header className={styles.toolbar}><div className={styles.brand}><Image src='/darth-algo-social-logo.png' width={30} height={30} alt='Darth Algo'/><span>Darth Algo</span></div><div><button className={styles.icon} aria-label={refreshing?'Refreshing dashboard':'Refresh dashboard'} disabled={refreshing||offline} onClick={()=>void refresh()}><RefreshCw size={20} className={refreshing?styles.spinning:undefined}/></button><button className={styles.icon} aria-label='More controls' onClick={()=>setPanel('more')}><Ellipsis size={23}/></button></div></header>
    <div className={styles.intro}><h1 id='hq-heading' tabIndex={-1}>{titles[view]}</h1><p>{stale?'Update unavailable':`Updated ${time(data.checkedAt)}`}</p></div>
+   {worldEnabled&&view==='home'&&<WorldLink/>}
    {offline&&<p className={styles.alert} role='status'>You are offline. Saved figures may be out of date; new work is disabled until you reconnect.</p>}
    {error&&<p className={styles.alert} role='alert'>{error}</p>}{notice&&!modal&&<p className={styles.notice} role='status'>{notice}</p>}
    <div hidden={view!=='home'&&view!=='bills'} className={styles.finance}><FinanceChart finances={f}/></div>

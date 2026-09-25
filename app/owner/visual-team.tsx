@@ -30,7 +30,7 @@ export function VisualTeam({team,fresh,now,queue,onOpen}:{team:TeamAgent[];fresh
  </section>;
 }
 type ChatMessage={id:string;department:string;role:string;body:string;created_at:string};
-export function AgentPanel({agent,mode,onMode,fresh,now,issues,onClose,onChanged}:{agent:TeamAgent;mode:AgentMode;onMode:(mode:AgentMode)=>void;fresh:boolean;now:number;issues:CeoHome['issues'];onClose:()=>void;onChanged:()=>void}){
+export function AgentPanel({agent,mode,onMode,fresh,now,issues,onClose,onChanged,preview,worldStatus}:{agent:TeamAgent;preview?:{image:string;text:string};worldStatus?:string;mode:AgentMode;onMode:(mode:AgentMode)=>void;fresh:boolean;now:number;issues:CeoHome['issues'];onClose:()=>void;onChanged:()=>void}){
  const [draft,setDraft]=useState(''),[messages,setMessages]=useState<ChatMessage[]>([]),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[loading,setLoading]=useState(false);
  const locked=useRef(false),active=useRef<AbortController|null>(null),mounted=useRef(false),composer=useRef<HTMLTextAreaElement|null>(null);
  const intent=useRef<{message:string;key:string}|null>(null),storage=`darth-agent-draft:${agent.id}`;
@@ -50,7 +50,7 @@ export function AgentPanel({agent,mode,onMode,fresh,now,issues,onClose,onChanged
   locked.current=true;setBusy(true);setNotice('');
   if(intent.current?.message!==message)intent.current={message,key:'agent-card:'+crypto.randomUUID()};persist(draft);
   const controller=new AbortController();active.current=controller;const timeout=setTimeout(()=>controller.abort(),20000);
-  try{const r=await fetch('/api/owner/command',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({operation:'message',department:agent.id,message,requestKey:intent.current.key})});const d=await r.json();if(!r.ok)throw Error(d.message||d.error||'Request not confirmed.');if(typeof d.id!=='string'||typeof d.status!=='string')throw Error('Request not confirmed.');if(mounted.current){setNotice(`Request ${d.status}. Online appears when a worker actually starts it.`);setDraft('');intent.current=null;persist('',null);onChanged();}}
+  try{const r=await fetch('/api/owner/command',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({operation:'message',department:agent.id,message,requestKey:intent.current.key})});const d=await r.json();if(!r.ok)throw Error(d.message||d.error||'Request not confirmed.');if(typeof d.id!=='string'||typeof d.status!=='string')throw Error('Request not confirmed.');if(mounted.current){setNotice(`Request ${d.id} saved · ${d.status}. Online appears when a worker actually starts it.`);setDraft('');intent.current=null;persist('',null);onChanged();}}
   catch(e){if(mounted.current)setNotice(`${e instanceof Error&&e.name!=='AbortError'?e.message:'The response was not confirmed.'} An unchanged retry checks the same request, not a duplicate.`);}
   finally{clearTimeout(timeout);locked.current=false;if(mounted.current)setBusy(false);}
  }
@@ -60,6 +60,9 @@ export function AgentPanel({agent,mode,onMode,fresh,now,issues,onClose,onChanged
   <div className={styles.tabs} aria-label='Agent workspace'>{(['work','message','assign'] as const).map(m=><button key={m} aria-pressed={mode===m} onClick={()=>onMode(m)}>{m==='work'?'Work':m==='message'?'Messages':'Give work'}</button>)}</div>
   {notice&&<p className={styles.notice} role='status'>{notice}</p>}
   {mode==='work'?<div className={styles.sheetBody}>
+   {worldStatus&&<p className={styles.help}>{worldStatus}</p>}
+   {preview&&<div className={styles.taskCard}><Image src={preview.image} alt={preview.text} width={540} height={675} unoptimized style={{width:'100%',maxHeight:360,objectFit:'contain',borderRadius:14}}/><small>{preview.text}</small></div>}
+
    <div className={styles.taskCard}><span>{presence.active?'WORKING NOW':'CURRENT STATUS'}</span><strong>{presence.step}</strong><p>{shortWork(agent.current?.message||agent.next?.message||agent.task?.title,180)||'No new assignment waiting.'}</p></div>
    <div className={styles.workFacts}><span><b>{agent.waiting}</b>Queued requests</span><span><b>{agent.completed?'Saved':'—'}</b>Last result</span></div>
    {ownIssues.length>0&&<details className={styles.details}><summary><AlertCircle size={15}/>{ownIssues.length} thing{ownIssues.length===1?'':'s'} to check</summary>{ownIssues.map(i=><div key={i.id}><h4>{i.title}</h4><p>{i.reason}</p>{!i.href.startsWith('#')&&<Link href={i.href}>{i.action}<ArrowUpRight size={14}/></Link>}</div>)}</details>}

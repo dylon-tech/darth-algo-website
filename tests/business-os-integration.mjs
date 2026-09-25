@@ -16,7 +16,7 @@ const dir = mkdtempSync(join(tmpdir(), 'darth-os-integration-'));
 const savedEnv = { ...process.env }, originalFetch = globalThis.fetch;
 let pg;
 try {
-  execFileSync('node_modules/.bin/tsc', ['--target','ES2020','--module','commonjs','--moduleResolution','node','--esModuleInterop','--skipLibCheck','--outDir',dir,'app/lib/business-os/jobs.ts','app/lib/business-os/schema.ts'], {stdio:'pipe'});
+  execFileSync('node_modules/.bin/tsc', ['--target','ES2022','--module','commonjs','--moduleResolution','node','--esModuleInterop','--skipLibCheck','--outDir',dir,'app/lib/business-os/jobs.ts','app/lib/business-os/schema.ts'], {stdio:'pipe'});
   const require = createRequire(import.meta.url);
   pg = new PGlite();
   let tail = Promise.resolve();
@@ -146,6 +146,7 @@ try {
   const replay=await queueJob('content','Produce a finished educational post for review.','integration-content-001','owner');
   assert.equal(replay.id,original.id);
   assert.equal(replay.status,'succeeded');
+  await assert.rejects(()=>queueJob('research','A different task','integration-content-001','owner'),/IDEMPOTENCY_KEY_REUSED/);
   const replayRun=await runAgent('content',`job_${original.id}`,'Produce a finished educational post for review.');
   assert.equal(replayRun.duplicate,true);
   assert.equal(replayRun.id,first.runId);
@@ -200,6 +201,7 @@ try {
   await queueJob('growth','Another request','integration-no-consent','telegram');
   assert.equal((await workOneJob()).status,'budget_blocked');
   assert.equal(providerInputs.length,3,'Recurring consent still required after legacy cap removal');
+  console.log(JSON.stringify({scope:'ISOLATED INTEGRATION, MOCKED PROVIDER',jobId:original.id,runId:first.runId,handoffId:sent.id,receiverTaskId:sent.task_id,receiverRunId:second.runId,finalStatus:received.status,checkedAt:new Date().toISOString()}));
   console.log('PASS: real PGlite schema + queue + service + model + persisted content→operations handoff; recipient sees sender deliverable; idempotent replays; budget preserves queue; active-run/worker guards, cancellation and stale lease handoff status. Provider mocked; advisory locks no-op, multi-connection isolation not tested.');
 } finally {
   globalThis.fetch=originalFetch;
