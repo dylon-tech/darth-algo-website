@@ -56,6 +56,7 @@ try{
   await page.getByRole('button',{name:'Whole campus',exact:true}).click();assert.equal(await page.locator('[data-room-art]').count(),8);await page.screenshot({path:`artifacts/hq-world/${engine}-overview-synthetic.png`,fullPage:true});
   await page.getByRole('navigation',{name:'Watch a department'}).getByRole('button',{name:/Research/}).click();
   await page.getByRole('button',{name:'Enlarge room'}).click();assert.equal(await page.getByRole('button',{name:'Enlarge room'}).getAttribute('aria-pressed'),'true');await page.getByRole('button',{name:'Enlarge room'}).click();
+  await page.getByRole('navigation',{name:'Watch a department'}).getByRole('button',{name:/Studio/}).click();
   await page.getByRole('button',{name:/Follow work/}).click();
   runningFixture=true;await page.getByRole('button',{name:'Refresh headquarters'}).click();await page.locator('[data-agent-id=research][data-motion=working]').waitFor();
   const art=page.locator('[data-agent-id=research]');assert.ok(await art.evaluate(el=>el.getAnimations({subtree:true}).length)>0);
@@ -68,12 +69,13 @@ try{
   runningFixture=false;await page.getByRole('button',{name:'Refresh headquarters'}).click();await page.locator('[data-agent-id=research][data-motion=resting]').waitFor();assert.equal(await art.evaluate(el=>el.getAnimations({subtree:true}).length),0);
   const labels=await page.getByRole('navigation',{name:'Watch a department'}).getByRole('button').evaluateAll(els=>els.map(el=>({font:parseFloat(getComputedStyle(el).fontSize),height:el.getBoundingClientRect().height})));assert.ok(labels.every(l=>l.font>=12&&l.height>=44));
   pass(engine+': crisp vector rooms at native device scale, eight-room overview, real lifecycle adapter, visibly moving active character, idle stop, motion control and reduced motion');
-  await page.getByRole('navigation',{name:'Departments'}).getByRole('button',{name:/Research/}).click();await page.getByRole('button',{name:'Give work',exact:true}).click();
+  await page.getByRole('complementary',{name:'Room workbench'}).getByRole('button',{name:'Help Research',exact:true}).click();await page.getByRole('textbox',{name:'Message this agent'}).waitFor();await page.getByRole('button',{name:'Close agent',exact:true}).click();
+  await page.getByRole('complementary',{name:'Room workbench'}).getByRole('button',{name:'Give work',exact:true}).click();
   await page.getByRole('textbox',{name:'Your assignment'}).fill('ISOLATED HQ ACCEPTANCE '+engine+': prepare an internal research brief. No external action.');
   await page.locator('form').getByRole('button',{name:'Give work',exact:true}).click();await page.getByRole('status').filter({hasText:/Request .* saved/}).waitFor();
   const [job]=await sql`select id,status,request_key from os_jobs where message like ${'ISOLATED HQ ACCEPTANCE '+engine+'%'} order by created_at desc limit 1`;assert.equal(job.status,'queued');results.jobs.push({engine,id:job.id,status:job.status,observedAt:stamp()});
   await page.screenshot({path:`artifacts/hq-world/${engine}-saved-task-synthetic.png`,fullPage:true});
-  await page.getByRole('button',{name:'Close agent',exact:true}).click();await page.getByRole('button',{name:'Close department',exact:true}).click();
+  await page.getByRole('button',{name:'Close agent',exact:true}).click();
   // Reissue the exact recorded request key twice using the real authenticated API.
   const [row]=await sql`select * from os_jobs where id=${job.id}`;const input={operation:'message',department:row.department,message:row.message,requestKey:row.request_key};
   const replay=await Promise.all([1,2].map(()=>fetch(origin+'/api/owner/command',{method:'POST',headers:{...headers,origin},body:JSON.stringify(input)}).then(r=>r.json())));assert.ok(replay.every(j=>j.id===job.id));assert.equal((await sql`select count(*)::int n from os_jobs where request_key=${job.request_key}`)[0].n,1);
