@@ -215,5 +215,66 @@ export const socialCampaignQueue:ReviewedCreative[] = [
       "reviewer": "Codex: full-size and phone-scale visual review against approved cinematic references, recent retained history, and exact source copy",
       "reviewedAt": "2026-09-24T12:44:52.314Z"
     }
+  },
+  {
+    "id": "2026-09-27-morning-scalper-workflow",
+    "day": "2026-09-27",
+    "slot": "morning",
+    "theme": "Scalper workflow: bias, signal, risk",
+    "text": "Read the bias before the signal. Darth Algo Scalper brings directional signals, responsive trend context, alerts and a risk plan directly to your TradingView chart. See the workflow:\nhttps://www.darthalgo.com/products/scalper #DarthAlgo",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-09-27/scalper-workflow-24fb1d51786c.jpg",
+        "sha256": "24fb1d51786cf8e3124260784f75dd294ccc5f284cc8c1a3b27919b39d0906c5",
+        "altText": "Darth Algo Scalper poster: an actual recorded TradingView product screen in an angled laptop, with steps to read the bias, check the signal and map the risk.",
+        "mimeType": "image/jpeg"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "promotional",
+      "sources": [
+        "https://www.darthalgo.com/products/scalper",
+        "https://www.darthalgo.com/indicators/scalper-overview.png",
+        "https://www.reddit.com/r/Trading/comments/1u1h61r/thinking_about_buying_subscription_for_luxalgo_or/"
+      ],
+      "learning": "Answer product-value skepticism with one inspectable owned workflow and a direct product destination. The exact recorded screen replaces generated chart content; test qualified product-page clicks, not reach."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "47d9ca006d1a70b3dda0bca2cf9ef0245b47ca31e5a69bca954930b1671aef7a",
+      "reviewer": "Codex: full-size and 280px phone-scale visual review against approved references and retained history; exact owned Scalper capture preserved where shown",
+      "reviewedAt": "2026-09-25T13:12:20.233Z"
+    }
+  },
+  {
+    "id": "2026-09-27-afternoon-pro-updates",
+    "day": "2026-09-27",
+    "slot": "afternoon",
+    "theme": "Pro continuous AI-assisted product updates",
+    "text": "Built to keep evolving. Darth Algo Pro combines Scalper and Swing intelligence with continuous AI-assisted product updates in one monthly TradingView system. Explore Pro:\nhttps://www.darthalgo.com/products/pro #DarthAlgo",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-09-27/pro-updates-1eeb4418fdd7.jpg",
+        "sha256": "1eeb4418fdd7dc92dec0bda772dc6a55c4a8bfce9533430c9179e275c1cfe434",
+        "altText": "Darth Algo Pro poster with a cinematic metallic Pro engine and modules for signals, trend and risk, and continuous AI-assisted product updates.",
+        "mimeType": "image/jpeg"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "promotional",
+      "sources": [
+        "https://www.darthalgo.com/products/pro",
+        "https://www.reddit.com/r/Trading/comments/1u1h61r/thinking_about_buying_subscription_for_luxalgo_or/"
+      ],
+      "learning": "Use one verified differentiator beyond a generic feature menu and a fresh non-chart composition. Test whether update-focused framing generates qualified Pro page clicks or attributable checkouts; no performance claim."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "d75754cc39bd4c49f77d43271bbc5dc646d11f11f379007ff5a501716c9c856f",
+      "reviewer": "Codex: full-size and 280px phone-scale visual review against approved references and retained history; exact owned Scalper capture preserved where shown",
+      "reviewedAt": "2026-09-25T13:12:20.233Z"
+    }
   }
 ];
