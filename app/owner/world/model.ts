@@ -16,6 +16,20 @@ export const rooms:Array<{id:RoomId;name:string;short:string;agents:string[];hre
 ];
 export type WorldStatus='Online'|'Offline'|'Needs approval'|'Blocked'|'Error'|'Stale / Unverified'|'Paused'|'Not configured';
 export type WorldAgent={id:string;room:RoomId;name:string;status:WorldStatus;active:boolean;stage:string;jobId:string|null;runId:string|null;observedAt:string|null;errorCode:string|null;outputId:string|null};
+export const specialties:Record<RoomId,{color:string;label:string;work:string}>={
+ ceo:{color:'#e89e82',label:'Strategy & decisions',work:'Preparing the command brief'},
+ research:{color:'#73cbb9',label:'Sources & insight',work:'Developing the research brief'},
+ content:{color:'#e898b4',label:'Creative & editorial',work:'Developing the content brief'},
+ publishing:{color:'#c4acf0',label:'Review & delivery',work:'Scheduled publishing workflow'},
+ indicators:{color:'#8ebce9',label:'Pine & validation',work:'Developing an indicator specification'},
+ support:{color:'#edc587',label:'Growth & relationships',work:'Reviewing customer and growth work'},
+ finance:{color:'#a8cead',label:'Receipts & analysis',work:'Analyzing business records'},
+ operations:{color:'#a5b9d1',label:'Reliability & automation',work:'Checking operational work'},
+};
+// The illustration follows recorded lifecycle states; it never invents tool calls or progress.
+export function workMotion(a:WorldAgent):'working'|'attention'|'resting'{
+ return a.active?'working':['Needs approval','Blocked','Error','Not configured'].includes(a.status)?'attention':'resting';
+}
 export const recent=(at:string|null|undefined,now:number,ttl:number)=>{const age=now-Date.parse(at||'');return Number.isFinite(age)&&age>=-5000&&age<ttl;};
 export function worldAgent(a:DeskAgent,data:CeoHome,fresh:boolean,now:number):WorldAgent{
  let status:WorldStatus='Offline',stage='Idle; no active job';
