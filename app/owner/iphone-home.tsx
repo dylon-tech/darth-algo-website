@@ -87,7 +87,7 @@ export default function IphoneHome({workspace,worldEnabled=false}:{workspace:Rea
   <div className={styles.content} inert={modal}>
    <header className={styles.toolbar}><div className={styles.brand}><Image src='/darth-algo-social-logo.png' width={30} height={30} alt='Darth Algo'/><span>Darth Algo</span></div><div><button className={styles.icon} aria-label={refreshing?'Refreshing dashboard':'Refresh dashboard'} disabled={refreshing||offline} onClick={()=>void refresh()}><RefreshCw size={20} className={refreshing?styles.spinning:undefined}/></button><button className={styles.icon} aria-label='More controls' onClick={()=>setPanel('more')}><Ellipsis size={23}/></button></div></header>
    <div className={styles.intro}><h1 id='hq-heading' tabIndex={-1}>{titles[view]}</h1><p>{stale?'Update unavailable':`Updated ${time(data.checkedAt)}`}</p></div>
-   {worldEnabled&&<WorldLink/>}
+   {worldEnabled&&view==='home'&&<WorldLink/>}
    {offline&&<p className={styles.alert} role='status'>You are offline. Saved figures may be out of date; new work is disabled until you reconnect.</p>}
    {error&&<p className={styles.alert} role='alert'>{error}</p>}{notice&&!modal&&<p className={styles.notice} role='status'>{notice}</p>}
    <div hidden={view!=='home'&&view!=='bills'} className={styles.finance}><FinanceChart finances={f}/></div>
