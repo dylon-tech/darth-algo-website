@@ -1,4 +1,6 @@
 import {socialHealthIssues} from "./social-health";
+import {communityReadiness} from "./community-readiness";
+import {paymentRecoveryHealthIssues} from "./payment-recovery";
 import { db } from "../affiliate-db";
 import {publishingQueueSnapshot,nextContentWindow} from "./publishing-scorecard";
 import { stripe } from "../stripe";
@@ -52,6 +54,9 @@ export async function ceoScorecard(){
   attention.push("TradingView publishing worker needs setup");
  }
  attention.push(...await socialHealthIssues());
- const body=[`◆ DARTH ALGO · CEO DESK`,`Talking to: CEO`,"",`Active subscribing customers: ${customers.active??'unavailable'}`,`Trials: ${customers.trials??'unavailable'} · Past due: ${customers.pastDue??'unavailable'}`,`Published today: ${x+ig+threads} (${x} X · ${ig} Instagram · ${threads} Threads)`,`Post queue: ${queue.waiting} ready · ${queue.checking} checking delivery`,`Agents: ${count('running')} working · ${count('queued')} waiting`,"",`Needs you: ${attention.length?attention.join('; '):'no pending decisions or recent failed jobs.'}`,needs.blocked?`Blocked tasks: ${needs.blocked} · open Needs me.`:'',`Posting: ${controls[0]?.paused?'paused':`automatic · next content window ${nextContentWindow()}`}`,"",`Stripe subscriptions only; lifetime/access unverified.`,`Updated ${new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'}).format(new Date())} ET · ${day}`].filter((x,i,a)=>x!=='' || a[i-1]!=='').join('\n');
+ const community=await communityReadiness().catch(()=>({ready:false,state:"check_unavailable"}));
+ if(!community.ready)attention.push(`Community: ${community.state}`);
+ attention.push(...await paymentRecoveryHealthIssues());
+ const body=[`◆ DARTH ALGO · CEO DESK`,`Talking to: CEO`,"",`Active subscribing customers: ${customers.active??'unavailable'}`,`Trials: ${customers.trials??'unavailable'} · Past due: ${customers.pastDue??'unavailable'}`,`Published today: ${x+ig+threads} (${x} X · ${ig} Instagram · ${threads} Threads)`,`Community: ${community.ready?'healthy':community.state}`,`Post queue: ${queue.waiting} ready · ${queue.checking} checking delivery`,`Agents: ${count('running')} working · ${count('queued')} waiting`,"",`Needs you: ${attention.length?attention.join('; '):'no pending decisions or recent failed jobs.'}`,needs.blocked?`Blocked tasks: ${needs.blocked} · open Needs me.`:'',`Posting: ${controls[0]?.paused?'paused':`automatic · next content window ${nextContentWindow()}`}`,"",`Stripe subscriptions only; lifetime/access unverified.`,`Updated ${new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'}).format(new Date())} ET · ${day}`].filter((x,i,a)=>x!=='' || a[i-1]!=='').join('\n');
  return {day,body,customers,posts:{x,instagram:ig,threads},queue,needs};
 }
