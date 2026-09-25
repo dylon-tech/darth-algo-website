@@ -81,7 +81,7 @@ export async function GET(request: Request) {
         const queued = number(queue?.queued) || 0, running = number(queue?.running) || 0;
         return {id, state: partial.includes('team') || partial.includes('queue') ? 'unknown' : (number(queue?.stale) || 0) > 0 ? 'stale' : running && fresh ? 'running' : running ? 'stale' : queued ? 'queued' : paused === true ? 'paused' : text(run?.status) || 'no_record', finishedAt: text(run?.finished_at), queued, running, error: null};
       }),
-      openLoops: openLoops.map(row=>({id:String(row.id),category:String(row.category),title:String(row.title),why:String(row.why),service:String(row.service),founderAction:text(row.founder_action),resumeAction:String(row.resume_action),severity:String(row.severity),lastSeenAt:text(row.last_seen_at),href:['/owner/indicators','/owner/connections','/owner/welcome','/owner/retention','/owner#inbox'].includes(String(row.href))?String(row.href):'/owner#inbox'})),
+      openLoops: openLoops.map(row=>({id:String(row.id),category:String(row.category),title:String(row.title),why:String(row.why),service:String(row.service),founderAction:text(row.founder_action),resumeAction:String(row.resume_action),severity:String(row.severity),lastSeenAt:text(row.last_seen_at),href:['/owner/indicators','/owner/connections','/owner/welcome','/owner/retention','/owner?view=inbox'].includes(String(row.href))?String(row.href):'/owner?view=inbox'})),
     };
     return Response.json(snapshot, {headers: privateHeaders});
   } catch { return Response.json({error: 'OPERATIONS_UNAVAILABLE', message: 'Live operations could not be read. No work was started.'}, {status: 503, headers: privateHeaders}); }

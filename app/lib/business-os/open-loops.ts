@@ -50,7 +50,7 @@ export async function syncOpenLoops(){
  await sql.begin(async tx=>{
   await tx`select pg_advisory_xact_lock(730935)`;
   for(const loop of loops)await tx`insert into os_open_loops(id,loop_key,category,title,why,service,founder_action,resume_action,severity,status,source_type,source_id,details)
-   values(${randomUUID()},${loop.key},${loop.category},${loop.title},${loop.why},${loop.service},${loop.founderAction},${loop.resumeAction},${loop.severity},'open',${loop.sourceType},${loop.sourceId},${tx.json(({...loop.details,href:loop.href||'/owner#inbox'}) as never)})
+   values(${randomUUID()},${loop.key},${loop.category},${loop.title},${loop.why},${loop.service},${loop.founderAction},${loop.resumeAction},${loop.severity},'open',${loop.sourceType},${loop.sourceId},${tx.json(({...loop.details,href:loop.href||'/owner?view=inbox'}) as never)})
    on conflict(loop_key) do update set category=excluded.category,title=excluded.title,why=excluded.why,service=excluded.service,founder_action=excluded.founder_action,resume_action=excluded.resume_action,severity=excluded.severity,status='open',last_seen_at=now(),resolved_at=null,details=excluded.details`;
   if(keys.length)await tx`update os_open_loops set status='resolved',resolved_at=now() where status='open' and not(loop_key = any(${keys}))`;
   else await tx`update os_open_loops set status='resolved',resolved_at=now() where status='open'`;
