@@ -1,0 +1,77 @@
+{
+  "version": 1,
+  "palette": "charcoal, graphite, restrained crimson, soft teal",
+  "tileSize": 16,
+  "packs": [
+    {
+      "creator": "Kenney",
+      "pack": "roguelike-modern-city",
+      "source": "https://kenney.nl/assets/roguelike-modern-city",
+      "download": "https://kenney.nl/media/pages/assets/roguelike-modern-city/0ff3dfff2b-1677694743/kenney_roguelike-modern-city.zip",
+      "downloadedAt": "2026-09-25",
+      "license": "CC0-1.0",
+      "archiveSha256": "2a3f36b1bc3a3d1cb4b9da051c493d163c493fe54adc66e78e76b3fb4abcfc56",
+      "usedFiles": [
+        "Tilemap/tilemap.png"
+      ],
+      "modifications": "Selected tiles packed into local atlas; graphite recolor for architecture/furniture. Character body 0 plus original suits, hair and four-direction walking frames. Exact selected indexes in scripts/build-hq-assets.py."
+    },
+    {
+      "creator": "Kenney",
+      "pack": "roguelike-indoors",
+      "source": "https://kenney.nl/assets/roguelike-indoors",
+      "download": "https://kenney.nl/media/pages/assets/roguelike-indoors/4d5b520b03-1702169567/kenney_roguelike-indoors.zip",
+      "downloadedAt": "2026-09-25",
+      "license": "CC0-1.0",
+      "archiveSha256": "578cfdb066c4a9de78a52535adaf953728889b2cf268441bd4d338844f7aa586",
+      "usedFiles": [
+        "Tilesheets/roguelikeIndoor_transparent.png"
+      ],
+      "modifications": "Selected tiles packed into local atlas; graphite recolor for architecture/furniture. Character body 0 plus original suits, hair and four-direction walking frames. Exact selected indexes in scripts/build-hq-assets.py."
+    },
+    {
+      "creator": "Kenney",
+      "pack": "roguelike-characters",
+      "source": "https://kenney.nl/assets/roguelike-characters",
+      "download": "https://kenney.nl/media/pages/assets/roguelike-characters/53ffff4133-1729196490/kenney_roguelike-characters.zip",
+      "downloadedAt": "2026-09-25",
+      "license": "CC0-1.0",
+      "archiveSha256": "05c4c0af7326584cfffbbb196571eb9e102981d2033e90e225c5ba8da8771284",
+      "usedFiles": [
+        "Spritesheet/roguelikeChar_transparent.png"
+      ],
+      "modifications": "Selected tiles packed into local atlas; graphite recolor for architecture/furniture. Character body 0 plus original suits, hair and four-direction walking frames. Exact selected indexes in scripts/build-hq-assets.py."
+    }
+  ],
+  "original": [
+    "workstation",
+    "console",
+    "wall",
+    "light",
+    "door",
+    "server",
+    "camera",
+    "vault",
+    "campus layout",
+    "character walking variations"
+  ],
+  "originalLicense": "CC0-1.0",
+  "software": [
+    {
+      "name": "Phaser",
+      "version": "3.90.0",
+      "license": "MIT",
+      "source": "https://github.com/phaserjs/phaser/tree/v3.90.0"
+    },
+    {
+      "name": "Official Next.js template",
+      "license": "MIT",
+      "source": "https://github.com/phaserjs/template-nextjs",
+      "usage": "Integration reference only; no template telemetry or scripts bundled. Retained notice."
+    }
+  ],
+  "editableMap": "campus.tmj",
+  "generatedMapCopy": "campus.tmj.json",
+  "generator": "scripts/build-hq-assets.py",
+  "fontFiles": "None. System text only."
+}
