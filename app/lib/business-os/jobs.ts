@@ -10,8 +10,11 @@ export async function queueJob(department: Department, message: string, requestK
   if (!departments.includes(department) || !message.trim() || message.length > 4000 || !/^[\w:-]{8,150}$/.test(requestKey)) throw new Error("INVALID_JOB");
   return db().begin(async tx => {
     await tx`select pg_advisory_xact_lock(730916)`;
-    const [existing] = await tx`select id,status from os_jobs where request_key=${requestKey}`;
-    if (existing) return existing;
+    const [existing] = await tx`select id,status,department,message,source,task_id from os_jobs where request_key=${requestKey}`;
+    if (existing) {
+      if(existing.department!==department||existing.message!==message||existing.source!==source||(existing.task_id||null)!==(taskId||null))throw new Error("IDEMPOTENCY_KEY_REUSED_FOR_DIFFERENT_WORK");
+      return {id:existing.id,status:existing.status};
+    }
     const [count] = await tx`select count(*)::int as n from os_jobs where status in ('queued','running')`;
     if (count.n >= 100) throw new Error("QUEUE_FULL");
     const id = randomUUID();

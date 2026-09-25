@@ -26,6 +26,9 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts
       - run: npm install --no-save --package-lock=false --ignore-scripts @electric-sql/pglite@0.5.8
+      - run: node tests/business-os-integration.mjs
+        env:
+          AI_OS_TEST_PGLITE_MODULE: "./node_modules/@electric-sql/pglite/dist/index.js"
       - run: node tests/ceo-recovery.test.cjs
         env:
           OS_TEST_PGLITE_MODULE: "@electric-sql/pglite"

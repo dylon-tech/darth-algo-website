@@ -2,7 +2,7 @@ name: HQ World validation
 on:
   pull_request:
     branches: [main]
-    paths: ['app/owner/**', 'public/hq-world/**', 'scripts/hq-world-*', '.github/workflows/hq-world-validation.yml', 'package*.json']
+    paths: ['app/owner/**', 'app/lib/business-os/**', 'app/api/owner/**', 'public/hq-world/**', 'scripts/hq-world-*', '.github/workflows/hq-world-validation.yml', 'package*.json']
   workflow_dispatch:
 permissions:
   contents: read

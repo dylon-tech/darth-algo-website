@@ -9,6 +9,8 @@ Baseline/rollback commit: `5f524cfcee3f89d0c63fbde9b8245e9b4997f793` (production
 
 The campus uses the existing `/api/owner/dashboard` snapshot, `/api/owner/command` job/message/pause controls, and unchanged content and approval APIs. No new database, credentials, scheduler, publication destination or worker is created. Eight departments map to the existing nine named roles. Publishing is an existing workflow, not an invented tenth agent.
 
+Reusing a request key for different work is rejected; exact retries return the original saved job.
+
 Give Work and Message save a real `os_jobs` request and display its ID. Run now asks the existing bounded worker to check one eligible queued job. Acknowledgment is not completion. Existing AI enablement and budget policies still apply. Pause controls future job admission; in-flight provider calls may finish. Content Disapprove/Remake/Approve replacement retain exact-version, locking and hold rules. Remake can create a brief; the existing server still lacks a finished-art renderer. No new paid renderer was added.
 
 Indicator source, real preview evidence, upload and release review stay in the protected Indicator Lab. Support/retention and welcome decisions stay in their existing protected workspaces. No customer contact or indicator release is triggered by entering a room.
