@@ -12,7 +12,7 @@ assert.ok(['localhost','127.0.0.1'].includes(url.hostname)&&url.pathname==='/hq_
 const sql=postgres(url.toString(),{max:3,onnotice:()=>{}}),port=3240,origin=`http://127.0.0.1:${port}`,key='hq-world-isolated-test-key-never-for-production';
 const schema=(await readFile('app/lib/business-os/schema.ts','utf8')).match(/export const schema = `([\s\S]*?)`;/)[1];await sql.unsafe(schema);const coordination=(await readFile('app/lib/business-os/coordination.ts','utf8')).match(/export const coordinationSchema = `([\s\S]*?)`;/)[1];await sql.unsafe(coordination);await sql`update os_control set paused=false`;
 const server=spawn(process.execPath,['node_modules/next/dist/bin/next','start','-p',String(port)],{stdio:'inherit',env:{...process.env,DATABASE_URL:url.toString(),AI_OS_ENABLED:'true',AI_OS_OWNER_KEY:key,AI_OS_AI_ENABLED:'false',AI_OS_AUTONOMY_ENABLED:'false',AI_OS_TELEGRAM_ENABLED:'false',HQ_WORLD_ENABLED:'true'}});
-let browser;const results={scope:'Isolated CI only. No production metrics or provider results.',checks:[],requests:0,screenshots:[],performance:{}};
+let browser;const results={scope:'Isolated CI only. No production metrics or provider results.',checks:[],jobs:[],requests:0,screenshots:[],performance:{}};
 const pass=name=>{results.checks.push(name);console.log('PASS',name);};
 const stamp=()=>new Date().toISOString();
 const team=[['ceo','Team Leader'],['research','Research'],['content','Content Creator'],['indicator_builder','Indicator Builder'],['growth','Growth'],['support','Customer Support'],['affiliates','Affiliates'],['analytics','Analytics'],['operations','Operations']].map(([id,name])=>({id,name,mandate:'Synthetic role for interface acceptance testing.',configured:true,latest:null,completed:{id:'fixture-'+id,department:id,status:'completed',createdAt:stamp(),finishedAt:stamp(),errorCode:null,brief:'ISOLATED TEST OUTPUT. Production data is not used in these screenshots.'},current:null,next:null,waiting:0,task:null,health:{rating:'Great',reason:'Synthetic fixture'}}));
@@ -57,7 +57,7 @@ try{
   await page.getByRole('navigation',{name:'Departments'}).getByRole('button',{name:/Research/}).click();await page.getByRole('button',{name:'Give work',exact:true}).click();
   await page.getByRole('textbox',{name:'Your assignment'}).fill('ISOLATED HQ ACCEPTANCE '+engine+': prepare an internal research brief. No external action.');
   await page.locator('form').getByRole('button',{name:'Give work',exact:true}).click();await page.getByRole('status').filter({hasText:/Request .* saved/}).waitFor();
-  const [job]=await sql`select id,status,request_key from os_jobs where message like ${'ISOLATED HQ ACCEPTANCE '+engine+'%'} order by created_at desc limit 1`;assert.equal(job.status,'queued');
+  const [job]=await sql`select id,status,request_key from os_jobs where message like ${'ISOLATED HQ ACCEPTANCE '+engine+'%'} order by created_at desc limit 1`;assert.equal(job.status,'queued');results.jobs.push({engine,id:job.id,status:job.status,observedAt:stamp()});
   await page.screenshot({path:`artifacts/hq-world/${engine}-saved-task-synthetic.png`,fullPage:true});
   await page.getByRole('button',{name:'Close agent',exact:true}).click();await page.getByRole('button',{name:'Close department',exact:true}).click();
   // Reissue the exact recorded request key twice using the real authenticated API.

@@ -23,7 +23,7 @@ export default function Canvas({agents,onRoom,onAgent,focus}:{agents:WorldAgent[
   <div ref={root} className={styles.canvas} tabIndex={0} role='application' aria-label='Headquarters map. Arrow keys pan; plus and minus zoom. Use the Departments buttons for accessible room selection.' onKeyDown={e=>{const action=({ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down','+':'in','=':'in','-':'out',Home:'home'} as Record<string,string>)[e.key];if(action){e.preventDefault();camera(action);}}}/>
   {!ready&&!failed&&<p className={styles.canvasMessage}>Opening your campus…</p>}
   {failed&&<div className={styles.canvasMessage} role='status'><p>The map could not load. All departments and controls are still available below.</p><button onClick={()=>setRetry(n=>n+1)}>Reload map</button></div>}
-  <div className={styles.mapCaption}>HQ WORLD <span>Room lights reflect saved work</span></div>
+  <div className={styles.mapCaption}>HQ WORLD <span>Crew status reflects saved work</span></div>
   <div className={styles.camera}><button onClick={()=>camera('out')} aria-label='Zoom out' disabled={!ready||failed}>−</button><button onClick={()=>camera('home')} disabled={!ready||failed}>Whole campus</button><button onClick={()=>camera('in')} aria-label='Zoom in' disabled={!ready||failed}>+</button></div>
  </section>;
 }

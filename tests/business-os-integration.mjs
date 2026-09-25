@@ -201,6 +201,7 @@ try {
   await queueJob('growth','Another request','integration-no-consent','telegram');
   assert.equal((await workOneJob()).status,'budget_blocked');
   assert.equal(providerInputs.length,3,'Recurring consent still required after legacy cap removal');
+  console.log(JSON.stringify({scope:'ISOLATED INTEGRATION, MOCKED PROVIDER',jobId:original.id,runId:first.runId,handoffId:sent.id,receiverTaskId:sent.task_id,receiverRunId:second.runId,finalStatus:received.status,checkedAt:new Date().toISOString()}));
   console.log('PASS: real PGlite schema + queue + service + model + persisted content→operations handoff; recipient sees sender deliverable; idempotent replays; budget preserves queue; active-run/worker guards, cancellation and stale lease handoff status. Provider mocked; advisory locks no-op, multi-connection isolation not tested.');
 } finally {
   globalThis.fetch=originalFetch;
