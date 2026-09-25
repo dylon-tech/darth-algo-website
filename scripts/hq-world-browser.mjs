@@ -56,11 +56,12 @@ try{
   await page.getByRole('button',{name:'Whole campus',exact:true}).click();assert.equal(await page.locator('[data-room-art]').count(),8);await page.screenshot({path:`artifacts/hq-world/${engine}-overview-synthetic.png`,fullPage:true});
   await page.getByRole('navigation',{name:'Watch a department'}).getByRole('button',{name:/Research/}).click();
   await page.getByRole('button',{name:'Enlarge room'}).click();assert.equal(await page.getByRole('button',{name:'Enlarge room'}).getAttribute('aria-pressed'),'true');await page.getByRole('button',{name:'Enlarge room'}).click();
+  await page.getByRole('button',{name:/Follow work/}).click();
   runningFixture=true;await page.getByRole('button',{name:'Refresh headquarters'}).click();await page.locator('[data-agent-id=research][data-motion=working]').waitFor();
   const art=page.locator('[data-agent-id=research]');assert.ok(await art.evaluate(el=>el.getAnimations({subtree:true}).length)>0);
   await page.locator('[aria-label="Interactive headquarters"]').scrollIntoViewIfNeeded();
   await page.screenshot({path:`artifacts/hq-world/${engine}-research-working-synthetic.png`,fullPage:true});
-  const first=await art.screenshot();await page.waitForTimeout(650);const second=await art.screenshot();assert.notDeepEqual(first,second,'Active work must produce visibly different animation frames');
+  const illustration=page.locator('[data-room-art=research]');const first=await illustration.screenshot();await page.waitForTimeout(650);const second=await illustration.screenshot();assert.notDeepEqual(first,second,'Active work must produce visibly different animation frames');
   await page.getByRole('button',{name:'Pause motion'}).click();assert.ok(await art.evaluate(el=>el.getAnimations({subtree:true}).every(a=>a.playState==='paused')));
   await page.getByRole('button',{name:'Resume motion'}).click();
   await page.emulateMedia({reducedMotion:'reduce'});assert.equal(await art.evaluate(el=>el.getAnimations({subtree:true}).length),0);await page.emulateMedia({reducedMotion:'no-preference'});
