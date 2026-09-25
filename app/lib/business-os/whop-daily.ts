@@ -69,7 +69,7 @@ export async function syncDailyWhop(campaign:DailyCampaign, now=new Date()){
   if(!claimed)return {state:"waiting_or_started",published:false};
   try{
     const post=await createWhopHomePost(text,{idempotencyKey:repairable?idem+"-free-v3":idem,pinned:false});
-    const details={day:campaign.day,postId:post.id,companyId:post.companyId,username:post.username||null,createdAt:post.createdAt||null,published:false};
+    const details={day:campaign.day,slot:campaign.slot,reviewHash:campaign.reviewHash,postId:post.id,companyId:post.companyId,username:post.username||null,createdAt:post.createdAt||null,published:false};
     await sql`insert into os_activity(actor,event,entity_id,details) values('operations','whop_home_publish_accepted',${key},${sql.json(details)})`;
     await recordWhopPermission(false);
     return confirmWhop(key,campaign,details);

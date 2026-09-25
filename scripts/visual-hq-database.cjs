@@ -45,11 +45,11 @@ async function check(name,fn){await fn();passed++;console.log('PASS '+name);}
  await reset();
  await check('optimistic decision version prevents conflicting simultaneous actions',async()=>{const a=await input('disapprove'),b=await input('remake');const r=await Promise.allSettled([decideContent(a),decideContent(b)]);assert.equal(r.filter(x=>x.status==='fulfilled').length,1);assert.equal(r.filter(x=>x.status==='rejected').length,1);});
  await reset();
- await check('publish claim that wins shared lock cannot be falsely cancelled',async()=>{
+ await check('partial publication remains intact while unsent destinations are held',async()=>{
   const id=randomUUID();await sql`insert into os_approvals(id,payload,status) values(${id},${sql.json({executor:'buffer_social_v2',campaign:{day:c.day,slot:c.slot}})},'approved')`;
   const i=await input('disapprove');let entered;const gate=new Promise(r=>entered=r);
   const claim=sql.begin(async tx=>{await tx`select pg_advisory_xact_lock(730924)`;entered();await tx`select pg_sleep(0.08)`;await tx`insert into os_activity(actor,event,entity_id) values('owner','buffer_publish_started',${id})`;});
-  await gate;const denial=assert.rejects(()=>decideContent(i),/already started/);await Promise.all([claim,denial]);assert.equal(await latestContentDecision(c),null);
+  await gate;await Promise.all([claim,decideContent(i)]);assert.equal(await ownerCampaignHeld(c),true);assert.equal((await sql`select status from os_approvals where id=${id}`)[0].status,'approved');
  });
  await reset();
  await check('owner hold that wins shared lock prevents later publishing claim',async()=>{await decideContent(await input('disapprove'));const canClaim=await sql.begin(async tx=>{await tx`select pg_advisory_xact_lock(730924)`;return !(await ownerCampaignHeld(c,tx));});assert.equal(canClaim,false);});

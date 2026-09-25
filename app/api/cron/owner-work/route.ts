@@ -25,14 +25,16 @@ export async function GET(request:Request) {
     } catch { console.warn(JSON.stringify({event:"welcome_tick",status:"unavailable"})); }
     await processOwnerUpdates();
     await deliverOwnerNotices(2);
-    try {const {syncOpenLoops}=await import("../../../lib/business-os/open-loops");console.info(JSON.stringify({event:"open_loops_tick",...await observed("open_loops",()=>syncOpenLoops())}));}
-    catch {console.warn(JSON.stringify({event:"open_loops_tick",status:"blocked"}));}
     try {const {syncRetentionOpportunities}=await import("../../../lib/business-os/revenue-ops");console.info(JSON.stringify({event:"retention_tick",...await observed("retention",()=>syncRetentionOpportunities())}));}
     catch {console.warn(JSON.stringify({event:"retention_tick",status:"blocked"}));}
+    try {const {syncOpenLoops}=await import("../../../lib/business-os/open-loops");console.info(JSON.stringify({event:"open_loops_tick",...await observed("open_loops",()=>syncOpenLoops())}));}
+    catch {console.warn(JSON.stringify({event:"open_loops_tick",status:"blocked"}));}
     try {const {syncVidiqResearch}=await import("../../../lib/business-os/vidiq-research");console.info(JSON.stringify({event:"vidiq_research_tick",...await observed("research",()=>syncVidiqResearch())}));}
     catch {console.warn(JSON.stringify({event:"vidiq_research_tick",status:"blocked"}));}
     try {const {syncIndicatorLab}=await import("../../../lib/business-os/indicator-lab");console.info(JSON.stringify({event:"indicator_lab_tick",...await observed("indicators",()=>syncIndicatorLab())}));}
     catch {console.warn(JSON.stringify({event:"indicator_lab_tick",status:"blocked"}));}
+    try {await (await import('../../../lib/business-os/workflow-evidence')).recordWorkflowEvidence();}
+    catch {console.warn(JSON.stringify({event:'workflow_acceptance_snapshot',status:'readback_unavailable'}));}
     if(process.env.AI_OS_AI_ENABLED!=="true" || process.env.AI_OS_AUTONOMY_ENABLED!=="true") {
       await Promise.all(["team","social","telegram","handoffs"].map(id=>recordObservation(id,{status:"disabled",reason:"REQUIRED_AI_FLAGS_DISABLED"})));
       await heartbeat("vercel-cron","ai_disabled");return Response.json({status:"ai_disabled"});
