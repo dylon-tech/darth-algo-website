@@ -11,7 +11,7 @@ export type OperationsSnapshot = {
   deliveries: NetworkDelivery[];
   indicator: { enabled: boolean; stage: string; candidates: IndicatorItem[]; browserConnected: boolean | null; browserStartsRemaining: number | null; loginVerified: boolean | null; releaseExecutorConnected: boolean; lastHandoff: string | null; lastHandoffAt: string | null; researchState: string | null };
   team: TeamItem[];
-  openLoops: Array<{id:string; category:string; title:string; why:string; service:string; founderAction:string|null; resumeAction:string; severity:string; lastSeenAt:string|null}>;
+  openLoops: Array<{id:string; category:string; title:string; why:string; service:string; founderAction:string|null; resumeAction:string; severity:string; lastSeenAt:string|null;href?:string}>;
 };
 export function recentTimestamp(value: string | null, now = Date.now(), maximumAgeMs = 180000): boolean {
   if (!value) return false;

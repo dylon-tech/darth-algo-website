@@ -32,6 +32,9 @@ jobs:
       - run: node tests/native-revenue-evidence.test.cjs
         env:
           OS_TEST_PGLITE_MODULE: "@electric-sql/pglite"
+      - run: node tests/five-workflows.test.cjs
+        env:
+          OS_TEST_PGLITE_MODULE: "@electric-sql/pglite"
       - run: node tests/ceo-home.test.cjs
       - run: node tests/finance-history.test.cjs
       - run: node tests/social-editorial-policy.test.cjs

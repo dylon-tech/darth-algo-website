@@ -4,6 +4,7 @@ import {socialCampaignQueue} from './social-campaign-queue';
 import {reviewedCreativeFor} from './reviewed-social';
 import {campaignKey,easternClock,type SocialSlot} from './social-schedule';
 import {contentHeld,replacementIsNew,queueActionMessage,type ContentAction,type ContentDecision,type ContentQueue,type QueueItem} from './daily-content-model';
+import {campaignDeliveries} from './content-delivery';
 type Sql=ReturnType<typeof db>;
 const event='daily_content_owner_decision';
 export class ContentReviewError extends Error {}
@@ -24,7 +25,8 @@ async function hasSubmission(c:{day:string;slot:SocialSlot},sql:Sql){
 }
 export async function readContentQueue(now=new Date()):Promise<ContentQueue>{
  const sql=db(),{day:today}=easternClock(now);
- const campaigns=socialCampaignQueue.filter(c=>c.day>=today).sort((a,b)=>a.day.localeCompare(b.day)||(a.slot===b.slot?0:a.slot==='morning'?-1:1)).slice(0,8);
+ const since=new Date(Date.parse(today+'T12:00:00Z')-7*86400000).toISOString().slice(0,10);
+ const campaigns=socialCampaignQueue.filter(c=>c.day>=since).sort((a,b)=>a.day.localeCompare(b.day)||(a.slot===b.slot?0:a.slot==='morning'?-1:1)).slice(-24);
  const items:QueueItem[]=await Promise.all(campaigns.map(async c=>{
   const decision=await latestContentDecision(c,sql),submitted=await hasSubmission(c,sql);
   let reviewed=false;try{reviewed=Boolean(reviewedCreativeFor(c.day,c.slot));}catch{/* A failed review is a hold, never a fallback. */}
@@ -32,7 +34,8 @@ export async function readContentQueue(now=new Date()):Promise<ContentQueue>{
   const revision=job?{id:String(job.id),status:String(job.status),brief:typeof job.brief==='string'?job.brief:null}:null;
   const canApprove=reviewed&&!submitted&&replacementIsNew(decision,{id:c.id,reviewHash:c.review.sha256,assetHashes:c.assets.map(a=>a.sha256)});
   const state=submitted?'Already submitted — delivery checks apply':canApprove?'Replacement ready for review':decision?.action==='remake'?(revision?.status==='succeeded'?'Blocked · image renderer not connected':revision?.status==='running'?'Remake in progress':revision?.status==='failed'||revision?.status==='unknown'?'Remake needs attention':'Remake queued'):contentHeld(decision)?'Disapproved · posting stopped':!reviewed?'Creative review required':decision?.action==='approve_replacement'&&decision.reviewHash!==c.review.sha256?'Changed version · posting held':'Scheduled';
-  return {id:c.id,day:c.day,slot:c.slot,theme:c.theme,kind:c.editorial?.kind||'promotional',text:c.text,reviewHash:c.review.sha256,images:c.assets.map(a=>({path:a.path,altText:a.altText})),state,decision,submitted,canApprove,revision};
+  const deliveries=await campaignDeliveries(c,contentHeld(decision)).catch(()=>['x','instagram','threads','whop'].map(network=>({network,state:'Delivery evidence unavailable',postId:null,url:null,checkedAt:null,versionMatches:null})));
+  return {id:c.id,day:c.day,slot:c.slot,theme:c.theme,kind:c.editorial?.kind||'promotional',text:c.text,reviewHash:c.review.sha256,images:c.assets.map(a=>({path:a.path,altText:a.altText})),state,decision,submitted,canApprove,revision,deliveries};
  }));
  return {checkedAt:new Date().toISOString(),today,items};
 }
@@ -45,13 +48,14 @@ export async function decideContent(input:ContentDecisionInput){
  return db().begin(async tx=>{
   // Same locks and order as publishing; whichever transaction claims first wins.
   await tx`select pg_advisory_xact_lock(730924)`;
+  await tx`select pg_advisory_xact_lock(730925)`;
   await tx`select pg_advisory_xact_lock(730928)`;
   const sql=tx as unknown as Sql;
   const [duplicate]=await tx`select details from os_activity where event=${event} and details->>'requestKey'=${input.requestKey} order by id desc limit 1`;
   if(duplicate){if(duplicate.details.intentHash!==intentHash)throw new ContentReviewError('This request key belongs to a different decision.');return {message:queueActionMessage(input.action),jobId:duplicate.details.jobId||null,duplicate:true};}
   const previous=await latestContentDecision(c,sql);
   if((previous?.id||null)!==input.expectedDecisionId)throw new ContentReviewError('Another decision was saved. Refresh before trying again.');
-  if(await hasSubmission(c,sql))throw new ContentReviewError('Posting has already started for this slot. It was not cancelled or remade. Check the saved delivery before taking another action.');
+  if(input.action!=='disapprove'&&await hasSubmission(c,sql))throw new ContentReviewError('Posting has already started for this slot. It was not cancelled or remade. Check the saved delivery before taking another action.');
   if(input.action==='approve_replacement'){
    if(!reviewedCreativeFor(c.day,c.slot)||!replacementIsNew(previous,{id:c.id,reviewHash:c.review.sha256,assetHashes:c.assets.map(a=>a.sha256)}))throw new ContentReviewError('A different reviewed version with new artwork is required. The original stays held.');
   }
@@ -68,7 +72,7 @@ export async function decideContent(input:ContentDecisionInput){
    await tx`insert into os_jobs(id,request_key,department,message,source) values(${jobId},${'daily-remake:'+input.requestKey},'content',${message},'owner')`;
    await tx`insert into os_activity(actor,event,entity_id,details) values('owner','job_queued',${jobId},${tx.json({department:'content',contentId:c.id,remake:true})})`;
   }
-  if(input.action!=='approve_replacement')await tx`update os_approvals set status='declined',decided_by='owner',decided_at=now(),decision_note=${input.action==='remake'?'Owner requested a new content version':'Owner disapproved the daily content'} where payload->>'executor'='buffer_social_v2' and payload->'campaign'->>'day'=${c.day} and payload->'campaign'->>'slot'=${c.slot} and status in ('pending','approved')`;
+  if(input.action!=='approve_replacement')await tx`update os_approvals a set status='declined',decided_by='owner',decided_at=now(),decision_note=${input.action==='remake'?'Owner requested a new content version':'Owner held unsent destinations'} where payload->>'executor'='buffer_social_v2' and payload->'campaign'->>'day'=${c.day} and payload->'campaign'->>'slot'=${c.slot} and status in ('pending','approved') and not exists(select 1 from os_activity e where e.entity_id=a.id::text and e.event in ('buffer_publish_started','buffer_publish_receipt'))`;
   await tx`insert into os_activity(actor,event,entity_id,details) values('owner',${event},${campaignKey(c)},${tx.json({action:input.action,contentId:c.id,reviewHash:c.review.sha256,assetHashes:c.assets.map(a=>a.sha256),note,jobId,requestKey:input.requestKey,intentHash})})`;
   return {message:queueActionMessage(input.action),jobId,duplicate:false};
  });

@@ -5,11 +5,13 @@ import Link from 'next/link';
 import {ChevronRight,RefreshCw} from 'lucide-react';
 import {useOwnerFeed} from './use-owner-feed';
 import {safeReceiptUrl} from '../lib/business-os/desk-state';
+import type {OperationsSnapshot} from '../lib/business-os/operations-model';
 import styles from './iphone-home.module.css';
 type Approval={id:string;payload_hash:string;effective_status:string;expires_at:string;payload:{summary:string;details:string;kind:string;executor?:string;text?:string;estimatedCostUsd?:number;assets?:Array<{url:string;altText:string}>};delivery?:{published?:boolean;postId?:string;url?:string;state?:string}};
 type Feed={approvals:Approval[];messages:Array<{id:string;department:string;body:string;role:string;created_at:string}>};
 export default function InboxPanel({active,disabled,onOpenAgent}:{active:boolean;disabled:boolean;onOpenAgent:(id:string)=>void}){
  const {data,error,loading,checkedAt,refresh}=useOwnerFeed<Feed>('/api/owner/command?view=status',active);
+ const needs=useOwnerFeed<OperationsSnapshot>('/api/owner/operations',active);
  const [filter,setFilter]=useState<'decisions'|'messages'|'history'>('decisions'),[busy,setBusy]=useState(''),[notice,setNotice]=useState(''),[notes,setNotes]=useState<Record<string,string>>({});
  const lock=useRef(false);
  const unavailable=disabled||Boolean(error)||!checkedAt||Date.now()-checkedAt>45000;
@@ -23,6 +25,7 @@ export default function InboxPanel({active,disabled,onOpenAgent}:{active:boolean
  const approvals=(data?.approvals||[]).filter(a=>filter==='decisions'?pending(a):!pending(a));
  return <section aria-label='Owner inbox'>
   <div className={styles.sectionHeading}><h2>Decisions & messages</h2><button aria-label='Refresh inbox' disabled={loading} onClick={()=>void refresh()}><RefreshCw size={18}/></button></div>
+  <details className={styles.groupDetails}><summary>Needs you · saved requests <ChevronRight size={16}/></summary><div>{needs.error&&<p role='alert'>Needs You could not be refreshed.</p>}{needs.data?.openLoops.filter(l=>l.founderAction).map(l=><article key={l.id}><h3>{l.title}</h3><p><strong>Need you:</strong> {l.founderAction}</p><p><strong>Why:</strong> {l.why}</p><p><strong>Then:</strong> {l.resumeAction}</p><Link className={styles.listRow} href={l.href||'/owner/connections'}>Open required step <ChevronRight size={17}/></Link></article>)}<Link className={styles.listRow} href='/owner/retention'>Customer follow-through <ChevronRight size={17}/></Link></div></details>
   <div className={styles.segmented} aria-label='Inbox filter'>{(['decisions','messages','history'] as const).map(f=><button key={f} aria-pressed={filter===f} onClick={()=>setFilter(f)}>{f==='decisions'?'Decisions':f==='messages'?'Messages':'History'}</button>)}</div>
   {error&&<p className={styles.alert} role='alert'>{error}</p>}{notice&&<p className={styles.notice} role='status'>{notice}</p>}
   {filter==='messages'?<div className={styles.group}>{data?.messages.slice(0,30).map(m=><button className={styles.listRow} key={m.id} onClick={()=>onOpenAgent(m.department)}><span><strong>{m.department.replaceAll('_',' ')} · {m.role==='user'?'You':'Agent'}</strong><small className={styles.messagePreview}>{m.body}</small><small>{new Date(m.created_at).toLocaleString()}</small></span><ChevronRight size={17}/></button>)}</div>:approvals.map(a=>{

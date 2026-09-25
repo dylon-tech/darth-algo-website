@@ -1,8 +1,8 @@
 import { db } from '../affiliate-db';
 import type { Observation } from './desk-state';
 // Latest result only: bounded storage, no credentials, prompts, customer data or media blobs.
-const fields = ['status','code','reason','day','theme','assetsReady','communityReadiness','ideaStage','privateTesting','privatePackage','publishing','socialDiscovery','hostedBrowser','hostedBrowserStartsRemaining','candidates','pending','cardsDelivered','cardsQueued','lastHandoff','delivered','panelDelivered','view'];
-const ids = ['social','telegram','indicators','research','handoffs','team'];
+const fields = ['status','code','reason','day','slot','theme','assetsReady','communityReadiness','ideaStage','privateTesting','privatePackage','publishing','socialDiscovery','hostedBrowser','hostedBrowserStartsRemaining','candidates','pending','cardsDelivered','cardsQueued','lastHandoff','delivered','panelDelivered','view','open','needsFounder','resolved','suppressed','subscriptionsChecked','hasMore','checkedAt'];
+const ids = ['social','telegram','indicators','research','handoffs','team','retention','open_loops'];
 let schemaReady = false;
 async function ensureTable() {
   if (schemaReady) return;

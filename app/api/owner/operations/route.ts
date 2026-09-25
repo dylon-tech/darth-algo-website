@@ -38,7 +38,7 @@ export async function GET(request: Request) {
       read('indicator_handoff', () => sql`select details,created_at from os_activity where event='indicator_handoff' order by id desc limit 1`),
       read('team', () => sql`select distinct on(department) department,status,finished_at from os_runs order by department,created_at desc`),
       read('queue', () => sql`select department,count(*) filter(where status='queued')::int as queued,count(*) filter(where status='running' and started_at>now()-interval '5 minutes')::int as running,count(*) filter(where status='running' and (started_at is null or started_at<=now()-interval '5 minutes'))::int as stale from os_jobs where status in ('queued','running') group by department`),
-      read('open_loops', () => sql`select id,category,title,why,service,founder_action,resume_action,severity,last_seen_at from os_open_loops where status='open' order by case severity when 'critical' then 0 when 'warning' then 1 else 2 end,last_seen_at desc limit 20`),
+      read('open_loops', () => sql`select id,category,title,why,service,founder_action,resume_action,severity,last_seen_at,details->>'href' as href from os_open_loops where status='open' order by (founder_action is not null) desc,case severity when 'critical' then 0 when 'warning' then 1 else 2 end,last_seen_at desc limit 30`),
     ]);
     const campaignEvent = events.find(row => row.event === 'daily_social_ready');
     const campaign = object(campaignEvent?.details);
@@ -81,7 +81,7 @@ export async function GET(request: Request) {
         const queued = number(queue?.queued) || 0, running = number(queue?.running) || 0;
         return {id, state: partial.includes('team') || partial.includes('queue') ? 'unknown' : (number(queue?.stale) || 0) > 0 ? 'stale' : running && fresh ? 'running' : running ? 'stale' : queued ? 'queued' : paused === true ? 'paused' : text(run?.status) || 'no_record', finishedAt: text(run?.finished_at), queued, running, error: null};
       }),
-      openLoops: openLoops.map(row=>({id:String(row.id),category:String(row.category),title:String(row.title),why:String(row.why),service:String(row.service),founderAction:text(row.founder_action),resumeAction:String(row.resume_action),severity:String(row.severity),lastSeenAt:text(row.last_seen_at)})),
+      openLoops: openLoops.map(row=>({id:String(row.id),category:String(row.category),title:String(row.title),why:String(row.why),service:String(row.service),founderAction:text(row.founder_action),resumeAction:String(row.resume_action),severity:String(row.severity),lastSeenAt:text(row.last_seen_at),href:['/owner/indicators','/owner/connections','/owner/welcome','/owner/retention','/owner?view=inbox'].includes(String(row.href))?String(row.href):'/owner?view=inbox'})),
     };
     return Response.json(snapshot, {headers: privateHeaders});
   } catch { return Response.json({error: 'OPERATIONS_UNAVAILABLE', message: 'Live operations could not be read. No work was started.'}, {status: 503, headers: privateHeaders}); }

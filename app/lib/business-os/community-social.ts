@@ -1,4 +1,5 @@
 import {campaignKey} from './social-schedule';
+import {ownerCampaignHeld} from './daily-content-review';
 import {campaignMatchesReview} from './reviewed-social';
 import {communityReadiness} from './community-readiness';
 import {db} from '../affiliate-db';
@@ -30,9 +31,10 @@ export async function publishCommunityPreview(now=new Date()){
  const caption=`DARTH ALGO · ${payload.campaign.slot?.toUpperCase()} POST\n\n${payload.text}\n\nTap below for the full post.`;
  const claimed=await sql.begin(async tx=>{
   await tx`select pg_advisory_xact_lock(730925)`;
+  if(await ownerCampaignHeld(payload.campaign,tx as unknown as typeof sql))return false;
   const [active]=await tx`select paused from os_control where id=1 for share`;if(!active||active.paused)return false;
   const [existing]=await tx`select id from os_activity where entity_id=${key} and event='community_social_started' limit 1`;if(existing)return false;
-  await tx`insert into os_activity(actor,event,entity_id,details) values('content','community_social_started',${key},${tx.json({policyId:dailySocialPolicy.id,chatId,threadId,photo,links})})`;
+  await tx`insert into os_activity(actor,event,entity_id,details) values('content','community_social_started',${key},${tx.json({policyId:dailySocialPolicy.id,chatId,threadId,photo,links,reviewHash:payload.campaign.reviewHash})})`;
   return true;
  });
  if(!claimed)return {posted:false,reason:'already_attempted'};
@@ -40,7 +42,7 @@ export async function publishCommunityPreview(now=new Date()){
   const response=await fetch(`https://api.telegram.org/bot${token}/sendPhoto`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:chatId,message_thread_id:Number(threadId),photo,caption,reply_markup:{inline_keyboard:links.map(link=>[link])}}),cache:'no-store',signal:AbortSignal.timeout(15000)});
   const result=await response.json() as {ok?:boolean;result?:{message_id?:number}};
   if(!response.ok||!result.ok||!result.result?.message_id)throw Error('COMMUNITY_PREVIEW_UNCONFIRMED');
-  await sql`insert into os_activity(actor,event,entity_id,details) values('content','community_social_sent',${key},${sql.json({messageId:result.result.message_id,links})})`;
+  await sql`insert into os_activity(actor,event,entity_id,details) values('content','community_social_sent',${key},${sql.json({messageId:result.result.message_id,links,reviewHash:payload.campaign.reviewHash})})`;
   return {posted:true,messageId:result.result.message_id};
  }catch{
   try{await sql`insert into os_activity(actor,event,entity_id,details) values('operations','community_social_unknown',${key},'{"needsCheck":true}'::jsonb)`;}catch{/* Durable started event blocks another send. */}

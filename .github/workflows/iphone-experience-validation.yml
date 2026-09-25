@@ -1,5 +1,7 @@
 name: iPhone experience validation
 on:
+  pull_request:
+    branches: [main]
   push:
     branches: [feat/iphone-experience-20260924, feat/command-center-completion-20260924]
   workflow_dispatch:
