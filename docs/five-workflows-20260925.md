@@ -31,3 +31,6 @@ Local regression uses isolated PostgreSQL/PGlite and mocked provider data; CI ad
 ## Rollback
 
 Revert this release through the same reviewed Git/Vercel workflow. New retention-review storage is additive; retain it and the original activity/receipt ledgers. No destructive migration or billing/access mutation is included. Restoring prior UI does not undo a post or email already sent by an existing provider.
+# Daily private brief
+
+The existing deduplicated daily notice now starts with saved published links, completed-job previews, bounded retention coverage and specific owner blockers. It preserves the same owner channel and schedule. Read failures explicitly report unavailable evidence. No new notification schedule was added; live delivery of the revised brief remains to be observed at its next scheduled run.

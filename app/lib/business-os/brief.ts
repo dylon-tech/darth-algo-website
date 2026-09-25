@@ -9,8 +9,9 @@ export async function createDailyBrief() {
  if(already){const [brief]=await sql`select * from os_briefs where day=${day}`;return brief || {day};}
  const score=await ceoScorecard();
  const welcome=await (await import('../welcome/service')).welcomeBrief();
- const body=score.body.replace('CEO DESK','DAILY BRIEF')+'\n\n'+welcome;
- const [brief]=await sql`insert into os_briefs(day,body,evidence) values(${day},${body},${sql.json({customers:score.customers,posts:score.posts,queue:score.queue,checkedAt:new Date().toISOString(),version:2})}) on conflict(day) do update set body=excluded.body,evidence=excluded.evidence returning *`;
+ const outcomes=await (await import('./brief-outcomes')).briefOutcomes().catch(()=>({body:'Saved workflow outcomes are unavailable. Check the private Inbox; this is not evidence of zero activity.',postLinks:null,completedJobs:null,retentionCheckedAt:null}));
+ const body=outcomes.body+'\n\n'+score.body.replace('CEO DESK','DAILY BRIEF')+'\n\n'+welcome;
+ const [brief]=await sql`insert into os_briefs(day,body,evidence) values(${day},${body},${sql.json({customers:score.customers,posts:score.posts,queue:score.queue,outcomes,checkedAt:new Date().toISOString(),version:3})}) on conflict(day) do update set body=excluded.body,evidence=excluded.evidence returning *`;
  // Exactly one daily notification. Interactive views continue editing their own panel.
  await queueOwnerNotice(`ceo-brief-v2:${day}`,body,homeMenu());
  console.info(JSON.stringify({event:'ceo_daily_brief',day,customersVerified:score.customers.active!==null,postCount:score.posts.x+score.posts.instagram+score.posts.threads}));

@@ -42,6 +42,11 @@ function load(file,overrides={}){const exports={};vm.runInNewContext(ts.transpil
   assert.match(delivery.deliveryEvidence('threads',[{...receipt,event:'buffer_publish_unknown',details:{}}],'hash','hash',true).state,/Outcome unknown/);
   assert.equal(delivery.deliveryEvidence('x',[],'hash','hash',true).state,'Held · no new send');
   assert.equal(delivery.deliveryEvidence('x',[receipt],'hash','hash').url,null,'A wrong-domain receipt cannot become a link');
+  await database.exec("create table os_approvals(id uuid primary key,payload jsonb);create table os_runs(id uuid primary key,result jsonb);create table os_jobs(id uuid primary key,department text,run_id uuid,status text,finished_at timestamptz);create table os_indicator_candidates(id uuid primary key,candidate jsonb,status text,created_at timestamptz);create table os_open_loops(title text,founder_action text,status text,severity text,last_seen_at timestamptz);");
+  await sql`insert into os_approvals(id,payload) values('11111111-1111-1111-1111-111111111111',${sql.json({network:'threads'})})`;
+  await sql`insert into os_activity(actor,event,entity_id,details) values('test','buffer_publish_checked','11111111-1111-1111-1111-111111111111',${sql.json(receipt.details)})`;
+  const briefing=load('app/lib/business-os/brief-outcomes.ts',{'../affiliate-db':dbStub,'./operations-model':op});
+  const observedBrief=await briefing.briefOutcomes();assert.equal(observedBrief.postLinks,1);assert.equal(observedBrief.completedJobs,0);assert.match(observedBrief.body,/threads.com/);assert.match(observedBrief.body,/not sent messages or recovered payments/);
   const schedule=load('app/lib/business-os/social-schedule.ts');
   for(const instant of ['2026-03-08T13:00:00Z','2026-11-01T14:00:00Z'])assert.equal(schedule.socialSchedule(new Date(instant)).open,true);
   for(const instant of ['2026-03-08T19:00:00Z','2026-11-01T20:00:00Z'])assert.equal(schedule.socialSchedule(new Date(instant)).slot,'afternoon');
