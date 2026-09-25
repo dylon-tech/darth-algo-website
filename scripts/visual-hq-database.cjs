@@ -54,6 +54,8 @@ async function check(name,fn){await fn();passed++;console.log('PASS '+name);}
  await reset();
  await check('owner hold that wins shared lock prevents later publishing claim',async()=>{await decideContent(await input('disapprove'));const canClaim=await sql.begin(async tx=>{await tx`select pg_advisory_xact_lock(730924)`;return !(await ownerCampaignHeld(c,tx));});assert.equal(canClaim,false);});
  await reset();
+ await check('community claim honors a saved owner hold under the shared lock',async()=>{await decideContent(await input('disapprove'));const canClaim=await sql.begin(async tx=>{await tx`select pg_advisory_xact_lock(730925)`;return !(await ownerCampaignHeld(c,tx));});assert.equal(canClaim,false);});
+ await reset();
  await check('Whop submission also makes stop/remake unavailable',async()=>{await sql`insert into os_activity(actor,event,entity_id) values('owner','whop_home_publish_started',${'daily-whop:'+campaignKey(c)})`;await assert.rejects(()=>input('remake').then(decideContent),/already started/);assert.equal((await sql`select count(*)::int as n from os_jobs`)[0].n,0);});
  await check('malformed decisions are rejected without writes',async()=>{for(const i of [null,{}, {id:c.id,action:'disapprove',reviewHash:33,requestKey:'testkey',expectedDecisionId:null}])await assert.rejects(()=>decideContent(i),/Invalid content decision/);});
  console.log(`${passed} isolated database checks passed. No provider was called and no production record was used.`);

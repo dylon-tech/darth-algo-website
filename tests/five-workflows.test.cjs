@@ -42,6 +42,7 @@ function load(file,overrides={}){const exports={};vm.runInNewContext(ts.transpil
   assert.match(delivery.deliveryEvidence('threads',[{...receipt,event:'buffer_publish_unknown',details:{}}],'hash','hash',true).state,/Outcome unknown/);
   assert.equal(delivery.deliveryEvidence('x',[],'hash','hash',true).state,'Held · no new send');
   assert.equal(delivery.deliveryEvidence('x',[receipt],'hash','hash').url,null,'A wrong-domain receipt cannot become a link');
+  const community=delivery.communityDeliveryEvidence([{event:'community_social_sent',created_at:new Date(),details:{messageId:123,reviewHash:'hash'}}],'hash',true);assert.equal(community.postId,'123');assert.equal(community.versionMatches,true);assert.match(community.state,/accepted.*read unverified/);assert.equal(community.url,null);
   await database.exec("create table os_approvals(id uuid primary key,payload jsonb);create table os_runs(id uuid primary key,result jsonb);create table os_jobs(id uuid primary key,department text,run_id uuid,status text,finished_at timestamptz);create table os_indicator_candidates(id uuid primary key,candidate jsonb,status text,created_at timestamptz);create table os_open_loops(title text,founder_action text,status text,severity text,last_seen_at timestamptz);");
   await sql`insert into os_approvals(id,payload) values('11111111-1111-1111-1111-111111111111',${sql.json({network:'threads'})})`;
   await sql`insert into os_activity(actor,event,entity_id,details) values('test','buffer_publish_checked','11111111-1111-1111-1111-111111111111',${sql.json(receipt.details)})`;

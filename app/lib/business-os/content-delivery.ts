@@ -25,14 +25,20 @@ export function deliveryEvidence(network:string,events:Receipt[],expectedHash:st
  if(!verified&&versionMatches===false&&state==='Prepared · not published')state='Older version prepared · current version held';
  return {network,state,postId,url:(verified||changed)?publicOperationUrl(r.externalLink,network):null,checkedAt:time(r.checkedAt)||time(receipt?.created_at)||time(latest?.created_at),versionMatches};
 }
+export function communityDeliveryEvidence(events:Receipt[],expectedHash:string,held:boolean):ContentDelivery{
+ const sent=events.find(e=>e.event==='community_social_sent'&&typeof e.details.messageId==='number'),latest=events[0];
+ const hash=(sent||events.find(e=>e.details.reviewHash))?.details.reviewHash;
+ return {network:'telegram community',state:sent?'Telegram accepted · recipient read unverified':events.some(e=>e.event==='community_social_unknown')?'Outcome unknown · check Telegram before retry':events.length?'Sending · outcome unverified':held?'Held · no new send':'No delivery recorded',postId:sent?String(sent.details.messageId):null,url:null,checkedAt:time(sent?.created_at)||time(latest?.created_at),versionMatches:typeof hash==='string'?hash===expectedHash:null};
+}
 export async function campaignDeliveries(c:{day:string;slot:SocialSlot;review:{sha256:string}},held:boolean):Promise<ContentDelivery[]> {
  const sql=db(),key=campaignKey(c);
- const [approvals,whop,status]=await Promise.all([
+ const [approvals,whop,status,community]=await Promise.all([
   sql`select id::text,payload->>'network' as network,payload->'campaign'->>'reviewHash' as review_hash from os_approvals where payload->>'executor'='buffer_social_v2' and payload->'campaign'->>'day'=${c.day} and payload->'campaign'->>'slot'=${c.slot}`,
   sql`select event,details,created_at from os_activity where entity_id=${'daily-whop:'+key} and event in ('whop_home_publish_started','whop_home_publish_accepted','whop_home_publish_unknown','whop_home_publish_receipt','whop_home_readback_pending') order by id desc limit 15`,
   sql`select details,created_at from os_activity where event='daily_social_status' and entity_id=${key} order by id desc limit 1`,
+  sql`select event,details,created_at from os_activity where entity_id=${key} and event in ('community_social_started','community_social_sent','community_social_unknown') order by id desc limit 8`,
  ]);
- return Promise.all(['x','instagram','threads','whop'].map(async network=>{
+ const deliveries=await Promise.all(['x','instagram','threads','whop'].map(async network=>{
   if(network==='whop') {
    const rows=Array.from(whop) as unknown as Receipt[];
    if(!rows.length&&status[0]?.details?.deliveries?.whop)rows.push({event:'status',details:{state:status[0].details.deliveries.whop},created_at:status[0].created_at});
@@ -49,4 +55,5 @@ export async function campaignDeliveries(c:{day:string;slot:SocialSlot;review:{s
   if(!selected.length)selected.push({event:'prepared',details:{},created_at:''});
   return deliveryEvidence(network,selected,c.review.sha256,binding.review_hash,held);
  }));
+ return [...deliveries,communityDeliveryEvidence(Array.from(community) as unknown as Receipt[],c.review.sha256,held)];
 }

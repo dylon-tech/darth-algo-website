@@ -48,6 +48,7 @@ export async function decideContent(input:ContentDecisionInput){
  return db().begin(async tx=>{
   // Same locks and order as publishing; whichever transaction claims first wins.
   await tx`select pg_advisory_xact_lock(730924)`;
+  await tx`select pg_advisory_xact_lock(730925)`;
   await tx`select pg_advisory_xact_lock(730928)`;
   const sql=tx as unknown as Sql;
   const [duplicate]=await tx`select details from os_activity where event=${event} and details->>'requestKey'=${input.requestKey} order by id desc limit 1`;
