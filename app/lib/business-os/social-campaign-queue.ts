@@ -276,5 +276,64 @@ export const socialCampaignQueue:ReviewedCreative[] = [
       "reviewer": "Codex: full-size and 280px phone-scale visual review against approved references and retained history; exact owned Scalper capture preserved where shown",
       "reviewedAt": "2026-09-25T13:12:20.233Z"
     }
+  },
+  {
+    "id": "2026-09-28-morning-fixed-range-volume",
+    "day": "2026-09-28",
+    "slot": "morning",
+    "theme": "TradingView Fixed Range Volume Profile: select the range",
+    "text": "Studying one session or move? In TradingView, select Fixed Range Volume Profile, mark the start, then mark the end. The profile is calculated from that selected range. Save this workflow.\nhttps://www.darthalgo.com/links #TradingView",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-09-28/fixed-range-volume-02f61756e553.jpg",
+        "sha256": "02f61756e553b20dc936461f63a238a38b0973871fc1789f94bdcb116a20c169",
+        "altText": "Darth Algo educational poster titled Select the Range. Read the Volume. A glass range bridge connects START and END anchors around a metallic Fixed Range Volume Profile sculpture, with three steps and a save CTA.",
+        "mimeType": "image/jpeg"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "educational",
+      "sources": [
+        "https://www.tradingview.com/support/solutions/43000707985-fixed-range-volume-profile-drawing-tool/"
+      ],
+      "learning": "Teach selected-range volume analysis with a new three-action spatial workflow and conceptual histogram sculpture; test saves per reach against prior checklist education without presenting generated chart evidence."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "6bf39da0b0c2803db2872be55f14659d55e99e3a26bb0edc6814177da4816b9b",
+      "reviewer": "Codex: full-size and 280px phone-scale visual review against approved cinematic references and retained history; exact source copy and conceptual-not-product-output boundary verified",
+      "reviewedAt": "2026-09-26T12:35:06.756Z"
+    }
+  },
+  {
+    "id": "2026-09-28-afternoon-measure-tool",
+    "day": "2026-09-28",
+    "slot": "afternoon",
+    "theme": "TradingView Measure Tool: Shift and two clicks",
+    "text": "Measure distance between bars without opening another tool: hold Shift, click the start point, then click the end point in TradingView. Share this shortcut with a trader.\nhttps://www.darthalgo.com/links #TradingView",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-09-28/measure-tool-shortcut-9f9f39f16768.jpg",
+        "sha256": "9f9f39f16768e7324dce383a6babafe3e30edbf1404d190e833c79f1759e8d85",
+        "altText": "Darth Algo educational poster titled Measure the Move in Two Clicks. A large metallic caliper spans two glowing anchors on a conceptual timeline, showing Hold Shift and Click Start, Click End.",
+        "mimeType": "image/jpeg"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "educational",
+      "sources": [
+        "https://www.tradingview.com/support/solutions/43000537228-how-to-use-measure-tool-quickly/"
+      ],
+      "learning": "Teach one verified keyboard gesture with a fresh caliper hero object and share CTA; test shares per reach against process-led education without repeating prior chart, device, alert, or synchronization concepts."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "a073e3b7538085927c73835c0894f47618de73958fd4ec3db19add6e966edd5e",
+      "reviewer": "Codex: full-size and 280px phone-scale visual review against approved cinematic references and retained history; exact source copy and conceptual-not-product-output boundary verified",
+      "reviewedAt": "2026-09-26T12:35:06.756Z"
+    }
   }
+
 ];
