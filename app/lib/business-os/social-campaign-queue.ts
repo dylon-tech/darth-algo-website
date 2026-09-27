@@ -335,5 +335,65 @@ export const socialCampaignQueue:ReviewedCreative[] = [
       "reviewedAt": "2026-09-26T12:35:06.756Z"
     }
   }
+,
+  {
+    "id": "2026-09-29-morning-swing-target-status",
+    "day": "2026-09-29",
+    "slot": "morning",
+    "theme": "Swing target-status dashboard: keep the plan visible",
+    "text": "Keep the plan visible as a broader move develops. Darth Algo Swing combines broader trend confirmation with a trade-plan and target-status dashboard on TradingView. Explore Swing:\nhttps://www.darthalgo.com/products/swing #DarthAlgo",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-09-29/swing-target-status-46dc3eaa69bf.jpg",
+        "sha256": "46dc3eaa69bf3bbb69e3f859f3b285aa5e58fd5e37e99078015ae8084880b7d7",
+        "altText": "Darth Algo Swing poster titled See Where the Plan Stands. A recorded Swing product view fills one angled widescreen, with its target-status dashboard highlighted above an Explore Swing CTA.",
+        "mimeType": "image/jpeg"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "promotional",
+      "sources": [
+        "https://www.darthalgo.com/products/swing",
+        "https://www.darthalgo.com/indicators/swing-overview.png"
+      ],
+      "learning": "Highlight one inspectable owned function—the Swing target-status dashboard—rather than another broad feature menu. Test qualified product-page clicks and attributable checkouts; the recorded chart is product context, not a performance claim."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "41ee075f20a449ee7afad596f943ca49ceef36d133be3d580a4e10b6cb96960a",
+      "reviewer": "Codex: full-size and 280px phone-scale visual review against approved cinematic references and retained history; exact owned product context, copy, destination and no-duplicate checks passed",
+      "reviewedAt": "2026-09-27T13:04:20.325Z"
+    }
+  },
+  {
+    "id": "2026-09-29-afternoon-community-setup-help",
+    "day": "2026-09-29",
+    "slot": "afternoon",
+    "theme": "Free community: TradingView setup help",
+    "text": "Need help getting set up on TradingView? The free Darth Algo community includes setup help, practical futures education and chart breakdowns in one focused place. Join free:\nhttps://www.darthalgo.com/community #DarthAlgo",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-09-29/community-setup-help-786254f3f9f5.jpg",
+        "sha256": "786254f3f9f5c0909956cae50004ab991c940f5e37a9591484db1016e127ca39",
+        "altText": "Darth Algo poster titled Get Set Up. Get Unstuck. One cinematic black-glass support terminal offers TradingView setup help in the free community, with a Join Free CTA.",
+        "mimeType": "image/jpeg"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "promotional",
+      "sources": [
+        "https://www.darthalgo.com/community"
+      ],
+      "learning": "Promote one concrete community use case—TradingView setup help—with a new support-terminal composition instead of repeating the prior general launch list. Test qualified community clicks or signups, not views."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "c20f85164c38f266c73d98511e4db298a84985c12ac96037fdfe0b5f45ffdf3c",
+      "reviewer": "Codex: full-size and 280px phone-scale visual review against approved cinematic references and retained history; exact owned product context, copy, destination and no-duplicate checks passed",
+      "reviewedAt": "2026-09-27T13:04:20.325Z"
+    }
+  }
 
 ];
