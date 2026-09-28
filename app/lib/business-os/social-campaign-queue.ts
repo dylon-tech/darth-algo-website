@@ -334,8 +334,7 @@ export const socialCampaignQueue:ReviewedCreative[] = [
       "reviewer": "Codex: full-size and 280px phone-scale visual review against approved cinematic references and retained history; exact source copy and conceptual-not-product-output boundary verified",
       "reviewedAt": "2026-09-26T12:35:06.756Z"
     }
-  }
-,
+  },
   {
     "id": "2026-09-29-morning-swing-target-status",
     "day": "2026-09-29",
@@ -394,6 +393,64 @@ export const socialCampaignQueue:ReviewedCreative[] = [
       "reviewer": "Codex: full-size and 280px phone-scale visual review against approved cinematic references and retained history; exact owned product context, copy, destination and no-duplicate checks passed",
       "reviewedAt": "2026-09-27T13:04:20.325Z"
     }
+  },
+  {
+    "id": "2026-09-30-morning-education-back-adjustment",
+    "day": "2026-09-30",
+    "slot": "morning",
+    "theme": "TradingView continuous futures: check the roll gap with B-ADJ",
+    "text": "A gap on a continuous futures chart may come from the contract roll, not the move you’re studying. Where supported, compare history with B-ADJ before reading the structure. Save this check.\nhttps://www.darthalgo.com/links #TradingView",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-09-30/back-adjustment-7194130075d0.jpg",
+        "sha256": "7194130075d03337ddd73d8ffe7d2ae606677bbc49f25deef9f7d65b4ea13a75",
+        "altText": "Darth Algo lesson: a roll gap between old and new continuous futures contracts, with B-ADJ and three comparison steps.",
+        "mimeType": "image/jpeg"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "educational",
+      "sources": [
+        "https://www.tradingview.com/support/solutions/43000685266-how-can-i-enable-backadjustment-for-continuous-futures/"
+      ],
+      "learning": "Test a futures-specific warning and mechanical roll-gap metaphor for shares; this is the regular Wednesday fallback because no verified current-week result evidence was supplied."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "c12bba0420bdf551f9511decc12d3eb6719045eb126eaec33d608de0dee574b5",
+      "reviewer": "Codex: final exported 4:5 artwork reviewed full-size and at 280px against approved references; exact source, copy and uniqueness review",
+      "reviewedAt": "2026-09-28T12:52:28Z"
+    }
+  },
+  {
+    "id": "2026-09-30-afternoon-education-interval-visibility",
+    "day": "2026-09-30",
+    "slot": "afternoon",
+    "theme": "TradingView interval visibility: show drawings only where needed",
+    "text": "Too many drawings on every timeframe? In TradingView, open a drawing’s Visibility settings and choose the intervals where it should appear. Save this chart-cleanup tip.\nhttps://www.darthalgo.com/links #TradingView",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-09-30/interval-visibility-b6a67c28944e.jpg",
+        "sha256": "b6a67c28944e63a616d3e9dc687877d479453dc0799eebbeeb5f0fc666c9e141",
+        "altText": "Darth Algo lesson: a visibility control filters one drawing beam through selected TradingView timeframe intervals.",
+        "mimeType": "image/jpeg"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "educational",
+      "sources": [
+        "https://www.tradingview.com/support/solutions/43000484410-how-to-set-drawing-visibility-on-different-intervals/",
+        "https://www.tradingview.com/support/solutions/43000686263-how-to-quickly-adjust-visibility-of-a-drawing-or-indicator/"
+      ],
+      "learning": "Test whether a visual filtering metaphor and one chart-cleanup action improve saves and shares versus the prior Object Tree lesson."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "6e971409a3af822c5d78ca317d450b6be35d86b0b13fd004c73e02d6382e236f",
+      "reviewer": "Codex: final exported 4:5 artwork reviewed full-size and at 280px against approved references; exact source, copy and uniqueness review",
+      "reviewedAt": "2026-09-28T12:52:28Z"
+    }
   }
-
 ];
