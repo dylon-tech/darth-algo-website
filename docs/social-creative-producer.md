@@ -1,5 +1,11 @@
 # Cinematic social production and delivery
 
+## Founder update — September 28, 2026
+
+Founder-confirmed September 28, 2026: Darth Algo grants TradingView indicator access automatically immediately after purchase using the correct username entered at checkout. Use this approved benefit in the next fresh promotional campaign and vary later treatments. Suggested copy: "Automatic TradingView access immediately after purchase." Pair it with actual owned indicator visuals and a clear product CTA. Supersede manual activation and usual-24-hour-wait guidance. Do not claim competitors lack automation, guaranteed seconds, zero setup, or trading outcomes. Product messaging is not proof of any individual grant; missing access still needs support and customer-specific evidence. Preserve prices, trial timing, publication windows, approvals and spending limits. Do not edit attempted or published campaigns.
+
+Founder direction September 28, 2026: prioritize large, legible actual Darth Algo indicators on TradingView, following the approved "Two Modes. One Pro.", "Your Chart. More Clarity." and "Read the Bias. Then the Signal." examples. Aim for a fresh carousel approximately every two days within the existing 9 AM / 3 PM Eastern slots, with no extra posts. Preserve alternating education/promotion, cinematic black/red branding, exact-asset review and full-history deduplication. Educational carousels can teach an actual indicator workflow; never fabricate chart output or trade results.
+
 ## Current founder content policy — September 24, 2026
 
 Founder content policy alternating-results-2026-09-24-v1: Keep 9 AM and 3 PM America/New_York. September 24 is educational, September 25 promotional, then alternate by calendar day (not by post, weekday or successful-send count). Use different angles and artwork in the two slots. Wednesday and Friday mornings prefer the series "Darth Algo's Best Trade This Week" only with verified owner-supplied trade evidence from the current Eastern Monday-to-post week. Otherwise publish that day's regular educational/promotional post. Afternoon always follows the regular calendar; a results feature does not reset it. Select among supplied verified examples, not an unsupported claim about every trade that week. Wednesday is week-to-date. Use a different verified trade example on Friday; do not recycle Wednesday's result.

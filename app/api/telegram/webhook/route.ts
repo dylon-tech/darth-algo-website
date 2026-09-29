@@ -227,7 +227,7 @@ Verified business facts:
 - Pro: Scalper + Swing, $29/month. Checkout: ${CHECKOUT.pro}
 - Lifetime: complete suite, future updates, source code, and commercial-use rights, $134.99 one time. Checkout: ${CHECKOUT.lifetime}
 - Customers must enter their exact TradingView username at checkout.
-- Invite-only access is normally activated within 24 hours.
+- Indicator access is granted automatically immediately after purchase using the exact TradingView username entered at checkout. This is the product process, not proof of any individual grant; never claim a specific customer has access without evidence.
 - In TradingView, use Indicators > Invite-only Scripts, then add the purchased Darth Algo indicator.
 - Affiliate application: ${AFFILIATE_URL}
 - Community: ${COMMUNITY_URL}
@@ -360,15 +360,15 @@ const copy = {
   menu:
     "<b><u>⚡ DARTH ALGO CONTROL CENTER ⚡</u></b>\n\n<b>Fast answers. Direct access. Zero confusion.</b>\n\nChoose what you need below and D.A. Assistant will take you there.\n\n<i>Educational purposes only—not financial advice. Trading involves risk.</i>",
   plans:
-    "<b><u>⚡ CHOOSE YOUR DARTH ALGO PLAN ⚡</u></b>\n\n🎯 <b>SCALPER — $18.99/MONTH</b>\nFast signals for active intraday sessions.\n\n📈 <b>SWING — 2 DAYS FREE</b>\nThen $14.99/month. Cancel anytime.\n\n🔥 <b>PRO — $29/MONTH</b>\nScalper + Swing in one complete workflow.\n\n👑 <b>LIFETIME — $134.99 ONE TIME</b>\nComplete suite, future updates, source code, and commercial-use rights.\n\n<b>Next step:</b> Enter your exact TradingView username at checkout. Access is normally activated within 24 hours.",
+    "<b><u>⚡ CHOOSE YOUR DARTH ALGO PLAN ⚡</u></b>\n\n🎯 <b>SCALPER — $18.99/MONTH</b>\nFast signals for active intraday sessions.\n\n📈 <b>SWING — 2 DAYS FREE</b>\nThen $14.99/month. Cancel anytime.\n\n🔥 <b>PRO — $29/MONTH</b>\nScalper + Swing in one complete workflow.\n\n👑 <b>LIFETIME — $134.99 ONE TIME</b>\nComplete suite, future updates, source code, and commercial-use rights.\n\n<b>Next step:</b> Enter your exact TradingView username at checkout. Access is granted automatically immediately after purchase.",
   setup:
-    "<b><u>🛠 INDICATOR SETUP</u></b>\n\n1️⃣ Choose a plan and enter your exact TradingView username at checkout.\n2️⃣ Wait for invite-only access—normally within 24 hours.\n3️⃣ Open TradingView.\n4️⃣ Select <b>Indicators → Invite-only Scripts</b>.\n5️⃣ Add your Darth Algo indicator to the chart.\n\nIf it does not appear, refresh TradingView and verify your username spelling. Never share passwords, login codes, or payment information.",
+    "<b><u>🛠 INDICATOR SETUP</u></b>\n\n1️⃣ Choose a plan and enter your exact TradingView username at checkout.\n2️⃣ Your invite-only access is granted automatically after checkout.\n3️⃣ Open TradingView.\n4️⃣ Select <b>Indicators → Invite-only Scripts</b>.\n5️⃣ Add your Darth Algo indicator to the chart.\n\nIf it does not appear, refresh TradingView and verify your username spelling. Never share passwords, login codes, or payment information.",
   support:
     "<b><u>🆘 CUSTOMER SUPPORT</u></b>\n\nSend a short description containing:\n• Your indicator or plan\n• Mobile or desktop\n• What you expected\n• What happened instead\n• A screenshot with private information hidden\n\nNever post passwords, payment details, Telegram codes, full order numbers, or private account information.",
   planFinder:
     "<b><u>🧭 FIND YOUR BEST DARTH ALGO PLAN</u></b>\n\nChoose the option that best matches how you trade. D.A. Assistant will recommend the simplest fit and give you a direct checkout button.",
   quickstart:
-    "<b><u>🚀 YOUR 5-MINUTE QUICK START</u></b>\n\n1️⃣ Choose your plan.\n2️⃣ Enter your exact TradingView username at checkout.\n3️⃣ Watch for invite-only access—normally within 24 hours.\n4️⃣ Open TradingView → Indicators → Invite-only Scripts.\n5️⃣ Add Darth Algo and review the setup guide before trading.\n\n<b>Important:</b> Start with a simulator or small risk while learning the signals. Educational purposes only—not financial advice.",
+    "<b><u>🚀 YOUR 5-MINUTE QUICK START</u></b>\n\n1️⃣ Choose your plan.\n2️⃣ Enter your exact TradingView username at checkout.\n3️⃣ Your invite-only access is granted automatically after checkout.\n4️⃣ Open TradingView → Indicators → Invite-only Scripts.\n5️⃣ Add Darth Algo and review the setup guide before trading.\n\n<b>Important:</b> Start with a simulator or small risk while learning the signals. Educational purposes only—not financial advice.",
   faq:
     "<b><u>❓ DARTH ALGO FAQ</u></b>\n\nTap a question below for a fast answer. If your issue is account-specific or still unresolved, D.A. Assistant can escalate it to the owner.",
   wins:
@@ -401,7 +401,7 @@ async function handleAction(chatId: number, action: string, messageThreadId?: nu
     case "faq":
       return sendMessage(chatId, copy.faq, faqKeyboard, messageThreadId);
     case "faq_access":
-      return sendMessage(chatId, "<b><u>🔓 WHEN WILL I GET ACCESS?</u></b>\n\nInvite-only access is normally activated within 24 hours. Make sure your TradingView username is exact. If 24 hours have passed, contact support for owner review.", [[{ text: "🆘 Contact Support", callback_data: "support" }, { text: "⬅️ FAQ", callback_data: "faq" }]], messageThreadId);
+      return sendMessage(chatId, "<b><u>🔓 WHEN WILL I GET ACCESS?</u></b>\n\nIndicator access is granted automatically immediately after purchase using your exact TradingView username. Open Indicators → Invite-only Scripts. If the tool is missing, refresh TradingView and check your username. Contact support if access is still missing; you do not need to wait 24 hours.", [[{ text: "🆘 Contact Support", callback_data: "support" }, { text: "⬅️ FAQ", callback_data: "faq" }]], messageThreadId);
     case "faq_devices":
       return sendMessage(chatId, "<b><u>📱 MOBILE AND DESKTOP</u></b>\n\nDarth Algo runs inside TradingView. Use the same TradingView account on supported mobile or desktop devices. Initial chart setup is usually easier on desktop.", [[{ text: "🛠 Setup Guide", callback_data: "setup" }, { text: "⬅️ FAQ", callback_data: "faq" }]], messageThreadId);
     case "faq_billing":
@@ -457,7 +457,7 @@ async function handleOwnerCommand(message: TelegramMessage) {
     await sendPhoto(
       message.chat.id,
       `${SITE_URL}/api/community/setup-card`,
-      "<b><u>INDICATOR SETUP — PURCHASE TO CHART</u></b>\n\n1. Choose a plan at darthalgo.com/#pricing.\n2. Enter your exact TradingView username at checkout.\n3. Wait for invite-only access—normally within 24 hours.\n4. Open TradingView and select Indicators.\n5. Open Invite-only Scripts and add your Darth Algo indicator.\n6. Begin in paper trading while learning the signals.\n\nNever share passwords or login codes. Educational purposes only; trading involves risk.",
+      "<b><u>INDICATOR SETUP — PURCHASE TO CHART</u></b>\n\n1. Choose a plan at darthalgo.com/#pricing.\n2. Enter your exact TradingView username at checkout.\n3. Your invite-only access is granted automatically after checkout.\n4. Open TradingView and select Indicators.\n5. Open Invite-only Scripts and add your Darth Algo indicator.\n6. Begin in paper trading while learning the signals.\n\nNever share passwords or login codes. Educational purposes only; trading involves risk.",
       [[{ text: "Choose Your Indicator", url: PRICING_URL }], [{ text: "Open TradingView", url: "https://www.tradingview.com/chart/" }], [{ text: "Message D.A. Assistant", url: "https://t.me/DarthAlgoAssistantBot" }]],
       message.message_thread_id,
     );

@@ -205,7 +205,7 @@ const indicatorWalkthroughs = {
 const steps = [
   ["01", "Choose access", "Select Scalper, Swing, Pro, or Lifetime access."],
   ["02", "Enter username", "Add your TradingView username at checkout."],
-  ["03", "Get invited", "We activate your private script access."],
+  ["03", "Automatic access", "Your TradingView access is granted automatically after checkout."],
   ["04", "Add to chart", "Open TradingView and load Darth Algo."],
   ["05", "Trade with structure", "Build your process around clearer signals."],
 ];
@@ -343,7 +343,7 @@ const indicatorExamples = [
 const faqs = [
   {
     question: "How do I receive access?",
-    answer: "Enter your TradingView username during Stripe checkout. After purchase, access is manually granted through TradingView's invite-only script system.",
+    answer: "Enter your TradingView username during Stripe checkout. Access is granted automatically immediately after purchase. Open TradingView → Indicators → Invite-only scripts to add your tool.",
   },
   {
     question: "Which markets does Darth Algo support?",
@@ -363,7 +363,7 @@ const faqs = [
   },
   {
     question: "What happens after I purchase?",
-    answer: "Your payment and TradingView username are received through Stripe. Once the order is verified, invite-only access is manually activated and you receive confirmation.",
+    answer: "Your TradingView indicator access is granted automatically immediately after purchase using the exact username entered at checkout. Open Indicators → Invite-only scripts to add your tool. If it is missing, refresh TradingView, check your username, and contact support.",
   },
 ];
 
@@ -377,7 +377,7 @@ const tickerTape = [
 ];
 
 const trustSignals = [
-  [ShieldCheck, "TradingView invite-only", "Private script access activated after checkout"],
+  [ShieldCheck, "Automatic TradingView access", "Granted immediately after purchase"],
   [Sparkles, "AI-assisted updates", "Continuous product iteration and feature planning"],
   [Target, "Risk-plan visuals", "Entry, stop, TP1, and TP2 mapped on chart"],
   [Users, "Built for futures traders", "Designed around fast decisions and clean structure"],
@@ -703,6 +703,7 @@ export default function Home() {
           <HeroTradeDemo />
           <div className="hero-live-actions">
             <div className="immersion-hero-actions"><a href="#swing-trial">Try Swing Free ↗</a><a href="#inside-the-engine">Explore the tools ↓</a></div>
+            <p className="mt-4 text-sm leading-6 text-zinc-300">Automatic TradingView access after checkout. Enter your exact username to get started.</p>
             <div className="immersion-hero-meta"><span>Scalper</span><span>Swing</span><span>Pro</span><span>From $14.99/mo</span></div>
           </div>
         </div>
@@ -1098,7 +1099,7 @@ export default function Home() {
 
       <section id="how-it-works" className="relative z-10 border-y border-white/10 bg-[#080809] py-24 sm:py-32">
         <div className="section-shell">
-          <SectionHeading centered eyebrow="Fast Activation" title="From checkout to chart." copy="Your TradingView username is collected securely during Stripe checkout, then your invite-only access is activated manually." />
+          <SectionHeading centered eyebrow="Automatic Access" title="From checkout to chart." copy="Enter your exact TradingView username at checkout. Your indicator access is granted automatically immediately after purchase." />
           <div className="mt-14 grid gap-3 lg:grid-cols-5">
             {steps.map(([number, title, copy], index) => (
               <article key={number} className="relative rounded-md border border-white/10 bg-black/45 p-5">
@@ -1113,7 +1114,7 @@ export default function Home() {
 
       <section id="pricing" className="relative z-10 py-24 sm:py-32">
         <div className="section-shell">
-          <SectionHeading centered eyebrow="Simple Pricing" title="Choose the tool that fits your trading." copy="Trade with Scalper, Swing, the combined Pro Tool, or own the complete Darth Algo suite for life." />
+          <SectionHeading centered eyebrow="Simple Pricing" title="Choose the tool that fits your trading." copy="Choose Scalper, Swing, Pro, or Lifetime. Get automatic TradingView access after checkout with your exact username." />
           <div className="pricing-command mx-auto mt-10 max-w-6xl overflow-hidden rounded-md border border-white/10 bg-black/70">
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 px-5 py-4">
               <div>

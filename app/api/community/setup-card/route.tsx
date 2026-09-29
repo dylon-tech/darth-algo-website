@@ -5,7 +5,7 @@ export const runtime = "nodejs";
 const steps = [
   ["1", "Choose your plan", "Visit darthalgo.com/#pricing and select Scalper, Swing, Pro, or Lifetime."],
   ["2", "Enter your username", "At checkout, enter the exact TradingView username connected to your account."],
-  ["3", "Wait for access", "Invite-only access is normally added within 24 hours after purchase."],
+  ["3", "Automatic access", "TradingView access is granted automatically after checkout with your exact username."],
   ["4", "Open TradingView", "Open your chart, then select Indicators from the top toolbar."],
   ["5", "Find Invite-only Scripts", "Open Invite-only Scripts and select the Darth Algo indicator you purchased."],
   ["6", "Add it to your chart", "Start in paper trading while you learn the signals and risk controls."],

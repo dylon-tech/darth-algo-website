@@ -8,7 +8,7 @@ export function businessKnowledge(): Evidence {
     id: "business_knowledge",
     status: "verified",
     checkedAt: new Date().toISOString(),
-    scope: "Facts read from this deployment's website source. Not a live checkout, legal interpretation, customer entitlement, or fulfillment verification. Checkout terms must be checked before an external offer. Policy summaries reviewed 2026-09-08; re-review when their source pages change.",
+    scope: "Facts read from this deployment's website source. Not a live checkout, legal interpretation, customer entitlement, or fulfillment verification. Checkout terms must be checked before an external offer. Access messaging confirmed by the founder 2026-09-28; other policy summaries remain website snapshots. Re-review when their source pages change.",
     data: {
       products: productList.map(product => ({
         name: product.name, slug: product.slug, advertisedPrice: product.price,
@@ -21,12 +21,12 @@ export function businessKnowledge(): Evidence {
         sourcePaths: ["app/start/page.tsx", "app/support/page.tsx"],
         steps: [
           "Confirm the TradingView username submitted during Stripe checkout.",
-          "Payment is verified and invite-only TradingView access is activated manually; the website says usually within 24 hours, not a guarantee.",
+          "Founder-confirmed September 28, 2026: invite-only TradingView indicator access is granted automatically immediately after purchase using the correct username entered at checkout. This product-level statement is not evidence of an individual grant.",
           "Open a TradingView chart, choose Indicators, then Invite-only scripts.",
           "Add the purchased Darth Algo tool, review settings, and configure alerts for the intended workflow.",
           "For missing access, verify the purchase and username through support; do not claim access is activated without fulfillment evidence.",
         ],
-        trial: "Swing advertises a two-day trial starting at checkout; applicable only if checkout explicitly displays it. Manual activation may consume part of the trial. Do not promise an extension.",
+        trial: "Swing advertises a two-day trial starting at checkout; applicable only if checkout explicitly displays it. Access is automatic after checkout using the correct username. Do not promise an extension or change trial timing.",
         supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "darthalgo67@gmail.com",
         supportPage: "/support",
       },

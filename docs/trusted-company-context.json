@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "context_version": "2026-09-24.1",
+  "context_version": "2026-09-28.1",
   "owner_timezone": "America/New_York",
   "records": [
     {
@@ -77,6 +77,20 @@
       "kind": "founder_decision",
       "source": "docs/social-research-contract.md",
       "verified_at": "2026-09-24T03:48:00Z"
+    },
+    {
+      "key": "product.automatic_access",
+      "value": "Founder-confirmed September 28, 2026: Darth Algo grants TradingView indicator access automatically immediately after purchase using the correct username entered at checkout. Use this approved benefit in the next fresh promotional campaign and vary later treatments. Suggested copy: \"Automatic TradingView access immediately after purchase.\" Pair it with actual owned indicator visuals and a clear product CTA. Supersede manual activation and usual-24-hour-wait guidance. Do not claim competitors lack automation, guaranteed seconds, zero setup, or trading outcomes. Product messaging is not proof of any individual grant; missing access still needs support and customer-specific evidence. Preserve prices, trial timing, publication windows, approvals and spending limits. Do not edit attempted or published campaigns.",
+      "kind": "founder_decision",
+      "source": "Owner correction and publication direction September 28, 2026",
+      "verified_at": "2026-09-29T01:53:44Z"
+    },
+    {
+      "key": "content.product_carousel_priority",
+      "value": "Founder direction September 28, 2026: prioritize large, legible actual Darth Algo indicators on TradingView, following the approved \"Two Modes. One Pro.\", \"Your Chart. More Clarity.\" and \"Read the Bias. Then the Signal.\" examples. Aim for a fresh carousel approximately every two days within the existing 9 AM / 3 PM Eastern slots, with no extra posts. Preserve alternating education/promotion, cinematic black/red branding, exact-asset review and full-history deduplication. Educational carousels can teach an actual indicator workflow; never fabricate chart output or trade results.",
+      "kind": "founder_decision",
+      "source": "Owner correction and publication direction September 28, 2026",
+      "verified_at": "2026-09-29T01:53:44Z"
     }
   ],
   "rules": {

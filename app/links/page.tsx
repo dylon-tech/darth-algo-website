@@ -101,7 +101,7 @@ export default function LinksPage() {
               <CreditCard className="h-4 w-4" /> Start My 2-Day Free Trial <ArrowUpRight className="h-4 w-4" />
             </a>
             <p className="mt-3 text-center text-xs font-medium tabular-nums text-zinc-300">Then $14.99/month. Cancel anytime.</p>
-            <p className="mt-2 text-center text-xs leading-5 text-zinc-400">Trial starts at checkout. TradingView access is activated manually, usually within 24 hours.</p>
+            <p className="mt-2 text-center text-xs leading-5 text-zinc-400">Trial starts at checkout. TradingView access is granted automatically after checkout using your exact username.</p>
             <Link href="/#pricing" className="mt-3 flex min-h-11 items-center justify-center text-xs font-black text-zinc-400 transition hover:text-white">Compare every indicator plan</Link>
           </div>
           <IndicatorPreview />

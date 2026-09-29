@@ -74,7 +74,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               )}
               <Link href="/#pricing" className="inline-flex min-h-12 items-center justify-center rounded-md border border-white/15 bg-white/[0.035] px-6 text-sm font-extrabold text-white transition hover:border-white/30">Compare all plans</Link>
             </div>
-            <p className="mt-4 text-xs text-zinc-500">{product.price} {product.cadence}. Invite-only access through TradingView.</p>
+            <p className="mt-4 text-xs text-zinc-500">{product.price} {product.cadence}. Automatic TradingView access after checkout with your exact username.</p>
             {checkout && <TradingViewUsernameHelp className="mt-2 -ml-3" />}
           </div>
 
@@ -135,7 +135,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
       <section className="border-y border-white/10 bg-[#090c11] py-16">
         <div className="section-shell grid gap-6 sm:grid-cols-3">
-          {[[BellRing, "Real-time alerts", "Stay connected away from the chart"], [Target, "Defined risk", "Entry, stop, and target planning"], [ShieldCheck, "Invite-only", "Private access through TradingView"]].map(([Icon, title, copy]) => {
+          {[[BellRing, "Real-time alerts", "Stay connected away from the chart"], [Target, "Defined risk", "Entry, stop, and target planning"], [ShieldCheck, "Automatic access", "TradingView access immediately after purchase"]].map(([Icon, title, copy]) => {
             const ModuleIcon = Icon as typeof BellRing;
             return <div key={String(title)} className="flex gap-4"><ModuleIcon className={`mt-1 h-5 w-5 shrink-0 ${styles.text}`} /><div><p className="font-display text-lg font-bold">{String(title)}</p><p className="mt-1 text-xs leading-5 text-zinc-500">{String(copy)}</p></div></div>;
           })}

@@ -78,7 +78,7 @@ Hook: Buying Darth Algo? Do not miss this step.
 
 Visual direction: Show the TradingView profile screen with the username circled.
 
-Voiceover: During checkout, enter your TradingView username so access can be activated correctly. If there is an issue, your checkout email is used to contact you and fix it.
+Voiceover: During checkout, enter your exact TradingView username for automatic indicator access immediately after purchase. If there is an issue, your checkout email is used to contact you and fix it.
 
 On-screen text: Enter your TradingView username at checkout.
 
@@ -174,7 +174,7 @@ Hook: Darth Algo is not a public TradingView script.
 
 Visual direction: Show checkout, TradingView username field, then indicator access.
 
-Voiceover: After purchase, access is activated through TradingView invite-only permissions. Enter your TradingView username at checkout so setup is smooth.
+Voiceover: Immediately after purchase, indicator access is granted automatically through TradingView invite-only permissions. Enter your TradingView username at checkout so setup is smooth.
 
 On-screen text: Invite-only TradingView access.
 
