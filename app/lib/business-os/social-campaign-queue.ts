@@ -452,5 +452,78 @@ export const socialCampaignQueue:ReviewedCreative[] = [
       "reviewer": "Codex: final exported 4:5 artwork reviewed full-size and at 280px against approved references; exact source, copy and uniqueness review",
       "reviewedAt": "2026-09-28T12:52:28Z"
     }
+  },
+  {
+    "id": "2026-10-01-morning-automatic-access",
+    "day": "2026-10-01",
+    "slot": "morning",
+    "theme": "Automatic TradingView access: correct username handoff",
+    "text": "Your TradingView username is the handoff. Enter it correctly at checkout, complete your purchase, and Darth Algo access is granted automatically immediately after purchase. See the tools:\nhttps://www.darthalgo.com/links #DarthAlgo",
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "promotional",
+      "sources": [
+        "https://www.darthalgo.com/products/scalper",
+        "https://www.darthalgo.com/indicators/scalper-overview.png",
+        "docs/trusted-company-context.json#product.automatic_access"
+      ],
+      "learning": "Test whether a three-slide access-flow carousel using an exact owned indicator view reduces purchase-to-access uncertainty and produces qualified tool visits or attributable verified checkouts; this is a new customer-handoff concept, not a result claim."
+    },
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-10-01/automatic-access-01-da1d6096d75f.jpg",
+        "sha256": "da1d6096d75fb81ec427ce86d2273d60adf107ece898c5467fc11519f6ffbc74",
+        "altText": "Darth Algo carousel cover: Access Your Tools Automatically, with the exact owned Scalper TradingView view on a cinematic red monitor and an Explore Darth Algo CTA.",
+        "mimeType": "image/jpeg"
+      },
+      {
+        "path": "/social-campaigns/2026-10-01/automatic-access-02-efe2596a85cb.jpg",
+        "sha256": "efe2596a85cbd5223104ca0dfe0b1e3e051b011637f3e6cf4e7fd5ccbbb07a26",
+        "altText": "Darth Algo carousel step: enter the exact TradingView username at checkout, check the username, then complete the purchase.",
+        "mimeType": "image/jpeg"
+      },
+      {
+        "path": "/social-campaigns/2026-10-01/automatic-access-03-2a8c330f2ee9.jpg",
+        "sha256": "2a8c330f2ee97dab2d4ea6102a71f237452d3a04104f7e76517ed57b8c5c5e31",
+        "altText": "Darth Algo carousel finish: username, purchase, then open TradingView, with the exact owned Scalper guidance dashboard and automatic-access message.",
+        "mimeType": "image/jpeg"
+      }
+    ],
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "d03dd413b7e869c031295ac70b6885c30a41ad0581a5d16a2da7e1cec97d8843",
+      "reviewer": "Codex: generated-environment review plus exact owned-product compositing; full-size and 280px phone-scale QA against approved references, retained history, source copy and CTA",
+      "reviewedAt": "2026-09-29T13:28:25Z"
+    }
+  },
+  {
+    "id": "2026-10-01-afternoon-scalper-active-session",
+    "day": "2026-10-01",
+    "slot": "afternoon",
+    "theme": "Scalper active-session decision layer",
+    "text": "Fast chart, visible process. Darth Algo Scalper is built for active intraday sessions with short-term signals, responsive trend context, alerts, and a trade plan on TradingView. Explore Scalper:\nhttps://www.darthalgo.com/products/scalper #DarthAlgo",
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "promotional",
+      "sources": [
+        "https://www.darthalgo.com/products/scalper",
+        "https://www.darthalgo.com/indicators/scalper-overview.png"
+      ],
+      "learning": "Test an active-session use-case hook with a clock-halo composition and one large exact product view for qualified Scalper visits or attributable verified checkouts; unlike the prior bias-signal-risk checklist, this isolates trading pace and chart-timeframe fit."
+    },
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-10-01/active-session-scalper-5924386a13b6.jpg",
+        "sha256": "5924386a13b620cc7a48e822513166779c41598b51f3574d06373f9403240c59",
+        "altText": "Darth Algo Scalper poster titled Built for the Active Session, showing the exact owned Scalper TradingView screen inside a red clock-halo display with an Explore Scalper CTA.",
+        "mimeType": "image/jpeg"
+      }
+    ],
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "9a53d1a4d2b9a8efc855b6b571fc1aa39deea230ad4ffa35b756cb73bb4fa876",
+      "reviewer": "Codex: generated-environment review plus exact owned-product compositing; full-size and 280px phone-scale QA against approved references, retained history, source copy and CTA",
+      "reviewedAt": "2026-09-29T13:28:25Z"
+    }
   }
 ];
