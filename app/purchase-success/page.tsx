@@ -2,7 +2,7 @@ import PurchaseSurvey from "./purchase-survey";
 
 export const metadata = {
   title: "Get Started | Darth Algo",
-  description: "Get help activating Darth Algo on TradingView. Optional purchase feedback.",
+  description: "Set up Darth Algo on TradingView after automatic access. Optional purchase feedback.",
   robots: {
     index: false,
     follow: false,
