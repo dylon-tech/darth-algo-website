@@ -525,5 +525,67 @@ export const socialCampaignQueue:ReviewedCreative[] = [
       "reviewer": "Codex: generated-environment review plus exact owned-product compositing; full-size and 280px phone-scale QA against approved references, retained history, source copy and CTA",
       "reviewedAt": "2026-09-29T13:28:25Z"
     }
+  },
+  {
+    "id": "2026-10-02-morning-tradingview-favorites",
+    "day": "2026-10-02",
+    "slot": "morning",
+    "theme": "TradingView Favorites: star frequently used tools",
+    "text": "Stop reopening the same tools. In TradingView, click the star beside a frequently used indicator, drawing tool or timeframe to add it to Favorites for quicker access. Save this setup step.\nhttps://www.darthalgo.com/links #TradingView",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-10-02/tradingview-favorites-b2c8efef35da.jpg",
+        "sha256": "b2c8efef35da1cb00d9805fd79a00f1aa7d5bb339be0a209be58d61145f5c08e",
+        "altText": "Darth Algo lesson titled Star It Once. Reach It Faster. The exact owned Scalper screen sits beside a metallic Favorites star and toolbar, with a save CTA.",
+        "mimeType": "image/jpeg"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "educational",
+      "sources": [
+        "https://www.tradingview.com/support/solutions/43000662392-how-to-favorite-indicators-financials-drawing-tools-and-timeframes/",
+        "https://www.darthalgo.com/products/scalper",
+        "https://www.darthalgo.com/indicators/scalper-overview.png"
+      ],
+      "learning": "Answer the real question of reopening frequently used tools with one star-to-Favorites action and an exact owned Scalper view. Test saves plus shares per organic reach after seven full days, minimum 25 reach; this is a fresh Friday fallback because no verified current-week result evidence is available."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "f79a52b6e5c5f60784ee9216cf06d220c646919fda6a74e99a810dfddee346ae",
+      "reviewer": "Codex: built-in imagegen environment plus exact owned-product compositing; full-size and 280px phone-scale QA against approved references, retained history, source copy, destination and experiment card",
+      "reviewedAt": "2026-09-30T12:29:01Z"
+    }
+  },
+  {
+    "id": "2026-10-02-afternoon-maximize-active-chart",
+    "day": "2026-10-02",
+    "slot": "afternoon",
+    "theme": "TradingView multi-chart layout: maximize the active chart",
+    "text": "Working in a multi-chart layout? Select a chart, then use Alt+Enter on Windows or Option+Enter on Mac to maximize the active view. Share this focus shortcut.\nhttps://www.darthalgo.com/links #TradingView",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-10-02/maximize-active-chart-694c1f7e8eaa.jpg",
+        "sha256": "694c1f7e8eaafcab0e320b3bbfad472c23b2765ce0872f841d86986287fc6d42",
+        "altText": "Darth Algo lesson titled One Chart. Full Focus. The exact owned Swing screen is maximized within a five-monitor command center, with Alt+Enter and Option+Enter.",
+        "mimeType": "image/jpeg"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "educational",
+      "sources": [
+        "https://www.tradingview.com/support/solutions/43000481234-how-to-maximize-a-chart-in-multichart-layout/",
+        "https://www.darthalgo.com/products/swing",
+        "https://www.darthalgo.com/indicators/swing-overview.png"
+      ],
+      "learning": "Answer the real multi-chart focus question with the verified keyboard shortcut and an exact owned Swing view. Test shares per organic reach after seven full days, minimum 25 reach; this uses a different action, buyer, capture and composition from drawing synchronization."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "dbf9d9b66726a1d30b4ae33acb9fc0edf481a35234026f74d49012d9ed1390d7",
+      "reviewer": "Codex: built-in imagegen environment plus exact owned-product compositing; full-size and 280px phone-scale QA against approved references, retained history, source copy, destination and experiment card",
+      "reviewedAt": "2026-09-30T12:29:01Z"
+    }
   }
 ];
