@@ -72,7 +72,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               ) : (
                 <Link href="/#pricing" className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-md border px-6 text-sm font-extrabold ${styles.border} ${styles.bg} ${styles.text}`}>View availability<ArrowRight className="h-4 w-4" /></Link>
               )}
-              <Link href="/#pricing" className="inline-flex min-h-12 items-center justify-center rounded-md border border-white/15 bg-white/[0.035] px-6 text-sm font-extrabold text-white transition hover:border-white/30">Compare all plans</Link>
+              <Link href="/compare" className="inline-flex min-h-12 items-center justify-center rounded-md border border-white/15 bg-white/[0.035] px-6 text-sm font-extrabold text-white transition hover:border-white/30">Compare the tools</Link>
             </div>
             <p className="mt-4 text-xs text-zinc-500">{product.price} {product.cadence}. Automatic TradingView access after checkout with your exact username.</p>
             {checkout && <TradingViewUsernameHelp className="mt-2 -ml-3" />}
@@ -146,8 +146,12 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         <div className="section-shell max-w-3xl">
           <p className={`font-mono text-[10px] font-bold uppercase ${styles.text}`}>Choose your access</p>
           <h2 className="mt-4 text-balance font-display text-4xl font-black sm:text-6xl">Trade with structure, not emotion.</h2>
-          <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-zinc-500">Review every Darth Algo plan, compare the tools, and choose the workflow that matches how you trade.</p>
-          <Link href="/#pricing" className="mt-8 inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-ember px-7 text-sm font-extrabold text-white shadow-glow transition hover:bg-red-500">Compare Darth Algo plans<ArrowRight className="h-4 w-4" /></Link>
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-zinc-400">{product.shortName}: {product.price} {product.cadence}. Automatic TradingView access after checkout using your exact username.</p>
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            {checkout && <a href={checkout} className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-md px-7 text-sm font-extrabold text-white transition ${styles.button} ${styles.glow}`}>{product.slug === "swing" ? "Start 2-Day Free Trial" : `Get ${product.shortName} Access`}<ArrowRight className="h-4 w-4" /></a>}
+            <Link href="/compare" className="inline-flex min-h-12 items-center justify-center rounded-md border border-white/15 px-6 text-sm font-bold text-white">Compare the tools</Link>
+          </div>
+          <p className="mt-4 text-xs leading-6 text-zinc-400">Already subscribed? <Link href="/support" className="underline underline-offset-4">Ask about changing plans</Link> before starting another subscription.</p>
         </div>
       </section>
 

@@ -5,6 +5,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return [
     {
+      url: `${siteUrl}/compare`,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
       url: `${siteUrl}/start`,
       changeFrequency: "monthly",
       priority: 0.8,

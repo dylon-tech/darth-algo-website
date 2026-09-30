@@ -391,10 +391,10 @@ const productComparison = [
 ];
 
 const buyerPath = [
-  ["New to Darth Algo", "Start Swing trial", "Test the slower signal profile for 2 days before paying monthly."],
-  ["Active intraday trader", "Choose Scalper", "Use the faster tool built for session-based futures moves."],
-  ["Want the full system", "Choose Pro", "Combine Scalper and Swing into one monthly workflow."],
-  ["Building long term", "Choose Lifetime", "Own access, future updates, source code, and commercial rights."],
+  ["New to Darth Algo", "Start Swing trial", "Test the slower signal profile for 2 days before paying monthly.", "#swing-trial"],
+  ["Active intraday trader", "Choose Scalper", "Use the faster tool built for session-based futures moves.", "#scalper-plan"],
+  ["Want the full system", "Choose Pro", "Scalper and Swing for $29/month — $4.98 less than separate monthly plans.", "#pro-plan"],
+  ["Building long term", "Choose Lifetime", "Own access, future updates, source code, and commercial rights.", "#lifetime-plan"],
 ];
 
 const animatedCandles = [
@@ -1124,12 +1124,12 @@ export default function Home() {
               <a href="#swing-trial" className="inline-flex min-h-11 items-center justify-center rounded-md bg-white px-4 text-xs font-extrabold text-black transition hover:bg-emerald-300">Start with the free trial</a>
             </div>
             <div className="grid gap-px bg-white/10 lg:grid-cols-4">
-              {buyerPath.map(([who, action, copy]) => (
-                <article key={who} className="group bg-[#080809] p-5 transition hover:bg-ember/[0.055]">
+              {buyerPath.map(([who, action, copy, href]) => (
+                <a key={who} href={href} className="group bg-[#080809] p-5 transition hover:bg-ember/[0.055] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-ember">
                   <p className="text-[10px] font-black uppercase text-zinc-600">{who}</p>
-                  <h4 className="mt-3 font-display text-xl font-black text-white">{action}</h4>
+                  <h4 className="mt-3 flex items-center gap-2 font-display text-xl font-black text-white">{action}<ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0 text-ember" /></h4>
                   <p className="mt-3 text-sm leading-6 text-zinc-500">{copy}</p>
-                </article>
+                </a>
               ))}
             </div>
           </div>

@@ -1,7 +1,7 @@
 import type { Department } from './policy';
 
 // Curated methods, not an installer or permission grant. See docs/skills-adoption.md.
-export const operatingPlaybookVersion = 'da-operating-playbooks-2026-09-30-v1';
+export const operatingPlaybookVersion = 'da-operating-playbooks-2026-09-30-v2';
 export const upstreamSkillsCommit = '19392f7a08264ed00486a251f5b2098321771f94';
 
 const common = `Use the smallest useful workflow: observe current evidence, identify one customer or revenue bottleneck, deliver a concrete artifact, check it, and record the result. Read recent history, openTasks, team_deliverables and operating_memory when supplied before repeating work. Saved output is evidence of a prior attempt, not standing permission or a confirmed business outcome. Carry forward only a source-backed lesson with date, scope, result, limitation and next check; contrary evidence supersedes the lesson. No automatic rewriting of policy, permissions, prices or budgets. For repeated failure codes, diagnose the common cause; never resend an uncertain external action or spend to clear a blocker. Complete independent useful work and give the owner only the exact missing decision. Existing schedules, approved visual references and exact-version executors remain authoritative. No new service, credits, additional paid model run or spending increase is authorized by this playbook. Do not use generic benchmark or uplift numbers as Darth Algo facts.`;
@@ -18,6 +18,20 @@ const guides: Record<Department, string> = {
   operations: `Use operating_memory to identify repeated failure codes, with exact run IDs and dates; grouping is a diagnosis cue, not proof of the same root cause. Build a bounded incident runbook: affected service/customer impact, observable symptom, read-only checks, one minimal repair, test, rollback and exact resume condition. A later completed internal run does not prove the provider or workflow is fixed. Distinguish waiting for auth, permission, capacity or budget from a code defect; never repeatedly redeploy unchanged failures. Review duplicate vendor functions with cost evidence and critical dependencies before any recommendation. Keep existing retry limits and holds; never clear uncertain publication state.`,
 };
 
+// Execution priorities for the whole business. Private customer/financial baselines
+// belong in live evidence or owner records, never in this public source file.
+const revenueAssignments: Record<Department, string> = {
+  ceo: 'Revenue assignment: prioritize qualified demand, direct product sales, trial setup and retained subscriptions before affiliate volume. Pick at most three current actions with an owner, artifact, metric and next review. Re-rank from fresh evidence; saved or scheduled work is not earned revenue.',
+  growth: 'Revenue assignment: improve one buying step using /compare and the matching product page; Scalper for intraday, Swing for broader moves, Pro for both. Give existing subscribers a support path before any new subscription. Deliver one reviewable funnel correction and an observed completion metric.',
+  content: 'Revenue assignment: demonstrate one actual indicator decision on an owned chart and send the right buyer to the matching tool or /compare. Measure available qualified visits and tagged positive-value purchases, not posting volume. Tag only new, reviewable links; never mutate approved queued artifacts.',
+  support: 'Revenue assignment: make correct first setup the trial priority. Diagnose short trials, missing access and recurring confusion from verified cases. Deliver an anonymized repair/FAQ handoff and report verified resolutions. Separate expired/canceled customers from eligible failed-payment recovery.',
+  affiliates: 'Revenue assignment: affiliates support the wider product funnel. Reuse the matching product/comparison destination and disclose attribution gaps; a prospect list is not partner revenue. Do not take ownership of the other departments or replace their direct-sales work.',
+  analytics: 'Revenue assignment: deliver a compact scorecard of active recurring value, positive-value checkout receipts, matured trial outcomes, renewal/payment risk and acquisition coverage. Zero-dollar paid-status sessions are not cash sales. Deduplicate Stripe objects and flag repeat emails or possible test traffic before interpreting rates.',
+  research: 'Revenue assignment: investigate one high-intent buyer question, such as Scalper versus Swing or first TradingView setup. Produce an original answer/page brief with a useful product destination. Validate search demand when accessible; do not equate publishing a comparison page with ranking or traffic.',
+  indicator_builder: 'Revenue assignment: prioritize reliability, readable risk/target states and setup clarity over speculative new paid tools. Convert a verified recurring product issue into a small testable specification, with before/after behavior and compile/replay evidence required for release.',
+  operations: 'Revenue assignment: protect checkout, exact-username fulfillment, subscription state and working destination links. Supply one verified repair or an incident handoff with customer impact. Cost efficiency is a separate measured outcome; do not treat a canceled subscription with an old unpaid invoice as permission to collect or reactivate.',
+};
+
 export function operatingPlaybook(department: Department): string {
-  return `Operating playbook ${operatingPlaybookVersion}.\n${common}\n${guides[department]}`;
+  return `Operating playbook ${operatingPlaybookVersion}.\n${common}\n${guides[department]}\n${revenueAssignments[department]}`;
 }

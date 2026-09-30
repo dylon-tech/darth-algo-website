@@ -1,6 +1,6 @@
 // Campaign labels only: no customer identity, fingerprint or new visitor cookie.
 export type CampaignAttribution = { source: string; campaign: string; content: string; capturedAt: number };
-const sources = new Set(["x","instagram","tiktok","youtube","facebook","reddit","telegram","email","affiliate","search","ads"]);
+const sources = new Set(["x","instagram","threads","whop","tiktok","youtube","facebook","reddit","telegram","email","affiliate","search","ads"]);
 const label = (v: string | null) => (v || "").trim().toLowerCase().replace(/[^a-z0-9_-]/g,"-").slice(0,40);
 export function captureCampaign(search: string, previous: unknown, now = Date.now()): CampaignAttribution | null {
   const q = new URLSearchParams(search);
