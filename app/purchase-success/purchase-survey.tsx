@@ -7,6 +7,8 @@ import { FormEvent, useState } from "react";
 const discoveryOptions = [
   ["tiktok", "TikTok"],
   ["instagram", "Instagram"],
+  ["threads", "Threads"],
+  ["whop", "Whop"],
   ["youtube", "YouTube"],
   ["x-twitter", "X / Twitter"],
   ["tradingview", "TradingView"],
@@ -103,8 +105,8 @@ export default function PurchaseSurvey({ sessionId }: { sessionId: string }) {
                 <li>Open TradingView → Indicators → Invite-only scripts. Add your Darth Algo tool.</li>
               </ol>
               <p className="mt-4 text-sm leading-6 text-zinc-400">If you chose the Swing trial, its two days start at checkout, not at activation. Check the timing in your checkout confirmation.</p>
-              <Link href="/support" className="mt-5 inline-flex min-h-12 items-center justify-center rounded-md bg-ember px-5 font-bold text-white">Get help with my access <ArrowRight className="ml-2 h-4 w-4" /></Link>
-              <Link href="/start#setup-title-details" className="mt-3 block text-sm font-semibold text-white underline underline-offset-4">Open the setup guide</Link>
+              <Link href="/start#setup-title-details" className="mt-5 inline-flex min-h-12 items-center justify-center rounded-md bg-ember px-5 font-bold text-white">Set up my indicator <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              <Link href="/support" className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-white underline underline-offset-4">My tool is missing — get access help</Link>
             </section>
             <div className="mt-8 flex items-start gap-3 border-t border-white/10 pt-6 text-sm leading-6 text-zinc-600">
               <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-ember" />

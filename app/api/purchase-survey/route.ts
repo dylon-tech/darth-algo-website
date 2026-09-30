@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 const allowedSources = new Set([
   "tiktok",
   "instagram",
+  "threads",
+  "whop",
   "youtube",
   "x-twitter",
   "tradingview",

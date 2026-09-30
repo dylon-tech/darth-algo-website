@@ -21,6 +21,12 @@ try {
  const bio=captureCampaign('?utm_source=ig&utm_medium=social&utm_content=link_in_bio',null,1000);
  assert.deepEqual(parseCampaignReference(campaignReference(bio)),{source:'instagram',campaign:'default',content:'link_in_bio'});
  assert.equal(bio.capturedAt,1000);
+ for (const source of ['threads','whop','search']) {
+   const campaign=captureCampaign(`?utm_source=${source}&utm_campaign=tool-comparison&utm_content=profile`,null,1000);
+   const checkout=new URL(attributeCheckout('https://buy.stripe.com/4gM8wQfxJ6gI1IabYM6kg05',campaign));
+   assert.deepEqual(parseCampaignReference(checkout.searchParams.get('client_reference_id')),{source,campaign:'tool-comparison',content:'profile'});
+   assert.equal(checkout.searchParams.get('utm_source'),source);
+ }
  const tag=captureCampaign('?source=x&campaign=post-demo',null,1000);
  assert.equal(tag.source,'x');assert.equal(tag.campaign,'post-demo');
  assert.deepEqual(captureCampaign('',tag,2000),tag);
