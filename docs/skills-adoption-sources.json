@@ -1,0 +1,136 @@
+{
+  "version": "da-operating-playbooks-2026-09-30-v1",
+  "source": "https://github.com/alirezarezvani/claude-skills",
+  "commit": "19392f7a08264ed00486a251f5b2098321771f94",
+  "license": "MIT",
+  "reviewed_at": "2026-09-30",
+  "mode": "Curated method adaptations, not wholesale skill installation or executable import",
+  "entries": [
+    {
+      "path": "marketing-skill/skills/page-cro/SKILL.md",
+      "roles": "growth",
+      "adaptation": "Match traffic promise, clear benefit, one CTA and real objections.",
+      "sha256": "5017f078d779365a6f6b7326804270857475a24535f278eb1b1dc436ef5a343a"
+    },
+    {
+      "path": "marketing-skill/skills/onboarding-cro/SKILL.md",
+      "roles": "growth/support",
+      "adaptation": "One first-use outcome; separate payment from verified access and useful setup.",
+      "sha256": "9fecfb3fbe9770408063d419c8a3336940ea5f86df9130495ab461f28745280b"
+    },
+    {
+      "path": "marketing-skill/skills/copywriting/SKILL.md",
+      "roles": "content/growth",
+      "adaptation": "Customer language, specific supported benefits, finished copy.",
+      "sha256": "f6415e5e3f1a2e0e62b112bb29566e8050c087f5aa6b674e5712805f2633c9b8"
+    },
+    {
+      "path": "marketing-skill/skills/content-humanizer/SKILL.md",
+      "roles": "content",
+      "adaptation": "Remove generic phrasing; vary rhythm without invented lived experience.",
+      "sha256": "394c104c21992e984d1d14e0de40f0b244a59407e7d16232d6ea8c55ee892cdb"
+    },
+    {
+      "path": "marketing-skill/skills/ab-test-setup/SKILL.md",
+      "roles": "growth/analytics",
+      "adaptation": "One variable, primary metric, guardrails, predeclared window and sample.",
+      "sha256": "7d451f2c296c8ccabdc1441d73a5ed7bfb993b61bdacd6f569ddc6fa0c032f8d"
+    },
+    {
+      "path": "marketing-skill/skills/analytics-tracking/SKILL.md",
+      "roles": "analytics",
+      "adaptation": "Explicit event definitions, cohorts, coverage and denominators.",
+      "sha256": "e5ac8c8f9826ff62727966e94231c3737de73bf12781d76ea92adc517d67b339"
+    },
+    {
+      "path": "marketing-skill/skills/churn-prevention/SKILL.md",
+      "roles": "support",
+      "adaptation": "Separate cancellation and payment failure; stop obsolete follow-ups.",
+      "sha256": "92c0132bdc156c0cd856d278e0c06fca162f0e474473c5f6c699bab50047b611"
+    },
+    {
+      "path": "marketing-skill/skills/referral-program/SKILL.md",
+      "roles": "affiliates",
+      "adaptation": "Separate partner recruitment, activation, referrals and paid sales.",
+      "sha256": "24e4624f1374f6fbe86b678f27d0ec0c06002a826f143cfc57796572621fd905"
+    },
+    {
+      "path": "marketing-skill/skills/social-content/SKILL.md",
+      "roles": "content",
+      "adaptation": "One audience question, strong hook, product demonstration and CTA.",
+      "sha256": "02008f95432fd0c9088bccd71a3358b3ead1f06ac6115f3fe3fe5f562fc2da37"
+    },
+    {
+      "path": "marketing-skill/skills/seo-audit/SKILL.md",
+      "roles": "research/growth",
+      "adaptation": "Intent, titles, headings, canonical and useful original content before new pages.",
+      "sha256": "e91739cc21461f4b92979fc79bd11d606e1e10f5a50911b1ef02b2ce46dd25a6"
+    },
+    {
+      "path": "business-growth/skills/customer-success-manager/SKILL.md",
+      "roles": "support",
+      "adaptation": "Use evidenced setup/support signals; do not invent usage or churn scores.",
+      "sha256": "ea53629ec26895fc84229d817f91512879be54331122521b180df3a568826546"
+    },
+    {
+      "path": "business-growth/skills/revenue-operations/SKILL.md",
+      "roles": "analytics/ceo",
+      "adaptation": "Locate the real funnel bottleneck; separate stage counts and outcomes.",
+      "sha256": "9ba340d0b1f3ff05eef9b8beef9de35a9f9082fef6cbc8cedd09022e4735c9b0"
+    },
+    {
+      "path": "finance/skills/saas-metrics-coach/SKILL.md",
+      "roles": "analytics/ceo",
+      "adaptation": "Distinguish MRR, cash, lifetime sales, refunds and costs; missing stays unknown.",
+      "sha256": "bc6fcf0302ee0e2cf88bb05a61a2dbd3301051e1f99155fbd664f14e9aab4291"
+    },
+    {
+      "path": "business-operations/skills/vendor-management/SKILL.md",
+      "roles": "operations/ceo",
+      "adaptation": "Tie each service to a current dependency and a safe fallback.",
+      "sha256": "57fb2f47bfef9f3475703d05c9734a4840d68c1197923d90d68fd88ad95cb6b4"
+    },
+    {
+      "path": "business-operations/skills/process-mapper/SKILL.md",
+      "roles": "operations/growth",
+      "adaptation": "Find waiting/rework at the constraint before optimizing other steps.",
+      "sha256": "e71210a50f9d3771a64892200ed454aa3e1a6b53eaef0d2cdcd1625cede7a57c"
+    },
+    {
+      "path": "business-operations/skills/procurement-optimizer/SKILL.md",
+      "roles": "operations/ceo",
+      "adaptation": "Find duplicate functions; assess switching risk before cost reductions.",
+      "sha256": "308e0858ae3fd62fb1f0fdb03a9b16264897099aa48e397b152528ceec4edeea"
+    },
+    {
+      "path": "business-operations/skills/knowledge-ops/SKILL.md",
+      "roles": "operations",
+      "adaptation": "Versioned runbooks with owner, observable result, rollback and resume condition.",
+      "sha256": "980ee103958c7a209e7598da975cd1962e83a8deede181fd20f2a6a230afdb45"
+    },
+    {
+      "path": "engineering/skills/runbook-generator/SKILL.md",
+      "roles": "operations",
+      "adaptation": "Symptom, diagnosis, minimal repair, test, rollback and escalation.",
+      "sha256": "ef426a9b8a04cb766ac002efeaf4907083aff817887c7652c3fbd4258661fa53"
+    },
+    {
+      "path": "engineering/skills/self-eval/SKILL.md",
+      "roles": "all",
+      "adaptation": "Check actual deliverable against acceptance criteria; self-review is not external proof.",
+      "sha256": "0396394941477744e8a46f7653d2af20d4ea8ba325469f039244bba986c72642"
+    },
+    {
+      "path": "engineering/llm-cost-optimizer/skills/llm-cost-optimizer/SKILL.md",
+      "roles": "all",
+      "adaptation": "Compact role context and reuse evidence within unchanged existing spend limits.",
+      "sha256": "31c8c3048115168f6e968c164fb661a260370ff9989557f502688f81b4fed3b3"
+    },
+    {
+      "path": "engineering/skills/agent-workflow-designer/SKILL.md",
+      "roles": "all",
+      "adaptation": "Smallest useful workflow, exact handoff artifacts, bounded attempts and explicit completion.",
+      "sha256": "f1133218f4bc98e1aed526f2e2a60b30c02b6dac18c717a04eac45551242a9dd"
+    }
+  ]
+}
