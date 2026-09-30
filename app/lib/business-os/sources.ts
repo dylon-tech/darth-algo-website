@@ -8,6 +8,7 @@ import { businessKnowledge } from "./knowledge";
 import { checkoutConversions } from "./conversions";
 import { creativePlaybookEvidence } from "./creative-playbook";
 import {nativeRevenueEvidence} from './native-revenue-evidence';
+import {operatingMemory, type MemoryRun} from './operating-memory';
 
 export type Evidence = { id: string; status: "verified" | "unavailable"; checkedAt: string; scope: string; data: unknown; error?: string };
 
@@ -19,6 +20,10 @@ async function readSource(id: string, scope: string, read: () => Promise<unknown
 export async function collectEvidence(): Promise<Evidence[]> {
   const nativeRevenue = nativeRevenueEvidence();
   const sources = await Promise.all([
+    readSource('operating_memory', 'Read-only patterns in saved internal agent runs during the last seven days, at most the latest 500. Not customer messages, external receipts, policy or proof of recovery.', async () => {
+      const rows = await db()`select id,department,status,error_code,finished_at from os_runs where status in ('failed','completed') and finished_at >= now()-interval '7 days' order by finished_at desc limit 501`;
+      return operatingMemory(rows as unknown as MemoryRun[]);
+    }),
     ...(process.env.AI_OS_INDICATOR_LAB_ENABLED==="true"?[indicatorMarketEvidence().catch(()=>({id:"indicator_market",status:"unavailable" as const,checkedAt:new Date().toISOString(),scope:"Market discovery unavailable.",data:null}))]:[]),
     readSource("content_workflows", "Saved media policy and latest publication observations. These are execution records, not a guarantee of future delivery or content performance.", async()=>await db()`select event,created_at,details - 'png' as details from os_activity where event in ('media_policy_enabled','buffer_publish_checked','instagram_carousel_draft_verified') order by id desc limit 6`),
     competitorEvidence().catch(()=>({id:"competitor_public_posts",status:"unavailable" as const,checkedAt:new Date().toISOString(),scope:"Public competitor source check unavailable.",data:null})),

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "context_version": "2026-09-28.1",
+  "context_version": "2026-09-30.1",
   "owner_timezone": "America/New_York",
   "records": [
     {
@@ -91,6 +91,13 @@
       "kind": "founder_decision",
       "source": "Owner correction and publication direction September 28, 2026",
       "verified_at": "2026-09-29T01:53:44Z"
+    },
+    {
+      "key": "operations.curated_methods",
+      "value": "Adapt the 21 reviewed methods in docs/skills-adoption.md to the existing nine department playbooks. Use read-only operating_memory for recurring internal-failure patterns; preserve uncertainty and existing executors. Keep dated lessons in the existing role-owned record, preserve active schedules, and do not restart retired publishers. No additional spending or separate Dot provisioning is authorized or implied.",
+      "kind": "founder_decision",
+      "source": "Owner request September 30, 2026; docs/skills-adoption-sources.json",
+      "verified_at": "2026-09-30T09:58:54.344409+00:00"
     }
   ],
   "rules": {

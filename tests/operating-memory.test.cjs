@@ -1,0 +1,33 @@
+const {execFileSync}=require('node:child_process');
+const {mkdtempSync,rmSync}=require('node:fs');
+const {tmpdir}=require('node:os');
+const {join}=require('node:path');
+const assert=require('node:assert/strict');
+const dir=mkdtempSync(join(tmpdir(),'da-memory-'));
+try {
+ execFileSync('node_modules/.bin/tsc',['--target','ES2020','--module','commonjs','--moduleResolution','node','--esModuleInterop','--skipLibCheck','--outDir',dir,'app/lib/business-os/operating-memory.ts','app/lib/business-os/operating-playbooks.ts']);
+ const {operatingMemory}=require(join(dir,'business-os/operating-memory.js'));
+ const {operatingPlaybook}=require(join(dir,'business-os/operating-playbooks.js'));
+ const {departments}=require(join(dir,'business-os/policy.js'));
+ const now=Date.parse('2026-09-30T12:00:00Z');
+ const make=(n,changes={})=>({id:`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`,department:'content',status:'failed',error_code:'AI_INPUT_LIMIT',finished_at:new Date(now-n*1000).toISOString(),...changes});
+ const data=[make(1),make(2),make(2),make(3,{department:'support'}),make(4,{finished_at:'2026-08-01'}),make(5,{finished_at:'tomorrow'}),make(6,{finished_at:new Date(now+1).toISOString()})];
+ const before=JSON.stringify(data),memory=operatingMemory(data,now);
+ assert.equal(memory.sampledRuns,3);
+ assert.equal(memory.repeated.length,1);
+ assert.equal(memory.repeated[0].count,2,'Repeated ingestion must not inflate failures');
+ assert.equal(memory.repeated[0].laterInternalCompletion,false);
+ assert.equal(JSON.stringify(data),before);
+ assert.equal(operatingMemory([make(1),make(2),make(0,{status:'completed'})],now).repeated[0].laterInternalCompletion,true);
+ assert.equal(operatingMemory([make(1),make(2),make(3,{status:'completed'})],now).repeated[0].laterInternalCompletion,false,'Old completion cannot clear a newer failure');
+ const unsafe=operatingMemory([make(1,{error_code:'Bearer secret@example.com'}),make(2,{error_code:'https://private/?token=secret'})],now);
+ assert.equal(unsafe.repeated[0].code,'UNCLASSIFIED_FAILURE');
+ assert.ok(!JSON.stringify(unsafe).includes('secret'));
+ const budget=operatingMemory([make(1,{error_code:'AI_DAILY_BUDGET_EXHAUSTED'}),make(2,{error_code:'AI_MONTHLY_BUDGET_EXHAUSTED'})],now);
+ assert.equal(budget.repeated[0].code,'AI_BUDGET_GUARD');
+ assert.equal(operatingMemory(Array.from({length:501},(_,i)=>make(i)),now).coverage,'latest_500_only');
+ assert.equal(operatingMemory([],now).repeated.length,0);
+ assert.match(operatingMemory([],now).limitation,/not proof of business health/);
+ for(const department of departments)assert.ok(Buffer.byteLength(operatingPlaybook(department))<3200,'Load only a compact role-specific playbook');
+ console.log('PASS: dedupe, dates, department isolation, later completion, error redaction, budget normalization, sample coverage, bounded role context. No external actions.');
+} finally {rmSync(dir,{recursive:true,force:true});}
