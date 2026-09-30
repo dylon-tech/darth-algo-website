@@ -195,3 +195,14 @@ Adds a compact per-role operating playbook to all nine model roles. Adds read-on
 Five already-active scheduled task prompts updated with role-specific methods and verified through provider readback: Photo Queue, Evening Review, Support Watch, Maintenance and Affiliate Scout. Original prompt prefixes, enabled states and schedules were preserved. Configuration update is not proof of a future completed run. Personal operations skill updated separately with these workflows.
 
 Validation: focused recurrence test covers duplicate IDs, stale/future/invalid dates, department separation, later internal completion versus provider recovery, error-text redaction and sample bounds. Existing bounded-context test, TypeScript and Next.js production build passed. No separately billed live model invocation was used for verification. Production deployment and first runtime observation remain distinct checks; final evidence is recorded in the private owner report after release.
+
+
+## Indicator-focused creative variety — September 30, 2026
+
+Work DA-INDICATOR-CREATIVE-20260930-v1; Darth Algo Operations 1.2.0; company context/policy and creative-QA workflow. The founder supplied four exact visual examples and asked for creative variation while retaining the indicator-promotion feel. All four attached images were inspected. This is a founder preference, not measured performance or new trade evidence.
+
+Brand rules and producer guidance now center actual large indicator views and a fresh product angle in regular education and promotion. Each post requires a materially different composition and at least three meaningful creative changes, checked against actual recent work. Generic TradingView tips and cosmetic title/crop/recolor changes fail this new direction. Existing timings, alternation, carousel cadence, paid limits, evidence and publisher gates remain unchanged.
+
+Photo Queue and Evening Review prompts were updated and verified by task readback with exact new prompt text, original schedules/timezone and enabled state preserved. Private reference IDs are retained in those task instructions; personal Instagram screenshot surroundings are not published to the repository. An initial task-service error saved neither change; one shorter bounded retry succeeded for both.
+
+Scope/evidence: source instructions and recurring task configuration updated. No queue artifact was rewritten and no social send occurred in this policy update. Next Photo Queue run must inspect eligible unattempted future assets under the established revision cap; only actual revised hashes and provider receipts can establish that later execution. Dated lesson: previous policy still allowed general platform lessons despite the owner's repeated preference for product demonstrations. New guidance explicitly binds education to the indicator; next review compares real delivered artwork, and future owner instructions supersede this policy.

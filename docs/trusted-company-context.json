@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "context_version": "2026-09-30.1",
+  "context_version": "2026-09-30.2",
   "owner_timezone": "America/New_York",
   "records": [
     {
@@ -98,6 +98,13 @@
       "kind": "founder_decision",
       "source": "Owner request September 30, 2026; docs/skills-adoption-sources.json",
       "verified_at": "2026-09-30T09:58:54.344409+00:00"
+    },
+    {
+      "key": "content.indicator_creative_standard",
+      "value": "[DA-INDICATOR-CREATIVE-20260930-v1]\nFounder decision, September 30, 2026: primarily make and post content in the four owner-supplied indicator-promotion examples: \"Two Modes. One Pro.\", \"See Where the Plan Stands.\", \"Your Chart. More Clarity.\", and \"Read the Bias. Then the Signal.\" Every regular campaign should visibly center a real Darth Algo indicator on TradingView and explain one specific feature, benefit or workflow. Keep cinematic black/red scenes, bold beveled silver/red headlines, the full-color logo, large readable product views and a clear relevant CTA. Education must demonstrate the indicator or its actual use; general platform tips, abstract metaphors and a decorative tiny chart do not satisfy this direction. Preserve the education/promotion day alternation, existing results-evidence rules, 9 AM/3 PM Eastern slots and roughly one fresh carousel every two days within those slots.\n\nBe creative with each post so it does not feel like the last one. Use a fresh buyer question or product angle AND a materially different composition. Vary device/framing (phone, laptop, full chart, close-up), focal feature, headline construction, supporting callout placement, scene geometry/lighting and carousel story. Avoid a rigid repeating rotation. Change at least three meaningful creative choices from the immediately preceding campaign; a color, crop, title or CTA swap alone is insufficient. Compare actual finished artwork with recent campaigns at phone size, check full retained history for exact duplicates, and record why the new concept and composition differ. Keep the product recognizable; do not distort the chart to achieve novelty.\n\nThese are style references, not verified trading results or instructions to repost their exact artwork/headlines. Use owned original product captures; preserve candles, signals, prices and dashboard data. Do not fabricate indicator screens or copy the Instagram interface, profile icons, engagement counts or removed disclaimer lines. Existing no-new-spend, verified-claims, exact-version QA and single-publisher rules continue. This direction supersedes earlier permission for generic TradingView education or community-centered art as the ordinary content default. Preserve already attempted/published versions and their receipts; review and revise only verified unattempted future work under the existing revision contract.",
+      "kind": "founder_decision",
+      "source": "Owner screenshots and creativity clarification September 30, 2026; content-system/brand-rules.md#primary-indicator-creative-direction",
+      "verified_at": "2026-09-30T16:43:15.696Z"
     }
   ],
   "rules": {

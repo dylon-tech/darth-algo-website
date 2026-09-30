@@ -1,5 +1,10 @@
 # Cinematic social production and delivery
 
+## Primary indicator creative direction — September 30, 2026
+
+Follow `content-system/brand-rules.md` section `DA-INDICATOR-CREATIVE-20260930-v1` before earlier guidance below. The latest owner examples primarily promote the actual indicator. Apply the same visual quality to indicator-specific education; generic platform tips no longer qualify as the ordinary default. Compare finished assets to the latest owner images and recent campaigns, and record the fresh product angle plus at least three meaningful visual differences. Use exact owned captures without fabricating or altering chart evidence. Review upcoming unattempted entries under the existing two-campaign revision cap; this policy update does not itself replace any queued artwork. Keep existing reference/editorial schema values and publish safeguards.
+
+
 ## Founder update — September 28, 2026
 
 Founder-confirmed September 28, 2026: Darth Algo grants TradingView indicator access automatically immediately after purchase using the correct username entered at checkout. Use this approved benefit in the next fresh promotional campaign and vary later treatments. Suggested copy: "Automatic TradingView access immediately after purchase." Pair it with actual owned indicator visuals and a clear product CTA. Supersede manual activation and usual-24-hour-wait guidance. Do not claim competitors lack automation, guaranteed seconds, zero setup, or trading outcomes. Product messaging is not proof of any individual grant; missing access still needs support and customer-specific evidence. Preserve prices, trial timing, publication windows, approvals and spending limits. Do not edit attempted or published campaigns.
