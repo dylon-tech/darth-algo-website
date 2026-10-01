@@ -1,82 +1,72 @@
-# Photo Queue research brief — 2026-09-30
+# Photo Queue research brief — October 2 revision
 
-Skill/workflows: Darth Algo Operations 1.2.0; company context and policy, research to brief, premium creative, creative QA, deployment verification.
+Skill/workflows: Darth Algo Operations 1.2.0; company context/policy, research-to-brief, premium creative, creative QA and deployment verification. Private source: `DA_Content_Research_Latest.md` version 8, observed 2026-09-30 19:18 America/New_York.
 
-## Scope and evidence
+## Evidence boundary
 
-- Metricool brand 6883362 was verified as `darth.algo`, America/New_York, at 2026-09-30 08:28 EDT. Connected analytics identities remain Instagram, Threads, TikTok and YouTube; X is absent from Metricool analytics settings.
-- Metric definitions and the rolling 30-day window, 2026-09-01 through 2026-09-30, were read for Instagram posts/reels/evolution/audience, Threads posts, TikTok posts, YouTube videos and SmartLinks. Instagram posts returned 18 rows and Threads returned 14. Instagram reels, TikTok, YouTube, age/gender, country and SmartLinks returned no rows; these are unavailable coverage, not zero activity.
-- Instagram’s post connector defines interactions as organic likes, comments, saves and shares. Reach is unique organic accounts and views are organic displays. Threads views are displays. X, qualified product visits, attributable purchases and checkout revenue are not available in this sample.
-- A strict seven-day comparison is incomplete: the September 24–30 Instagram window returned 11 single-image posts, while the preceding September 17–23 window has only two like-format single images. Formats and ages were not mixed.
-- The latest private role-owned handoff, version 7 dated 2026-09-29 19:53 EDT, was read. It supports one visible action, one decision and one relevant destination. It does not authorize publication or establish a causal winner.
-- The strongest tiny comparable education signal remains the September 26 drawing-sync photo: Instagram 3 interactions / 7 reach and Threads 66 views. This supports testing an action-led structure only; the sample is too small for a winner claim.
+- Metricool brand 6883362 is `darth.algo`, America/New_York. Its September 1–30 return contained 20 Instagram post rows and 14 Threads rows. The newest Instagram row was the September 30 morning post with incomplete same-day metrics; the afternoon post and both September 30 Threads posts were lagging.
+- Instagram Reels, TikTok posts, YouTube videos, SmartLink, demographics, profile activity/link taps and follower/non-follower reach returned no usable rows. X was absent from Metricool analytics settings. Empty returns are unavailable coverage, not zero activity.
+- The strongest recent educational signal is still the September 26 drawing-sync photo: 3 Instagram interactions / 7 reach and 66 Threads views. This tiny sample supports testing a concrete visible workflow, not a winner or causal claim.
+- Qualified product clicks and attributable checkouts are unavailable by campaign. Views are not revenue.
+- The current queue contained 20 distinct campaigns. The two October 2 generic platform-tip entries were reviewed and unattempted; founder direction `DA-INDICATOR-CREATIVE-20260930-v1` requires replacing them with actual indicator education. All attempted/published history is preserved.
+- No verified owner-supplied current-week trade evidence exists. Friday morning therefore uses regular education rather than a results post.
 
 ## Audience hypotheses
 
-- Active futures scalpers may want faster access to frequently used chart tools while preserving signal/trend/risk context. Support: product positioning plus TradingView’s public Favorites question. Confidence: low-medium; no qualified click or comment corpus is available.
-- Swing traders may need to inspect one broader-move chart closely without abandoning a multi-chart workspace. Support: product positioning plus TradingView’s public maximize-chart question. Confidence: low-medium.
-- Newer TradingView users likely value one-action setup shortcuts. Support: the recent drawing-sync signal and the official support-question pattern. Confidence: medium-low; demographics and follower/non-follower reach are unavailable.
+- Futures scalpers seeking a repeatable pre-signal scan — medium confidence from product positioning plus the recent action-led education signal; no current comment corpus or qualified-click attribution.
+- Swing traders seeking plan/status clarity as a broader move develops — low-to-medium confidence; owned product facts are strong, public engagement samples are small.
+- Newer traders seeking one visible chart-reading workflow — medium confidence; concrete how-to posts have the best recent interaction signal, but denominators remain too small for a winner claim.
 
-## Selected education 1 — Favorites
+## Selected morning replacement — Scalper three-step scan
 
-- Real audience question: “How to favorite Indicators, Financials, Drawing Tools, and Timeframes?”
-- Source read 2026-09-30: https://www.tradingview.com/support/solutions/43000662392-how-to-favorite-indicators-financials-drawing-tools-and-timeframes/
-- Factual takeaway: click the star beside a tool or timeframe to add it to Favorites for quicker access.
-- Hook: “STAR IT ONCE. REACH IT FASTER.”
-- Buyer / verified product benefit: intraday Scalper user; the owned Scalper capture shows directional signals, responsive trend context and a risk plan on one TradingView chart.
-- Owned capture: `/indicators/scalper-overview.png`, source SHA-256 `378246b3d9cdda724627ace352a2408900c71481572ea44f2573347416c9f667`; resized/perspective-mapped only.
-- Destination / CTA: `https://www.darthalgo.com/links`; “Save this setup step.”
-- Message match: the caption teaches the same star-to-Favorites action shown in the artwork; `/links` is the official learning/tools hub rather than a direct sales page.
-- Difference from history: tool retrieval, a metallic star/toolbar hero and an exact Scalper screen are distinct from Object Tree grouping, interval visibility, alerts, drawing sync, measuring and product promotions.
+- Real audience question/objection: “What should I check before I trust a buy/sell signal?”
+- Verified product benefit: Scalper combines dashboard bias, directional markers, responsive trend context and entry/stop/Target 1/Target 2 planning on TradingView.
+- Hook: **THE SIGNAL IS STEP TWO.**
+- Factual takeaway: read dashboard bias first; confirm the marker against trend context; map entry, invalidation and targets before deciding whether the setup fits the trader's plan.
+- Owned evidence: `/indicators/scalper-overview.png` SHA-256 `378246b3d9cdda724627ace352a2408900c71481572ea44f2573347416c9f667`; `/indicators/scalper-dashboard.png` SHA-256 `f207e85578591007bec688ee4b74db994859dfe563d80fa944d61a8313487121`.
+- Destination/CTA: `https://www.darthalgo.com/products/scalper`; “Save this 3-step Scalper scan.” The destination explains the same bias/signal/risk workflow and shows the same owned captures.
+- Original adaptation: a near-full-width terminal, detached dashboard pod and vertical 1–2–3 rail. This differs from the October 1 active-session clock, September 27 checklist laptop, and all generic TradingView lessons by buyer question, framing, focal feature, headline and process geometry.
 
 ### Experiment card
 
-- Source observation: an immediate visible chart action led the tiny recent education cohort; this is observational, not causal.
-- Single variable: a one-click Favorites action paired with an exact owned product screen.
-- Primary metric / denominator: Instagram saves + shares / organic reach after seven full days; report Threads shares / views only if the connector exposes shares.
-- Guardrail: no generated chart evidence, results claim or sales conversion inference.
-- Review window: seven full days after confirmed publication.
-- Sample requirement: at least 25 organic reach; below that, status is insufficient data.
-- Stop / continue: continue the action-led shortcut structure only if reach is at least 25 and the post records at least one save or share; otherwise revise the structure and do not call it a losing topic.
+- Source observation: concrete visible actions have the best tiny recent education signal; founder direction requires the action to be an actual indicator workflow.
+- Single variable: near-full-frame real product view versus recent device/concept framing.
+- Primary metric/denominator: Instagram saves + shares / organic reach after seven full days.
+- Guardrail: no generated chart evidence, trade result, performance claim or purchase inference from engagement.
+- Sample requirement: at least 25 organic reach; below that is `insufficient_data`.
+- Stop/continue: continue this three-step education structure only with at least 25 reach and one save/share; otherwise revise the structure without declaring the topic a loser.
 
-## Selected education 2 — Maximize active chart
+## Selected afternoon replacement — Swing plan status
 
-- Real audience question: “How to maximize a chart in multichart layout.”
-- Source read 2026-09-30: https://www.tradingview.com/support/solutions/43000481234-how-to-maximize-a-chart-in-multichart-layout/
-- Factual takeaway: select a chart, then use Alt+Enter / Option+Enter, or Alt/Option-click the chart, to maximize the active view.
-- Hook: “ONE CHART. FULL FOCUS.”
-- Buyer / verified product benefit: broader-move Swing user; the owned Swing capture shows broader market trend confirmation and structured trade levels on TradingView.
-- Owned capture: `/indicators/swing-overview.png`, source SHA-256 `40b2b8646ac28f6193ec2c34d1ac6fb305f7dfe9073d5710038fc7e1f1bf2710`; resized/perspective-mapped only.
-- Destination / CTA: `https://www.darthalgo.com/links`; “Share this focus shortcut.”
-- Message match: both artwork and caption teach maximizing one active chart; no product purchase is requested.
-- Difference from history: it teaches temporary focus inside an existing layout, not same-symbol drawing sync, and uses a five-screen command-center composition with a different owned product capture.
+- Real audience question/objection: “How do I tell where the Swing plan stands?”
+- Verified product benefit: Swing provides broader trend confirmation, entry/invalidation/targets and a dashboard with trade-plan and target-status feedback.
+- Hook: **READ THE STATUS. NOT THE NOISE.**
+- Factual takeaway: read dashboard state, then keep entry, invalidation and target progress visible as the move develops.
+- Owned evidence: `/indicators/swing-overview.png` SHA-256 `40b2b8646ac28f6193ec2c34d1ac6fb305f7dfe9073d5710038fc7e1f1bf2710`; `/indicators/swing-dashboard.png` SHA-256 `5e6f824a02a5a0a8d5fe54d02e604197f85a149c33e105d08bc31d38fb48d06b`.
+- Destination/CTA: `https://www.darthalgo.com/products/swing`; “Save this status check.” The destination describes broader trend confirmation and plan/status feedback shown in the artwork.
+- Original adaptation: angled right-side TradingView view, circular dashboard magnifier, horizontal three-panel status rail and target-chamber scene. It differs from the morning and September 29 target-status poster in framing, device placement, headline construction, callout geometry and teaching sequence.
 
 ### Experiment card
 
-- Source observation: concrete multi-chart actions currently have the best tiny cross-platform education signal.
-- Single variable: keyboard-shortcut hook versus the prior menu/workflow instruction structure.
-- Primary metric / denominator: Instagram shares / organic reach after seven full days; saves + shares / reach is secondary.
-- Guardrail: do not compare raw Threads views with Instagram reach or infer product demand.
-- Review window: seven full days after confirmed publication.
-- Sample requirement: at least 25 organic reach; below that, status is insufficient data.
-- Stop / continue: continue keyboard-first education only if reach is at least 25 and the post records at least one share; otherwise test the on-screen Maximize control next time.
+- Source observation: the buyer needs plan state, not another generic shortcut; the latest founder examples favor visible product evidence.
+- Single variable: magnified status-dashboard composition versus chart-only product view.
+- Primary metric/denominator: Instagram saves + shares / organic reach after seven full days.
+- Guardrail: dashboard state is a recorded product capture, not an executed-trade or representative-results claim.
+- Sample requirement: at least 25 organic reach; below that is `insufficient_data`.
+- Stop/continue: retain the status-magnifier pattern only with adequate reach and one save/share; otherwise test a different real Swing workflow and composition.
 
 ## Next promotion improvement
 
-- `/compare` was verified live with HTTP 200 on production deployment `dpl_7ENA35gUGgYSe2Bb3XD1UHyvsfcr` on 2026-09-30. It shows current buyer guidance and owned product captures: Scalper $18.99/month, Swing $14.99/month after a two-day trial, and Pro $29/month versus $33.98 for both separate tools, a $4.98 monthly difference before tax. It also directs existing subscribers to support before another subscription.
-- Next fresh promotion candidate: “Which rhythm fits your chart?” Use a new owned Scalper/Swing comparison capture and one CTA to `https://www.darthalgo.com/compare`.
-- Real objection: “Do I need Scalper, Swing, or both?”
-- Single variable: buyer-decision headline instead of a feature-stack headline.
-- Primary outcome: qualified `/compare` visits and attributable positive-value checkouts when available; views are earlier-funnel only.
-- This is a future variation, not queued in this educational batch, and must not reuse October 1’s automatic-access artwork or copy.
+- Candidate question: “Do I need Scalper, Swing, or both?”
+- Verified destination: `https://www.darthalgo.com/compare`, observed live in the prior batch. Current terms: Scalper $18.99/month; Swing $14.99/month after a two-day trial; Pro $29/month versus $33.98/month separately, $4.98 less before tax. Existing subscribers are directed to support before a duplicate subscription.
+- Original variation: one real side-by-side owned product detail, buyer-decision headline, and automatic TradingView access immediately after purchase as supporting reassurance rather than the repeated headline.
+- Single variable: buyer-decision framing versus feature-stack framing.
+- Primary outcome: qualified `/compare` visits and attributable positive-value checkouts when available; raw reach is earlier-funnel only.
+- This is a future promotion hypothesis, not queued in this two-revision batch.
 
-## Public pattern boundary
+## Public-source and competitor limits
 
-- The September 29 handoff records up to 15 recent public LuxAlgo and AlgoAlpha YouTube observations. Today’s direct YouTube page refresh did not expose comparable recent post metrics; private competitor analytics and comparable Instagram/TikTok coverage remain unavailable.
-- TradingView support and current Darth Algo product/compare pages are the factual authorities used for this batch. No competitor predictive or profit claim is reused.
-
-## Results fallback and uniqueness
-
-- October 2 is Friday morning. No current-week owner-supplied trade evidence, permission record or source screenshot hash is accessible, so the morning slot uses regular education.
-- Full retained queue history through October 1 was checked: 18 campaigns, no repeated caption hash, asset hash or result-source hash. Both October 2 campaigns use fresh hooks, captions, final artwork and distinct owned product captures.
+- Product/workflow facts come from current Darth Algo product pages and owned captures.
+- The latest private handoff contains bounded September 29 public LuxAlgo/AlgoAlpha observations. A fresh direct competitor refresh did not expose comparable recent metrics, so no competitor performance winner is claimed and no predictive/profit claim is reused.
+- Different-day campaign comparisons remain observational, not randomized A/B proof.
 
