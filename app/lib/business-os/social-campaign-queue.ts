@@ -527,16 +527,16 @@ export const socialCampaignQueue:ReviewedCreative[] = [
     }
   },
   {
-    "id": "2026-10-02-morning-tradingview-favorites",
+    "id": "2026-10-02-morning-scalper-three-step",
     "day": "2026-10-02",
     "slot": "morning",
-    "theme": "TradingView Favorites: star frequently used tools",
-    "text": "Stop reopening the same tools. In TradingView, click the star beside a frequently used indicator, drawing tool or timeframe to add it to Favorites for quicker access. Save this setup step.\nhttps://www.darthalgo.com/links #TradingView",
+    "theme": "Scalper three-step scan: bias, signal, risk",
+    "text": "Before you trust a signal, check the order: read the dashboard bias, confirm the marker against trend context, then map entry, invalidation, TP1 and TP2. Save this 3-step Scalper scan.\nhttps://www.darthalgo.com/products/scalper #TradingView",
     "assets": [
       {
-        "path": "/social-campaigns/2026-10-02/tradingview-favorites-b2c8efef35da.jpg",
-        "sha256": "b2c8efef35da1cb00d9805fd79a00f1aa7d5bb339be0a209be58d61145f5c08e",
-        "altText": "Darth Algo lesson titled Star It Once. Reach It Faster. The exact owned Scalper screen sits beside a metallic Favorites star and toolbar, with a save CTA.",
+        "path": "/social-campaigns/2026-10-02/scalper-three-step-6f71b6eaeaef.jpg",
+        "sha256": "6f71b6eaeaeff64c46d028911eb78cc082c41c5e086d35115d6066fffc694f27",
+        "altText": "Cinematic Darth Algo Scalper lesson titled The Signal Is Step Two, with the exact owned TradingView chart, dashboard, three-step bias-signal-risk scan, and product CTA.",
         "mimeType": "image/jpeg"
       }
     ],
@@ -544,30 +544,31 @@ export const socialCampaignQueue:ReviewedCreative[] = [
       "version": "alternating-results-2026-09-24-v1",
       "kind": "educational",
       "sources": [
-        "https://www.tradingview.com/support/solutions/43000662392-how-to-favorite-indicators-financials-drawing-tools-and-timeframes/",
         "https://www.darthalgo.com/products/scalper",
-        "https://www.darthalgo.com/indicators/scalper-overview.png"
+        "https://www.darthalgo.com/indicators/scalper-overview.png",
+        "https://www.darthalgo.com/indicators/scalper-dashboard.png",
+        "library:DA_Content_Research_Latest.md#version-8"
       ],
-      "learning": "Answer the real question of reopening frequently used tools with one star-to-Favorites action and an exact owned Scalper view. Test saves plus shares per organic reach after seven full days, minimum 25 reach; this is a fresh Friday fallback because no verified current-week result evidence is available."
+      "learning": "Answer the real question of what to check before relying on a marker: read dashboard bias, confirm the signal against trend context, then map entry, invalidation and targets. Test a near-full-frame real product view versus recent device framing using saves plus shares per organic reach after seven full days, minimum 25 reach; below that is insufficient data."
     },
     "review": {
       "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
-      "sha256": "f79a52b6e5c5f60784ee9216cf06d220c646919fda6a74e99a810dfddee346ae",
-      "reviewer": "Codex: built-in imagegen environment plus exact owned-product compositing; full-size and 280px phone-scale QA against approved references, retained history, source copy, destination and experiment card",
-      "reviewedAt": "2026-09-30T12:29:01Z"
+      "sha256": "3d705b17e7f3ccdf59be16552adb9bac4711191f6d792a617d3af5c1c8cd2380",
+      "reviewer": "Codex: built-in imagegen backplate plus exact owned-product/logo compositing; full-size and 280px phone-scale QA against four September 30 founder references, recent artwork, source copy, destination and experiment card",
+      "reviewedAt": "2026-10-01T12:30:32Z"
     }
   },
   {
-    "id": "2026-10-02-afternoon-maximize-active-chart",
+    "id": "2026-10-02-afternoon-swing-plan-status",
     "day": "2026-10-02",
     "slot": "afternoon",
-    "theme": "TradingView multi-chart layout: maximize the active chart",
-    "text": "Working in a multi-chart layout? Select a chart, then use Alt+Enter on Windows or Option+Enter on Mac to maximize the active view. Share this focus shortcut.\nhttps://www.darthalgo.com/links #TradingView",
+    "theme": "Swing plan status: entry, invalidation, target progress",
+    "text": "Where does the Swing plan stand? Read the dashboard state, then keep entry, invalidation and target progress visible as the move develops. Save this status check.\nhttps://www.darthalgo.com/products/swing #TradingView",
     "assets": [
       {
-        "path": "/social-campaigns/2026-10-02/maximize-active-chart-694c1f7e8eaa.jpg",
-        "sha256": "694c1f7e8eaafcab0e320b3bbfad472c23b2765ce0872f841d86986287fc6d42",
-        "altText": "Darth Algo lesson titled One Chart. Full Focus. The exact owned Swing screen is maximized within a five-monitor command center, with Alt+Enter and Option+Enter.",
+        "path": "/social-campaigns/2026-10-02/swing-plan-status-42b618516cdb.jpg",
+        "sha256": "42b618516cdb77f19f9e4d08942fc94a3668152dd80ee1d74ec9f51a95a71d07",
+        "altText": "Cinematic Darth Algo Swing lesson titled Read the Status, Not the Noise, with the exact owned TradingView chart, dashboard magnifier, entry-invalidation-target status rail, and product CTA.",
         "mimeType": "image/jpeg"
       }
     ],
@@ -575,17 +576,18 @@ export const socialCampaignQueue:ReviewedCreative[] = [
       "version": "alternating-results-2026-09-24-v1",
       "kind": "educational",
       "sources": [
-        "https://www.tradingview.com/support/solutions/43000481234-how-to-maximize-a-chart-in-multichart-layout/",
         "https://www.darthalgo.com/products/swing",
-        "https://www.darthalgo.com/indicators/swing-overview.png"
+        "https://www.darthalgo.com/indicators/swing-overview.png",
+        "https://www.darthalgo.com/indicators/swing-dashboard.png",
+        "library:DA_Content_Research_Latest.md#version-8"
       ],
-      "learning": "Answer the real multi-chart focus question with the verified keyboard shortcut and an exact owned Swing view. Test shares per organic reach after seven full days, minimum 25 reach; this uses a different action, buyer, capture and composition from drawing synchronization."
+      "learning": "Answer the real question of where a Swing plan stands by pairing dashboard state with entry, invalidation and target progress. Test a magnified status-dashboard composition versus a chart-only product view using saves plus shares per organic reach after seven full days, minimum 25 reach; below that is insufficient data."
     },
     "review": {
       "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
-      "sha256": "dbf9d9b66726a1d30b4ae33acb9fc0edf481a35234026f74d49012d9ed1390d7",
-      "reviewer": "Codex: built-in imagegen environment plus exact owned-product compositing; full-size and 280px phone-scale QA against approved references, retained history, source copy, destination and experiment card",
-      "reviewedAt": "2026-09-30T12:29:01Z"
+      "sha256": "aa0f8375879441e13ecd1a950e5cc5284ad42b0ad510ada902f664747005d732",
+      "reviewer": "Codex: built-in imagegen backplate plus exact owned-product/logo compositing; full-size and 280px phone-scale QA against four September 30 founder references, recent artwork, source copy, destination and experiment card",
+      "reviewedAt": "2026-10-01T12:30:32Z"
     }
   }
 ];
