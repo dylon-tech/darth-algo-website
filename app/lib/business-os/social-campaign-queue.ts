@@ -631,7 +631,7 @@ export const socialCampaignQueue:ReviewedCreative[] = [
     "review": {
       "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
       "sha256": "f265a2a5517ffd6df8fd605eb1c30dbdb1b010645957b8deec0d79e4c34fd799",
-      "reviewer": "Codex: built-in imagegen backplates plus exact owned-product/logo compositing; full-size and 280px phone-scale QA against four September 30 founder references, DA-TYPE-20261001, retained history, live destination copy and experiment card",
+      "reviewer": "Codex: built-in imagegen backplates plus exact owned-product/logo compositing; full-size and 280px phone-scale QA against four September 30 founder references, DA-TYPE-20261001, retained history, live destination copy, experiment card and public/private evidence boundary",
       "reviewedAt": "2026-10-02T13:18:01Z"
     }
   },
@@ -664,7 +664,7 @@ export const socialCampaignQueue:ReviewedCreative[] = [
     "review": {
       "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
       "sha256": "292749aca46e3617a2503b92375c61857e482f61f0c6a23db18368f23c37e2f9",
-      "reviewer": "Codex: built-in imagegen backplates plus exact owned-product/logo compositing; full-size and 280px phone-scale QA against four September 30 founder references, DA-TYPE-20261001, retained history, live destination copy and experiment card",
+      "reviewer": "Codex: built-in imagegen backplates plus exact owned-product/logo compositing; full-size and 280px phone-scale QA against four September 30 founder references, DA-TYPE-20261001, retained history, live destination copy, experiment card and public/private evidence boundary",
       "reviewedAt": "2026-10-02T13:18:01Z"
     }
   }
