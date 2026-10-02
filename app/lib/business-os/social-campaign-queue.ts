@@ -589,5 +589,83 @@ export const socialCampaignQueue:ReviewedCreative[] = [
       "reviewer": "Codex: built-in imagegen backplate plus exact owned-product/logo compositing; full-size and 280px phone-scale QA against four September 30 founder references, recent artwork, source copy, destination and experiment card",
       "reviewedAt": "2026-10-01T12:30:32Z"
     }
+  },
+  {
+    "id": "2026-10-03-morning-swing-context-carousel",
+    "day": "2026-10-03",
+    "slot": "morning",
+    "theme": "Swing context before candle reaction",
+    "text": "Stop reacting to one candle. Darth Algo Swing keeps broader trend context, directional signals and the trade plan together on TradingView. Read the dashboard, locate the signal, then keep the plan visible.\nhttps://www.darthalgo.com/products/swing #DarthAlgo",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-10-03/swing-context-01-02cf2c855283.jpg",
+        "sha256": "02cf2c855283af57d3bae4dac12174ec1c3e78f21c9a2d1a2ca9758fbb78cda2",
+        "altText": "Darth Algo Swing carousel cover titled Don’t Trade the Candle. Read the Context, with the exact owned Swing TradingView chart in a cinematic red monitor.",
+        "mimeType": "image/jpeg"
+      },
+      {
+        "path": "/social-campaigns/2026-10-03/swing-context-02-39511895db7e.jpg",
+        "sha256": "39511895db7e372f097ce6e543cf04495b01908716bb170716fb9e20f2c543c2",
+        "altText": "Darth Algo Swing workflow showing the exact owned TradingView chart beside three steps: read dashboard, locate signal, keep plan visible.",
+        "mimeType": "image/jpeg"
+      },
+      {
+        "path": "/social-campaigns/2026-10-03/swing-context-03-e70e799da007.jpg",
+        "sha256": "e70e799da007f3f58d6df3ad7be9bdaf2b3ee00dcfa95a43f615626c36493849",
+        "altText": "Darth Algo Swing carousel close titled Keep the Plan on Screen, with exact owned entry, stop, targets and dashboard views plus a product CTA.",
+        "mimeType": "image/jpeg"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "promotional",
+      "sources": [
+        "https://www.darthalgo.com/products/swing",
+        "https://www.darthalgo.com/indicators/swing-overview.png",
+        "https://www.darthalgo.com/indicators/swing-dashboard.png",
+        "https://www.darthalgo.com/indicators/swing-risk-plan.png",
+        "library:DA_Content_Research_Latest.md#version-9"
+      ],
+      "learning": "Audience objection: how to stop reacting to every candle while keeping the broader plan visible. Verified benefit: Swing combines broader trend context, directional signals, dashboard guidance and entry/stop/targets on TradingView. CTA: See Swing on TradingView → /products/swing. Owned captures: swing-overview, swing-dashboard and swing-risk-plan. Freshness: a three-slide panoramic context-to-plan story with full-frame chart, vertical workflow rail and risk-plan close; it differs from prior single-card status, automatic-access and active-session compositions. Experiment: source observation=workflow education has the strongest small-sample interaction signal; single variable=buyer-problem headline vs feature-name-first promotion; primary metric=qualified Swing product visits and attributable positive checkouts over 7 full days; guardrail=no results claim or chart alteration; sample=at least 25 Instagram reach, otherwise insufficient data; continue only if qualified visits appear or saves+shares/reach improves without guardrail breach."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "f265a2a5517ffd6df8fd605eb1c30dbdb1b010645957b8deec0d79e4c34fd799",
+      "reviewer": "Codex: built-in imagegen backplates plus exact owned-product/logo compositing; full-size and 280px phone-scale QA against four September 30 founder references, DA-TYPE-20261001, retained history, live destination copy and experiment card",
+      "reviewedAt": "2026-10-02T13:18:01Z"
+    }
+  },
+  {
+    "id": "2026-10-03-afternoon-pro-one-plan",
+    "day": "2026-10-03",
+    "slot": "afternoon",
+    "theme": "Pro one-plan value for two trading horizons",
+    "text": "Do you switch between active sessions and broader moves? Darth Algo Pro combines Scalper and Swing in one $29/month TradingView subscription—$4.98 less than the two separate plans before tax. Compare the tools:\nhttps://www.darthalgo.com/compare #DarthAlgo",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-10-03/pro-one-plan-812a30b1268c.jpg",
+        "sha256": "812a30b1268cf2b7f4361ad883041d8ebed8aff9845e7375c77566fe38d4387e",
+        "altText": "Cinematic Darth Algo Pro poster titled Run Both. Keep It One Plan, showing exact owned Scalper dashboard and Swing TradingView views with a Compare the Tools CTA.",
+        "mimeType": "image/jpeg"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "promotional",
+      "sources": [
+        "https://www.darthalgo.com/compare",
+        "https://www.darthalgo.com/products/pro",
+        "https://www.darthalgo.com/indicators/scalper-dashboard.png",
+        "https://www.darthalgo.com/indicators/swing-overview.png",
+        "library:DA_Content_Research_Latest.md#version-9"
+      ],
+      "learning": "Audience objection: whether a trader who uses both active-session and broader-move workflows needs two subscriptions. Verified benefit: Pro includes Scalper and Swing for $29/month, $4.98 less than the $33.98 combined separate monthly plans before tax. CTA: Compare the tools → /compare. Owned captures: scalper-dashboard and swing-overview. Freshness: asymmetric tablet-plus-laptop comparison, direct price-difference proof and one-plan buyer decision; unlike the prior Two Modes or product-update posts, it isolates subscription fit rather than mode mechanics. Experiment: source observation=/compare now provides live pace, workflow and price matching; single variable=explicit verified dollar difference vs generic Pro feature list; primary metric=qualified /compare visits and attributable positive checkouts over 7 full days; guardrail=do not push existing subscribers into duplicate subscriptions; sample=at least 25 Instagram reach and available click attribution, otherwise insufficient data; continue only if qualified visits appear without support confusion or duplicate-plan complaints."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "292749aca46e3617a2503b92375c61857e482f61f0c6a23db18368f23c37e2f9",
+      "reviewer": "Codex: built-in imagegen backplates plus exact owned-product/logo compositing; full-size and 280px phone-scale QA against four September 30 founder references, DA-TYPE-20261001, retained history, live destination copy and experiment card",
+      "reviewedAt": "2026-10-02T13:18:01Z"
+    }
   }
 ];
