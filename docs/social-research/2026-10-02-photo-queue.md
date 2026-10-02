@@ -9,20 +9,13 @@
 
 ## Fresh owned-channel read
 
-Metric definitions and post-level data were read for the rolling 30-day window 2026-09-02 through 2026-10-02 08:55 America/New_York.
+Metric definitions and post-level data were read for the rolling 30-day window 2026-09-02 through 2026-10-02 08:55 America/New_York. Exact retrieval counts and owned-account performance values were kept in the private run evidence and role-owned handoff, not this public repository.
 
-| Network / format | Rows returned | Coverage note |
-| --- | ---: | --- |
-| Instagram photos and carousels | 22 | Post-level sample available. The newest posts are immature. |
-| Instagram Reels | 0 usable | Unavailable coverage, not zero activity. |
-| Threads posts | 18 | Post-level sample available. |
-| TikTok posts | 0 usable | Unavailable coverage, not zero activity. |
-| YouTube videos | 0 usable | Unavailable coverage, not zero activity. |
-
-- Instagram country demographics and Threads demographics returned no usable rows; no age, location, occupation or customer attribution was inferred.
+- Post-level photo/carousel coverage was available for Instagram and Threads. Instagram Reels, TikTok and YouTube returned no usable coverage; that is unavailable coverage, not zero activity.
+- Instagram country demographics and Threads demographics returned no usable coverage; no age, location, occupation or customer attribution was inferred.
 - Current follower/non-follower reach, profile activity, website taps, qualified clicks and attributable checkout data were unavailable in the accessible Metricool definitions. Deprecated profile-view and website-click fields were not treated as current measures.
-- October 1 was too young and incomplete for a winner call: the morning Instagram post showed 2 reach and 8 views; the afternoon post was absent from the Instagram sample. Threads showed 6 morning views and 46 afternoon views.
-- The strongest small-sample recent education observation remained the September 26 drawing-sync lesson: 3 Instagram interactions on 7 reach and 67 Threads views. This is a workflow-content hypothesis, not proof of a durable winner.
+- The newest posts were too immature and cross-network coverage too incomplete for a winner call.
+- The available small-sample observation supported testing concrete workflow content. It remains a hypothesis, not proof of a durable winner.
 
 ## Public pattern reads
 
