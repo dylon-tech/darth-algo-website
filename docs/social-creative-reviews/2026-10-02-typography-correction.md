@@ -8,8 +8,9 @@ The October 1 style amendment existed in scheduled prompts but not the live bran
 
 ## Release scope
 
-At October 3 16:35 UTC the afternoon campaign was prepared_for_daily_window, with X/Instagram/Threads ready and no Buffer send started. Only this future campaign is replaced. All historical queue rows, including October 2 afternoon and October 3 morning, are preserved from current main. Earlier local replacement proposals for those expired slots were never released and are excluded. The original unattempted October 3 afternoon record is archived in social-campaign-archive-typography-2026-10-02.json.
+At October 3 16:35 UTC the afternoon campaign was still prepared_for_daily_window. The upload/release steps completed after the 3 PM Eastern window opened. At 19:09 UTC the old deployment reported X, Instagram and Threads published, using original asset hash 812a30b1268cf2b7f4361ad883041d8ebed8aff9845e7375c77566fe38d4387e. The attempted/published original queue record has therefore been restored exactly. The proposed typography correction is archived as UNRELEASED_PROPOSAL_EXPIRED and must never send or be recycled on another date. All 22 queue records remain identical to the pre-repair production history.
 
+The release enforces the new style from October 4 morning forward. Photo Queue must create fresh future artwork with the current reference. Missing compliant artwork holds publication.
 The final Pro image uses extra-heavy condensed forward-italic silver/red lettering, short copy and matching CTA, inspected against the exact October 1 approved crop. Built-in imagegen created the setting and lettering; original owned Scalper dashboard, Swing chart and logo pixels were restored by deterministic compositing. No generated product output, invented trade evidence or new offer. All product regions passed exact resized-source pixel comparison during October 2 preparation. Reinspected final file October 3.
 
 - Final image: pro-one-plan-type-v2-784db3fd5303.png
@@ -23,7 +24,7 @@ The final Pro image uses extra-heavy condensed forward-italic silver/red letteri
 
 Source brand rules, producer contract, trusted context and app creative instructions prioritize the current type. Every app Content visual request receives the actual approved type thumbnail plus one rotating scene reference within the existing two-image budget. Older scene examples do not override the typography reference.
 
-From October 3 afternoon onward, editorial.typographyVersion must equal condensed-italic-2026-10-02-v2 and be bound into the existing exact-image/copy digest. Missing or obsolete review holds the slot. The marker requires actual final-image QA; this is not an automated font detector. Historical receipts remain compatible, and a previously prepared stale hash cannot send after replacement.
+From October 4 morning onward, editorial.typographyVersion must equal condensed-italic-2026-10-02-v2 and be bound into the existing exact-image/copy digest. Missing or obsolete review holds the slot. The marker requires actual final-image QA; this is not an automated font detector. Historical receipts remain compatible, and a previously prepared stale hash cannot send after replacement.
 
 Photo Queue and Evening Review prompts were read back with the current rule first. Photo Queue was found paused October 3; resume that existing role after release. Preserve its schedule, channels, publishing authority and $0 incremental spend. No duplicate publisher or test social send.
 
@@ -31,6 +32,8 @@ Photo Queue and Evening Review prompts were read back with the current rule firs
 
 October 2 local publisher transaction regression passed: exact reviewed images, two slots, concurrent dedupe, DST, lost responses, historical readback and no old fallback. Its existing fixture now reports the actual PNG/JPEG MIME type and compiles pre-existing replaceAll usage with ES2022.
 
-October 3 retry checks cover current and missing/obsolete typography reviews, tamper rejection, historical compatibility, stale prepared hashes, all queued asset hashes, actual type input, deterministic scene rotation and unchanged budget envelope. TypeScript and production build passed before release (three existing image lint warnings and a nonfatal remote logo fetch warning). Production success requires READY for the exact released commit, HTTP hash readback of both new PNGs, and the new preparation asset hash. Provider publication remains a separate normal scheduled receipt; none is claimed here.
+October 3 retry checks cover current and missing/obsolete typography reviews, tamper rejection, historical compatibility, stale prepared hashes, all queued asset hashes, actual type input, deterministic scene rotation and unchanged budget envelope. TypeScript and production build passed before release (three existing image lint warnings and a nonfatal remote logo fetch warning). Production success requires READY for the exact released commit, HTTP hash readback of both reference/review PNGs and preservation of historical receipt reconciliation. The next future slot must hold if compliant reviewed artwork is unavailable. Provider publication remains a separate normal scheduled receipt; none is claimed here.
 
 Lesson: a saved prompt or locally reviewed image cannot change live output until repository, deployment and publisher preparation are verified. Superseded by a later explicit founder style decision.
+
+Cutover reconciliation supersedes the earlier proposed replacement: October 3 afternoon was already published on the old deployment. This repair does not claim that post used the new typography.

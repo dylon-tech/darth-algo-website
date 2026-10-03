@@ -33,6 +33,9 @@ try {
  const sign=c=>{c.review.sha256=creativeDigest(c);return c;};
  // A previously signed queue record cannot keep publishing the retired type.
  const modern=structuredClone(socialCampaignQueue.find(c=>c.day==='2026-10-03'&&c.slot==='afternoon'));
+ modern.id='2026-10-05-afternoon-typography-fixture';modern.day='2026-10-05';modern.text='Distinct future typography policy fixture.';
+ modern.assets[0].sha256='c'.repeat(64);modern.assets[0].path='/social-campaigns/2026-10-05/policy-cccccccccccc.png';
+ modern.editorial.typographyVersion='condensed-italic-2026-10-02-v2';sign(modern);socialCampaignQueue.push(modern);
  validateReviewedCreative(modern);
  const missingType=structuredClone(modern);delete missingType.editorial.typographyVersion;
  assert.throws(()=>validateReviewedCreative(sign(missingType)),/TYPOGRAPHY_REVIEW_REQUIRED/);
@@ -51,8 +54,9 @@ try {
  assert.equal(requiresCurrentTypography({day:'2026-10-02',slot:'morning'}),false);
  assert.equal(requiresCurrentTypography({day:'2026-10-02',slot:'afternoon'}),false);
  assert.equal(requiresCurrentTypography({day:'2026-10-03',slot:'morning'}),false);
- assert.equal(requiresCurrentTypography({day:'2026-10-03',slot:'afternoon'}),true);
+ assert.equal(requiresCurrentTypography({day:'2026-10-03',slot:'afternoon'}),false);
  assert.equal(requiresCurrentTypography({day:'2026-10-04',slot:'morning'}),true);
+ socialCampaignQueue.pop(); // Remove the synthetic future policy fixture.
  const wrong=structuredClone(base);wrong.editorial.kind='educational';assert.throws(()=>validateReviewedCreative(sign(wrong)),/DAY_MISMATCH/);
  const disclaimer=structuredClone(base);disclaimer.text='Trading involves risk.';assert.throws(()=>validateReviewedCreative(sign(disclaimer)),/EDITORIAL_REVIEW/);
  const result=structuredClone(base);result.editorial.kind='results';assert.throws(()=>validateReviewedCreative(sign(result)),/RESULTS_EVIDENCE/);

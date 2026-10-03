@@ -18,6 +18,8 @@ try {
   const bytes=readFileSync('public'+r.path);
   assert.equal(createHash('sha256').update(bytes).digest('hex'),r.sha256);
  }
+ const {socialTypographyReference}=require(join(dir,'social-typography-policy.js'));
+ assert.equal(createHash('sha256').update(readFileSync('public'+socialTypographyReference.path)).digest('hex'),socialTypographyReference.sha256);
  const seen=new Set();
  const policy=recurringBudgetPolicy({AI_OS_RECURRING_SPEND_APPROVED:'true',AI_OS_DAILY_BUDGET_USD:'1',AI_OS_MONTHLY_BUDGET_USD:'10',AI_OS_MODEL:pilot.model});
  for(let day=1;day<=12;day++){
