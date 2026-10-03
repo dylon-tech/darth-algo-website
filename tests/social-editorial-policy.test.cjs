@@ -31,6 +31,28 @@ try {
  assert.throws(()=>assertFreshCreative(duplicate,[base]),/DUPLICATE_CONTENT/,'A changed headline cannot recycle the artwork');
  assertFreshCreative(base,[base]); // same campaign cross-platform/retry is allowed
  const sign=c=>{c.review.sha256=creativeDigest(c);return c;};
+ // A previously signed queue record cannot keep publishing the retired type.
+ const modern=structuredClone(socialCampaignQueue.find(c=>c.day==='2026-10-03'&&c.slot==='afternoon'));
+ validateReviewedCreative(modern);
+ const missingType=structuredClone(modern);delete missingType.editorial.typographyVersion;
+ assert.throws(()=>validateReviewedCreative(sign(missingType)),/TYPOGRAPHY_REVIEW_REQUIRED/);
+ const oldType=structuredClone(modern);oldType.editorial.typographyVersion='DA-TYPE-20261001';
+ assert.throws(()=>validateReviewedCreative(sign(oldType)),/TYPOGRAPHY_REVIEW_REQUIRED/);
+ const changedType=structuredClone(modern);changedType.editorial.typographyVersion='forged-after-review';
+ assert.throws(()=>validateReviewedCreative(changedType),/REVIEW_INVALID/,'Typography review is bound into the existing exact-asset digest');
+ const morningHistory=socialCampaignQueue.find(c=>c.day==='2026-10-03'&&c.slot==='morning');
+ validateReviewedCreative(morningHistory); // Published history and receipt matching stay intact.
+ const {campaignMatchesReview}=require(join(dir,'reviewed-social.js'));
+ const {currentCreativeVersion}=require(join(dir,'creative-version.js'));
+ const campaign={creativeVersion:currentCreativeVersion,day:modern.day,slot:modern.slot,contentId:modern.id,reviewHash:modern.review.sha256,text:modern.text,assets:modern.assets};
+ assert.equal(campaignMatchesReview(campaign),true);
+ assert.equal(campaignMatchesReview({...campaign,reviewHash:'a'.repeat(64)}),false,'Prepared old versions cannot send after queue replacement');
+ const {requiresCurrentTypography}=require(join(dir,'social-typography-policy.js'));
+ assert.equal(requiresCurrentTypography({day:'2026-10-02',slot:'morning'}),false);
+ assert.equal(requiresCurrentTypography({day:'2026-10-02',slot:'afternoon'}),false);
+ assert.equal(requiresCurrentTypography({day:'2026-10-03',slot:'morning'}),false);
+ assert.equal(requiresCurrentTypography({day:'2026-10-03',slot:'afternoon'}),true);
+ assert.equal(requiresCurrentTypography({day:'2026-10-04',slot:'morning'}),true);
  const wrong=structuredClone(base);wrong.editorial.kind='educational';assert.throws(()=>validateReviewedCreative(sign(wrong)),/DAY_MISMATCH/);
  const disclaimer=structuredClone(base);disclaimer.text='Trading involves risk.';assert.throws(()=>validateReviewedCreative(sign(disclaimer)),/EDITORIAL_REVIEW/);
  const result=structuredClone(base);result.editorial.kind='results';assert.throws(()=>validateReviewedCreative(sign(result)),/RESULTS_EVIDENCE/);

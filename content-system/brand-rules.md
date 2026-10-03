@@ -1,5 +1,16 @@
 # Darth Algo Brand Rules
 
+## Mandatory typography and copy — October 2, 2026
+
+[DA-TYPE-20261002-v2]
+The founder rejected the October 2 morning “The Signal Is Step Two” lettering and reaffirms the October 1 “From Checkout to Chart” example. This rule supersedes ALL older typography descriptions and applies to every future graphic, including existing unattempted queued work. Keep the established cinematic black/red indicator-focused design and schedule.
+
+Use **extra-heavy condensed forward-italic metallic-silver/red display headlines**, tight tracking, clear hierarchy, and the same bold treatment on CTAs. Use stronger natural hooks and short, specific benefit-led copy. Reject plain upright/widely spaced lettering, thin outlined type, merely slanting a regular-weight font, weak generic copy, text clipping and text over important chart details. Supporting copy must be readable at phone size. The approved reference is the actual typography crop at `/creative-references/typography-2026-10-01/approved-type-548702605ab5.png`; SHA-256 `548702605ab55b18f8caddd53d39a6eb99c94d2c8c4ebf90358b47350ede11ac`. It contains only the founder-approved lettering; no generated chart is product evidence.
+
+Inspect each final encoded slide at full size and phone size alongside that reference. Reuse real owned product captures, preserving candles, signals, prices and dashboard values; keep the original full-color logo. Only AFTER visual QA, set `editorial.typographyVersion: 'condensed-italic-2026-10-02-v2'` and recompute `review.sha256` with the complete editorial object. The gate binds the review to exact image bytes and copy; it does not perform computer-vision font detection. Never add the version marker to noncompliant artwork. From October 3 afternoon forward, missing/obsolete typography reviews hold the slot instead of allowing old artwork as fallback.
+
+Review the existing queue, not only new drafts. Archive and remake only verified unattempted future work; preserve attempted/published versions and receipt reconciliation. Apply the same copy direction to already-authorized text-only destinations without claiming images there. This adds no publisher, slot, channel or spending.
+
 ## Primary indicator creative direction — September 30, 2026
 
 [DA-INDICATOR-CREATIVE-20260930-v1]

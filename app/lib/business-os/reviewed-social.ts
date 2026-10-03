@@ -2,10 +2,11 @@ import {createHash} from 'node:crypto';
 import {socialCampaignQueue} from './social-campaign-queue';
 import {socialVisualStandard} from './social-visual-standard';
 import {currentCreativeVersion} from './creative-version';
+import {requiresCurrentTypography,socialTypographyVersion} from './social-typography-policy';
 import type {DailyCampaign} from './daily-social-policy';
 import type {SocialSlot} from './social-schedule';
 import {regularContentKind,resultsSlot,socialEditorialVersion,type SocialContentKind} from './social-editorial-policy';
-export type EditorialReview={version:string;kind:SocialContentKind;sources:string[];learning:string;result?:{sourceHash:string;tradeDate:string;symbol:string;timeframe:string;outcomeBasis:'chart_setup'|'executed_trade';verificationNote:string}};
+export type EditorialReview={version:string;kind:SocialContentKind;sources:string[];learning:string;typographyVersion?:string;result?:{sourceHash:string;tradeDate:string;symbol:string;timeframe:string;outcomeBasis:'chart_setup'|'executed_trade';verificationNote:string}};
 export type ReviewedCreative={id:string;day:string;slot:SocialSlot;theme:string;text:string;editorial?:EditorialReview;assets:Array<{path:string;sha256:string;altText:string;mimeType:'image/jpeg'|'image/png'}>;review:{referenceVersion:string;sha256:string;reviewer:string;reviewedAt:string}};
 export function creativeDigest(c:Pick<ReviewedCreative,'text'|'assets'|'editorial'>) {return createHash('sha256').update(JSON.stringify({text:c.text,assets:c.assets,...(c.editorial?{editorial:c.editorial}:{})})).digest('hex');}
 export function assertFreshCreative(c:ReviewedCreative,history:ReviewedCreative[]) {
@@ -22,6 +23,7 @@ export function assertFreshCreative(c:ReviewedCreative,history:ReviewedCreative[
 export function validateReviewedCreative(c:ReviewedCreative) {
  if(!/^[a-z0-9-]{1,80}$/.test(c.id)||!/^\d{4}-\d{2}-\d{2}$/.test(c.day)||!['morning','afternoon'].includes(c.slot)||!c.text.trim()||c.text.length>280||c.assets.length<1||c.assets.length>3)throw Error('CREATIVE_REVIEW_INVALID');
  if(c.review.referenceVersion!==socialVisualStandard.version||!c.review.reviewer||!Number.isFinite(Date.parse(c.review.reviewedAt))||c.review.sha256!==creativeDigest(c))throw Error('CREATIVE_REVIEW_INVALID');
+ if(requiresCurrentTypography(c)&&c.editorial?.typographyVersion!==socialTypographyVersion)throw Error('CREATIVE_TYPOGRAPHY_REVIEW_REQUIRED');
  for(const a of c.assets)if(!/^\/(?:social-campaigns|creative-references)\/[a-zA-Z0-9/_-]+\.(?:png|jpg)$/.test(a.path)||a.path.includes('..')||!a.path.includes(a.sha256.slice(0,12))||!/^([a-f0-9]{64})$/.test(a.sha256)||!a.altText||a.altText.length>1000||!['image/png','image/jpeg'].includes(a.mimeType))throw Error('CREATIVE_REVIEW_INVALID');
  if(c.day>='2026-09-24') {
   const e=c.editorial;
@@ -45,7 +47,12 @@ export function reviewedCreativeFor(day:string,slot:SocialSlot):ReviewedCreative
 }
 export function campaignMatchesReview(c:DailyCampaign) {
  if(c.creativeVersion!==currentCreativeVersion||!c.slot)return false;
- const approved=reviewedCreativeFor(c.day,c.slot);
+ let approved:ReviewedCreative|null;
+ try {approved=reviewedCreativeFor(c.day,c.slot);} catch(error) {
+  // Preserve receipt reconciliation while refusing fresh sends of obsolete type.
+  if(error instanceof Error&&error.message==='CREATIVE_TYPOGRAPHY_REVIEW_REQUIRED')return false;
+  throw error;
+ }
  return Boolean(approved&&c.contentId===approved.id&&c.reviewHash===approved.review.sha256&&c.text===approved.text&&c.assets.length===approved.assets.length&&c.assets.every((a,i)=>a.sha256===approved.assets[i].sha256&&a.altText===approved.assets[i].altText));
 }
 export async function loadReviewedImages(c:ReviewedCreative) {

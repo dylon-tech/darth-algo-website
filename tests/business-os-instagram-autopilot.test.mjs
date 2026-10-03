@@ -16,7 +16,7 @@ try {
  const rawExec=database.exec.bind(database);database.exec=query=>rawExec(query.replaceAll('now()',`'${new RealDate(clockMs).toISOString()}'::timestamptz`));
  await database.exec(readFileSync('app/lib/business-os/schema.ts','utf8').match(/export const schema = `([\s\S]*?)`;/)[1]);
  await database.exec('update os_control set paused=false where id=1');
- execFileSync('node_modules/.bin/tsc',['--target','ES2020','--module','commonjs','--moduleResolution','node','--jsx','react-jsx','--esModuleInterop','--skipLibCheck','--rootDir','app','--outDir',dir,'app/lib/business-os/media-autopilot.ts','app/lib/business-os/telegram-media.ts','app/lib/business-os/social-health.ts'],{stdio:'pipe'});
+ execFileSync('node_modules/.bin/tsc',['--target','ES2022','--module','commonjs','--moduleResolution','node','--jsx','react-jsx','--esModuleInterop','--skipLibCheck','--rootDir','app','--outDir',dir,'app/lib/business-os/media-autopilot.ts','app/lib/business-os/telegram-media.ts','app/lib/business-os/social-health.ts'],{stdio:'pipe'});
  const require=createRequire(import.meta.url);let tail=Promise.resolve();
  const makeSql=driver=>{
   const sql=async(parts,...values)=>{let q=parts.reduce((s,p,i)=>s+(i?'$'+i:'')+p,'');q=q.replaceAll('now()',`'${new RealDate(clockMs).toISOString()}'::timestamptz`);if(q.includes('insert into os_activity('))q=q.replace('insert into os_activity(','insert into os_activity(created_at,').replace('values(',`values('${new RealDate(clockMs).toISOString()}'::timestamptz,`);if(q.includes('pg_advisory_xact_lock'))return [];return (await driver.query(q,values)).rows;};
@@ -59,7 +59,7 @@ try {
  assert.equal(socialPostUrl('https://www.threads.com/@darth.algo','threads'),null);
  let writes=0,telegramWrites=0,drop=false,corrupt=false,dropTelegram=false;const posts=new Map(),inputs=[],community=[];
  globalThis.fetch=async(url,options)=>{
-  if(url.startsWith('https://www.darthalgo.com/creative-references/')||url.startsWith('https://www.darthalgo.com/social-campaigns/'))return new Response(readFileSync('public'+new URL(url).pathname),{headers:{'content-type':'image/jpeg'}});
+  if(url.startsWith('https://www.darthalgo.com/creative-references/')||url.startsWith('https://www.darthalgo.com/social-campaigns/'))return new Response(readFileSync('public'+new URL(url).pathname),{headers:{'content-type':new URL(url).pathname.endsWith('.png')?'image/png':'image/jpeg'}});
   if(url.startsWith('https://www.darthalgo.com/api/social-media/')){
    const [,assetId,hash]=new URL(url).pathname.match(/social-media\/([^/]+)\/([^/]+)$/);
    const row=(await database.query("select details from os_activity where event='social_media_asset' and entity_id=$1",[assetId])).rows[0];

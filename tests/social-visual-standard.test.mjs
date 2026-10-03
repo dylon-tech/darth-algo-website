@@ -25,11 +25,13 @@ try {
   const refs=socialReferenceInputs(key);
   assert.deepEqual(refs,socialReferenceInputs(key),'Retries retain exact visual inputs');
   assert.equal(refs.length,2);
-  assert.equal(refs[0].id,'cover');
+  assert.equal(refs[0].id,'typography');
+  assert.match(refs[0].sourcePath,/approved-type-548702605ab5.png$/);
+  assert.equal(createHash("sha256").update(Buffer.from(refs[0].part.image_url.split(",")[1],"base64")).digest("hex"),"8ad6d3a667ce8617f2f4c4b329701e0cad2f7a0994775a43630be7d9226a332b");
   refs.forEach(r=>seen.add(r.id));
   const request={model:pilot.model,store:false,instructions:'Use approved reference photos.',max_output_tokens:2500,reasoning:{effort:'none'},input:[{role:'user',content:[{type:'input_text',text:'Review style'},...refs.map(r=>r.part)]}],text:{format:{type:'json_schema'}}};
   assert.doesNotThrow(()=>assertRecurringEnvelope(JSON.stringify(request),'openai',policy),'Reference inputs obey unchanged spending envelope');
  }
- assert.equal(seen.size,4,'All four approved photos are used across content runs');
+ assert.equal(seen.size,5,'Current typography is always visible alongside rotating scene references');
  console.log('PASS: reference file hashes, exact manifest, deterministic image inputs, four-photo coverage and unchanged budget envelope.');
 } finally {rmSync(dir,{recursive:true,force:true});}
