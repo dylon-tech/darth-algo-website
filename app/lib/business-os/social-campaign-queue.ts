@@ -667,5 +667,69 @@ export const socialCampaignQueue:ReviewedCreative[] = [
       "reviewer": "Codex: built-in imagegen backplates plus exact owned-product/logo compositing; full-size and 280px phone-scale QA against four September 30 founder references, DA-TYPE-20261001, retained history, live destination copy, experiment card and public/private evidence boundary",
       "reviewedAt": "2026-10-02T13:18:01Z"
     }
+  },
+  {
+    "id": "2026-10-04-morning-access-granted-setup",
+    "day": "2026-10-04",
+    "slot": "morning",
+    "theme": "Invite-only setup path after access is granted",
+    "text": "Access is granted—but where does the indicator live? In TradingView, open Indicators, choose Invite-only scripts, then add Darth Algo to your chart. Save this setup path.\nhttps://www.darthalgo.com/products/scalper #TradingView",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-10-04/access-granted-setup-f038ee3435cf.jpg",
+        "sha256": "f038ee3435cf4b650b111a8a1a1f9dc17c4a204d86c4a1da23fe2434b155a41f",
+        "altText": "Darth Algo setup lesson: Indicators to Invite-only scripts to Add to chart, beside a real Scalper chart and dashboard.",
+        "mimeType": "image/jpeg"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "educational",
+      "typographyVersion": "condensed-italic-2026-10-02-v2",
+      "sources": [
+        "https://www.tradingview.com/support/solutions/43000653372-why-i-do-not-have-an-invite-only-scripts-tab-in-my-indicators-library/",
+        "https://www.darthalgo.com/products/scalper",
+        "https://www.darthalgo.com/indicators/scalper-overview.png"
+      ],
+      "learning": "Audience question: access is granted, but where does the indicator appear? Verified benefit: the Scalper page documents invite-only TradingView access and actual chart modules. CTA: Save this setup path → /products/scalper. Owned capture: scalper-overview plus scalper-dashboard. Freshness: asymmetric interface path with an angled chart window; differs from recent centered-monitor rooms in framing, hierarchy, scene and story. Experiment: source observation=setup location is a recurring high-intent question; single variable=three-step interface path in frame; primary metric=(saves+shares)/organic reach after 7 full days; guardrail=no fabricated UI or access outcome; sample=minimum 25 Instagram reach, otherwise insufficient; continue if the rate improves versus the prior mature educational baseline without support confusion."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "fba5c949d79eb57bac174b5eb408b940f17017a00a57f0ba540b3a864eef011e",
+      "reviewer": "Codex: built-in imagegen backplate plus exact owned-product/logo compositing; full-size and 280px phone-scale QA against approved typography crop, cinematic references, recent retained artwork, live source copy, destination and experiment card",
+      "reviewedAt": "2026-10-04T12:52:10Z"
+    }
+  },
+  {
+    "id": "2026-10-04-afternoon-locked-access",
+    "day": "2026-10-04",
+    "slot": "afternoon",
+    "theme": "Invite-only lock means author-controlled access",
+    "text": "A lock icon doesn’t mean the indicator is broken. TradingView invite-only scripts are author-controlled: access comes from the script author, then you add the tool to your chart. Save this before setup.\nhttps://www.darthalgo.com/products/swing #TradingView",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-10-04/locked-access-de162aab361a.jpg",
+        "sha256": "de162aab361af92a77a1e675d20f42148f0798d90fdb97560f38814ef39c0180",
+        "altText": "Darth Algo access lesson: a macro lock-control scene with author-controlled access labels and a real Swing chart and dashboard.",
+        "mimeType": "image/jpeg"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "educational",
+      "typographyVersion": "condensed-italic-2026-10-02-v2",
+      "sources": [
+        "https://www.tradingview.com/support/solutions/43000653373-why-cannot-i-use-an-invite-only-indicator/",
+        "https://www.darthalgo.com/products/swing",
+        "https://www.darthalgo.com/indicators/swing-overview.png"
+      ],
+      "learning": "Audience objection: does the lock icon mean the indicator is broken? Verified benefit: TradingView documents invite-only scripts as author-controlled, while the Swing page documents automatic access after checkout with the exact username. CTA: Save this before setup → /products/swing. Owned capture: swing-overview plus swing-dashboard. Freshness: macro lock hardware with a diagonal chart panel; differs from the morning interface path and recent centered-monitor rooms in focal object, product framing, hierarchy and scene. Experiment: source observation=access-control confusion is a high-intent setup issue; single variable=objection-led lock headline; primary metric=(saves+shares)/organic reach after 7 full days; guardrail=no claim that every access request succeeded; sample=minimum 25 Instagram reach, otherwise insufficient; continue if the rate improves without new access-confusion comments."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "94f6e4c8a541a1fd6347ae661b629113b938ee480da3db41231045edfa33e912",
+      "reviewer": "Codex: built-in imagegen backplate plus exact owned-product/logo compositing; full-size and 280px phone-scale QA against approved typography crop, cinematic references, recent retained artwork, live source copy, destination and experiment card",
+      "reviewedAt": "2026-10-04T12:52:10Z"
+    }
   }
 ];
