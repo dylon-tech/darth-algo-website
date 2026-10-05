@@ -731,5 +731,85 @@ export const socialCampaignQueue:ReviewedCreative[] = [
       "reviewer": "Codex: built-in imagegen backplate plus exact owned-product/logo compositing; full-size and 280px phone-scale QA against approved typography crop, cinematic references, recent retained artwork, live source copy, destination and experiment card",
       "reviewedAt": "2026-10-04T12:52:10Z"
     }
+  },
+  {
+    "id": "2026-10-05-morning-lifetime-full-toolkit",
+    "day": "2026-10-05",
+    "slot": "morning",
+    "theme": "Lifetime full toolkit: one-time ownership and both trading rhythms",
+    "text": "One payment. The full Darth Algo toolkit. Lifetime includes Scalper, Swing and Pro, future updates, source code and commercial-use rights for $134.99 one time. See the real tools, then review the plan terms.\nhttps://www.darthalgo.com/#lifetime-plan #DarthAlgo",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-10-05/lifetime-full-toolkit-01-f424270a8a96.jpg",
+        "sha256": "f424270a8a9699aeae3d25e9101809ee9b05081444e2a701e15850423f7270ad",
+        "altText": "Darth Algo Lifetime carousel cover: one payment, full toolkit, with real Scalper overview and Swing risk-plan product views.",
+        "mimeType": "image/jpeg"
+      },
+      {
+        "path": "/social-campaigns/2026-10-05/lifetime-full-toolkit-02-4808a305061f.jpg",
+        "sha256": "4808a305061f948a6f186a2a50e0bd546907a98cb839dc7b4c78916cb7678dcd",
+        "altText": "Lifetime carousel pace comparison with real Scalper execution and Swing dashboard views in two integrated apertures.",
+        "mimeType": "image/jpeg"
+      },
+      {
+        "path": "/social-campaigns/2026-10-05/lifetime-full-toolkit-03-a3fe1b4433f.jpg",
+        "sha256": "a3fe1b4433f99b33db82158d966f0c29d3d986a4f12838b3ebb4fae197d2e7ca",
+        "altText": "Lifetime carousel close: all tools, future updates and source code above real Scalper execution and Swing trend-cloud views.",
+        "mimeType": "image/jpeg"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "promotional",
+      "typographyVersion": "condensed-italic-2026-10-02-v2",
+      "sources": [
+        "https://www.darthalgo.com/#lifetime-plan",
+        "https://www.darthalgo.com/indicators/scalper-overview.png",
+        "https://www.darthalgo.com/indicators/scalper-execution.png",
+        "https://www.darthalgo.com/indicators/swing-risk-plan.png",
+        "https://www.darthalgo.com/indicators/swing-trend-cloud.png",
+        "library:DA_Content_Research_Latest.md#version-12"
+      ],
+      "learning": "Audience question: is there a one-time way to get the complete toolset instead of choosing another monthly plan? Verified benefit: Lifetime is $134.99 one time and includes Scalper, Swing, Pro, future updates, source code and commercial-use rights. CTA: View Lifetime Access → /#lifetime-plan. Owned captures: Scalper overview/execution plus Swing risk-plan, dashboard and trend-cloud views. Freshness: first retained Lifetime-ownership campaign; three-slide ownership, pace-comparison and full-system story with asymmetrical structural apertures, integrated full-size product evidence and premium lower type. Experiment: source observation=concrete workflow framing has the strongest current Threads directional signal; single variable=one-time full-toolkit ownership in frame one; primary metric=qualified lifetime-plan visits and positive-value Lifetime checkouts over 7 full days, then 30-day revenue review; guardrail=no outcome claim or duplicate-access push; sample=minimum 25 Instagram reach plus attribution, otherwise insufficient; continue only if qualified visits appear without plan confusion."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "0ac77f3b1e55875fa82f4dd79388f2584ebe9007bf100ff00587ba32f620fd76",
+      "reviewer": "Codex: built-in imagegen backplates plus exact owned-product/logo compositing; full-size and 280px phone-scale QA against approved type, IMG_3795 founder integration reference, recent retained art, source copy, destination and experiment card",
+      "reviewedAt": "2026-10-05T12:57:51Z"
+    }
+  },
+  {
+    "id": "2026-10-05-afternoon-swing-two-day-trial",
+    "day": "2026-10-05",
+    "slot": "afternoon",
+    "theme": "Swing two-day trial with broader trend context",
+    "text": "Want the broader view before choosing monthly? Darth Algo Swing includes a 2-day free trial, broader trend context, selective signals and plan-status feedback on TradingView. Start with your exact username.\nhttps://www.darthalgo.com/products/swing #DarthAlgo",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-10-05/swing-two-day-trial-80477db0b2f7.jpg",
+        "sha256": "80477db0b2f7d3b0c4c790b9c8dd5f2f5a32df9593252eb026b8682edd383315",
+        "altText": "Darth Algo Swing promotion titled Try the Broader View, showing the real Swing chart and dashboard with a two-day trial CTA.",
+        "mimeType": "image/jpeg"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "promotional",
+      "typographyVersion": "condensed-italic-2026-10-02-v2",
+      "sources": [
+        "https://www.darthalgo.com/products/swing",
+        "https://www.darthalgo.com/indicators/swing-overview.png",
+        "https://www.darthalgo.com/indicators/swing-dashboard.png",
+        "library:DA_Content_Research_Latest.md#version-12"
+      ],
+      "learning": "Audience question: can I try the broader-move workflow before choosing the monthly Swing plan? Verified benefit: Swing is $14.99/month after a 2-day free trial, with broader trend confirmation, selective signals, planning and status feedback; automatic TradingView access follows checkout using the exact username. CTA: Start Swing Trial → /products/swing. Owned captures: Swing overview and dashboard. Freshness: first retained trial-led Swing promotion; panoramic horizon, dominant integrated product view and connected dashboard bay change the offer, hierarchy, framing, product scale, callouts and scene from recent context/status work. Experiment: source observation=buyers need product and fit clarity before purchase; single variable=verified 2-day trial headline; primary metric=qualified Swing visits, trial starts and positive-value completed checkouts after 7 full days, then 30-day revenue review; guardrail=accurate trial terms and no result implication; sample=minimum 25 Instagram reach plus available attribution, otherwise insufficient; continue only if qualified visits or trials appear without term confusion."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "0b280a810cb240b8ced3985c80925fa39cfeba7113d3caa3a3bad0c91fae2972",
+      "reviewer": "Codex: built-in imagegen backplate plus exact owned-product/logo compositing; full-size and 280px phone-scale QA against approved type, IMG_3795 founder integration reference, recent retained art, source copy, destination and experiment card",
+      "reviewedAt": "2026-10-05T12:57:51Z"
+    }
   }
 ];
