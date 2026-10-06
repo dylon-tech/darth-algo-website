@@ -811,5 +811,83 @@ export const socialCampaignQueue:ReviewedCreative[] = [
       "reviewer": "Codex: built-in imagegen backplate plus exact owned-product/logo compositing; full-size and 280px phone-scale QA against approved type, IMG_3795 founder integration reference, recent retained art, source copy, destination and experiment card",
       "reviewedAt": "2026-10-05T12:57:51Z"
     }
+  },
+  {
+    "id": "2026-10-06-morning-scalper-input-alert-maintenance",
+    "day": "2026-10-06",
+    "slot": "morning",
+    "theme": "Scalper alert maintenance after an indicator input change",
+    "text": "Changed a Scalper input after creating an alert? TradingView says the existing alert keeps the old settings. Recreate it after a material input change, then confirm the condition and timeframe. Save this alert check.\nhttps://www.darthalgo.com/products/scalper #TradingView",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-10-06/2026-10-06-morning-input-alert-slide-1-3eeb2b2884de.jpg",
+        "sha256": "3eeb2b2884de0a679ec0eea8dc4e8f678261b033ee334bb50ee3dc6d7992acb7",
+        "altText": "Darth Algo Scalper alert-maintenance carousel cover with a large exact owned TradingView product capture and the headline Changed the Inputs? Rebuild the Alert.",
+        "mimeType": "image/jpeg"
+      },
+      {
+        "path": "/social-campaigns/2026-10-06/2026-10-06-morning-input-alert-slide-2-090d79338978.jpg",
+        "sha256": "090d79338978087d550e7855dbb50187480c6de6fea5a91a4e9e81a4654e02c5",
+        "altText": "Darth Algo alert-maintenance step showing the exact owned Scalper product view and a three-part change, remove and recreate sequence.",
+        "mimeType": "image/jpeg"
+      },
+      {
+        "path": "/social-campaigns/2026-10-06/2026-10-06-morning-input-alert-slide-3-d26c06b9985c.jpg",
+        "sha256": "d26c06b9985c2ae306bf0ecf02881cca5886024ec1830bc970929eb841b73d30",
+        "altText": "Darth Algo carousel close listing remove the old alert, create it again, and confirm condition plus interval, with a Save the Alert Check CTA.",
+        "mimeType": "image/jpeg"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "educational",
+      "typographyVersion": "condensed-italic-2026-10-02-v2",
+      "sources": [
+        "https://www.tradingview.com/support/solutions/43000595315-how-to-set-up-alerts/",
+        "https://www.darthalgo.com/products/scalper",
+        "https://www.darthalgo.com/indicators/scalper-overview.png",
+        "library:DA_Content_Research_Latest.md#version-13"
+      ],
+      "learning": "Audience question: why is an alert still using old settings after an indicator input changes? Verified product benefit: Scalper includes real-time TradingView alerts alongside trend context, signals, risk planning and dashboard guidance. CTA and destination: Save this alert check → /products/scalper. Owned capture: Scalper overview. Freshness: first retained input-change alert-maintenance lesson; a low-angle monitor, front-facing diagnostic panel and sculptural verification close vary device, focal feature, headline, scene, callouts and carousel story from all retained campaigns. Experiment: source observation=workflow-specific visual sequences show a directional engagement signal on Threads but coverage is incomplete and non-causal; single variable=three-step alert-maintenance carousel; primary metric=(saves+shares)/reach on Instagram after 7 full days; guardrail=no fake alert UI, result claim or altered candle evidence; sample=minimum 25 Instagram reach with save/share coverage, otherwise insufficient; continue only if the primary rate is observable without correction comments. Different-day comparisons remain observational, not randomized proof."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "1eaeb0c48aee357edd6fd7c2ead4dcbea2be6803b1ba7e673899e846e0b5e643",
+      "reviewer": "Codex: built-in imagegen backplates plus exact owned-product/logo compositing; full-size and 270px phone-scale QA against approved October 1 type reference, current type gate, recent retained art, source copy, destination and experiment card",
+      "reviewedAt": "2026-10-06T13:19:38Z"
+    }
+  },
+  {
+    "id": "2026-10-06-afternoon-swing-timeframe-alert-check",
+    "day": "2026-10-06",
+    "slot": "afternoon",
+    "theme": "Swing alert interval check after a chart timeframe change",
+    "text": "Changed chart timeframe? TradingView indicator alerts use the interval they were created on. Recreate the Swing alert on the interval you intend to monitor, then verify the condition. Save this setup check.\nhttps://www.darthalgo.com/products/swing #TradingView",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-10-06/2026-10-06-afternoon-timeframe-alert-8e1e0ab3522c.jpg",
+        "sha256": "8e1e0ab3522c6b1dcc88361d181e98d49b824092df304cdb818b2ce67b439d7a",
+        "altText": "Darth Algo Swing alert-interval lesson with an exact owned trend-cloud product capture in a red-lit phone and a three-step verification rail.",
+        "mimeType": "image/jpeg"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "educational",
+      "typographyVersion": "condensed-italic-2026-10-02-v2",
+      "sources": [
+        "https://www.tradingview.com/support/solutions/43000595315-how-to-set-up-alerts/",
+        "https://www.darthalgo.com/products/swing",
+        "https://www.darthalgo.com/indicators/swing-trend-cloud.png",
+        "library:DA_Content_Research_Latest.md#version-13"
+      ],
+      "learning": "Audience question: does changing a chart timeframe update an existing indicator alert? Verified product benefit: Swing includes real-time TradingView alerts with broader trend confirmation, selective signals, risk planning and trade-status feedback. CTA and destination: Save this setup check → /products/swing. Owned capture: Swing trend cloud. Freshness: first retained alert-interval lesson; a tall phone-left product view, vertical numbered selector rail, interval-focused hook and static single-frame hierarchy differ from the morning carousel and all retained art in device, framing, focal feature, headline, callouts and scene. Experiment: source observation=specific workflow framing is a supported test direction, while current save/share and downstream attribution coverage is incomplete; single variable=timeframe-change question as the lead hook; primary metric=(saves+shares)/reach on Instagram after 7 full days; guardrail=no claim that alerts update automatically and no result implication; sample=minimum 25 Instagram reach with save/share coverage, otherwise insufficient; continue only if the primary rate is observable and no interval-confusion corrections appear. Different-day comparisons remain observational, not randomized proof."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "19767aa32463410c20896678183b1c34becb9fe5a2f1a0560b2265ec4448582a",
+      "reviewer": "Codex: built-in imagegen backplate plus exact owned-product/logo compositing; full-size and 270px phone-scale QA against approved October 1 type reference, current type gate, recent retained art, source copy, destination and experiment card",
+      "reviewedAt": "2026-10-06T13:19:38Z"
+    }
   }
 ];
