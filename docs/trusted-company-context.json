@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "context_version": "2026-10-03.1",
+  "context_version": "2026-10-07-creative-quality-v1",
   "owner_timezone": "America/New_York",
   "records": [
     {
@@ -26,10 +26,10 @@
     },
     {
       "key": "content.visual_direction",
-      "value": "Required actual photo references: cinematic-owner-references-2026-09-22-v1; metallic silver/red type, faceted black scenes, red rim lighting, oversized angled devices, full-color logo and clear CTA. Applies across authorized social graphics. Reject navy/gold and black/red v4; hold missing matching media.",
+      "value": "DA-CREATIVE-20261007-v1 supersedes the old mandatory red-room/device formula. Preserve black/red Darth Algo identity, full-color logo and bold condensed italic silver/red type; make the promised real TradingView feature readable at phone size with seamless integration, intentional hierarchy, controlled effects and distinct daily compositions. Follow the six final visual checks in brand-rules.md. Existing exact-asset gates remain; visual quality is manually reviewed, not inferred from a marker.",
       "kind": "founder_decision",
-      "source": "public/creative-references/cinematic-2026-09-22/manifest.json",
-      "verified_at": "2026-09-22T00:00:00Z"
+      "source": "content-system/brand-rules.md#creative-quality-correction--october-7-2026",
+      "verified_at": "2026-10-07T20:20:29Z"
     },
     {
       "key": "content.platform_scope",
@@ -112,6 +112,13 @@
       "kind": "founder_decision",
       "source": "Owner correction October 2, 2026; content-system/brand-rules.md#mandatory-typography-and-copy",
       "verified_at": "2026-10-02T16:21:15.163Z"
+    },
+    {
+      "key": "content.creative_quality",
+      "value": "## Creative quality correction — October 7, 2026\n\n[DA-CREATIVE-20261007-v1]\nLatest founder feedback: the two October 7 posts look good but need a substantial improvement in finish and originality. The visible AI-content label raises the founder's quality expectations. This is a design decision, not evidence of engagement or conversion. Today's “Read the Dashboard First” and “Know the Levels Before You Decide” posts are examples to improve, not new visual masters.\n\nThis section takes precedence over older scene/composition prescriptions. Keep the recognizable black/red Darth Algo identity, original full-color logo and October 1/2 approved bold condensed italic silver/red type. A fixed red sci-fi room, faceted/crystal scenery, oversized angled monitor, reflective floor, heavy bevel/glow, stacked boxes and bottom CTA pill are NOT mandatory. Do not reproduce that combination as the default. Keep metallic treatment controlled and supporting type clean and readable. Do not revert to the rejected sparse generic card renderer.\n\n### Design from the product detail\n- Choose one viewer question and one real indicator feature before designing the scene. The feature promised by the headline must be the largest useful detail, legible without pinch-zoom at approximately 390-pixel display width.\n- Dashboard concept: use a large, exact owned dashboard crop with enough chart context to explain what it belongs to; connect at most two short explanatory notes to the relevant rows. A headline about the dashboard with a tiny dashboard fails.\n- Levels concept: use a large, exact owned setup showing entry, stop and targets together with the needed price/time context. Avoid redundant floating ENTRY / STOP / TARGETS boxes that repeat unreadable labels. Preserve losing/context candles and never turn a selected chart setup into an executed-profit claim.\n- Integrate captures naturally. A device screen must share its bezel's perspective, aspect ratio and boundaries; no floating screenshot laid over a differently angled display, stretched candles, clipped labels, white sticker outline or decoration crossing evidence. If legibility would suffer, use a direct chart composition or a dedicated detail slide. Keep authentic chart/dashboard values unchanged.\n- Give the headline, product and CTA a clear reading order. Use one concise hook and one relevant CTA; remove filler panels. Build visual interest through scale, intentional typography, composition and restrained light/material detail. More glow or 3D decoration alone is not an improvement.\n- Rotate relevant owned product captures. Record source identity/hash and last use. Avoid using the same capture in consecutive campaigns when another suitable verified capture exists; never fabricate a replacement. Trade-result evidence remains subject to the stricter no-reuse rule.\n- Both daily posts must differ in concept and composition. Vary at least three substantive choices and compare the actual final images with the last six campaigns. A new headline/crop/recolor on the same stage fails. Carousels should progress from hook to readable demonstration to takeaway, with distinct slide compositions.\n\n### Required final visual review\nInspect final encoded bytes at full resolution and at approximately 390-pixel feed width, beside the source capture and recent posts. Record PASS / REVISE with a specific observation for each: (1) one clear focal point and hierarchy; (2) promised feature readable; (3) accurate, seamlessly integrated capture; (4) intentional type, spacing and no clipping; (5) materially fresh composition; (6) verified copy, logo and CTA. All six must pass before queueing; an aggregate score cannot excuse an unreadable or inaccurate product.\n\nRecord the exact asset hashes, policy marker, owned source/hash, substantive differences and any revision in the existing creative review. Use the existing editorial.learning field to reference this review; do not invent a new schema field or treat a version marker as automated visual inspection. Recompute the existing digest only after actual final-image review. Revision attempts stay within the established bounded workflow. Hold the affected asset if it still fails; report the precise issue.\n\nReview eligible unattempted future entries under the existing two-campaign cap. Preserve attempted/published work and receipts. Keep the existing 9 AM/3 PM Eastern slots, day alternation, carousel cadence, publisher ownership, disclosure behavior, exact-version gates and zero incremental spend. This correction changes creative instructions; only a later inspected artifact and provider receipt establish improved delivered work.\n",
+      "kind": "founder_decision",
+      "source": "Owner feedback and two attached October 7 posts; content-system/brand-rules.md",
+      "verified_at": "2026-10-07T20:20:29Z"
     }
   ],
   "rules": {

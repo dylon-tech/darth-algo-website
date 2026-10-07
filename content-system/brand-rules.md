@@ -1,9 +1,32 @@
 # Darth Algo Brand Rules
 
+## Creative quality correction — October 7, 2026
+
+[DA-CREATIVE-20261007-v1]
+Latest founder feedback: the two October 7 posts look good but need a substantial improvement in finish and originality. The visible AI-content label raises the founder's quality expectations. This is a design decision, not evidence of engagement or conversion. Today's “Read the Dashboard First” and “Know the Levels Before You Decide” posts are examples to improve, not new visual masters.
+
+This section takes precedence over older scene/composition prescriptions. Keep the recognizable black/red Darth Algo identity, original full-color logo and October 1/2 approved bold condensed italic silver/red type. A fixed red sci-fi room, faceted/crystal scenery, oversized angled monitor, reflective floor, heavy bevel/glow, stacked boxes and bottom CTA pill are NOT mandatory. Do not reproduce that combination as the default. Keep metallic treatment controlled and supporting type clean and readable. Do not revert to the rejected sparse generic card renderer.
+
+### Design from the product detail
+- Choose one viewer question and one real indicator feature before designing the scene. The feature promised by the headline must be the largest useful detail, legible without pinch-zoom at approximately 390-pixel display width.
+- Dashboard concept: use a large, exact owned dashboard crop with enough chart context to explain what it belongs to; connect at most two short explanatory notes to the relevant rows. A headline about the dashboard with a tiny dashboard fails.
+- Levels concept: use a large, exact owned setup showing entry, stop and targets together with the needed price/time context. Avoid redundant floating ENTRY / STOP / TARGETS boxes that repeat unreadable labels. Preserve losing/context candles and never turn a selected chart setup into an executed-profit claim.
+- Integrate captures naturally. A device screen must share its bezel's perspective, aspect ratio and boundaries; no floating screenshot laid over a differently angled display, stretched candles, clipped labels, white sticker outline or decoration crossing evidence. If legibility would suffer, use a direct chart composition or a dedicated detail slide. Keep authentic chart/dashboard values unchanged.
+- Give the headline, product and CTA a clear reading order. Use one concise hook and one relevant CTA; remove filler panels. Build visual interest through scale, intentional typography, composition and restrained light/material detail. More glow or 3D decoration alone is not an improvement.
+- Rotate relevant owned product captures. Record source identity/hash and last use. Avoid using the same capture in consecutive campaigns when another suitable verified capture exists; never fabricate a replacement. Trade-result evidence remains subject to the stricter no-reuse rule.
+- Both daily posts must differ in concept and composition. Vary at least three substantive choices and compare the actual final images with the last six campaigns. A new headline/crop/recolor on the same stage fails. Carousels should progress from hook to readable demonstration to takeaway, with distinct slide compositions.
+
+### Required final visual review
+Inspect final encoded bytes at full resolution and at approximately 390-pixel feed width, beside the source capture and recent posts. Record PASS / REVISE with a specific observation for each: (1) one clear focal point and hierarchy; (2) promised feature readable; (3) accurate, seamlessly integrated capture; (4) intentional type, spacing and no clipping; (5) materially fresh composition; (6) verified copy, logo and CTA. All six must pass before queueing; an aggregate score cannot excuse an unreadable or inaccurate product.
+
+Record the exact asset hashes, policy marker, owned source/hash, substantive differences and any revision in the existing creative review. Use the existing editorial.learning field to reference this review; do not invent a new schema field or treat a version marker as automated visual inspection. Recompute the existing digest only after actual final-image review. Revision attempts stay within the established bounded workflow. Hold the affected asset if it still fails; report the precise issue.
+
+Review eligible unattempted future entries under the existing two-campaign cap. Preserve attempted/published work and receipts. Keep the existing 9 AM/3 PM Eastern slots, day alternation, carousel cadence, publisher ownership, disclosure behavior, exact-version gates and zero incremental spend. This correction changes creative instructions; only a later inspected artifact and provider receipt establish improved delivered work.
+
 ## Mandatory typography and copy — October 2, 2026
 
 [DA-TYPE-20261002-v2]
-The founder rejected the October 2 morning “The Signal Is Step Two” lettering and reaffirms the October 1 “From Checkout to Chart” example. This rule supersedes ALL older typography descriptions and applies to every future graphic, including existing unattempted queued work. Keep the established cinematic black/red indicator-focused design and schedule.
+The founder rejected the October 2 morning “The Signal Is Step Two” lettering and reaffirms the October 1 “From Checkout to Chart” example. Within the October 7 composition/finish requirements, this rule supersedes older typography descriptions and applies to every future graphic, including existing unattempted queued work. Keep the established cinematic black/red indicator-focused design and schedule.
 
 Use **extra-heavy condensed forward-italic metallic-silver/red display headlines**, tight tracking, clear hierarchy, and the same bold treatment on CTAs. Use stronger natural hooks and short, specific benefit-led copy. Reject plain upright/widely spaced lettering, thin outlined type, merely slanting a regular-weight font, weak generic copy, text clipping and text over important chart details. Supporting copy must be readable at phone size. The approved reference is the actual typography crop at `/creative-references/typography-2026-10-01/approved-type-548702605ab5.png`; SHA-256 `548702605ab55b18f8caddd53d39a6eb99c94d2c8c4ebf90358b47350ede11ac`. It contains only the founder-approved lettering; no generated chart is product evidence.
 
@@ -49,7 +72,7 @@ The owner requires all future agent-created social posts on Instagram, X, Thread
 - Levels: SEE THE LEVELS. PLAN THE TRADE.
 - Community: JOIN THE DARTH ALGO COMMUNITY.
 
-Use the image files as visual inputs, not just their titles. Match metallic silver/red typography, faceted black/glass backgrounds, red rim lighting, oversized angled realistic devices, compact glowing feature panels, varied compositions, the actual full-color logo and clear CTA. Adapt subject matter and platform framing while retaining this direction. Inspect every final image beside the references and record the reference version plus final asset SHA-256 hashes. Style approval is not approval of unseen output.
+Use the image files as visual inputs, not just their titles. Use these references for recognizable typography, brand identity and quality of finish; follow DA-CREATIVE-20261007-v1 for current product framing, composition, restraint and final visual review. Devices, faceted scenery and glowing panels are optional, not a required formula. Adapt subject matter and platform framing while retaining this direction. Inspect every final image beside the references and record the reference version plus final asset SHA-256 hashes. Style approval is not approval of unseen output.
 
 Reject the old navy/gold layout AND its black/red v4 reskin. A headline, paragraph and flat rectangular screenshot stack does not qualify. Hold a campaign if matching images are unavailable; no old-template or text-only promotional fallback. A text-only destination can carry matching campaign copy only where already authorized and supported; do not claim its post contains these visuals. This does not authorize new channels, paid services, agent-created video, or unscheduled extra posts.
 
@@ -176,7 +199,9 @@ Do not append a routine risk disclaimer to social posts. Website and checkout di
 - Join the Darth Algo Community
 - Explore Darth Algo
 
-### Exact visual master and rejected approximation — September 22, 2026
+### Historical visual master and rejected approximation — September 22, 2026
+
+Historical record: the October 7 correction governs current scene and composition choices.
 
 Canonical visual reference: **Darth Algo Trading Carousel Template.png**, saved September 21, Library ID `libfile_1491c511dbfc81919041da4e3e062d28`. Inspect that actual image before making a new template. Supporting full-color-logo promotional reference: **Darth Algo Trading Signals Poster(1).png**, `libfile_d9091a7d3d6c8191b9b4c02d747b67cc`.
 
@@ -186,7 +211,9 @@ Match the actual art direction: beveled metallic silver/red headlines; faceted c
 
 Production fresh social sends are held because v4 was rejected. Existing receipts remain available for reconciliation. A newly generated corrected cover is a visual draft; it is not proof that a complete replacement carousel or daily creative engine is installed. Resume only once a complete matching production artifact and its quality checks are in place.
 
-### Owner confirmation — September 22, 2026
+### Historical owner confirmation — September 22, 2026
+
+Historical record: mandatory scene/device language below is superseded by the October 7 correction.
 
 The owner approved the corrected cinematic cover with “yess more post like this.” This confirms the actual image-based September 21 master direction, not the rejected code-rendered v4 layout. Three companion assets were then created: Pro (Two Modes. One Pro.), Trade Levels (See the Levels. Plan the Trade.), and Community (Join the Darth Algo Community.). Keep metallic silver/red typography, faceted black scenery, oversized angled realistic devices, red rim lighting, actual full-color logo, visible TradingView context, varied compositions and clear CTA as mandatory visual criteria. These are created creative assets, not provider-confirmed publications. Screens marked illustrative/community preview must not be described as real performance or customer activity. Preserve the v4 rejection; do not remove the publishing hold merely because a style was approved without connecting the matching final assets.
 
