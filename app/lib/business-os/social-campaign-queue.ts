@@ -1,4 +1,3 @@
-import type {ReviewedCreative} from './reviewed-social';
 export const socialCampaignQueue:ReviewedCreative[] = [
   {
     "id": "2026-09-23-morning-cover",
@@ -888,6 +887,72 @@ export const socialCampaignQueue:ReviewedCreative[] = [
       "sha256": "19767aa32463410c20896678183b1c34becb9fe5a2f1a0560b2265ec4448582a",
       "reviewer": "Codex: built-in imagegen backplate plus exact owned-product/logo compositing; full-size and 270px phone-scale QA against approved October 1 type reference, current type gate, recent retained art, source copy, destination and experiment card",
       "reviewedAt": "2026-10-06T13:19:38Z"
+    }
+  },
+  {
+    "id": "2026-10-07-morning-scalper-dashboard-first",
+    "day": "2026-10-07",
+    "slot": "morning",
+    "theme": "Scalper dashboard-first decision layer",
+    "text": "Before the next move, what is the chart actually saying? Darth Algo Scalper keeps market direction, setup guidance, the latest signal and the active plan together on TradingView. See the real workflow.\nhttps://www.darthalgo.com/products/scalper #DarthAlgo",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-10-07/read-dashboard-first-5ddf26e64c7c.jpg",
+        "sha256": "5ddf26e64c7c260ab29f0985afb6a3dbe9ff6a2e2cdc42d342c80b12dd327b60",
+        "altText": "Clean cinematic Darth Algo Scalper promotion titled Read the Dashboard First, with the exact owned TradingView chart filling the frame and a readable live market guidance dashboard detail.",
+        "mimeType": "image/jpeg"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "promotional",
+      "typographyVersion": "condensed-italic-2026-10-02-v2",
+      "sources": [
+        "https://www.darthalgo.com/products/scalper",
+        "https://www.darthalgo.com/indicators/scalper-overview.png",
+        "https://www.darthalgo.com/indicators/scalper-dashboard.png",
+        "https://www.threads.com/@darth.algo/post/Dd9nJyDnegE"
+      ],
+      "learning": "Audience question: what should I check before acting on the next Scalper marker? Verified benefit: the live guidance dashboard keeps market direction, setup guidance, the latest signal and active plan beside the chart. Exact destination and CTA: See the real workflow → /products/scalper. Owned captures: scalper-overview and scalper-dashboard. Freshness: restrained matte studio, near-full-width exact chart and integrated readable dashboard replace the recent crystal-room carousel and plain phone composition; framing, focal feature, hierarchy, scene and CTA treatment all change. Experiment card: source observation=specific workflow proof is the strongest current directional lesson but qualified clicks are unavailable; single variable=enlarged exact dashboard proof; primary metric=qualified product visits per delivered social post, with positive-value completed checkouts reviewed separately; guardrail=no result claim or altered chart; review window=7 full days for visits and 30 days for revenue; sample=at least 25 Instagram reach with usable attribution, otherwise insufficient data; continue only if qualified visits appear without support confusion. Different-day comparison is observational, not randomized proof."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "e5ad3c0ca48a2b54ba9b767b524e1b22c7af38104ceca92c448b13fd4990da68",
+      "reviewer": "Codex: built-in imagegen clean studio backplate plus exact owned-product/logo compositing; full-size and 270px phone-scale QA against approved October 1 typography, founder feedback examples, recent retained art, source copy, destination and experiment card",
+      "reviewedAt": "2026-10-07T12:24:00Z"
+    }
+  },
+  {
+    "id": "2026-10-07-afternoon-scalper-visible-risk-plan",
+    "day": "2026-10-07",
+    "slot": "afternoon",
+    "theme": "Scalper entry-stop-target risk plan before a decision",
+    "text": "Can you see the whole plan before deciding? Darth Algo Scalper maps entry, stop, Target 1 and Target 2 on the chart so risk stays visible with the setup. See the Scalper plan.\nhttps://www.darthalgo.com/products/scalper #DarthAlgo",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-10-07/know-the-levels-c742d5bfdfff.jpg",
+        "sha256": "c742d5bfdfffefcd6892281db018b3ac37ad93fda17e0c3acd3c0b86ea3fe0a4",
+        "altText": "Clean cinematic Darth Algo Scalper promotion titled Know the Levels Before You Decide, with the exact owned entry, stop, Target 1 and Target 2 risk-plan capture as the large hero and a three-part level rail.",
+        "mimeType": "image/jpeg"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "promotional",
+      "typographyVersion": "condensed-italic-2026-10-02-v2",
+      "sources": [
+        "https://www.darthalgo.com/products/scalper",
+        "https://www.darthalgo.com/indicators/scalper-risk-plan.png",
+        "https://www.threads.com/@darth.algo/post/Dd_i-PhFKmp",
+        "https://www.luxalgo.com/library/indicator/short-term-order-block-rejections/"
+      ],
+      "learning": "Audience objection: does the indicator show the full risk plan before I decide whether a setup fits? Verified benefit: Scalper displays entry, stop, Target 1 and Target 2 planning directly on the chart. Exact destination and CTA: See the Scalper plan → /products/scalper. Owned capture: scalper-risk-plan. Freshness: macro risk-map close-up, diagonal brushed-metal scene and right-edge entry/stop/targets rail differ from the morning dashboard overview and all retained recent art in product crop, focal feature, geometry, callouts and headline. Experiment card: source observation=narrow product/workflow explanations are a supported pattern but no competitor or owned conversion winner is established; single variable=macro exact risk-plan view; primary metric=qualified product visits per delivered social post, with positive-value completed checkouts reviewed separately; guardrail=do not present target labels as executed outcomes; review window=7 full days for visits and 30 days for revenue; sample=at least 25 Instagram reach with usable attribution, otherwise insufficient data; continue only if qualified visits appear without result-confusion comments. Different-day comparison is observational, not randomized proof."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "d49404f5dcf14e373ebce5c474892828102d6388c6a6e52b5d2cae17c4ed83f5",
+      "reviewer": "Codex: built-in imagegen clean studio backplate plus exact owned-product/logo compositing; full-size and 270px phone-scale QA against approved October 1 typography, founder feedback examples, recent retained art, source copy, destination and experiment card",
+      "reviewedAt": "2026-10-07T12:24:00Z"
     }
   }
 ];
