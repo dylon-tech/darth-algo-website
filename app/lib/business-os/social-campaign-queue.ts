@@ -1,3 +1,4 @@
+import type {ReviewedCreative} from './reviewed-social';
 export const socialCampaignQueue:ReviewedCreative[] = [
   {
     "id": "2026-09-23-morning-cover",
