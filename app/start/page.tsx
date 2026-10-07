@@ -4,6 +4,7 @@ import SiteHeader from "../components/site-header";
 import SiteFooter from "../components/site-footer";
 import { normalizeCampaign, normalizeGrowthSource } from "../lib/growth-db";
 import ChartWalkthrough from "./chart-walkthrough";
+import FeatureExplorer from "./feature-explorer";
 
 export const metadata: Metadata = {
   title: "Read Your Chart: Free Darth Algo Walkthrough",
@@ -24,12 +25,13 @@ export default async function StartPage({ searchParams }: { searchParams: Promis
   return (
     <div className="min-h-screen bg-[#0d1117] text-white">
       <SiteHeader />
-      <main id="main-content" className="section-shell py-10 sm:py-16">
-        <div className="mb-9 max-w-3xl">
+      <main id="main-content" className="section-shell py-7 sm:py-10">
+        <div className="mb-6 max-w-3xl">
           <p className="text-sm font-bold uppercase tracking-widest text-blue-300">Free chart walkthrough · No signup needed</p>
-          <h1 className="mt-4 text-balance text-4xl font-black leading-tight sm:text-6xl">Understand your chart before your next session.</h1>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-zinc-300">Start with three questions: What is the context? Where is the idea invalid? What are the possible targets?</p>
+          <h1 className="mt-3 text-balance text-3xl font-black leading-tight sm:text-4xl">Explore what your chart is telling you.</h1>
+          <p className="mt-3 max-w-2xl text-base leading-7 text-zinc-300">Tap a feature to find it on a real Darth Algo chart. Zoom in for a closer look, then test your understanding.</p>
         </div>
+        <FeatureExplorer />
         <ChartWalkthrough />
         <section aria-labelledby="checklist-title" className="mt-12 grid gap-8 border-y border-white/10 py-10 lg:grid-cols-2">
           <div><p className="text-sm font-bold uppercase tracking-wider text-blue-300">Keep this checklist</p><h2 id="checklist-title" className="mt-3 text-3xl font-bold">Before you consider a setup.</h2><p className="mt-4 text-base leading-7 text-zinc-400">Use this process on another chart. Clear levels help organize a decision; they do not remove trading risk.</p></div>
