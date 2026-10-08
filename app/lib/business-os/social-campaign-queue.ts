@@ -955,5 +955,78 @@ export const socialCampaignQueue:ReviewedCreative[] = [
       "reviewer": "Codex: built-in imagegen clean studio backplate plus exact owned-product/logo compositing; full-size and 270px phone-scale QA against approved October 1 typography, founder feedback examples, recent retained art, source copy, destination and experiment card",
       "reviewedAt": "2026-10-07T12:24:00Z"
     }
+  },
+  {
+    "id": "2026-10-08-morning-swing-guidance-filter",
+    "day": "2026-10-08",
+    "slot": "morning",
+    "theme": "Swing dashboard guidance as a directional filter",
+    "text": "Does dashboard guidance mean take the trade? No—it narrows the active direction. Evaluate the latest marker with the trend layer, then decide whether the setup fits your process. Save and share this two-part check.\nhttps://www.darthalgo.com/products/swing #TradingView",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-10-08/guidance-filter-01-0ae2ec372cd2.jpg",
+        "sha256": "0ae2ec372cd2850f59cbcd75dbb8b18c2997b32c13daebab00557c4855b4b7dd",
+        "altText": "Darth Algo Swing education cover titled Guidance Is a Filter, Not a Command, with the exact owned dashboard as the hero beside an unobstructed exact chart context panel.",
+        "mimeType": "image/jpeg"
+      },
+      {
+        "path": "/social-campaigns/2026-10-08/guidance-filter-02-bf1fd4f4822e.jpg",
+        "sha256": "bf1fd4f4822e395e0319e824e87acba720ad8a834a18463b096883de39db2bce",
+        "altText": "Darth Algo Swing education slide titled Filter, Then Evaluate, with the exact owned chart above a two-part guidance and signal-context check.",
+        "mimeType": "image/jpeg"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "educational",
+      "typographyVersion": "condensed-italic-2026-10-02-v2",
+      "sources": [
+        "https://www.darthalgo.com/products/swing",
+        "https://www.darthalgo.com/indicators/swing-overview.png",
+        "https://www.darthalgo.com/indicators/swing-dashboard.png",
+        "https://www.luxalgo.com/library/",
+        "library:DA_Content_Research_Latest.md#version-13"
+      ],
+      "learning": "Policy review: DA-CREATIVE-20261007-v1. Audience question: does dashboard guidance mean take the trade? Verified benefit: Swing keeps broader trend, guidance, the latest signal and plan state together so guidance can narrow direction before the marker is evaluated in context. Exact destination and CTA: Save and share this two-part check → /products/swing. Owned captures: swing-dashboard SHA 5e6f824a… (last retained use October 5) and swing-overview SHA 40b2b864… (last retained use October 5). Freshness: first guidance-as-filter lesson; unobstructed dashboard hero, separate chart evidence, flat editorial grid and two-frame filter/evaluate sequence replace the recent device, room, overlap and single-frame treatments. Experiment card: source observation=specific product workflow education is a defensible directional test but no winner is established; single variable=misconception-led guidance hook; primary metric=(saves+shares)/organic reach; guardrail=no automatic-decision or result implication; fixed review window=7 full days; sample=minimum 25 Instagram reach with usable save/share coverage, otherwise insufficient; continue only if the rate is observable without dashboard-confusion comments. Different-day comparisons remain observational."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "7cb7c3d82b79056a6e2e298e910b2c53f229702c94959dbeb1d32437e38f9b44",
+      "reviewer": "Codex: built-in imagegen restrained backplates plus exact owned-product/logo compositing; DA-CREATIVE-20261007-v1 six-point visual review at full size and approximately 390px feed width against the approved October 1 type image, current typography gate, last six campaigns, verified source copy, destination and experiment card",
+      "reviewedAt": "2026-10-08T12:24:43Z"
+    }
+  },
+  {
+    "id": "2026-10-08-afternoon-scalper-signal-context",
+    "day": "2026-10-08",
+    "slot": "afternoon",
+    "theme": "Scalper signal marker read with the active trend layer",
+    "text": "A buy or sell marker is a setup cue—not an automatic decision. Read it with the active trend layer, then apply your own entry and risk rules. Save this signal-context check.\nhttps://www.darthalgo.com/products/scalper #TradingView",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-10-08/signal-prompt-dc9736a450cb.jpg",
+        "sha256": "dc9736a450cb6d5ae77f02752d21375efbc7462088cb3a32cd7197e79b39984e",
+        "altText": "Darth Algo Scalper education titled A Signal Is a Prompt, Not a Promise, with an exact owned panoramic chart showing buy and sell markers together with the active green and red trend layers.",
+        "mimeType": "image/jpeg"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "educational",
+      "typographyVersion": "condensed-italic-2026-10-02-v2",
+      "sources": [
+        "https://www.darthalgo.com/products/scalper",
+        "https://www.darthalgo.com/indicators/signal-context-alt.png",
+        "https://algoalpha.io/",
+        "library:DA_Content_Research_Latest.md#version-13"
+      ],
+      "learning": "Policy review: DA-CREATIVE-20261007-v1. Audience question: does a buy or sell marker automatically mean enter? Verified benefit: Scalper presents signal markers with the active trend layer on TradingView so the cue can be read in directional context before the trader applies entry and risk rules. Exact destination and CTA: Save this signal-context check → /products/scalper. Owned capture: signal-context-alt SHA 492df5b3…; no retained queue source reference before this batch. Freshness: first signal-as-prompt lesson; vertical context rail, flat editorial field, panoramic exact capture and two-column marker/trend explanation replace recent angled devices, dashboard insets, sci-fi rooms and CTA pills. Experiment card: source observation=concrete cue/context education is a supported test direction while qualified-click coverage is unavailable; single variable=prompt-versus-promise framing; primary metric=(saves+shares)/organic reach; guardrail=no automatic-entry, performance or fabricated-output claim; fixed review window=7 full days; sample=minimum 25 Instagram reach with usable save/share coverage, otherwise insufficient; continue only if the rate is observable without signal-automation confusion. Different-day comparisons remain observational."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "e30249577d2fe5a77b071e23db5b6d2342e9d485928679ca4903d4ae39ea1bc3",
+      "reviewer": "Codex: built-in imagegen restrained backplate plus exact owned-product/logo compositing; DA-CREATIVE-20261007-v1 six-point visual review at full size and approximately 390px feed width against the approved October 1 type image, current typography gate, last six campaigns, verified source copy, destination and experiment card",
+      "reviewedAt": "2026-10-08T12:24:43Z"
+    }
   }
 ];
