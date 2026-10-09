@@ -1028,5 +1028,73 @@ export const socialCampaignQueue:ReviewedCreative[] = [
       "reviewer": "Codex: built-in imagegen restrained backplate plus exact owned-product/logo compositing; DA-CREATIVE-20261007-v1 six-point visual review at full size and approximately 390px feed width against the approved October 1 type image, current typography gate, last six campaigns, verified source copy, destination and experiment card",
       "reviewedAt": "2026-10-08T12:24:43Z"
     }
+  },
+  {
+    "id": "2026-10-09-morning-swing-selective-fit",
+    "day": "2026-10-09",
+    "slot": "morning",
+    "theme": "Swing buyer fit for a steadier signal pace",
+    "text": "Not every trader wants more signals. Darth Algo Swing is built for more selective setups, broader trend confirmation and plan-status feedback on TradingView. Start the 2-day free trial with your exact username.\nhttps://www.darthalgo.com/products/swing #DarthAlgo",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-10-09/swing-selective-fit-8ab356fdcaa1.jpg",
+        "sha256": "8ab356fdcaa1d595a993b49ecf96a6ef1676e0c1da0828577b33301813743d6c",
+        "altText": "Darth Algo Swing promotion titled Not Every Trader Wants More Signals, with the exact owned TradingView trend-cloud view as the hero and a two-day free trial CTA.",
+        "mimeType": "image/jpeg"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "promotional",
+      "typographyVersion": "condensed-italic-2026-10-02-v2",
+      "sources": [
+        "https://www.darthalgo.com/products/swing",
+        "https://www.darthalgo.com/indicators/swing-trend-cloud.png",
+        "https://www.luxalgo.com/library/",
+        "library:DA_Content_Research_Latest.md#version-13",
+        "docs/social-creative-reviews/2026-10-09-promotion.md"
+      ],
+      "learning": "Policy reviews: DA-CREATIVE-20261007-v1 and DA-REVENUE-RECOVERY-20261008-v1. Prospective-buyer question: is Swing for someone who wants a steadier pace rather than more frequent intraday cues? Intended buyer: broader-move Swing trader. Verified benefit: Swing is $14.99/month after a 2-day free trial, with selective signals, broader trend confirmation and plan-status feedback; automatic TradingView access follows checkout with the exact username. Exact destination and CTA: Start the 2-Day Free Trial → /products/swing. Owned capture: swing-trend-cloud SHA 6804c35b…; last retained use October 6 afternoon. Freshness: buyer-fit objection, restrained horizon, full-width exact trend-cloud hero, feature cadence and trial close differ substantively from the last six campaigns and are not a dashboard, levels, signal-context or alert retitle. Tap path: X/Threads direct caption URL; Instagram verified profile /links selection path, not a measured caption tap. Experiment: source observation=specific product proof is the defensible direction while samples and attribution remain sparse; single variable=pace-fit objection as the lead hook; primary metric=independently attributable Swing product visits per delivered platform post, with reach reported separately; guardrail=no result implication or claim that fewer signals are better; fixed review window=7 full days after provider receipt; sample=at least 5 independently attributable visits, otherwise insufficient data; continue only if visits appear without fit or trial-term confusion. Provider publication remains unconfirmed until the production app stores receipts. First 10 independently attributable new paid customers across eligible acquisition experiments is a learning milestone, not promised delivery."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "038927931c985c727841094f79b5642888ca165da894b2fe5aa5996fb99bb5d0",
+      "reviewer": "Codex: built-in imagegen restrained backplate plus exact owned-product/logo compositing; DA-CREATIVE-20261007-v1 six-point visual review at full size and approximately 390px feed width, plus DA-REVENUE-RECOVERY-20261008-v1 destination and acquisition-experiment review",
+      "reviewedAt": "2026-10-09T12:48:09Z"
+    }
+  },
+  {
+    "id": "2026-10-09-afternoon-scalper-tradingview-fit",
+    "day": "2026-10-09",
+    "slot": "afternoon",
+    "theme": "Scalper decision layers on the trader’s existing TradingView chart",
+    "text": "Already use TradingView? Darth Algo Scalper adds trend context, signal markers, real-time alerts and a visible risk plan directly to your chart. Automatic access follows checkout with your exact username.\nhttps://www.darthalgo.com/products/scalper #DarthAlgo",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-10-09/scalper-tradingview-fit-705a7bd201e2.jpg",
+        "sha256": "705a7bd201e2032da026fdcd3df460d5a03bc00af2e142b595d41bc45d066764",
+        "altText": "Darth Algo Scalper promotion titled Already Use TradingView, with the exact owned TradingView workspace showing context, signal markers and a visible risk plan.",
+        "mimeType": "image/jpeg"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "promotional",
+      "typographyVersion": "condensed-italic-2026-10-02-v2",
+      "sources": [
+        "https://www.darthalgo.com/products/scalper",
+        "https://www.darthalgo.com/indicators/scalper-overview.png",
+        "https://algoalpha.io/",
+        "library:DA_Content_Research_Latest.md#version-13",
+        "docs/social-creative-reviews/2026-10-09-promotion.md"
+      ],
+      "learning": "Policy reviews: DA-CREATIVE-20261007-v1 and DA-REVENUE-RECOVERY-20261008-v1. Prospective-buyer question: if the trader already uses TradingView, does Scalper require a separate workflow? Intended buyer: active intraday Scalper trader. Verified benefit: Scalper is $18.99/month and adds trend context, signal markers, real-time alerts and a visible risk plan directly on TradingView; automatic access follows checkout with the exact username. Exact destination and CTA: Inspect Scalper → /products/scalper. Owned capture: scalper-overview SHA 378246b3…; last retained use October 7 morning. Freshness: platform-fit objection, full native TradingView viewport, structural seam, on-chart workflow row and access reassurance differ substantively from the last six campaigns and do not reuse their dashboard crop, levels close-up, context rail or room/device hierarchy. Tap path: X/Threads direct caption URL; Instagram verified profile /links selection path, not a measured caption tap. Experiment: source observation=specific product proof is the defensible direction while samples and attribution remain sparse; single variable=platform-fit objection answered by a full native product view; primary metric=independently attributable Scalper product visits per delivered platform post, with reach reported separately; guardrail=no guaranteed access speed, trade execution, result or competitor claim; fixed review window=7 full days after provider receipt; sample=at least 5 independently attributable visits, otherwise insufficient data; continue only if visits appear without workflow or access confusion. Provider publication remains unconfirmed until the production app stores receipts. First 10 independently attributable new paid customers across eligible acquisition experiments is a learning milestone, not promised delivery."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "61a6da9b5941f44f706e621ea361aef5bfaa5a10cd79c1eaa66b1d72b06d56f0",
+      "reviewer": "Codex: built-in imagegen restrained backplate plus exact owned-product/logo compositing; DA-CREATIVE-20261007-v1 six-point visual review at full size and approximately 390px feed width, plus DA-REVENUE-RECOVERY-20261008-v1 destination and acquisition-experiment review",
+      "reviewedAt": "2026-10-09T12:48:09Z"
+    }
   }
 ];
