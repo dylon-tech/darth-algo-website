@@ -1,5 +1,21 @@
 # Darth Algo Brand Rules
 
+## Brand baseline and image-production direction — October 10, 2026
+
+[DA-BRAND-20261010-v3]
+
+The founder likes the clearer October 10 previews and wants the recognizable style across past Darth Algo content to become the baseline for all future images. Read `docs/social-brand-baseline.md` and `docs/social-creative-reviews/2026-10-10-brand-baseline.md`. This direction takes precedence over older mandatory imagegen, heavy-bevel, sci-fi-room and tight-tracking prescriptions.
+
+Keep a premium, energetic black/charcoal and red identity, the original full-color logo, extra-heavy condensed genuine italic display type, controlled silver/white contrast and a real indicator feature as the proof. Use deliberate scale, angular framing and restrained light/material accents. Choose a semibold companion font, short natural wording and one benefit or lesson per image. Avoid both the old sparse generic card renderer and the old repeated glossy room/monitor stage. The baseline is a visual vocabulary, not a fixed layout.
+
+Default to native graphic composition: actual owner screenshots, real font layers (or faithful font outlines), vector shapes, gradients and ordinary non-generative fitting/encoding. Do not generate chart pixels, reconstruct small text, or add generative scenery by default. This is an actual production-method change requested by the founder, not a metadata workaround. No provenance stripping, false authorship claims, inaccurate disclosure toggles or promises of a label-free Instagram post. Meta can apply labels automatically; consult its current official policy when discussing them. Previously generated artwork remains generated artwork when resized, composited or exported.
+
+Retain DA-CLARITY-20261010-v1 and DA-BENEFIT-20261010-v2: design around small authentic captures; all added essential wording must read without zoom at about 390px; rotate original capture families rather than renamed crops; compare the previous six campaigns and full history; use supported feature-to-benefit copy. Do not fill a post with tiny pre-annotated screenshots when a cleaner original supports the lesson.
+
+Two new native review previews have been prepared: Scalper exit-plan promotion and trend-cloud education. They are style drafts, not approved queue entries or publication receipts. Preserve the existing batch-specific owner-review hold and slot alternation. In particular, the trend-context source family has a recent related October 8 use; it is NOT cleared for immediate queueing. Recheck the full six-campaign cooldown for its eventual eligible educational slot or choose another verified source. New approval must refer to the exact final image/caption version.
+
+Keep the existing publisher, schedules, offers, source-of-truth ownership, review schema and zero incremental spend. Use `DA-BRAND-20261010-v3` in `editorial.learning`; retain the existing typographyVersion compatibility field only after actual visual review. Source instructions and active task prompts are updated separately from deployed app behavior.
+
 ## Use existing screenshots to make the benefit compelling — October 10, 2026
 
 [DA-BENEFIT-20261010-v2]
