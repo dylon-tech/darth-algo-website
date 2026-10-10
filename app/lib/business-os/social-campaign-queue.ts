@@ -1096,5 +1096,83 @@ export const socialCampaignQueue:ReviewedCreative[] = [
       "reviewer": "Codex: built-in imagegen restrained backplate plus exact owned-product/logo compositing; DA-CREATIVE-20261007-v1 six-point visual review at full size and approximately 390px feed width, plus DA-REVENUE-RECOVERY-20261008-v1 destination and acquisition-experiment review",
       "reviewedAt": "2026-10-09T12:48:09Z"
     }
-  }
+  },
+    {
+      "id": "2026-10-10-morning-swing-pullback-regime-check",
+      "day": "2026-10-10",
+      "slot": "morning",
+      "theme": "Swing pullback versus broader regime-change check",
+      "text": "Pullback or regime change? Start with the Swing trend cloud, then check whether market structure changed too. A short move alone does not define a new broader trend. Save and share this two-check routine.\nhttps://www.darthalgo.com/products/swing #TradingView",
+      "assets": [
+        {
+          "path": "/social-campaigns/2026-10-10/pullback-or-regime-01-4409de94d674.jpg",
+          "sha256": "4409de94d674755a0bfe50c0af37debad588f67612686096f236131c057010ca",
+          "altText": "Darth Algo Swing education cover titled Pullback or Regime Change, with the exact owned TradingView Swing chart as the large hero and a two-check trend-cloud and structure routine.",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "path": "/social-campaigns/2026-10-10/pullback-or-regime-02-69f2bee3fb3d.jpg",
+          "sha256": "69f2bee3fb3d25b708fb2e1b9486108f3aa9b9bbaa164ace0d1e3bb46874a14c",
+          "altText": "Darth Algo Swing education slide titled Check Both, with the exact owned Swing chart above separate trend-cloud and market-structure questions.",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "editorial": {
+        "version": "alternating-results-2026-09-24-v1",
+        "kind": "educational",
+        "typographyVersion": "condensed-italic-2026-10-02-v2",
+        "sources": [
+          "https://www.darthalgo.com/education",
+          "https://www.darthalgo.com/products/swing",
+          "https://www.darthalgo.com/indicators/swing-overview.png",
+          "https://www.luxalgo.com/library/",
+          "https://algoalpha.io/library",
+          "library:DA_Content_Research_Latest.md#version-15",
+          "docs/social-creative-reviews/2026-10-10-education.md"
+        ],
+        "learning": "Policy reviews: DA-CREATIVE-20261007-v1 and DA-REVENUE-RECOVERY-20261008-v1. Prospective-buyer question: did a short-term move change the broader Swing regime, or is it still a pullback? Intended audience: broader-move Swing trader. Verified benefit: Swing combines broader trend confirmation, selective signal markers, a visible risk plan and target-status feedback on TradingView. Exact destination and CTA: Save and share this two-check routine → /products/swing. Owned capture: swing-overview SHA 40b2b864…; last retained use October 8 morning. Freshness: first pullback-versus-regime lesson; two-slide diagnostic story, panoramic product band, lesson panel, split trend-cloud/structure grid, headline construction and CTA treatment differ substantively from the last six campaigns and are not a buyer-fit, dashboard, levels, signal-context or alert retitle. Tap path: X/Threads direct caption URL; Instagram verified profile /links selection path, not a measured caption tap. Experiment: source observation=narrow product questions with visible mechanisms are a defensible structure while owned and competitor samples remain sparse and inconclusive; single variable=question-led regime diagnosis; primary metric=independently attributable Swing product visits per delivered platform post; secondary metric=(saves+shares)/organic Instagram reach when available; guardrail=no claim that the cloud alone defines a regime and no altered chart or result implication; fixed review window=7 full days after provider receipt; sample=at least 5 independently attributable visits, otherwise insufficient data; continue only if visits appear without two-check confusion. Different-day comparisons remain observational, not randomized proof. Provider publication remains unconfirmed until the production app stores receipts. First 10 independently attributable new paid customers across eligible acquisition experiments is a learning milestone, not promised delivery. DA-CREATIVE six-point review passed at full size and approximately 390px; exact details are recorded in the cited review."
+      },
+      "review": {
+        "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+        "sha256": "3231a1e54099c2c65007c06ba2a811a36cfbc4873cd52fb13baa30de394347d0",
+        "reviewer": "Codex: built-in imagegen restrained backplates plus exact owned-product/logo compositing; DA-CREATIVE-20261007-v1 six-point visual review at full size and approximately 390px feed width against the approved October 1 type image, current typography gate, last six campaigns, verified source copy, destinations, tap paths and acquisition experiment cards",
+        "reviewedAt": "2026-10-10T12:19:27Z"
+      }
+    },
+    {
+      "id": "2026-10-10-afternoon-scalper-last-signal-plan-status",
+      "day": "2026-10-10",
+      "slot": "afternoon",
+      "theme": "Scalper Last Signal versus current Trade Plan status",
+      "text": "The dashboard's Last Signal is the most recent marker; Trade Plan shows the current plan status. Read them separately before acting on a Scalper setup. Save this status check.\nhttps://www.darthalgo.com/products/scalper #TradingView",
+      "assets": [
+        {
+          "path": "/social-campaigns/2026-10-10/last-signal-live-plan-c112915e56ef.jpg",
+          "sha256": "c112915e56ef175fb2091a85645e5d2acda980785ddff17152622e8e088b1629",
+          "altText": "Darth Algo Scalper education titled Last Signal Is Not Live Plan, with the exact owned dashboard enlarged beside callouts for the most recent marker and current plan status, plus matching chart context.",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "editorial": {
+        "version": "alternating-results-2026-09-24-v1",
+        "kind": "educational",
+        "typographyVersion": "condensed-italic-2026-10-02-v2",
+        "sources": [
+          "https://www.darthalgo.com/education",
+          "https://www.darthalgo.com/products/scalper",
+          "https://www.darthalgo.com/indicators/scalper-overview.png",
+          "https://www.luxalgo.com/library/",
+          "https://algoalpha.io/library",
+          "library:DA_Content_Research_Latest.md#version-15",
+          "docs/social-creative-reviews/2026-10-10-education.md"
+        ],
+        "learning": "Policy reviews: DA-CREATIVE-20261007-v1 and DA-REVENUE-RECOVERY-20261008-v1. Prospective-buyer question: does Last Signal describe the current plan state? Intended audience: active intraday Scalper trader. Verified benefit: Scalper's live dashboard separates market direction, guidance, the most recent signal and the current trade-plan status beside the TradingView chart. Exact destination and CTA: Save this status check → /products/scalper. Owned capture: scalper-overview SHA 378246b3…; last retained use October 9 afternoon, with the morning Swing campaign preventing consecutive use. Freshness: first Last Signal-versus-Trade Plan semantics lesson; a same-state macro dashboard, semantic elbow callouts, asymmetric ember spine and lower chart context band differ substantively from the October 7 dashboard inset and all five other recent campaigns. Tap path: X/Threads direct caption URL; Instagram verified profile /links selection path, not a measured caption tap. Experiment: source observation=buyers need to understand what exact product rows mean, while current conversion attribution is unavailable and samples remain sparse; single variable=Last Signal-versus-Trade Plan distinction; primary metric=independently attributable Scalper product visits per delivered platform post; secondary metric=(saves+shares)/organic Instagram reach when available; guardrail=TARGET 2 HIT is chart status and not proof of a fill, exit or realized P&L; fixed review window=7 full days after provider receipt; sample=at least 5 independently attributable visits, otherwise insufficient data; continue only if visits appear without signal/status or result-evidence confusion. Different-day comparisons remain observational, not randomized proof. Provider publication remains unconfirmed until the production app stores receipts. First 10 independently attributable new paid customers across eligible acquisition experiments is a learning milestone, not promised delivery. DA-CREATIVE six-point review passed at full size and approximately 390px; exact details are recorded in the cited review."
+      },
+      "review": {
+        "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+        "sha256": "8dbbcf869627b73140fcbd954d53bc2a5679f2cf1aee41645125fc4c8e48e7d5",
+        "reviewer": "Codex: built-in imagegen restrained backplates plus exact owned-product/logo compositing; DA-CREATIVE-20261007-v1 six-point visual review at full size and approximately 390px feed width against the approved October 1 type image, current typography gate, last six campaigns, verified source copy, destinations, tap paths and acquisition experiment cards",
+        "reviewedAt": "2026-10-10T12:19:27Z"
+      }
+    }
 ];
