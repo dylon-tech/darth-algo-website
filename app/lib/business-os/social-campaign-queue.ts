@@ -1174,5 +1174,38 @@ export const socialCampaignQueue:ReviewedCreative[] = [
         "reviewer": "Codex: built-in imagegen restrained backplates plus exact owned-product/logo compositing; DA-CREATIVE-20261007-v1 six-point visual review at full size and approximately 390px feed width against the approved October 1 type image, current typography gate, last six campaigns, verified source copy, destinations, tap paths and acquisition experiment cards",
         "reviewedAt": "2026-10-10T12:19:27Z"
       }
+    },
+  {
+    "id": "2026-10-11-morning-scalper-exit-plan-native",
+    "day": "2026-10-11",
+    "slot": "morning",
+    "theme": "Approved native design: keep the Scalper exit plan visible",
+    "text": "An exit plan, right on your chart. Darth Algo Scalper keeps entry, stop and targets visible together on TradingView, so you can review the plan before deciding. Explore Scalper:\nhttps://www.darthalgo.com/products/scalper #DarthAlgo",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-10-11/scalper-exit-plan-e4912247c0ec.png",
+        "sha256": "e4912247c0ec973494aa5aebc60d756242270dc505309ee4e86261245abaf4af",
+        "altText": "Darth Algo Scalper: An exit plan. Right on your chart. An authentic TradingView chart displays a sell setup with stop, entry and two targets, identified by readable labels beside the chart. Explore Scalper at darthalgo.com.",
+        "mimeType": "image/png"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "promotional",
+      "typographyVersion": "condensed-italic-2026-10-02-v2",
+      "sources": [
+        "https://www.darthalgo.com/products/scalper",
+        "https://www.darthalgo.com/indicators/scalper-risk-plan.png",
+        "docs/social-brand-baseline.md",
+        "docs/social-creative-reviews/2026-10-10-brand-approval.md"
+      ],
+      "learning": "DA-BRAND-APPROVED-20261010-v1; DA-BRAND-20261010-v3, DA-CLARITY and DA-BENEFIT. Founder approved these native image types October 10 at 19:06 Eastern after seeing this exact PNG. Audience: TradingView scalpers who want entry, stop and targets visible together. Verified feature: native Scalper plan lines; no executed outcome or profit claim. Exact source family: Scalper risk-plan capture, SHA a44932fb77ca698db94906b5c304bd260b728923e647d92870f42141641d04ee; 665x471 rendered at native size, pixel-identical. Last retained use October 7 afternoon, outside the previous six campaigns at this slot. This is an explicitly owner-approved design rollout using the plan feature, not a claim that the underlying feature topic has never appeared. Differences: actual font outlines, expanded three-line hook, native-scale chart with open outside labels, restrained angular backdrop and plain arrow CTA without a device stage. Caption and final asset are distinct from all retained campaigns. Single-variable hypothesis: sharper native typography and product proof make the existing benefit easier to understand. Primary outcome: independently attributable Scalper visits over seven days after confirmed delivery; review paid checkouts separately over thirty days, and mark missing attribution or fewer than five attributable visits inconclusive. Compare matched platform/format observations without causal claims. Caption URL verified HTTP 200; an Instagram caption URL is not assumed to be a measured tappable link. Source, integrity, literal text and mobile review are recorded in the cited approval review."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "50e92648f632e0a1f30a8634b957b220cd5e74dcbab42df6084158b1ea286fc5",
+      "reviewer": "Codex with founder-approved native v3 image direction: final exact PNG inspected full-size and at 390px; source pixels, copy, rotation, logo and CTA checked. Darth Algo Operations 1.2.0.",
+      "reviewedAt": "2026-10-10T23:09:27.814078+00:00"
     }
+  }
 ];
