@@ -1,5 +1,35 @@
 # Cinematic social production and delivery
 
+## Clear wording, sharp typography and real screenshot rotation — October 10, 2026
+
+[DA-CLARITY-20261010-v1]
+
+Founder decision: all future Instagram posts must have sharp, easy-to-read wording, intentional premium typography, natural language and varied real indicator captures. This also applies to the matching creative shared to the already-authorized destinations. The October 10 examples are diagnostic references, not templates to reuse. This section supersedes older tight-tracking, heavy-bevel and merely nonconsecutive screenshot rules wherever they conflict; keep the recognizable black/red brand and full-color logo.
+
+### Copy and typography
+- Write one clear viewer question or benefit per slide. Use ordinary trader language. Prefer "Pullback or trend reversal?" to "Pullback or regime change?" and explain an essential technical term immediately. These are wording examples, not permission to recycle that campaign.
+- Keep provenance and QA language inside the review records. Never put "exact owned", "owned product view", source hashes, policy markers or similar production notes in public artwork, captions or alt text.
+- Replace cryptic equations such as "Last signal != live plan" with a direct sentence when that distinction is relevant. Name the actual feature and what the reader should check. Use one natural CTA such as "Save this guide" or "See the Swing tool"; avoid invented phrases such as "two-check routine".
+- Keep bold, distinctive condensed/italic display typography where readable. Use a deliberately chosen medium/semibold companion face for supporting text. Do not squeeze tracking, overlap letters or use heavy bevels, blur, outlines, glow or low-contrast metallic gradients that close letter shapes. White/silver and red are brand colors, not a requirement for a 3D text effect.
+- Author added headlines, labels, body copy and CTAs as real font/text layers in the final composition. AI-generated lettering is not finished typography. Preserve original chart labels and the official logo; never redraw product evidence to manufacture sharpness. Existing approved type remains a visual starting point, not an excuse to repeat unreadable lettering.
+- For a 1080 x 1350 composition, start around 76-120 px for headlines and at least 44 px for essential supporting copy/CTAs, with generous line spacing and margins. These are production starting points; final phone readability is the acceptance criterion. Reduce wording before shrinking type. Prefer a short hook, one concise explanation and one CTA; move detail to the caption or a dedicated slide.
+- Export the final master once at native resolution. Review the actual encoded delivery file, not only the design canvas. Do not enlarge compressed social screenshots or tiny dashboard crops and call them high-resolution originals.
+
+### Source rotation
+- Read `docs/social-capture-inventory.json`, the complete queue/archive history and recent creative reviews before choosing a capture. Inventory entries are candidates, not blanket approval or independent screenshots.
+- Track original capture identity/source family, exact source SHA-256, product/feature, dimensions, last campaign/slot and any crop relationship in each new creative review. A crop, resized file, alternate filename, dashboard excerpt or new device mockup from the same original counts as the SAME capture family.
+- Do not reuse a source family from any of the previous SIX distinct campaigns or either slot on the same day. Related views inside one explanatory carousel may share its source when needed for continuity; they do not reset the cooldown. Identical approved campaign sharing across authorized platforms is still one campaign.
+- Choose a suitable unused or least-recently-used eligible original for the actual feature. Do not alternate the same two overview charts and call it rotation. Never substitute the wrong product or undocumented historic interface merely to fill a slot.
+- If provenance, current-product accuracy or resolution is insufficient, use another verified original or request a precise missing capture from the owner. State what is needed (product, feature, full-resolution export, readable labels, a different chart). Do not fake candles/labels or silently waive the cooldown. Existing trade-result no-reuse rules remain stricter.
+
+### Final review and carry-forward
+Read every added line in the final delivered bytes at full resolution AND at approximately 390 px wide without zoom. Record the literal final text and a specific PASS/REVISE observation for each slide: wording understood on first read; every essential line sharp; readable promised product feature; source accuracy; source-family cooldown; fresh composition; logo/CTA. If any fails, revise or hold that asset. A past PASS is superseded by this founder rejection; do not carry it forward as current quality evidence.
+
+Keep this record in the existing creative review and reference `DA-CLARITY-20261010-v1` from `editorial.learning`. Retain the existing typographyVersion/schema/digest for compatibility and record it only after real review. A signed marker is not an automated vision check and does not independently enforce this policy.
+
+Apply to new work and verified unattempted future work within the producer's existing revision cap. Preserve historical/attempted versions and receipts. The current queue read on October 10 ends with today's afternoon slot; no later queued campaign was found to replace. Keep schedules, role ownership, editorial alternation, disclosure behavior, supported product claims, prices and $0 incremental spend. Instructions saved today do not prove that a future image has passed review or been published.
+
+
 ## Creative quality correction — October 7, 2026
 
 [DA-CREATIVE-20261007-v1]

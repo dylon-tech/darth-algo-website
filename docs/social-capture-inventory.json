@@ -1,0 +1,163 @@
+{
+  "policy": "DA-CLARITY-20261010-v1",
+  "audited_at": "2026-10-10T20:31:44.181158+00:00",
+  "source_commit": "f9ca6dafc5c20532689e2c6bd98949804b2b57e0",
+  "scope": "16 existing repository image files; this is not 16 verified independent original captures and not a complete Library inventory. No owner social-interface screenshots are included.",
+  "recent_repeated_sources": [
+    {
+      "path": "/indicators/swing-overview.png",
+      "last_retained_campaign": "2026-10-10-morning-swing-pullback-regime-check"
+    },
+    {
+      "path": "/indicators/scalper-overview.png",
+      "last_retained_campaign": "2026-10-10-afternoon-scalper-last-signal-plan-status"
+    }
+  ],
+  "selection_rule": "Resolve source family and prior use across full queue/archives/reviews before selection. Crops/renames do not create new families. No family from the preceding six campaigns; never invent last-use data. Record exact evidence in each creative review.",
+  "assets": [
+    {
+      "path": "/indicators/clean-price-action.png",
+      "sha256": "a63663af32bac2a0deaba989e720c97deea34e9abbd94a8eec87fe17b9fe5498",
+      "width": 1142,
+      "height": 490,
+      "source_family": null,
+      "status": "candidate_requires_provenance_current_product_and_family_review",
+      "resolution_note": "Inspect essential feature at final phone size; dimensions alone do not prove legibility"
+    },
+    {
+      "path": "/indicators/scalper-dashboard.png",
+      "sha256": "f207e85578591007bec688ee4b74db994859dfe563d80fa944d61a8313487121",
+      "width": 231,
+      "height": 176,
+      "source_family": null,
+      "status": "candidate_requires_provenance_current_product_and_family_review",
+      "resolution_note": "Too small for an enlarged dashboard hero; obtain a sharper original"
+    },
+    {
+      "path": "/indicators/scalper-execution.png",
+      "sha256": "0e506e8e56c965ed86d9ce201d92a1b5a2ca2cc16083a0c8a3edfcf245f1ab22",
+      "width": 851,
+      "height": 327,
+      "source_family": null,
+      "status": "candidate_requires_provenance_current_product_and_family_review",
+      "resolution_note": "Inspect essential feature at final phone size; dimensions alone do not prove legibility"
+    },
+    {
+      "path": "/indicators/scalper-overview.png",
+      "sha256": "378246b3d9cdda724627ace352a2408900c71481572ea44f2573347416c9f667",
+      "width": 1773,
+      "height": 765,
+      "source_family": null,
+      "status": "candidate_requires_provenance_current_product_and_family_review",
+      "resolution_note": "Inspect essential feature at final phone size; dimensions alone do not prove legibility"
+    },
+    {
+      "path": "/indicators/scalper-risk-plan.png",
+      "sha256": "a44932fb77ca698db94906b5c304bd260b728923e647d92870f42141641d04ee",
+      "width": 665,
+      "height": 471,
+      "source_family": null,
+      "status": "candidate_requires_provenance_current_product_and_family_review",
+      "resolution_note": "Inspect essential feature at final phone size; dimensions alone do not prove legibility"
+    },
+    {
+      "path": "/indicators/signal-context-alt.png",
+      "sha256": "492df5b3f341e1184484142408fbc366d0525ff7a64a5516430ea65167822f8c",
+      "width": 1523,
+      "height": 485,
+      "source_family": null,
+      "status": "candidate_requires_provenance_current_product_and_family_review",
+      "resolution_note": "Inspect essential feature at final phone size; dimensions alone do not prove legibility"
+    },
+    {
+      "path": "/indicators/signal-context.png",
+      "sha256": "568ebd47dc74089c7dc3ef073d4055095f35ec10eeabe693e1d1ecef4b18f006",
+      "width": 1438,
+      "height": 554,
+      "source_family": null,
+      "status": "candidate_requires_provenance_current_product_and_family_review",
+      "resolution_note": "Inspect essential feature at final phone size; dimensions alone do not prove legibility"
+    },
+    {
+      "path": "/indicators/swing-dashboard.png",
+      "sha256": "5e6f824a02a5a0a8d5fe54d02e604197f85a149c33e105d08bc31d38fb48d06b",
+      "width": 212,
+      "height": 177,
+      "source_family": null,
+      "status": "candidate_requires_provenance_current_product_and_family_review",
+      "resolution_note": "Too small for an enlarged dashboard hero; obtain a sharper original"
+    },
+    {
+      "path": "/indicators/swing-overview.png",
+      "sha256": "40b2b8646ac28f6193ec2c34d1ac6fb305f7dfe9073d5710038fc7e1f1bf2710",
+      "width": 1757,
+      "height": 763,
+      "source_family": null,
+      "status": "candidate_requires_provenance_current_product_and_family_review",
+      "resolution_note": "Inspect essential feature at final phone size; dimensions alone do not prove legibility"
+    },
+    {
+      "path": "/indicators/swing-risk-plan.png",
+      "sha256": "a68cb85dca3b62c3fa79366baf9851755ffa3b426a326c70c4dd3d5939300c78",
+      "width": 514,
+      "height": 325,
+      "source_family": null,
+      "status": "candidate_requires_provenance_current_product_and_family_review",
+      "resolution_note": "Inspect essential feature at final phone size; dimensions alone do not prove legibility"
+    },
+    {
+      "path": "/indicators/swing-trend-cloud.png",
+      "sha256": "6804c35b2d852969be7570c6dde5c5dc8867e38314e68ddd4972838bcc923364",
+      "width": 1183,
+      "height": 471,
+      "source_family": null,
+      "status": "candidate_requires_provenance_current_product_and_family_review",
+      "resolution_note": "Inspect essential feature at final phone size; dimensions alone do not prove legibility"
+    },
+    {
+      "path": "/indicator-examples/darth-algo-feature-map-01.png",
+      "sha256": "6b8b0dc8b179890d3b4096fa5abb2779e83f5ab90b9b4343b12931d3615abdbf",
+      "width": 1805,
+      "height": 767,
+      "source_family": null,
+      "status": "candidate_requires_provenance_current_product_and_family_review",
+      "resolution_note": "Inspect essential feature at final phone size; dimensions alone do not prove legibility"
+    },
+    {
+      "path": "/indicator-examples/darth-algo-feature-map-02.png",
+      "sha256": "b927e3f95a123392cbd606cac13ae2483e4b30345d9ad520d2675b528ca2f276",
+      "width": 1805,
+      "height": 767,
+      "source_family": null,
+      "status": "candidate_requires_provenance_current_product_and_family_review",
+      "resolution_note": "Inspect essential feature at final phone size; dimensions alone do not prove legibility"
+    },
+    {
+      "path": "/indicator-examples/darth-algo-feature-map-03.png",
+      "sha256": "3ee50cc35d90aac8ac6d41bd1d9cfe2154bbdfb4b2351ea29420424da8bf3df3",
+      "width": 1805,
+      "height": 767,
+      "source_family": null,
+      "status": "candidate_requires_provenance_current_product_and_family_review",
+      "resolution_note": "Inspect essential feature at final phone size; dimensions alone do not prove legibility"
+    },
+    {
+      "path": "/indicator-examples/darth-algo-feature-map-04.png",
+      "sha256": "4a10bc8a62caa2050b8c7cf552b9f0cdfe7411ca656c15adece7539854f1dfd8",
+      "width": 1805,
+      "height": 880,
+      "source_family": null,
+      "status": "candidate_requires_provenance_current_product_and_family_review",
+      "resolution_note": "Inspect essential feature at final phone size; dimensions alone do not prove legibility"
+    },
+    {
+      "path": "/indicator-examples/darth-algo-feature-map-05.png",
+      "sha256": "965ab5064687268770bd262aeffb1858205d3550fcdad2289fe801f5db7e25cb",
+      "width": 1805,
+      "height": 880,
+      "source_family": null,
+      "status": "candidate_requires_provenance_current_product_and_family_review",
+      "resolution_note": "Inspect essential feature at final phone size; dimensions alone do not prove legibility"
+    }
+  ]
+}
