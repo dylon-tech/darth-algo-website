@@ -31,7 +31,7 @@
       "height": 176,
       "source_family": null,
       "status": "candidate_requires_provenance_current_product_and_family_review",
-      "resolution_note": "Too small for an enlarged dashboard hero; obtain a sharper original"
+      "resolution_note": "Small original: evaluate as an integrated native-scale dashboard/proof panel; do not enlarge into a blurry hero or invent missing labels. New source is not required by default."
     },
     {
       "path": "/indicators/scalper-execution.png",
@@ -85,7 +85,7 @@
       "height": 177,
       "source_family": null,
       "status": "candidate_requires_provenance_current_product_and_family_review",
-      "resolution_note": "Too small for an enlarged dashboard hero; obtain a sharper original"
+      "resolution_note": "Small original: evaluate as an integrated native-scale dashboard/proof panel; do not enlarge into a blurry hero or invent missing labels. New source is not required by default."
     },
     {
       "path": "/indicators/swing-overview.png",
@@ -159,5 +159,6 @@
       "status": "candidate_requires_provenance_current_product_and_family_review",
       "resolution_note": "Inspect essential feature at final phone size; dimensions alone do not prove legibility"
     }
-  ]
+  ],
+  "fit_policy": "DA-BENEFIT-20261010-v2: small dimensions do not disqualify a candidate. Try an integrated proof panel at a readable size, an honest crop, or a detail slide; use sharp editorial callouts outside the original image. Select a supported feature before requesting replacement sources."
 }

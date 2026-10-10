@@ -1,5 +1,30 @@
 # Darth Algo Brand Rules
 
+## Use existing screenshots to make the benefit compelling — October 10, 2026
+
+[DA-BENEFIT-20261010-v2]
+
+Founder clarification after the clarity update: use the indicator screenshots already supplied, including small TradingView screenshots, and fit them intelligently into persuasive premium posts. Make viewers recognize a useful missing part of their trading workflow and want to explore the tool. Small source dimensions alone are not a reason to reject an asset or ask for replacements. This clarification overrides the earlier default request for sharper originals; all wording, authenticity and rotation checks still apply.
+
+### Design around the available pixels
+- Start with the actual usable content and source resolution. Choose a composition that suits the screenshot: a wide chart strip for a landscape capture, a naturally integrated dashboard panel for a small dashboard, or a close feature view plus restrained chart context in a carousel. A phone mockup is suitable only when its screen ratio and content fit; never force a landscape chart into it.
+- Keep the original image at a display size where the relevant feature remains clear. Surround it with intentional typography, whitespace, a restrained black/red surface, the real logo and at most two concise benefit callouts. The original can be a purposeful proof panel rather than an artificially enlarged full-page hero. Make the PRODUCT DEMONSTRATION the focal point through placement and hierarchy, not enlargement alone.
+- Crop irrelevant interface/empty space only when the necessary feature, price/time context and chart meaning are preserved. Never remove contrary candles, change chart labels, stretch the chart or invent missing detail. A new crop does not become a new capture for rotation.
+- Put explanations in sharp typeset callouts beside the screenshot, linked to visible features. Those are editorial explanations, not replacement pixels or a fabricated dashboard. Avoid claims that depend on illegible numbers. If the chart provides visual context only, do not ask the viewer to read its tiny interface text.
+- Normal non-generative resizing/encoding can fit the panel; it cannot recover absent detail. Never use generative enhancement to invent candles, signals, prices or interface text. Keep added lettering separate and crisp.
+- Before asking for another screenshot, try a native-scale proof panel, an honest relevant crop, a different suitable supplied original and a dedicated detail slide. If the specific proposed claim still cannot be shown, choose a different verifiable feature/concept from the existing assets. Only a genuine remaining evidence gap warrants a targeted asset request. Do not make new screenshots a prerequisite for routine production.
+
+### Persuade through a specific useful benefit
+- Begin each promotional brief with an actual trader frustration or desired workflow, one verified feature, and the practical decision it supports. Build the post as recognizable problem -> genuine product demonstration -> clear benefit -> one next step.
+- Make a viewer think "That would be useful on my chart" through a visible mechanism: understanding trend context, reviewing signal context, or seeing trade-plan levels together when the actual selected product supports them. Show what the feature helps the trader assess instead of listing vague labels or promising outcomes.
+- Use confident, direct, benefit-led hooks and a distinctive premium composition. A hook can create curiosity or recognition without saying the tool is indispensable. Avoid invented customer experiences, profit promises, win rates, false urgency, claims that losses disappear, or unsupported comparisons.
+- Each promotional post must answer: Who is this for? What problem does this feature help with? Where can the viewer see it in the real screenshot? What should they do next? Keep this clear with very little text. Relevant automatic-access reassurance may be used under the existing verified messaging; do not overload every post with it.
+- Match one CTA to the campaign and actual destination, such as "Explore the Scalper tool" or "See how Swing works". The existing educational slots still teach one useful action; keep their educational purpose and natural save/share CTA rather than turning every lesson into an ad. Preserve existing offers/prices and the twice-daily cadence.
+
+### Review
+In addition to DA-CLARITY-20261010-v1, record the source's native dimensions, rendered panel size, why the selected feature is honestly visible, the exact viewer problem/benefit, and whether a first-time viewer can understand the reason to explore the tool. Inspect at full size and approximately 390px feed width. A small authentic proof panel can pass; a giant blurry chart or feature claim without visible support cannot. Include DA-BENEFIT-20261010-v2 in the existing review and editorial.learning. Keep original-capture rotation, exact hashes, publisher boundaries and $0 incremental spend. Persuasion is a creative objective; actual interest/conversions require later measured evidence.
+
+
 ## Clear wording, sharp typography and real screenshot rotation — October 10, 2026
 
 [DA-CLARITY-20261010-v1]
