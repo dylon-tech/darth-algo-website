@@ -44,3 +44,7 @@ The first trial for preview 2 used the old annotated June 3 feature map. Its emb
 ## Workflow verification
 Photo Queue 6ab30e257d448191a18af03213eefe71 and Evening Review 6aae10e5d69c8191b269baa0e44aa0b6 were updated with the v3 baseline at 2026-10-10T22:40Z and then read back. Exact prompt match confirmed; both enabled states and schedules unchanged. Existing owner-review batch hold preserved. No additional automation, paid service, social post, disclosure change or deployment was executed.
 
+
+## Approval addendum — October 10, 19:06 Eastern
+
+The founder subsequently approved the native v3 image direction for posting. The historical draft status above describes the earlier review only. DA-BRAND-APPROVED-20261010-v1 supersedes the owner-review batch hold; see `2026-10-10-brand-approval.md` for the exact approved hashes, Scalper campaign admission and remaining cloud-guide source-rotation requirement. No historical publication receipt is implied.

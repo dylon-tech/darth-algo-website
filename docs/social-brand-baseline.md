@@ -1,6 +1,6 @@
 # Darth Algo visual brand baseline
 
-Policy: DA-BRAND-20261010-v3. Owner direction: October 10, 2026.
+Policy: DA-BRAND-20261010-v3. APPROVED by the founder October 10, 2026 at 19:06 America/New_York; approval record DA-BRAND-APPROVED-20261010-v1.
 
 ## The brand in one paragraph
 
@@ -45,5 +45,7 @@ Read all added copy at full resolution and approximately 390px. Check actual fin
 
 Use the existing six-campaign original-family cooldown and stricter trade-result no-reuse rule. Crops/renames/device changes are the same family. Recheck at the actual publishing slot. A reviewed style draft is not automatically a publishable campaign.
 
-The next-batch owner-review hold remains active. Existing schedules, editorial alternation, community adapters, production publisher and $0 additional spend remain unchanged.
+[DA-BRAND-APPROVED-20261010-v1] On October 10 at 19:06 America/New_York, the founder explicitly approved these native v3 image types to be posted. This is now the approved baseline for all future images. Release and supersede the DA-PREVIEW-20261010-v1 batch-specific owner-review hold; routine compliant work can proceed through the existing authorized publisher without another style-approval request. Exact approved image hashes and final campaign checks are recorded in `docs/social-creative-reviews/2026-10-10-brand-approval.md`. The Scalper exit-plan image is admitted for October 11 morning after final copy, integrity and rotation review. The cloud guide is visually approved but must await an actual eligible educational slot after its six-campaign source-family cooldown; October 12 is the next educational day, not unconditional clearance. Source rotation, exact-byte review and slot alternation still apply. Approval and queue admission are not publication receipts.
+
+Existing schedules, editorial alternation, community adapters, production publisher and $0 additional spend remain unchanged.
 
