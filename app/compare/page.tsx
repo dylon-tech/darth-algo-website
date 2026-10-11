@@ -28,6 +28,7 @@ export default function ComparePage() {
           <p className="font-mono text-xs font-bold uppercase text-ember">Choose your workflow</p>
           <h1 className="mt-5 max-w-4xl text-balance font-display text-5xl font-black leading-tight sm:text-7xl">Scalper, Swing, or both?</h1>
           <p className="mt-6 max-w-2xl text-base leading-8 text-zinc-300">The right tool starts with how you trade. Compare the pace, chart workflow, and access options before choosing a plan.</p>
+          <p className="mt-4 text-sm leading-7 text-zinc-400">Comparing other brands? <Link href="/alternatives" className="font-semibold text-white underline underline-offset-4">See where Darth Algo fits alongside LuxAlgo and ChartPrime</Link>.</p>
           <a href="#compare-tools" className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-md bg-ember px-6 font-bold text-white">Find my fit <ArrowRight className="h-4 w-4" /></a>
         </div>
       </section>

@@ -4,6 +4,14 @@ Work ID: DA-REVENUE-20261010-v1. Darth Algo Operations skill 1.2.0.
 
 The founder requests a competitor-informed acquisition plan and execution with minimal manual work. Keep incremental spending at $0. Private finances, customer identities, partner correspondence and account analytics belong in the private sprint report, never this repository.
 
+Founder clarification, October 10 at 21:09 America/New_York: keep all current prices unchanged and prioritize target-audience visibility. This supersedes any proposed price or annual-billing review in earlier private planning. The target is a retained four-figure monthly revenue base, with no guaranteed deadline. Do not change Lifetime or commercial rights, introduce new discounts, buy advertising, or increase spend under this instruction.
+
+## Competitor discovery experiment
+
+`/alternatives` introduces Darth Algo to people considering LuxAlgo or ChartPrime. It shows actual owned product imagery, the existing $29 Pro bundle, all current single-tool and Lifetime options, and source-linked differences in product scope. It includes an exact canonical, social metadata, a sitemap entry and internal links from the footer and `/compare`. This makes the page discoverable; it is not evidence of search indexing, ranking or traffic.
+
+Public competitor descriptions were checked against official pricing/product pages on October 10. Their transient sale prices are not copied into a permanent savings claim. No comparable-performance, feature-parity, affiliation, testimonial or ranking claim is made. Primary outcome is attributable positive-value checkouts from qualified page visits when measurable; report missing visitor/attribution coverage explicitly. Re-check sources in the existing weekly review and correct changed facts promptly. Keep the existing two daily social slots; the next eligible promotion may introduce the brand to traders shopping for an indicator, using a fresh actual feature demonstration and this verified live destination once deployed.
+
 ## First website experiment
 
 Observation: `/links`, the existing social bio destination, leads with the Swing trial. Visitors who want both trading styles have to continue to a secondary Pro card. A free walkthrough and the comparison page already exist.

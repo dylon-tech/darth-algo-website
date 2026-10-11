@@ -8,6 +8,7 @@ const footerLinks = [
   ["Community", "/community"],
   ["Pricing", "/#pricing"],
   ["Compare tools", "/compare"],
+  ["Compare alternatives", "/alternatives"],
   ["Indicator catalog", "/indicators"],
   ["Affiliate Program", "/affiliates"],
   ["Creator Dashboard", "/affiliate-dashboard"],

@@ -294,3 +294,14 @@ Work DA-REVENUE-20261010-v1; Darth Algo Operations 1.2.0. Founder requested comp
 Validation: Next.js production build including type checks passed (three existing unrelated owner-indicator image warnings); existing campaign-attribution regression passed, including affiliate preservation and separation of positive payments from zero-value trials. Local visual browser validation is unavailable because Chromium is absent and its download failed. Release and provider receipts must be recorded separately; source edits alone are not live delivery or sales.
 
 The sprint contract is `docs/revenue-sprint-2026-10-10.md`. Private current financial/account observations and exact partner draft are held outside this repository. No new outbound send, paid service, worker, social slot, price, coupon or customer entitlement change. Observation for the next review: qualified distribution and existing interested conversations deserve priority; attractive artwork alone is not evidence of a functioning acquisition channel.
+
+
+## Price-preserving audience discovery — October 10, 2026
+
+DA-VISIBILITY-20261010-v1; Darth Algo Operations 1.2.0. Founder explicitly keeps prices unchanged and approves proceeding with the proposed acquisition work. A new /alternatives page addresses people comparing LuxAlgo and ChartPrime, using real proportional product imagery, current Darth Algo plans, neutral source-linked product-scope differences, an existing Pro checkout, setup guidance, canonical/social metadata and internal/sitemap discovery links. No new offers, billing changes, paid media, account permissions or publisher are introduced.
+
+Current main 5b24a1302ead6181ada65489c7ae88e0db3854e5 is confirmed READY on production dpl_DcEM1TBeEwExfANgmgaqn5yT1tNG, aliased to www.darthalgo.com. This verifies the earlier Pro buying-path release after maintenance repaired its two validation blockers. The new discovery page requires its own validation and production readback. Private message and revenue evidence remain in the owner report.
+
+Lesson: evidence of a low audience supports testing qualified distribution; it does not establish that changing price improves revenue. The new page supplies a destination and brand-category context, not guaranteed indexing, rankings or visits. The next fixed review checks placements, qualified visits and positive-value purchases separately.
+
+Validation for the discovery page: production build/type checks passed with only the three pre-existing owner-image warnings; changed UI-file lint, generated HTML canonical/heading/checkout/price/link/sitemap checks and the existing attribution regression passed. Actual Pro image dimensions are 1805×767 and rendered proportionally. /links production returned 200 with the intended Pro heading and existing checkout. Local pixel review is not claimed. Exact new-page CI and release readback follow separately.
