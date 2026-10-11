@@ -144,6 +144,13 @@
       },
       "source": "Founder: OK, yeah these are a lot better and I approve of these type of images to get posted",
       "verified_at": "2026-10-10T23:06:00Z"
+    },
+    {
+      "key": "growth.price_preserving_visibility",
+      "kind": "founder_decision",
+      "value": "DA-VISIBILITY-20261010-v1: Keep all current prices, trial and license terms unchanged, including Lifetime. Prioritize qualified awareness among traders comparing paid indicators, creator/community placements, original actual-product demonstrations and the existing Pro buying path. Four-figure monthly recurring revenue is a target without a promised deadline. Preserve the $0 incremental spending limit and existing publisher/schedules. Do not infer new bulk messaging or paid advertising authority.",
+      "source": "Founder clarification October 10, 2026 at 21:09 America/New_York in revenue sprint conversation",
+      "verified_at": "2026-10-11T01:09:48Z"
     }
   ],
   "rules": {
