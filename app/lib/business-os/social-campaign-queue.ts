@@ -1207,5 +1207,47 @@ export const socialCampaignQueue:ReviewedCreative[] = [
       "reviewer": "Codex with founder-approved native v3 image direction: final exact PNG inspected full-size and at 390px; source pixels, copy, rotation, logo and CTA checked. Darth Algo Operations 1.2.0.",
       "reviewedAt": "2026-10-10T23:09:27.814078+00:00"
     }
+  },
+  {
+    "id": "2026-10-11-afternoon-pro-shortlist-feature-map",
+    "day": "2026-10-11",
+    "slot": "afternoon",
+    "theme": "Pro shortlist: real feature map for paid-indicator shoppers",
+    "text": "Still comparing TradingView indicators? Put Darth Algo on your shortlist. Pro includes Scalper + Swing for $29/month—$4.98 less than the two separate monthly plans before tax. See the actual tool and compare the fit:\nhttps://www.darthalgo.com/alternatives #DarthAlgo",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-10-11/pro-shortlist-overview-908d1ab001ac.png",
+        "sha256": "908d1ab001acea2ce9b29a148ab05d2e2f556d595fa03426b2b613d502a87f25",
+        "altText": "Darth Algo Pro shortlist guide. A real TradingView feature map shows signals, dashboard confirmation and planned trade levels. Pro includes Scalper and Swing for $29 per month.",
+        "mimeType": "image/png"
+      },
+      {
+        "path": "/social-campaigns/2026-10-11/pro-shortlist-detail-7913f7192a28.png",
+        "sha256": "7913f7192a28c678f847676e1824bee66aa0f1001e153455997a6cc7f737265f",
+        "altText": "Darth Algo Pro feature detail. A real TradingView chart shows dashboard confirmation plus entry, stop and target zones. Compare Darth Algo at darthalgo.com/alternatives.",
+        "mimeType": "image/png"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "promotional",
+      "typographyVersion": "condensed-italic-2026-10-02-v2",
+      "sources": [
+        "https://www.darthalgo.com/alternatives",
+        "https://www.darthalgo.com/compare",
+        "https://www.darthalgo.com/indicator-examples/darth-algo-feature-map-01.png",
+        "https://www.luxalgo.com/library/",
+        "library:DA_Revenue_Sprint_2026-10-10.md#version-2",
+        "library:DA_Content_Research_Latest.md#version-15",
+        "docs/social-creative-reviews/2026-10-11-promotion.md"
+      ],
+      "learning": "Policy reviews: DA-VISIBILITY-20261010-v1; DA-REVENUE-20261010-v1; DA-BRAND-20261010-v3; DA-CLARITY-20261010-v1; DA-BENEFIT-20261010-v2. Buyer question: what will Darth Algo actually put on the chart, and does Pro fit traders using both intraday and broader-move workflows? Verified benefit: the real Pro feature map shows signals, dashboard confirmation and planned levels; Pro includes Scalper + Swing for $29/month, $4.98 less than the two separate monthly plans before tax. A trader needing one style should choose its single tool. Exact destination and CTA: Compare Darth Algo → /alternatives. Owned capture: feature-map-01 SHA 6b8b0dc8…; family darth-algo-feature-map-2026-06-03; 1805x767; no retained queue use found. Prior-six families and morning slot checked; cooldown passes. Slide 1 uses the full source at 952x405. Slide 2 uses a proportional 670x664 honest detail crop fitted at approximately 695x689. No chart pixels, candles, labels or outcomes were generated or redrawn. Freshness: first paid-indicator shortlist application, full feature-map overview, vertical detail proof and two-slide overview/detail story differ substantively from the prior six campaigns and morning art. Tap path: X/Threads direct caption URL; Instagram profile /links → Compare → alternatives, not an assumed caption tap. Experiment: source observation=owned samples and attribution remain sparse, while narrow buyer problems with real product mechanisms are defensible; single variable=shortlist framing for an already-comparing buyer; primary metric=independently attributable /alternatives product visits per confirmed delivered platform post over seven full days; guardrail=no performance parity, competitor-price, urgency, result or duplicate-subscription claim; sample=at least 5 independently attributable visits, otherwise insufficient data; continue only if qualified visits appear without fit or plan-choice confusion. First 10 independently attributable new paid customers is a learning milestone, not promised delivery. Provider publication remains unconfirmed until the production app stores receipts. Exact visual QA and literal text are recorded in the cited review."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "1f86bdf9744886ecc0b135a9277b11b686b2f425b3861947db3e2a70f26171e6",
+      "reviewer": "Codex: founder-approved native v3 workflow; exact encoded PNGs inspected full-size and at approximately 390px against source, prior six campaigns, typography, copy, logo, CTA, cooldown and destination. Darth Algo Operations 1.2.0.",
+      "reviewedAt": "2026-10-11T12:23:37Z"
+    }
   }
 ];
