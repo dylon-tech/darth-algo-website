@@ -19,7 +19,7 @@
 .hub-market-vignette { position:absolute; z-index:4; inset:150px 0 0; background:linear-gradient(90deg,transparent,transparent calc(50% - 340px),#030405d9 calc(50% - 275px),#030405ed 50%,#030405d9 calc(50% + 275px),transparent calc(50% + 340px)); }
 
 
-.hub-content { perspective:1400px; }
+.hub-content { perspective:none; }
 .hub-brand-stage { position:relative; padding-top:109px; padding-bottom:12px; }
 .hub-brand-emblem { transform:perspective(800px) rotateX(3deg); border-color:#ffffff26!important; box-shadow:0 3px 0 #1b1c1d,0 8px 0 -2px #090909,0 20px 40px #000a!important; }
 .hub-brand-stage h1 { position:relative; }.hub-brand-stage>p { color:#a6aeaf; text-wrap:balance; }
@@ -63,3 +63,4 @@
 
 /* The product now leads instead of decorative market ribbons. */
 .hub-brand-stage.hub-product-first { padding-top: 12px; }
+.hub-product-first .hub-brand-emblem { transform:none; box-shadow:none!important; }

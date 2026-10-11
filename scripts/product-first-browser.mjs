@@ -49,6 +49,12 @@ try {
         const expand = explorer.getByRole('button', { name: /^Enlarge / });
         await expand.click();
         assert.ok(await page.getByRole('dialog').isVisible());
+        const chartRegion = page.getByRole('region', { name: 'Full-size chart; use arrow keys to scroll' });
+        await chartRegion.focus();
+        assert.ok(await chartRegion.evaluate(el => el === document.activeElement), 'Full-size chart accepts keyboard focus');
+        await page.keyboard.press('ArrowRight');
+        await page.waitForFunction(() => document.querySelector('.indicator-dialog[open] .indicator-dialog-scroll').scrollLeft > 0);
+        if (path === '/products/pro') await page.screenshot({ path: `artifacts/product-first/${name}-chart-dialog.png` });
         await page.keyboard.press('Escape');
         assert.equal(await page.getByRole('dialog').count(), 0);
         assert.ok(await expand.evaluate(el => el === document.activeElement), 'Native dialog restores focus');
@@ -63,6 +69,7 @@ try {
         await page.evaluate(() => scrollTo(0, 0));
         await page.screenshot({ path: `artifacts/product-first/${name}-${path === '/' ? 'home' : path.slice(1).replaceAll('/', '-')}.png`, fullPage: false });
       }
+      if (path === '/links') assert.equal(await page.locator('.hub-brand-emblem').evaluate(el => getComputedStyle(el).transform), 'none', 'Product-first logo avoids the decorative 3D compositing layer');
       checks.push(`${name} ${path}: layout, image, controls, route PASS`);
     }
     // Actual hydrated attribution survives navigation, feature switches and dynamic links.

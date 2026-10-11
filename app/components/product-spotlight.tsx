@@ -51,7 +51,7 @@ export function IndicatorExplorer({ product = "pro", priority = false }: { produ
     <dialog ref={dialog} className="indicator-dialog" aria-label={`${products[product].shortName} enlarged chart`}>
       <div className="indicator-dialog-bar"><strong>{products[product].shortName} · {frame.label}</strong><button type="button" aria-label="Close enlarged chart" onClick={() => dialog.current?.close()}><X size={22} /></button></div>
       <p>Scroll across the full-size chart to inspect its labels.</p>
-      <div className="indicator-dialog-scroll">
+      <div className="indicator-dialog-scroll" tabIndex={0} role="region" aria-label="Full-size chart; use arrow keys to scroll">
         {/* Preserve native dimensions for inspecting labels, rather than upscaling a thumbnail. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={frame.src} alt={frame.alt} />
