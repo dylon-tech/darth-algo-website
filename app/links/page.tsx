@@ -17,7 +17,7 @@ import {
   Zap,
 } from "lucide-react";
 import LinkActions from "./link-actions";
-import IndicatorPreview from "./indicator-preview";
+import { getCheckoutLink, products } from "../lib/products";
 import MarketScene from "./market-scene";
 import "./market-scene.css";
 
@@ -75,47 +75,51 @@ export default function LinksPage() {
           </nav>
         </section>
 
-        <section id="indicators" aria-label="Featured Darth Algo Swing Tool trial" className="hub-depth-card relative mt-4 overflow-hidden rounded-[1.75rem] border border-white/15 bg-[#0c131d] shadow-[0_24px_80px_rgba(0,0,0,.25)]">
-          <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_82%_8%,rgba(14,165,233,.32),transparent_34%),radial-gradient(circle_at_5%_92%,rgba(59,130,246,.2),transparent_38%)]" />
+        <section id="indicators" aria-label="Darth Algo Pro: Scalper and Swing together" className="hub-depth-card relative mt-4 overflow-hidden rounded-[1.75rem] border border-red-400/30 bg-[#111116] shadow-[0_24px_80px_rgba(0,0,0,.25)]">
+          <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_82%_8%,rgba(239,68,68,.15),transparent_45%)]" />
           <div className="relative border-b border-white/10 bg-black/25 px-5 py-3">
             <div className="flex items-center justify-between gap-3">
-              <span className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[.2em] text-sky-200"><span className="h-2 w-2 animate-pulse rounded-full bg-sky-400" /> Start here</span>
-              <span className="rounded-full border border-sky-300/25 bg-sky-300/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-sky-100">2 days free</span>
+              <span className="text-xs font-bold tracking-wide text-red-300">For traders who use both styles</span>
+              <span className="shrink-0 rounded-full border border-white/20 px-2.5 py-1 text-xs font-semibold text-white">Pro bundle</span>
             </div>
           </div>
 
           <div className="relative p-5 sm:p-6">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[.18em] text-sky-300">Swing trading intelligence</p>
-                <h2 className="font-display mt-2 text-2xl font-black leading-tight sm:text-3xl">Try the Darth Algo Swing Tool</h2>
+                <p className="text-xs font-bold tracking-wide text-red-300">Darth Algo Pro</p>
+                <h2 className="font-display mt-2 text-3xl font-black leading-tight sm:text-4xl">Scalp the session.<br />Follow the bigger move.</h2>
               </div>
-              <div className="shrink-0 text-right"><span className="block text-sm font-black text-zinc-600 line-through">$14.99</span><strong className="text-2xl font-black text-sky-300">$0</strong><span className="block text-[9px] font-bold uppercase text-zinc-500">for 2 days</span></div>
+              <div className="shrink-0 text-right"><strong className="text-3xl font-black text-white">{products.pro.price}</strong><span className="block text-xs text-zinc-300">/ month</span></div>
             </div>
-            <p className="mt-3 text-sm leading-6 text-zinc-400">Swing signals, trend context, alerts, and trade levels—together on your TradingView chart.</p>
-            <div className="mt-4 grid grid-cols-2 gap-2 text-[11px] font-bold text-zinc-300">
-              <span className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-300" /> Secure checkout</span>
-              <span className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-300" /> Invite-only access</span>
+            <p className="mt-3 text-sm leading-6 text-zinc-300">Scalper and Swing in one subscription. Read trend context, review signals, and keep entry, stop and targets together on TradingView.</p>
+            <div className="mt-4 grid gap-2 text-sm font-semibold text-zinc-200">
+              <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 shrink-0 text-red-300" /> Both tools included</span>
+              <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 shrink-0 text-red-300" /> $4.98/month less than buying both separately</span>
             </div>
-            <a href="https://buy.stripe.com/28EcN699l8oQ9aC5Ao6kg02" className="hub-primary-cta mt-5 flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 via-sky-500 to-cyan-400 px-5 text-sm font-black text-white shadow-[0_12px_35px_rgba(14,165,233,.35)] transition hover:-translate-y-0.5 hover:brightness-110">
-              <CreditCard className="h-4 w-4" /> Start My 2-Day Free Trial <ArrowUpRight className="h-4 w-4" />
+            <Link href="/products/pro" className="mt-5 block overflow-hidden rounded-xl border border-white/15 bg-black">
+              <Image src={products.pro.overview} alt={products.pro.overviewAlt} width={1805} height={767} sizes="(max-width: 640px) 100vw, 528px" className="h-auto w-full object-contain" />
+              <span className="block px-3 py-2 text-xs leading-5 text-zinc-300">Recorded Pro example · Explore the tool →</span>
+            </Link>
+            <a href={getCheckoutLink("pro")} className="hub-primary-cta mt-5 flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-5 text-base font-bold text-white transition hover:bg-red-500">
+              <CreditCard className="h-4 w-4" /> Get Pro — $29/month <ArrowUpRight className="h-4 w-4" />
             </a>
-            <p className="mt-3 text-center text-xs font-medium tabular-nums text-zinc-300">Then $14.99/month. Cancel anytime.</p>
-            <p className="mt-2 text-center text-xs leading-5 text-zinc-400">Trial starts at checkout. TradingView access is granted automatically after checkout using your exact username.</p>
-            <Link href="/#pricing" className="mt-3 flex min-h-11 items-center justify-center text-xs font-black text-zinc-400 transition hover:text-white">Compare every indicator plan</Link>
+            <p className="mt-3 text-center text-xs leading-5 text-zinc-300">Billed monthly. Cancel anytime. Applicable tax may be added at checkout.</p>
+            <p className="mt-2 text-center text-xs leading-5 text-zinc-400">Automatic TradingView access after checkout. Enter your exact TradingView username.</p>
+            <Link href="/start" className="mt-3 flex min-h-11 items-center justify-center text-sm font-semibold text-white underline underline-offset-4">Try the free chart walkthrough first</Link>
+            <p className="mt-2 text-center text-xs leading-5 text-zinc-400">Already subscribed? <Link href="/support" className="text-zinc-200 underline underline-offset-4">Ask about switching plans</Link> before starting another subscription.</p>
           </div>
-          <IndicatorPreview />
         </section>
 
         <section aria-labelledby="more-tools-heading" className="mt-6">
-          <div className="mb-3 flex items-end justify-between"><div><p className="text-[9px] font-black uppercase tracking-[.18em] text-violet-300">More indicator access</p><h2 id="more-tools-heading" className="font-display mt-1 text-2xl font-black">Find your trading style.</h2></div><Link href="/#pricing" className="text-[9px] font-black uppercase tracking-wider text-zinc-500 hover:text-white">Compare all</Link></div>
+          <div className="mb-3 flex items-end justify-between gap-3"><div><p className="text-xs font-semibold text-zinc-400">Only need one style?</p><h2 id="more-tools-heading" className="font-display mt-1 text-2xl font-black">Choose your tool.</h2></div><Link href="/compare" className="flex min-h-11 items-center text-sm font-semibold text-zinc-300 underline underline-offset-4 hover:text-white">Compare all</Link></div>
           <div className="grid gap-3 sm:grid-cols-2">
             {[
-              {name:'Scalper Tool',eyebrow:'Scalper · More frequent signals',price:'$18.99',image:'/indicators/scalper-execution.png',href:'https://buy.stripe.com/14AfZi4T5fRidqS2oc6kg03',product:'/products/scalper',accent:'from-orange-500 to-red-500',border:'border-orange-400/25',text:'text-orange-300'},
-              {name:'Pro Tool',eyebrow:'Pro · Switch Swing / Scalp',price:'$29',image:'/indicator-examples/darth-algo-feature-map-01.png',href:'https://buy.stripe.com/4gM8wQfxJ6gI1IabYM6kg05',product:'/products/pro',accent:'from-violet-600 to-fuchsia-500',border:'border-violet-400/25',text:'text-violet-300'},
+              {name:'Scalper Tool',eyebrow:'Active intraday sessions',price:products.scalper.price,image:products.scalper.overview,href:getCheckoutLink('scalper'),product:'/products/scalper',cta:'Get Scalper',terms:'Billed monthly. Cancel anytime.',accent:'from-orange-500 to-red-500',border:'border-orange-400/25',text:'text-orange-300'},
+              {name:'Swing Tool',eyebrow:'Broader directional moves',price:products.swing.price,image:products.swing.overview,href:getCheckoutLink('swing'),product:'/products/swing',cta:'Try Swing free for 2 days',terms:'Trial starts at checkout, then $14.99/month unless canceled.',accent:'from-blue-600 to-sky-500',border:'border-sky-400/25',text:'text-sky-300'},
             ].map(tool=><article key={tool.name} className={`hub-depth-card relative group overflow-hidden rounded-[1.35rem] border bg-[#0d1118]/92 backdrop-blur-sm ${tool.border} shadow-[0_18px_45px_rgba(0,0,0,.22)]`}>
-              <Link href={tool.product} className="relative block aspect-[16/8] overflow-hidden bg-black"><Image src={tool.image} alt={`Darth Algo ${tool.name} chart preview`} fill sizes="(max-width: 640px) 100vw, 288px" className="object-cover transition duration-500 group-hover:scale-105"/><span className="absolute inset-0 bg-gradient-to-t from-[#0d1118] to-transparent"/><span className={`absolute bottom-2 left-3 text-[8px] font-black uppercase tracking-[.15em] ${tool.text}`}>{tool.eyebrow}</span></Link>
-              <div className="p-4"><div className="flex items-start justify-between gap-3"><h3 className="font-display text-lg font-black">Darth Algo {tool.name}</h3><div className="shrink-0 text-right"><strong className="text-lg font-black">{tool.price}</strong><span className="block text-[8px] uppercase text-zinc-600">/ month</span></div></div><a href={tool.href} className={`mt-3 flex min-h-11 items-center justify-center gap-2 rounded-xl bg-gradient-to-r px-4 text-xs font-black text-white shadow-lg transition hover:-translate-y-0.5 hover:brightness-110 ${tool.accent}`}>Get {tool.name} <ArrowUpRight className="h-3.5 w-3.5"/></a></div>
+              <Link href={tool.product} className="relative block aspect-[16/8] overflow-hidden bg-black"><Image src={tool.image} alt={`Darth Algo ${tool.name} chart preview`} fill sizes="(max-width: 640px) 100vw, 288px" className="object-contain"/></Link>
+              <div className="p-4"><p className={`mb-2 text-xs font-semibold ${tool.text}`}>{tool.eyebrow}</p><div className="flex items-start justify-between gap-3"><h3 className="font-display text-lg font-black">Darth Algo {tool.name}</h3><div className="shrink-0 text-right"><strong className="text-lg font-black">{tool.price}</strong><span className="block text-xs text-zinc-400">/ month</span></div></div><a href={tool.href} className={`mt-3 flex min-h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r px-4 text-sm font-bold text-white transition hover:brightness-110 ${tool.accent}`}>{tool.cta} <ArrowUpRight className="h-4 w-4"/></a><p className="mt-3 text-xs leading-5 text-zinc-300">{tool.terms}</p><Link href={tool.product} className="mt-2 flex min-h-11 items-center text-sm text-zinc-300 underline underline-offset-4">Explore {tool.name}</Link></div>
             </article>)}
           </div>
         </section>
