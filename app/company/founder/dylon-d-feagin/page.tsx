@@ -135,7 +135,7 @@ export default function FounderPage() {
         </section>
 
         <section id="company" className={styles.company} aria-labelledby="company-title">
-          <div><p className={styles.eyebrow}>The company behind the work</p><h2 id="company-title">Darth Algo.</h2><p>TradingView indicators designed to bring buy and sell signals, trend context, alerts, and visual trade-planning levels into a clearer chart workflow.</p><div className={styles.companyLinks}><Link href="/about-darth-algo">About the company <ArrowUpRight size={16} aria-hidden="true" /></Link><Link href="/community">Meet the community <ArrowUpRight size={16} aria-hidden="true" /></Link></div></div>
+          <div><p className={styles.eyebrow}>The company behind the work</p><h2 id="company-title">Darth Algo.</h2><p>TradingView indicators designed to bring buy and sell signals, trend context, alerts, and visual trade-planning levels into a clearer chart workflow.</p><div className={styles.companyLinks}><Link href="/products/pro">Explore the indicator <ArrowUpRight size={16} aria-hidden="true" /></Link><Link href="/community">Meet the community <ArrowUpRight size={16} aria-hidden="true" /></Link></div></div>
           <div className={styles.companyMark} aria-hidden="true">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/founder/darth-algo-color.jpg" alt="" width={1254} height={1254} loading="lazy" />

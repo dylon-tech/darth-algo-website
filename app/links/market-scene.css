@@ -60,3 +60,6 @@
  .links-market-hub #socials article>a strong { font-size:17px; }
  .links-market-hub #socials article>a { gap:12px; }
 }
+
+/* The product now leads instead of decorative market ribbons. */
+.hub-brand-stage.hub-product-first { padding-top: 12px; }

@@ -1,6 +1,7 @@
 import { ArrowRight, BadgeCheck, CircleHelp, Clock3, CreditCard, KeyRound, UserRound } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ExploreTools } from "../components/product-spotlight";
 import SiteFooter from "../components/site-footer";
 import SiteHeader from "../components/site-header";
 
@@ -35,6 +36,7 @@ export default function SupportPage() {
           <div className="mt-10 flex flex-col gap-3 sm:flex-row"><Link href="/#faq" className="inline-flex min-h-12 items-center justify-center rounded-md border border-white/10 bg-card px-6 text-sm font-bold">Read common questions</Link><Link href="/refund-policy" className="inline-flex min-h-12 items-center justify-center rounded-md border border-white/10 bg-card px-6 text-sm font-bold">Refund and cancellation policy</Link></div>
         </div>
       </section>
+      <ExploreTools title="Still choosing your indicator?" />
       <SiteFooter />
     </main>
   );

@@ -1,10 +1,10 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import {
   Activity,
   ArrowRight,
-  ArrowDown,
   BellRing,
   Check,
   ChevronRight,
@@ -19,18 +19,15 @@ import {
   Maximize2,
   Menu,
   Radio,
-  Shield,
   ShieldCheck,
-  Sparkles,
   Target,
   TrendingUp,
-  Users,
   X,
   Zap,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { ImmersiveStory } from "./components/immersive-engine";
-import HeroTradeDemo from "./components/hero-trade-demo";
+import ProductSpotlight from "./components/product-spotlight";
+import SiteBrand from "./components/site-brand";
 import SiteFooter from "./components/site-footer";
 import TradingViewUsernameHelp from "./components/tradingview-username-help";
 
@@ -49,25 +46,25 @@ const systemModules = [
     icon: TrendingUp,
     number: "01",
     title: "Signal Engine",
-    copy: "Trend-following buy and sell signals built to make market direction easier to act on.",
+    copy: "Buy and sell markers help you spot setups to review.",
   },
   {
     icon: CloudLightning,
     number: "02",
     title: "Trend Intelligence",
-    copy: "A responsive cloud and market-bias dashboard confirm the environment behind each setup.",
+    copy: "Use the cloud and dashboard to read the trend behind a signal.",
   },
   {
     icon: Target,
     number: "03",
     title: "Trade Planning",
-    copy: "Entry, stop-loss, TP1, and TP2 zones map the trade before risk enters the equation.",
+    copy: "Compare entry, stop and both targets before taking on risk.",
   },
   {
     icon: BellRing,
     number: "04",
     title: "Real-Time Alerts",
-    copy: "TradingView alerts keep the system working even when you are away from the chart.",
+    copy: "Set TradingView alerts to follow conditions away from the chart.",
   },
 ];
 
@@ -367,22 +364,6 @@ const faqs = [
   },
 ];
 
-const tickerTape = [
-  ["ES", "6,447.25", "+0.38%"],
-  ["NQ", "23,518.50", "+0.62%"],
-  ["YM", "45,122", "+0.21%"],
-  ["RTY", "2,314.8", "-0.14%"],
-  ["GC", "4,566.0", "+0.06%"],
-  ["CL", "66.21", "+0.44%"],
-];
-
-const trustSignals = [
-  [ShieldCheck, "Automatic TradingView access", "Granted immediately after purchase"],
-  [Sparkles, "AI-assisted updates", "Continuous product iteration and feature planning"],
-  [Target, "Risk-plan visuals", "Entry, stop, TP1, and TP2 mapped on chart"],
-  [Users, "Built for futures traders", "Designed around fast decisions and clean structure"],
-];
-
 const productComparison = [
   ["Scalper", "Active intraday setups", "$18.99/mo", "Fastest signal profile"],
   ["Swing", "Bigger directional moves", "$14.99/mo", "2-day free trial"],
@@ -442,32 +423,7 @@ function AnimatedCandles({ ambient = false }: { ambient?: boolean }) {
 }
 
 function Brand({ small = false }: { small?: boolean }) {
-  return (
-    <span className="inline-flex items-center gap-3 leading-none">
-      <span className={`${small ? "h-10 w-10" : "h-12 w-12"} brand-crest relative grid shrink-0 place-items-center`} aria-hidden="true">
-        <span className="brand-crest-aura absolute" />
-        <span className="brand-crest-orbit absolute inset-0" />
-        <span className="brand-crest-orbit brand-crest-orbit-inner absolute" />
-        <span className="brand-crest-core absolute grid place-items-center">
-          <Shield className={`${small ? "h-6 w-6" : "h-7 w-7"} brand-crest-shield text-ember`} strokeWidth={1.75} />
-          <TrendingUp className={`${small ? "h-3 w-3" : "h-3.5 w-3.5"} brand-crest-signal absolute text-white`} strokeWidth={2.6} />
-          <span className="brand-crest-bars absolute"><i /><i /><i /></span>
-        </span>
-        <span className="brand-crest-sparkline absolute">
-          <svg viewBox="0 0 44 22" aria-hidden="true" focusable="false">
-            <path className="brand-crest-sparkline-shadow" d="M2 17 L10 14 L15 16 L22 8 L29 11 L37 4 L42 6" />
-            <path className="brand-crest-sparkline-line" d="M2 17 L10 14 L15 16 L22 8 L29 11 L37 4 L42 6" />
-          </svg>
-        </span>
-        <span className="brand-crest-node brand-crest-node-a absolute" />
-        <span className="brand-crest-node brand-crest-node-b absolute" />
-        <span className="brand-crest-beam absolute" />
-      </span>
-      <span className="brand-wordmark font-display text-xl font-black uppercase sm:text-2xl">
-        <span className="brand-wordmark-darth text-ember">Darth</span> <span className="text-white">Algo</span>
-      </span>
-    </span>
-  );
+  return <SiteBrand compact={small} />;
 }
 
 function ButtonLink({
@@ -692,65 +648,20 @@ export default function Home() {
         )}
       </header>
 
-      <section id="top" className="immersion-hero immersion-red relative z-10">
-        <div className="section-shell immersion-hero-layout hero-live-layout">
-          <div className="hero-live-intro">
-            <p className="immersion-eyebrow">TradingView indicators / Built for futures</p>
-            <h1><span>Darth</span> <em>Algo.</em></h1>
-            <p className="immersion-hero-lead">See the setup. Plan the trade.</p>
-            <p className="immersion-hero-copy">Swing, Scalp or both. See your signals, trend and risk together on the chart.</p>
-          </div>
-          <HeroTradeDemo />
-          <div className="hero-live-actions">
-            <div className="immersion-hero-actions"><a href="#swing-trial">Try Swing Free ↗</a><a href="#inside-the-engine">Explore the tools ↓</a></div>
-            <p className="mt-4 text-sm leading-6 text-zinc-300">Automatic TradingView access after checkout. Enter your exact username to get started.</p>
-            <div className="immersion-hero-meta"><span>Scalper</span><span>Swing</span><span>Pro</span><span>From $14.99/mo</span></div>
-          </div>
-        </div>
-        <div className="section-shell immersion-hero-bottom"><span>Signals / Trend context / Defined risk</span><a href="#inside-the-engine">Scroll to explore <ArrowDown className="h-4 w-4" /></a></div>
-      </section>
-      <ImmersiveStory />
-
-      <div aria-label="Illustrative market interface" className="relative z-10 overflow-hidden border-b border-white/10 bg-secondary py-3">
-        <div className="market-tape">
-          <div className="market-tape-track flex w-max gap-10 whitespace-nowrap px-5 text-xs">
-            {[...tickerTape, ...tickerTape, ...tickerTape].map(([symbol, price, move], index) => (
-              <span key={`${symbol}-${index}`} className="inline-flex items-center gap-3">
-                <span className="font-black text-zinc-200">{symbol}</span>
-                <span className="font-mono text-zinc-500">{price}</span>
-                <span className={move.startsWith("+") ? "text-emerald-400" : "text-ember"}>{move}</span>
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <section className="relative z-10 border-b border-white/10 bg-black/45 py-10">
-        <div className="section-shell">
-          <div className="grid gap-px overflow-hidden rounded-md border border-white/10 bg-white/10 sm:grid-cols-2 lg:grid-cols-4">
-            {trustSignals.map(([Icon, title, copy]) => {
-              const TrustIcon = Icon as typeof ShieldCheck;
-              return (
-                <article key={String(title)} className="group bg-[#080809] p-5 transition hover:bg-ember/[0.045]">
-                  <div className="flex items-center gap-3">
-                    <span className="grid h-10 w-10 place-items-center rounded-md border border-ember/25 bg-ember/[0.08]"><TrustIcon className="h-4 w-4 text-ember" /></span>
-                    <h2 className="font-display text-base font-black text-white">{String(title)}</h2>
-                  </div>
-                  <p className="mt-3 text-sm leading-6 text-zinc-500">{String(copy)}</p>
-                </article>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+      <ProductSpotlight id="top" eyebrow="Darth Algo · TradingView indicators" title="See the setup. Plan the trade." description="Buy/sell signals, trend context and planned levels. Explore the real tools built for your trading rhythm.">
+        <Link href="/products/pro" className="product-primary">Explore Pro — $29/month <ArrowRight size={17} /></Link>
+        <a href="#examples" className="product-secondary">Find your tool</a>
+        <p className="product-terms">Scalper + Swing with Pro. Prefer one style? Compare all plans below, including the 2-day Swing trial.</p>
+      </ProductSpotlight>
+      <div id="inside-the-engine" />
 
       <section id="system" className="immersive-section relative z-10 py-24 sm:py-32">
         <div className="section-shell">
           <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
             <SectionHeading
               eyebrow="The Darth Algo System"
-              title="A premium signal suite built like trading software."
-              copy="Inspired by the cleanest trading platforms: fewer distractions, stronger visual hierarchy, faster setup recognition, and product pages that make choosing access simple."
+              title="Read the signal. See the whole setup."
+              copy="Trend, signal, entry, stop and targets—together, where you make the decision."
             />
             <div className="grid gap-px overflow-hidden rounded-md border border-white/10 bg-white/10 sm:grid-cols-2">
               {["Buy + sell signals", "Trend cloud", "Entry / SL / TP levels", "Live dashboard"].map((item) => (

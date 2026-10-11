@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { ArrowRight, Check, FlaskConical, LockKeyhole, MousePointer2, UserRound, ChartNoAxesCombined } from "lucide-react";
+import { ArrowRight, Check, FlaskConical, MousePointer2, UserRound, ChartNoAxesCombined } from "lucide-react";
 import SiteHeader from "../components/site-header";
 import SiteFooter from "../components/site-footer";
 import TradingViewUsernameHelp from "../components/tradingview-username-help";
 import { db } from "../lib/affiliate-db";
 import { productList, getCheckoutLink } from "../lib/products";
+import ProductSpotlight from "../components/product-spotlight";
 import ProductGallery from "./product-gallery";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Indicator catalog | Darth Algo", description: "Explore free public Darth Algo indicators and compare the paid Swing, Scalper and Pro tools for TradingView.", alternates: { canonical: "/indicators" } };
@@ -17,17 +18,10 @@ export default async function IndicatorCatalog() {
   return <>
     <SiteHeader />
     <main id="main-content" className="min-h-screen bg-obsidian text-white">
-      <section className="relative overflow-hidden border-b border-white/10 py-16 sm:py-24">
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(139,92,246,0.13),transparent_65%)]" />
-        <div className="section-shell relative">
-          <div className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-400"><span className="h-px w-8 bg-ember" /> The indicator collection</div>
-          <div className="mt-6 grid gap-8 lg:grid-cols-[1.25fr_1fr] lg:items-end">
-            <h1 className="max-w-3xl font-display text-5xl font-black leading-[1.04] tracking-tight sm:text-7xl">Your chart.<br /><span className="text-zinc-500">A clearer perspective.</span></h1>
-            <div className="max-w-lg"><p className="text-lg leading-8 text-zinc-400">Explore the signals, trend context, and risk levels behind Darth Algo. See the actual charts. Find the tool that fits your trading style.</p><a href="#access" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold hover:text-ember">How to get access <ArrowRight size={16} /></a></div>
-          </div>
-          <div className="mt-10 flex flex-wrap gap-x-7 gap-y-3 border-t border-white/10 pt-6 text-xs text-zinc-400"><span className="inline-flex items-center gap-2"><ChartNoAxesCombined size={15} /> Built for TradingView</span><span className="inline-flex items-center gap-2"><MousePointer2 size={15} /> Expandable chart previews</span><span className="inline-flex items-center gap-2"><LockKeyhole size={15} /> Free & premium tools</span></div>
-        </div>
-      </section>
+      <ProductSpotlight eyebrow="The indicator collection" title="Your chart. More clarity." description="Explore the signals, trend cloud and planned levels. Choose Scalper, Swing or both.">
+        <a href="#collection-title" className="product-primary">Explore the tools <ArrowRight size={17} /></a>
+        <a href="#access" className="product-secondary">How access works</a>
+      </ProductSpotlight>
       <section className="section-shell py-14 sm:py-20" aria-labelledby="collection-title">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-3"><div><p className="text-xs uppercase tracking-widest text-zinc-500">Choose your horizon</p><h2 id="collection-title" className="mt-2 font-display text-3xl font-bold">Three ways to read the market.</h2></div><p className="text-xs text-zinc-400">Select a thumbnail to explore each tool.</p></div>
         <div className="grid items-stretch gap-6 md:grid-cols-2 xl:grid-cols-3">
