@@ -69,23 +69,12 @@ try {
         await page.evaluate(() => scrollTo(0, 0));
         await page.screenshot({ path: `artifacts/product-first/${name}-${path === '/' ? 'home' : path.slice(1).replaceAll('/', '-')}.png`, fullPage: false });
       }
-      if (path === '/links') assert.equal(await page.locator('.hub-brand-emblem').evaluate(el => getComputedStyle(el).transform), 'none', 'Product-first logo avoids the decorative 3D compositing layer');
-      if (path === '/links' && name === 'webkit') {
-        // Read-only render diagnosis: isolate a blocked iframe or composited decoration.
-        // These changes affect only this local test DOM, never source or production.
-        const probe = await context.newPage();
-        await probe.goto(origin + '/links', { waitUntil: 'networkidle' });
-        await probe.evaluate(() => document.fonts.ready);
-        await probe.screenshot({ path: 'artifacts/product-first/webkit-links-fresh.png' });
-        await writeFile('artifacts/product-first/links-render-probe.json', JSON.stringify(await probe.evaluate(() => ({
-          atPatch: document.elementsFromPoint(100, 100).map(el => ({ tag: el.tagName, class: el.className })),
-          frames: [...document.querySelectorAll('iframe')].map(el => ({ src: el.src, bounds: el.getBoundingClientRect().toJSON() })),
-        })), null, 2));
-        await probe.locator('iframe').evaluateAll(nodes => nodes.forEach(n => n.remove()));
-        await probe.screenshot({ path: 'artifacts/product-first/webkit-links-no-iframe.png' });
-        await probe.addStyleTag({ content: '* { filter:none!important; backdrop-filter:none!important; -webkit-backdrop-filter:none!important; }' });
-        await probe.screenshot({ path: 'artifacts/product-first/webkit-links-no-filters.png' });
-        await probe.close();
+      if (path === '/links') {
+        assert.equal(await page.locator('.hub-brand-emblem').evaluate(el => getComputedStyle(el).transform), 'none');
+        assert.deepEqual(await page.locator('.links-market-hub *').evaluateAll(nodes => nodes.filter(el => {
+          const style = getComputedStyle(el);
+          return style.filter !== 'none' || (style.backdropFilter && style.backdropFilter !== 'none') || (style.webkitBackdropFilter && style.webkitBackdropFilter !== 'none');
+        }).map(el => el.className)), [], 'No decorative filter layers over the link-hub brand');
       }
       checks.push(`${name} ${path}: layout, image, controls, route PASS`);
     }
