@@ -1,5 +1,11 @@
 # Darth Algo Brand Rules
 
+## Focused indicator demonstrations — October 11, 2026
+
+[DA-FOCUS-20261011-v1]
+
+The founder rejects cluttered feature-map charts for future posts. Apply the focused-demonstration rules and required clutter check in `docs/social-brand-baseline.md` before the older directions below: one indicator function per image, a larger useful real feature view, minimal labels outside evidence, and separate slides for separate functions. Use legitimate recorded display settings for new authorized captures or faithful crops of existing originals; never erase signals, hide historical losers or alter chart evidence. Preserve the approved native v3 brand and existing schedule, rotation, publisher and spending limits. Review actual final bytes at full and approximately 390px width; a crowded or obstructed feature fails even when older style checks passed. `docs/social-creative-producer.md` carries the production and revision contract.
+
 ## Brand baseline and image-production direction — October 10, 2026
 
 [DA-BRAND-20261010-v3]

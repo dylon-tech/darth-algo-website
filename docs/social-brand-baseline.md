@@ -2,6 +2,25 @@
 
 Policy: DA-BRAND-20261010-v3. APPROVED by the founder October 10, 2026 at 19:06 America/New_York; approval record DA-BRAND-APPROVED-20261010-v1.
 
+## Focused indicator demonstrations — October 11, 2026
+
+[DA-FOCUS-20261011-v1]
+
+Founder correction: the latest Instagram chart examples are too cluttered to show the indicator features clearly. This is a refinement of the approved native v3 style for future work, and takes precedence over older overview/feature-map examples wherever they conflict.
+
+- Feature ONE indicator function per image. Dashboard confirmation, buy/sell signal context and trade-plan levels are separate demonstrations; entry, stop and targets may stay together when their relationship is the one lesson. Do not pack the full feature map into a cover. A carousel can introduce other functions on separate, uncluttered slides.
+- Start with the cleanest suitable authentic source. If an authorized TradingView capture route is available, use legitimate indicator display settings to turn off unrelated feature layers before making a new capture; record the displayed settings and preserve the original. This is a feature demonstration, not a new performance record. Never selectively hide losing/historical signals, adjust settings to manufacture success, erase real signals, retouch candles/prices or remove contrary outcome context.
+- Otherwise use a faithful focused crop of an existing supplied original, with the feature and necessary price/time/market context intact. Avoid pre-annotated overview captures when a clean original exists. Do not paint over baked-in callouts or chart evidence. If a clean supported crop is impossible, choose another existing source/feature before requesting the precise missing capture. New captures are not a routine prerequisite, and a crop does not reset source-family rotation.
+- Give the actual feature more useful visual space than these rejected examples. Reduce headline/support/offer panels before shrinking the chart. Enlarge only within the source's genuine readable detail; never stretch or invent sharpness. The promised feature must be recognizable at approximately 390px feed width without zoom.
+- Keep labels minimal: preferably one short editorial explanation outside the chart, at most two when essential to the same function. No competing numbered tour, label pileup or redundant ENTRY/STOP/TARGET boxes. Nothing may cover dashboard rows, signal markers, candles or levels needed to understand the feature. Use a short hook and one CTA; move secondary feature lists, pricing detail and explanation to the caption or another slide.
+- Preserve native screenshot/font/vector production, black/charcoal, red and silver/white, original full-color logo and genuine heavy condensed italic headline type. This correction does not authorize a redesign of the brand, new offers, different cadence or fabricated product output.
+
+### Required clutter check before queue admission
+
+Review the final encoded bytes beside the unchanged source at full size and approximately 390px. Record the one featured function, source identity/hash and crop or actual display settings; confirm the feature can be located immediately, its relevant details are readable, no labels cover the evidence, no unrelated feature competes, and the hook/CTA leave it enough room. Explicitly mark PASS/REVISE for focus, legibility, non-obstruction and source integrity in the existing creative review; reference DA-FOCUS-20261011-v1 in editorial.learning. An older PASS or approved visual style cannot waive this check. Revise within the existing cap or hold the affected asset, rather than approve a crowded feature map.
+
+Apply to new and verified unattempted future work within the producer's existing two-campaign cap. Preserve historical/attempted records and public posts, six-campaign family cooldown, exact hashes/digests, educational/promotional alternation, 9 AM/3 PM Eastern schedule, existing publisher and $0 incremental spend. This is producer/reviewer guidance, not an automated vision gate or evidence of improved future publication.
+
 ## The brand in one paragraph
 
 Darth Algo is a bold, dark, product-focused trading brand. Black and charcoal create depth; vivid red adds energy; silver-white, heavy condensed italic headlines create the signature voice. The full-color hooded logo anchors the identity. A genuine TradingView indicator view supplies the proof. Each post turns one recognizable trader problem into a clear feature demonstration and a useful next step. It should feel confident, precise and technically capable, while remaining easy to understand on a phone.
