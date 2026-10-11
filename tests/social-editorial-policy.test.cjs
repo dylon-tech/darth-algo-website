@@ -21,6 +21,11 @@ try {
  assert.equal(resultsSlot('2026-09-30','afternoon'),false);
  assert.equal(resultsSlot('2026-09-24','morning'),false);
  for(const c of socialCampaignQueue){validateReviewedCreative(c);for(const a of c.assets)assert.equal(createHash('sha256').update(readFileSync('public'+a.path)).digest('hex'),a.sha256);}
+ const legacy=structuredClone(socialCampaignQueue.find(c=>c.id==='2026-10-05-morning-lifetime-full-toolkit'));
+ assert.equal(legacy.review.sha256,creativeDigest(legacy),'Historical approval digest stays unchanged');
+ const arbitraryShortPrefix=structuredClone(legacy);arbitraryShortPrefix.assets[2].path='/social-campaigns/test/arbitrary-'+arbitraryShortPrefix.assets[2].sha256.slice(0,11)+'.jpg';
+ arbitraryShortPrefix.review.sha256=creativeDigest(arbitraryShortPrefix);
+ assert.throws(()=>validateReviewedCreative(arbitraryShortPrefix),/REVIEW_INVALID/,'Only the exact historical path/hash pair may use its 11-character filename');
  const base=structuredClone(socialCampaignQueue.find(c=>c.day==='2026-09-25'&&c.slot==='morning'));
  for(const c of socialCampaignQueue)reviewedCreativeFor(c.day,c.slot);
  const duplicate=structuredClone(base);duplicate.id='a-new-id';
@@ -33,7 +38,9 @@ try {
  const sign=c=>{c.review.sha256=creativeDigest(c);return c;};
  // A previously signed queue record cannot keep publishing the retired type.
  const modern=structuredClone(socialCampaignQueue.find(c=>c.day==='2026-10-03'&&c.slot==='afternoon'));
- modern.id='2026-10-05-afternoon-typography-fixture';modern.day='2026-10-05';modern.text='Distinct future typography policy fixture.';
+ let fixtureTime=Date.parse('2099-01-01T12:00:00Z'),fixtureDay;
+ do {fixtureDay=new Date(fixtureTime).toISOString().slice(0,10);fixtureTime+=86400000;} while(regularContentKind(fixtureDay)!==modern.editorial.kind||socialCampaignQueue.some(c=>c.day===fixtureDay&&c.slot==='afternoon'));
+ modern.id=fixtureDay+'-afternoon-typography-fixture';modern.day=fixtureDay;modern.text='Distinct future typography policy fixture.';
  modern.assets[0].sha256='c'.repeat(64);modern.assets[0].path='/social-campaigns/2026-10-05/policy-cccccccccccc.png';
  modern.editorial.typographyVersion='condensed-italic-2026-10-02-v2';sign(modern);socialCampaignQueue.push(modern);
  validateReviewedCreative(modern);
