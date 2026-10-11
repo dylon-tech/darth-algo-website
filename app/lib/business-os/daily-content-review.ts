@@ -26,7 +26,9 @@ async function hasSubmission(c:{day:string;slot:SocialSlot},sql:Sql){
 export async function readContentQueue(now=new Date()):Promise<ContentQueue>{
  const sql=db(),{day:today}=easternClock(now);
  const since=new Date(Date.parse(today+'T12:00:00Z')-7*86400000).toISOString().slice(0,10);
- const campaigns=socialCampaignQueue.filter(c=>c.day>=since).sort((a,b)=>a.day.localeCompare(b.day)||(a.slot===b.slot?0:a.slot==='morning'?-1:1)).slice(-24);
+ // Keep the bounded window anchored at its seven-day lookback. Taking the
+ // final rows lets arbitrarily distant future campaigns evict today's slots.
+ const campaigns=socialCampaignQueue.filter(c=>c.day>=since).sort((a,b)=>a.day.localeCompare(b.day)||(a.slot===b.slot?0:a.slot==='morning'?-1:1)).slice(0,24);
  const items:QueueItem[]=await Promise.all(campaigns.map(async c=>{
   const decision=await latestContentDecision(c,sql),submitted=await hasSubmission(c,sql);
   let reviewed=false;try{reviewed=Boolean(reviewedCreativeFor(c.day,c.slot));}catch{/* A failed review is a hold, never a fallback. */}

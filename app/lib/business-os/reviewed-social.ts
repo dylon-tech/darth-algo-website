@@ -8,6 +8,15 @@ import type {SocialSlot} from './social-schedule';
 import {regularContentKind,resultsSlot,socialEditorialVersion,type SocialContentKind} from './social-editorial-policy';
 export type EditorialReview={version:string;kind:SocialContentKind;sources:string[];learning:string;typographyVersion?:string;result?:{sourceHash:string;tradeDate:string;symbol:string;timeframe:string;outcomeBasis:'chart_setup'|'executed_trade';verificationNote:string}};
 export type ReviewedCreative={id:string;day:string;slot:SocialSlot;theme:string;text:string;editorial?:EditorialReview;assets:Array<{path:string;sha256:string;altText:string;mimeType:'image/jpeg'|'image/png'}>;review:{referenceVersion:string;sha256:string;reviewer:string;reviewedAt:string}};
+const legacyAssetPathHashes=new Map([
+ ['/social-campaigns/2026-10-05/lifetime-full-toolkit-03-a3fe1b4433f.jpg','a3fe1b4433f99b33db82158d966f0c29d3d986a4f12838b3ebb4fae197d2e7ca'],
+]);
+function assetPathMatchesHash(a:ReviewedCreative['assets'][number]) {
+ // New assets keep the 12-character filename binding. This one published
+ // historical asset used 11 characters; bind that exact path to its full hash
+ // instead of renaming/re-signing the approved record or weakening the rule.
+ return a.path.includes(a.sha256.slice(0,12))||legacyAssetPathHashes.get(a.path)===a.sha256;
+}
 export function creativeDigest(c:Pick<ReviewedCreative,'text'|'assets'|'editorial'>) {return createHash('sha256').update(JSON.stringify({text:c.text,assets:c.assets,...(c.editorial?{editorial:c.editorial}:{})})).digest('hex');}
 export function assertFreshCreative(c:ReviewedCreative,history:ReviewedCreative[]) {
  // Same campaign syndicated across channels/reconciled on retries is one post.
@@ -24,7 +33,7 @@ export function validateReviewedCreative(c:ReviewedCreative) {
  if(!/^[a-z0-9-]{1,80}$/.test(c.id)||!/^\d{4}-\d{2}-\d{2}$/.test(c.day)||!['morning','afternoon'].includes(c.slot)||!c.text.trim()||c.text.length>280||c.assets.length<1||c.assets.length>3)throw Error('CREATIVE_REVIEW_INVALID');
  if(c.review.referenceVersion!==socialVisualStandard.version||!c.review.reviewer||!Number.isFinite(Date.parse(c.review.reviewedAt))||c.review.sha256!==creativeDigest(c))throw Error('CREATIVE_REVIEW_INVALID');
  if(requiresCurrentTypography(c)&&c.editorial?.typographyVersion!==socialTypographyVersion)throw Error('CREATIVE_TYPOGRAPHY_REVIEW_REQUIRED');
- for(const a of c.assets)if(!/^\/(?:social-campaigns|creative-references)\/[a-zA-Z0-9/_-]+\.(?:png|jpg)$/.test(a.path)||a.path.includes('..')||!a.path.includes(a.sha256.slice(0,12))||!/^([a-f0-9]{64})$/.test(a.sha256)||!a.altText||a.altText.length>1000||!['image/png','image/jpeg'].includes(a.mimeType))throw Error('CREATIVE_REVIEW_INVALID');
+ for(const a of c.assets)if(!/^\/(?:social-campaigns|creative-references)\/[a-zA-Z0-9/_-]+\.(?:png|jpg)$/.test(a.path)||a.path.includes('..')||!assetPathMatchesHash(a)||!/^([a-f0-9]{64})$/.test(a.sha256)||!a.altText||a.altText.length>1000||!['image/png','image/jpeg'].includes(a.mimeType))throw Error('CREATIVE_REVIEW_INVALID');
  if(c.day>='2026-09-24') {
   const e=c.editorial;
   if(!e||e.version!==socialEditorialVersion||!e.sources.length||!e.learning.trim()||/illustrative display|trading involves (?:substantial )?risk/i.test(c.text+' '+c.assets.map(a=>a.altText).join(' ')))throw Error('CREATIVE_EDITORIAL_REVIEW_REQUIRED');
