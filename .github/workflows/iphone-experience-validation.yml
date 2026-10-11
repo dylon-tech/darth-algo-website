@@ -57,6 +57,8 @@ jobs:
         run: node scripts/video-studio-browser.mjs
       - name: WebKit iPhone-width experience
         run: node scripts/iphone-experience-browser.mjs
+      - name: Public product-first pages and attribution
+        run: node scripts/product-first-browser.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

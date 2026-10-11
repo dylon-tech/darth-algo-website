@@ -25,10 +25,10 @@ export default async function StartPage({ searchParams }: { searchParams: Promis
     <div className="min-h-screen bg-[#0d1117] text-white">
       <SiteHeader />
       <main id="main-content" className="section-shell py-10 sm:py-16">
-        <div className="mb-9 max-w-3xl">
+        <div className="mb-6 max-w-3xl">
           <p className="text-sm font-bold uppercase tracking-widest text-blue-300">Free chart walkthrough · No signup needed</p>
-          <h1 className="mt-4 text-balance text-4xl font-black leading-tight sm:text-6xl">Understand your chart before your next session.</h1>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-zinc-300">Start with three questions: What is the context? Where is the idea invalid? What are the possible targets?</p>
+          <h1 className="mt-4 text-balance text-4xl font-black leading-tight sm:text-6xl">Read the chart. Build your plan.</h1>
+          <p className="mt-5 max-w-2xl text-lg leading-8 text-zinc-300">Explore trend context, the stop and two targets on a real Darth Algo example.</p>
         </div>
         <ChartWalkthrough />
         <section aria-labelledby="checklist-title" className="mt-12 grid gap-8 border-y border-white/10 py-10 lg:grid-cols-2">

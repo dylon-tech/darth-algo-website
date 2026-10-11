@@ -4,7 +4,6 @@ import Link from "next/link";
 import {
   ArrowUpRight,
   BookOpen,
-  CheckCircle2,
   CreditCard,
   Instagram,
   LifeBuoy,
@@ -18,7 +17,7 @@ import {
 } from "lucide-react";
 import LinkActions from "./link-actions";
 import { getCheckoutLink, products } from "../lib/products";
-import MarketScene from "./market-scene";
+
 import "./market-scene.css";
 
 export const metadata: Metadata = {
@@ -43,16 +42,16 @@ const secondaryLinks = [
 export default function LinksPage() {
   return (
     <main id="main-content" className="links-market-hub relative min-h-screen overflow-hidden bg-[#07090d] px-4 py-4 text-white sm:py-8">
-      <MarketScene />
+
 
       <div className="hub-content relative mx-auto w-full max-w-xl">
         <div className="hub-share absolute right-0 top-0 z-20">
           <LinkActions />
         </div>
 
-        <section className="hub-brand-stage text-center">
+        <section className="hub-brand-stage hub-product-first text-center">
           <Link href="/" aria-label="Go to the Darth Algo website" className="inline-flex justify-center">
-            <span className="hub-brand-emblem relative grid h-28 w-28 place-items-center overflow-hidden rounded-[1.6rem] border border-red-400/40 bg-black shadow-[0_0_55px_rgba(239,68,68,.28)] ring-1 ring-white/10 sm:h-36 sm:w-36">
+            <span className="hub-brand-emblem relative grid h-16 w-16 place-items-center overflow-hidden rounded-[1.6rem] border border-red-400/40 bg-black shadow-[0_0_55px_rgba(239,68,68,.28)] ring-1 ring-white/10 sm:h-20 sm:w-20">
               <Image src="/darth-algo-link-logo.svg" alt="Darth Algo trading logo" fill priority sizes="144px" className="object-cover transition duration-500 hover:scale-105" />
               <span className="absolute inset-0 rounded-[2rem] ring-1 ring-inset ring-white/15" />
             </span>
@@ -66,7 +65,7 @@ export default function LinksPage() {
             <Image src="/darth-algo-wordmark-clean.svg" alt="Darth Algo" width={830} height={100} priority className="h-auto w-full drop-shadow-[0_8px_28px_rgba(239,68,68,.34)]" />
           </h1>
           <p className="mx-auto mt-2 max-w-md text-sm leading-5 text-zinc-400 sm:text-base">
-            TradingView tools. Clearer chart context. Your trading community.
+            See the setup. Plan the trade.
           </p>
           <nav aria-label="Find what you need" className="mt-5 flex justify-center gap-2">
             <a href="#indicators" className="inline-flex min-h-11 items-center rounded-full bg-white px-4 text-sm font-semibold text-zinc-950">Indicators</a>
@@ -85,6 +84,11 @@ export default function LinksPage() {
           </div>
 
           <div className="relative p-5 sm:p-6">
+            <Link href="/products/pro" className="mb-5 block overflow-hidden rounded-xl border border-white/15 bg-black">
+              <Image src={products.pro.overview} alt={products.pro.overviewAlt} width={1805} height={767} sizes="(max-width: 640px) 100vw, 528px" className="h-auto w-full object-contain" />
+              <span className="block px-3 py-2 text-xs leading-5 text-zinc-300">Recorded Pro example · Explore the tool →</span>
+            </Link>
+
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-bold tracking-wide text-red-300">Darth Algo Pro</p>
@@ -92,15 +96,7 @@ export default function LinksPage() {
               </div>
               <div className="shrink-0 text-right"><strong className="text-3xl font-black text-white">{products.pro.price}</strong><span className="block text-xs text-zinc-300">/ month</span></div>
             </div>
-            <p className="mt-3 text-sm leading-6 text-zinc-300">Scalper and Swing in one subscription. Read trend context, review signals, and keep entry, stop and targets together on TradingView.</p>
-            <div className="mt-4 grid gap-2 text-sm font-semibold text-zinc-200">
-              <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 shrink-0 text-red-300" /> Both tools included</span>
-              <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 shrink-0 text-red-300" /> $4.98/month less than buying both separately</span>
-            </div>
-            <Link href="/products/pro" className="mt-5 block overflow-hidden rounded-xl border border-white/15 bg-black">
-              <Image src={products.pro.overview} alt={products.pro.overviewAlt} width={1805} height={767} sizes="(max-width: 640px) 100vw, 528px" className="h-auto w-full object-contain" />
-              <span className="block px-3 py-2 text-xs leading-5 text-zinc-300">Recorded Pro example · Explore the tool →</span>
-            </Link>
+            <p className="mt-3 text-sm leading-6 text-zinc-300">Both tools. One subscription. $4.98/month less than buying both separately.</p>
             <a href={getCheckoutLink("pro")} className="hub-primary-cta mt-5 flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-5 text-base font-bold text-white transition hover:bg-red-500">
               <CreditCard className="h-4 w-4" /> Get Pro — $29/month <ArrowUpRight className="h-4 w-4" />
             </a>
@@ -216,7 +212,7 @@ export default function LinksPage() {
 
         <div className="mt-7 rounded-2xl border border-white/10 bg-black/25 p-4 text-center">
           <p className="inline-flex items-center gap-2 text-xs font-bold text-zinc-300"><ShieldCheck className="h-4 w-4 text-emerald-300" /> Official Darth Algo links only</p>
-          <p className="mt-2 text-[11px] leading-5 text-zinc-500">Educational tools only—not financial advice. Trading involves risk. Past performance does not guarantee future results. Background prices are illustrative, not live quotes.</p>
+          <p className="mt-2 text-[11px] leading-5 text-zinc-500">Educational tools only—not financial advice. Trading involves risk. Past performance does not guarantee future results. Product screenshots are recorded examples, not live signals.</p>
         </div>
 
         <footer className="mt-8 flex items-center justify-center gap-2 pb-4 text-xs font-bold text-zinc-600">

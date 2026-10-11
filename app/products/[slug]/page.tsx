@@ -1,9 +1,9 @@
-import { ArrowRight, BellRing, Check, Layers3, ShieldCheck, Target, TrendingUp, Zap } from "lucide-react";
+import { ArrowRight, BellRing, Check, ShieldCheck, Target } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import ImmersiveEngine, { ImmersiveStory } from "../../components/immersive-engine";
+import ProductSpotlight from "../../components/product-spotlight";
 import SiteFooter from "../../components/site-footer";
 import SiteHeader from "../../components/site-header";
 import TradingViewUsernameHelp from "../../components/tradingview-username-help";
@@ -42,7 +42,6 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
   const styles = colorStyles[product.color];
   const checkout = getCheckoutLink(product.slug);
-  const icon = product.slug === "scalper" ? <Zap className="h-4 w-4" /> : product.slug === "swing" ? <TrendingUp className="h-4 w-4" /> : <Layers3 className="h-4 w-4" />;
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
@@ -58,38 +57,21 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
       <SiteHeader />
 
-      <section className={`immersion-product-hero immersion-${product.color} relative overflow-hidden border-b border-white/10 pb-16 pt-14 sm:pb-24 sm:pt-20`}>
-        <div aria-hidden="true" className="absolute inset-0 bg-grid bg-[size:48px_48px] opacity-[0.12]" />
-        <div aria-hidden="true" className={`absolute inset-x-0 top-0 h-px ${styles.bg} opacity-80`} />
-        <div className="section-shell relative grid gap-12 xl:grid-cols-[0.78fr_1.22fr] xl:items-center">
-          <div>
-            <span className={`inline-flex items-center gap-2 rounded-md border px-3 py-2 font-mono text-[10px] font-bold uppercase ${styles.border} ${styles.bg} ${styles.text}`}>{icon}{product.mode}</span>
-            <h1 className="mt-7 text-balance font-display text-5xl font-black leading-[0.98] sm:text-7xl">{product.shortName} <span className={styles.text}>intelligence</span> for your chart.</h1>
-            <p className="mt-6 max-w-2xl text-base leading-8 text-zinc-400 sm:text-lg">{product.description}</p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              {checkout ? (
-                <a href={checkout} className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-md px-6 text-sm font-extrabold text-white transition ${styles.button} ${styles.glow}`}>{product.slug === "swing" ? "Start 2-Day Free Trial" : `Get ${product.shortName} Access`}<ArrowRight className="h-4 w-4" /></a>
-              ) : (
-                <Link href="/#pricing" className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-md border px-6 text-sm font-extrabold ${styles.border} ${styles.bg} ${styles.text}`}>View availability<ArrowRight className="h-4 w-4" /></Link>
-              )}
-              <Link href="/compare" className="inline-flex min-h-12 items-center justify-center rounded-md border border-white/15 bg-white/[0.035] px-6 text-sm font-extrabold text-white transition hover:border-white/30">Compare the tools</Link>
-            </div>
-            <p className="mt-4 text-xs text-zinc-500">{product.price} {product.cadence}. Automatic TradingView access after checkout with your exact username.</p>
-            {checkout && <TradingViewUsernameHelp className="mt-2 -ml-3" />}
-          </div>
-
-          <ImmersiveEngine accent={product.color} image={product.overview} alt={product.overviewAlt} priority />
-        </div>
-      </section>
-
-      <ImmersiveStory accent={product.color} scenes={product.workflow.map((step, index) => ({ label: ["Context", "Setup", "Plan"][index], title: step.title + ".", copy: step.copy, image: index === 0 ? product.overview : index === 1 ? product.gallery[product.gallery.length - 1].src : product.gallery[product.slug === "pro" ? 1 : 0].src, alt: index === 0 ? product.overviewAlt : index === 1 ? product.gallery[product.gallery.length - 1].alt : product.gallery[product.slug === "pro" ? 1 : 0].alt }))} />
+      <ProductSpotlight product={product.slug} eyebrow={product.name}
+        title={{ scalper: "Keep pace. Keep your plan.", swing: "See beyond the next candle.", pro: "Two trading styles. One Pro." }[product.slug]}
+        description={{ scalper: "Short-term signals, trend context and planned levels for your active sessions.", swing: "Broader trend context, selective signals and a visible plan for the bigger move.", pro: "Scalper for the session. Swing for the broader move. Get both in one subscription." }[product.slug]}>
+        {checkout && <a href={checkout} className="product-primary">{product.slug === "swing" ? "Start 2-Day Free Trial" : `Get ${product.shortName} Access`} <ArrowRight size={17} /></a>}
+        <Link href="/compare" className="product-secondary">Compare the tools</Link>
+        <p className="product-terms">{product.price} {product.cadence}. {product.slug === "swing" && "Trial starts at checkout; continues monthly unless canceled. "}Automatic TradingView access after checkout with your exact username.</p>
+        {checkout && <TradingViewUsernameHelp />}
+      </ProductSpotlight>
 
       <section className="py-20 sm:py-28">
         <div className="section-shell grid gap-12 lg:grid-cols-[0.72fr_1.28fr]">
           <div>
             <p className={`font-mono text-[10px] font-bold uppercase ${styles.text}`}>What it gives you</p>
             <h2 className="mt-4 font-display text-4xl font-black sm:text-5xl">Structure without the clutter.</h2>
-            <p className="mt-5 text-base leading-8 text-zinc-500">Every visual layer has a job: direction, confirmation, risk, or execution. Nothing is presented as a guaranteed outcome.</p>
+            <p className="mt-5 text-base leading-8 text-zinc-500">Signals, context and risk levels—each with a clear job. No guaranteed outcomes.</p>
           </div>
           <div className="grid gap-px overflow-hidden rounded-md border border-white/10 bg-white/10 sm:grid-cols-2">
             {product.features.map((feature, index) => (
@@ -106,12 +88,12 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         <div className="section-shell">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div><p className={`font-mono text-[10px] font-bold uppercase ${styles.text}`}>Feature inspection</p><h2 className="mt-4 font-display text-4xl font-black sm:text-5xl">See each decision layer.</h2></div>
-            <p className="max-w-xl text-sm leading-7 text-zinc-500">Actual Darth Algo screenshots. Expandable chart previews remain available on the main product experience.</p>
+            <p className="max-w-xl text-sm leading-7 text-zinc-500">Real product views. Open a chart to inspect the details.</p>
           </div>
           <div className="mt-10 grid gap-5 lg:grid-cols-3">
             {product.gallery.map((item) => (
               <figure key={item.src} className="overflow-hidden rounded-md border border-white/10 bg-card">
-                <div className="relative aspect-[16/9]"><Image src={item.src} alt={item.alt} fill sizes="(min-width: 1024px) 33vw, 100vw" className="object-cover" /></div>
+                <a href={item.src} target="_blank" rel="noopener noreferrer" aria-label={`Open ${item.label} chart`} className="relative block aspect-[16/9]"><Image src={item.src} alt={item.alt} fill sizes="(min-width: 1024px) 33vw, 100vw" className="object-contain" /></a>
                 <figcaption className="border-t border-white/10 px-5 py-4 font-display text-lg font-bold">{item.label}</figcaption>
               </figure>
             ))}

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./product-first.css";
 import "./components/immersive.css";
 import CampaignAttribution from "./components/campaign-attribution";
 

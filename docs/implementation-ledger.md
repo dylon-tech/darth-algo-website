@@ -1,5 +1,11 @@
 # Darth Algo implementation ledger
 
+## Product-first customer pages — October 11, 2026 UTC
+
+DA-PRODUCT-FIRST-20261011-v1; Darth Algo Operations 1.2.0. Founder asked to replace bland, paragraph-led presentation with compelling indicator-first education across customer pages. Existing acquisition routes now use real chart-led headers, concise captions and feature controls; homepage no longer leads with a scripted winning example. Links brings Pro imagery forward. Support/setup/legal purposes and all products, prices, trial/license terms, checkout/attribution, roles, schedules and historical campaigns are preserved. No new page, paid tool, purchase or marketing send.
+
+Research, scope, font license/provenance, meaningful regression checks and bounded rollback are recorded in `docs/product-first-website.md`. Local build/types and attribution tests passed; browser screenshots and actual CI results remain release gates. This source entry is not a live-deployment claim. Lesson: inspect the first phone screen, not merely whether a screenshot exists somewhere on a page.
+
 ## Owner recovery requests 3530 / 3569 — September 24, 2026
 
 Work DA-MAINTENANCE-NATIVE-EVIDENCE-20260924, Operations skill 1.0.0. Read current main 596b0fb75c52c58cc03999f9e3fdaaaf1236abfb and CEO-home contract. Exact production SHA is READY, with no new deployment/runtime failure. Read both successful Operations reports and current failed-job/task records through the production read-only query UI. All nine departments' latest runs completed; older failures were superseded, so no internal retry was warranted. No external or uncertain publication was retried.

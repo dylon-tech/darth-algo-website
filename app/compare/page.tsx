@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Check } from "lucide-react";
+import ProductSpotlight from "../components/product-spotlight";
 import SiteHeader from "../components/site-header";
 import SiteFooter from "../components/site-footer";
 import { products } from "../lib/products";
@@ -13,25 +14,19 @@ export const metadata: Metadata = {
 };
 
 const choices = [
-  { product: products.scalper, fit: "You trade active intraday sessions", detail: "Choose Scalper when your process needs responsive trend context and short-term signals. Start with one market and a familiar chart timeframe.", href: "/#scalper-plan", cta: "Choose Scalper" },
-  { product: products.swing, fit: "You follow broader directional moves", detail: "Choose Swing when you prefer broader trend confirmation and more selective signals. The two-day trial gives you time to check setup and workflow fit.", href: "/#swing-trial", cta: "Try Swing free for 2 days" },
-  { product: products.pro, fit: "You use both trading styles", detail: "Choose Pro when you need both Scalper and Swing in your routine. It combines both tools for $29/month, compared with $33.98/month for the two separate plans.", href: "/#pro-plan", cta: "Choose Pro" },
+  { product: products.scalper, fit: "You trade active intraday sessions", detail: "Responsive trend context and short-term signals for active sessions.", href: "/#scalper-plan", cta: "Choose Scalper" },
+  { product: products.swing, fit: "You follow broader directional moves", detail: "Broader trend context and more selective signals. Try the workflow free for two days.", href: "/#swing-trial", cta: "Try Swing free for 2 days" },
+  { product: products.pro, fit: "You use both trading styles", detail: "Both tools, one subscription. $29/month instead of $33.98 for the separate plans.", href: "/#pro-plan", cta: "Choose Pro" },
 ];
 
 export default function ComparePage() {
   return (
     <main id="main-content" className="min-h-screen bg-obsidian text-white">
       <SiteHeader />
-      <section className="relative overflow-hidden border-b border-white/10 py-16 sm:py-24">
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,26,26,0.12),transparent_60%)]" />
-        <div className="section-shell relative">
-          <p className="font-mono text-xs font-bold uppercase text-ember">Choose your workflow</p>
-          <h1 className="mt-5 max-w-4xl text-balance font-display text-5xl font-black leading-tight sm:text-7xl">Scalper, Swing, or both?</h1>
-          <p className="mt-6 max-w-2xl text-base leading-8 text-zinc-300">The right tool starts with how you trade. Compare the pace, chart workflow, and access options before choosing a plan.</p>
-          <p className="mt-4 text-sm leading-7 text-zinc-400">Comparing other brands? <Link href="/alternatives" className="font-semibold text-white underline underline-offset-4">See where Darth Algo fits alongside LuxAlgo and ChartPrime</Link>.</p>
-          <a href="#compare-tools" className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-md bg-ember px-6 font-bold text-white">Find my fit <ArrowRight className="h-4 w-4" /></a>
-        </div>
-      </section>
+      <ProductSpotlight eyebrow="Find your trading rhythm" title="Scalp. Swing. Or do both." description="See both styles on the chart. Then choose the access that fits your routine.">
+        <a href="#compare-tools" className="product-primary">Find my fit <ArrowRight size={17} /></a>
+        <Link href="/start" className="product-secondary">Try the free walkthrough</Link>
+      </ProductSpotlight>
 
       <section id="compare-tools" aria-labelledby="comparison-title" className="scroll-mt-24 py-16 sm:py-24">
         <div className="section-shell">
@@ -39,7 +34,7 @@ export default function ComparePage() {
           <div className="mt-9 grid gap-5 lg:grid-cols-3">
             {choices.map(({ product, fit, detail, href, cta }) => (
               <article key={product.slug} className="flex flex-col overflow-hidden rounded-md border border-white/15 bg-card">
-                <div className="relative aspect-video border-b border-white/10"><Image src={product.overview} alt={product.overviewAlt} fill sizes="(min-width: 1024px) 33vw, 100vw" className="object-cover" /></div>
+                <div className="relative aspect-video border-b border-white/10"><Image src={product.overview} alt={product.overviewAlt} fill sizes="(min-width: 1024px) 33vw, 100vw" className="object-contain" /></div>
                 <div className="flex flex-1 flex-col p-6">
                   <p className="font-mono text-xs font-bold uppercase text-ember">{product.shortName}</p>
                   <h3 className="mt-3 font-display text-2xl font-bold">{fit}</h3>
@@ -84,6 +79,7 @@ export default function ComparePage() {
           <Link href="/#lifetime-plan" className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-md border border-ember/60 px-6 font-bold">View Lifetime <ArrowRight className="h-4 w-4" /></Link>
         </div>
       </section>
+      <div className="section-shell pb-10"><Link href="/alternatives" className="text-sm text-zinc-300 underline underline-offset-4">Comparing other indicator brands? See where Darth Algo fits.</Link></div>
       <SiteFooter />
     </main>
   );
