@@ -1,5 +1,17 @@
 # Cinematic social production and delivery
 
+## Verify source-to-product identity — October 12, 2026
+
+[DA-PROVENANCE-20261012-v1]
+
+Before each new campaign admission, resolve the exact capture path/hash against current `app/lib/products.ts` and any verified owner provenance. Record the product and source evidence in the creative review, then check that the artwork, caption, alt text, theme, destination and editorial learning all agree. Generic chart appearance, similar feature behavior, filename similarity and prior style/asset approval do not establish product identity or override a conflicting product mapping.
+
+Current source mapping verified on October 12 at main `dc10672cf8757454f7ae901147c57b370b2e7f72`: `/indicators/signal-context.png` belongs to the Swing gallery (label: Signal engine); `/indicators/signal-context-alt.png` belongs to the Scalper gallery (label: Signal context). Re-read the current mapping rather than treating this dated observation as permanent or as proof from pixels alone. These captures may conservatively share a rotation family without becoming interchangeable product evidence.
+
+If records conflict or identity remains uncertain, hold that proposed product-specific claim and reconcile the exact source; use another verified suitable source when possible. A generic visual-focus PASS is not product-accuracy clearance. Prior owner approval of an image's style does not approve newly added inaccurate product wording. Preserve attempted/published campaign versions, hashes, digests and receipts. Any correction to a live post follows its separate owner-approval path; never silently rewrite history.
+
+Dated lesson: the October 12 cloud-guide caption/review attributed a Swing-mapped source to Scalper despite a visually clean generic image. This rule closes the source-to-caption check for future work; it does not itself correct or republish that campaign. Existing DA-FOCUS rules, cadence, queue revision cap, publisher and spending limits remain unchanged.
+
 ## Focused indicator demonstrations — October 11, 2026
 
 [DA-FOCUS-20261011-v1]

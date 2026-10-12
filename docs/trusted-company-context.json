@@ -158,6 +158,13 @@
       "value": "DA-FOCUS-20261011-v1: One indicator function per image; enlarge useful genuine feature space, minimize labels outside evidence, and separate feature-map subjects across slides. Use legitimate recorded display settings only for an authorized new capture, otherwise faithful crops; never erase signals or hide losing history. Reject clutter, unreadable details and obstructed evidence at 390px. Apply docs/social-brand-baseline.md and docs/social-creative-producer.md to new and verified unattempted work within existing limits. Approved native v3 brand, rotation, cadence and publisher remain unchanged.",
       "source": "Founder October 11, 2026 feedback on the latest Instagram post; docs/social-brand-baseline.md",
       "verified_at": "2026-10-11T22:02:28Z"
+    },
+    {
+      "key": "content.source_product_verification",
+      "kind": "verified_fact",
+      "value": "DA-PROVENANCE-20261012-v1: Current app/lib/products.ts at dc10672cf8757454f7ae901147c57b370b2e7f72 maps /indicators/signal-context.png to Swing and /indicators/signal-context-alt.png to Scalper. This is dated source mapping, not product identity inferred from chart pixels. Reverify exact capture path/hash and current mapping before every new admission; artwork, caption, alt text, theme, destination and review must agree. Hold unresolved conflicts. Prior style approval and shared rotation family do not override product provenance. Preserve attempted/published campaigns and receipts; live corrections need their separate approval.",
+      "source": "app/lib/products.ts (Swing gallery and Scalper gallery); docs/social-creative-producer.md",
+      "verified_at": "2026-10-12T14:21:33Z"
     }
   ],
   "rules": {
