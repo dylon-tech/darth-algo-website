@@ -1249,5 +1249,78 @@ export const socialCampaignQueue:ReviewedCreative[] = [
       "reviewer": "Codex: founder-approved native v3 workflow; exact encoded PNGs inspected full-size and at approximately 390px against source, prior six campaigns, typography, copy, logo, CTA, cooldown and destination. Darth Algo Operations 1.2.0.",
       "reviewedAt": "2026-10-11T12:23:37Z"
     }
+  },
+  {
+    "id": "2026-10-12-morning-scalper-cloud-context-native",
+    "day": "2026-10-12",
+    "slot": "morning",
+    "theme": "Scalper cloud direction behind each signal",
+    "text": "What does the cloud show? Green gives uptrend context; red gives downtrend context. Read the cloud before the next Scalper signal, then apply your own entry and risk rules. Save this guide.\nhttps://www.darthalgo.com/products/scalper #TradingView",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-10-12/cloud-context-guide-67044f502c95.png",
+        "sha256": "67044f502c952bfe0bd4f9cabec4067290732eb7a09dd9ed284e181f7861c87c",
+        "altText": "Darth Algo chart guide titled What Does the Cloud Show. A real TradingView Scalper chart demonstrates green uptrend context and red downtrend context, with a Save This Guide CTA.",
+        "mimeType": "image/png"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "educational",
+      "typographyVersion": "condensed-italic-2026-10-02-v2",
+      "sources": [
+        "https://www.darthalgo.com/products/scalper",
+        "https://www.darthalgo.com/indicators/signal-context.png",
+        "https://www.luxalgo.com/library/",
+        "https://algoalpha.io/library",
+        "library:DA_Content_Research_Latest.md#version-16",
+        "docs/social-creative-reviews/2026-10-12-education.md"
+      ],
+      "learning": "Policy reviews: DA-BRAND-20261010-v3; DA-CLARITY-20261010-v1; DA-BENEFIT-20261010-v2; DA-FOCUS-20261011-v1. Audience question: what does the cloud contribute around a Scalper signal? Verified benefit: the actual Scalper view gives green uptrend context and red downtrend context around signals on TradingView. Exact destination and CTA: Save this guide → /products/scalper. Owned capture: signal-context.png SHA 568ebd47…; native 1438x554 fitted proportionally at 950x366. Conservative family includes signal-context-alt; last retained use October 8 afternoon, outside the six prior campaigns, and not used in the other daily slot. Freshness: first green-versus-red cloud interpretation; flat guide, wide chart proof, two-column color legend and open arrow CTA differ from the prior six campaigns and the afternoon lesson. Tap path: X/Threads direct caption URL; Instagram profile /links route, not an assumed caption tap. Experiment: source observation=narrow visible-mechanism education is defensible while connected samples remain sparse and qualified visits unavailable; single variable=explicit green/red interpretation; primary metric=(saves+shares)/organic Instagram reach after seven full days; guardrail=no automatic-entry, result or cloud-alone decision claim; sample=minimum 25 organic reach with usable save/share coverage, otherwise insufficient; continue only if the lesson earns an observable rate without signal confusion. Provider publication remains unconfirmed until production receipts exist. Exact all-line, source, cooldown and phone-size QA is recorded in the cited review."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "1c00ebac0e2d8c891be55ccc45225fa09d9c3739e47f43d67fe3b74eccb7cbcd",
+      "reviewer": "Codex: founder-approved native v3 workflow; exact encoded PNG inspected full-size and at 390px against source, prior six campaigns, typography, one-function focus, copy, logo, CTA, cooldown and destination. Darth Algo Operations 1.2.0.",
+      "reviewedAt": "2026-10-12T13:59:39Z"
+    }
+  },
+  {
+    "id": "2026-10-12-afternoon-swing-target-not-fill",
+    "day": "2026-10-12",
+    "slot": "afternoon",
+    "theme": "Swing chart target versus broker-confirmed execution",
+    "text": "A target line on a chart is a plan—not proof of an executed fill. Use the Swing levels to review the setup, then confirm any actual fill and outcome in your broker record. Save this distinction.\nhttps://www.darthalgo.com/products/swing #TradingView",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-10-12/target-line-not-fill-6614fd43ab62.png",
+        "sha256": "6614fd43ab62a2cde5b0f0478e567525728421ba6940402bf2da019056fa1eac",
+        "altText": "Darth Algo Swing guide titled A Target Line Is Not a Fill. A real TradingView chart shows planned entry, stop and two target levels, with a reminder to confirm execution in broker records.",
+        "mimeType": "image/png"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "educational",
+      "typographyVersion": "condensed-italic-2026-10-02-v2",
+      "sources": [
+        "https://www.tradingview.com/support/solutions/43000475660-how-to-use-long-and-short-position-drawing-tools/",
+        "https://www.tradingview.com/support/solutions/43000736178-chart-trading-order-projection/",
+        "https://www.darthalgo.com/start",
+        "https://www.darthalgo.com/products/swing",
+        "https://www.darthalgo.com/indicators/swing-risk-plan.png",
+        "https://www.luxalgo.com/library/",
+        "https://algoalpha.io/library",
+        "library:DA_Content_Research_Latest.md#version-16",
+        "docs/social-creative-reviews/2026-10-12-education.md"
+      ],
+      "learning": "Policy reviews: DA-BRAND-20261010-v3; DA-CLARITY-20261010-v1; DA-BENEFIT-20261010-v2; DA-FOCUS-20261011-v1. Audience question: does a target line prove an order filled or an outcome was realized? Verified takeaway: charted entry, stop and targets organize a plan; actual execution and outcome must be confirmed in broker records. Exact destination and CTA: Save this distinction → /products/swing. Owned capture: swing-risk-plan.png SHA a68cb85d…; native 514x325 fitted proportionally at 900x569 without generative alteration. Family last retained use October 5 morning, outside the six prior campaigns, and not used in the morning slot. Freshness: first chart-target-versus-executed-fill lesson; proof-first top chart, diagonal lower field, split-color hook and footer CTA differ from the prior six campaigns and morning art. Tap path: X/Threads direct caption URL; Instagram profile /links route, not an assumed caption tap. Experiment: source observation=execution-evidence literacy answers a real plan-reading risk while owned samples remain sparse; single variable=plan-versus-fill distinction; primary metric=(saves+shares)/organic Instagram reach after seven full days; guardrail=no trade, fill, profit or representative-outcome implication from the favorable historical chart; sample=minimum 25 organic reach with usable save/share coverage, otherwise insufficient; continue only if the lesson earns an observable rate without execution confusion. Provider publication remains unconfirmed until production receipts exist. Exact all-line, source, cooldown and phone-size QA is recorded in the cited review."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "8062cf7daf95178fd4d233be7e3a84a8fb98934be5f63a23b207d151392641d6",
+      "reviewer": "Codex: founder-approved native v3 workflow; exact encoded PNG inspected full-size and at 390px against source, prior six campaigns, typography, one-function focus, copy, logo, CTA, cooldown and destination. Darth Algo Operations 1.2.0.",
+      "reviewedAt": "2026-10-12T13:59:39Z"
+    }
   }
 ];
