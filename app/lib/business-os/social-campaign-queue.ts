@@ -1322,5 +1322,54 @@ export const socialCampaignQueue:ReviewedCreative[] = [
       "reviewer": "Codex: founder-approved native v3 workflow; exact encoded PNG inspected full-size and at 390px against source, prior six campaigns, typography, one-function focus, copy, logo, CTA, cooldown and destination. Darth Algo Operations 1.2.0.",
       "reviewedAt": "2026-10-12T13:59:39Z"
     }
+  },
+  {
+    "id": "2026-10-13-morning-pro-horizon-switch-native",
+    "day": "2026-10-13",
+    "slot": "morning",
+    "theme": "Pro for traders switching between active sessions and broader moves",
+    "text": "Active session today, broader move tomorrow? Pro includes Scalper + Swing for $29/month—$4.98 less than both separate monthly plans before tax. Automatic TradingView access follows purchase with the correct username.\nhttps://www.darthalgo.com/products/pro #DarthAlgo",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-10-13/pro-active-session-1bf22bfbed06.png",
+        "sha256": "1bf22bfbed069d3236de7dccf629b5c024a51f5078595b77d68b527b3401f3d7",
+        "altText": "Darth Algo Pro active-session view. An authentic Scalper chart shows a sell marker with the fast trend layer. Swipe for the broader view.",
+        "mimeType": "image/png"
+      },
+      {
+        "path": "/social-campaigns/2026-10-13/pro-broader-move-9316e4217590.png",
+        "sha256": "9316e4217590372564cd3af28d02ec925d6fab6f5cd82f83876194bd5ef75f7d",
+        "altText": "Darth Algo Pro broader-move view. An authentic Swing chart shows the broader trend cloud before the next signal is evaluated.",
+        "mimeType": "image/png"
+      },
+      {
+        "path": "/social-campaigns/2026-10-13/pro-one-subscription-a4776eb11077.png",
+        "sha256": "a4776eb110778d0135411e940611851c81769cba8b931231a861b5ebcbd41d60",
+        "altText": "Darth Algo Pro includes Scalper and Swing for 29 dollars per month, with automatic TradingView access after purchase using the correct username.",
+        "mimeType": "image/png"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "promotional",
+      "typographyVersion": "condensed-italic-2026-10-02-v2",
+      "sources": [
+        "https://www.darthalgo.com/products/pro",
+        "https://www.darthalgo.com/indicators/scalper-execution.png",
+        "https://www.darthalgo.com/indicators/swing-trend-cloud.png",
+        "https://www.luxalgo.com/library/",
+        "https://algoalpha.io/library",
+        "library:DA_Content_Research_Latest.md#version-17",
+        "library:DA_Revenue_Sprint_2026-10-10.md#version-2",
+        "docs/social-creative-reviews/2026-10-13-promotion.md"
+      ],
+      "learning": "Policy reviews: DA-PROVENANCE-20261012-v1; DA-FOCUS-20261011-v1; DA-BRAND-20261010-v3; DA-CLARITY-20261010-v1; DA-BENEFIT-20261010-v2. Buyer question: do I need the fast-session tool, the broader-move tool, or both? Verified benefit: current app/lib/products.ts and the live Pro page map Pro to Scalper + Swing for $29/month, $4.98 less than both separate monthly plans before tax, with automatic TradingView access after purchase using the correct username. Exact destination and CTA: See Pro → /products/pro. Product provenance: Scalper gallery execution view /indicators/scalper-execution.png SHA 0e506e8e… and Swing gallery trend cloud /indicators/swing-trend-cloud.png SHA 6804c35b…. The exact Scalper crop shows pre-outcome marker/trend context without the later order widget; the full Swing source shows broader trend context. Source families were last retained October 5 morning and October 9 morning, outside the six preceding campaigns, and are not reused in another October 13 slot. Freshness: first horizon-switching day-in-the-life application; separate one-function proof slides and a typography-led offer close differ from the October 11 shortlist/feature map and the prior six compositions. Tap path: X/Threads direct caption URL; Instagram existing profile route, not an assumed caption tap. Experiment: source observation=Threads carousels currently distribute farther than images while Instagram and qualified attribution remain sparse; single variable=horizon-switching buyer framing; primary metric=independently attributable /products/pro visits per confirmed delivered platform post over seven full days; guardrail=no performance, result, competitor-price, urgency, guaranteed-speed, or duplicate-subscription claim; sample=at least 5 attributable visits, otherwise insufficient data; continue only if qualified visits appear without product-choice or provenance confusion. First 10 independently attributable new paid customers is a learning milestone, not promised delivery. Provider publication remains unconfirmed until production receipts exist. Exact full-size and 390px visual, source, copy, logo, CTA, typography, focus, obstruction, cooldown and provenance QA is recorded in the cited review."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "08da21a8149eb8710b161330cfdebac4a3f025e84c6a045b70c0e00326d5af1c",
+      "reviewer": "Codex: founder-approved native v3 workflow; exact encoded PNGs inspected full-size and at 390px against approved type, product sources, current mappings, prior six campaigns, one-function focus, copy, logo, CTA, cooldown and destination. Darth Algo Operations 1.2.0.",
+      "reviewedAt": "2026-10-13T12:43:55Z"
+    }
   }
 ];
