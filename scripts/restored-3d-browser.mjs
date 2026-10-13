@@ -31,7 +31,12 @@ try {
    assert.equal(await tour.getAttribute('data-spatial'),'true');
    await tour.getByRole('button',{name:'03 Signals',exact:true}).click();
    await page.waitForFunction(()=>document.querySelector('.chart-journey')?.dataset.chapter==='2');
-   if(path==='/') await page.screenshot({path:`artifacts/restored-3d/${name}-3d.png`});
+   if(path==='/') {
+    await page.waitForTimeout(450); // Finish the chapter-heading entrance before pixel review.
+    const caption=await page.locator('.journey-caption').boundingBox();
+    assert.ok(caption && caption.y+caption.height <= height-(name==='iphone'?68:0), 'Tour controls clear the mobile purchase bar');
+    await page.screenshot({path:`artifacts/restored-3d/${name}-3d.png`});
+   }
    await tour.getByRole('button',{name:'Chart view',exact:true}).click();
    await page.waitForFunction(()=>document.querySelector('.journey-webgl')?.dataset.renderer==='pro-chart');
    if(['/','/products/pro'].includes(path)) {

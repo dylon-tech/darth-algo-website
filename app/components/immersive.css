@@ -149,6 +149,7 @@
 .chart-journey[data-pro="true"] .journey-world-wrap{bottom:268px}
 .chart-journey[data-pro="true"][data-toggle="true"] .journey-world-wrap{bottom:290px}
 @media(max-width:767px){
+  .chart-journey-stage{height:calc(100svh - 144px);min-height:500px}
   .chart-journey[data-spatial="true"] .journey-world-wrap{top:185px;bottom:210px}
   .chart-journey[data-pro="true"] .journey-world-wrap{bottom:215px}
   .chart-journey[data-pro="true"][data-toggle="true"] .journey-world-wrap{bottom:265px}
