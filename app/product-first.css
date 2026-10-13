@@ -5,6 +5,23 @@
 .product-eyebrow { color: #ff5968; font-size: 11px; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; }
 .product-spotlight h1 { margin: 12px 0 14px; max-width: 950px; font-family: "Darth Barlow Condensed", var(--font-display); font-size: clamp(42px, 5.8vw, 78px); font-style: italic; font-weight: 900; line-height: 1.04; letter-spacing: 0; text-wrap: balance; }
 .product-spotlight-copy { max-width: 740px; color: #c6c8d0; font-size: 16px; line-height: 1.6; }
+/* Keep authentic charts up front, with the depth of the original product stage. */
+.product-spotlight > .section-shell { perspective: 1600px; }
+.product-spotlight .indicator-explorer {
+  transform: rotateX(3deg) rotateY(-3deg);
+  transform-origin: 50% 50%;
+  transition: transform .65s cubic-bezier(.2,.7,.2,1), box-shadow .65s;
+  border-color: #ff536a45;
+  box-shadow: 12px 14px 0 -6px #15131b, 14px 16px 0 -6px #ff536a25, 0 32px 80px #0009;
+}
+.product-spotlight .indicator-explorer:hover,
+.product-spotlight .indicator-explorer:focus-within { transform: rotateX(0) rotateY(0); }
+@media (max-width: 639px) {
+  .product-spotlight .indicator-explorer { transform: rotateX(2deg) rotateY(-1deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .product-spotlight .indicator-explorer { transform: none; transition: none; }
+}
 .indicator-explorer { min-width: 0; overflow: hidden; border: 1px solid #ffffff24; border-radius: 12px; background: #0d1117; box-shadow: 0 24px 80px #0005; }
 .indicator-explorer-bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #ffffff18; font-size: 12px; font-weight: 600; }
 .indicator-explorer-bar strong { margin-left: 5px; color: #ff6976; }

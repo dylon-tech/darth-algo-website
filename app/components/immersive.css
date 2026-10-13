@@ -141,3 +141,15 @@
   .chart-journey[data-toggle="true"] .journey-world-wrap{bottom:230px}
 }
 @media(prefers-reduced-motion:reduce){.hero-trade-demo{transform:none}}
+
+/* Restored spatial tour, with a separate readable chart demonstration. */
+.chart-journey[data-spatial="true"] .journey-world-wrap{top:27%;bottom:224px;left:0;right:0}
+.chart-journey[data-spatial="true"][data-ready="true"] .journey-proof{display:none}
+.journey-view-modes{margin-bottom:6px}
+.chart-journey[data-pro="true"] .journey-world-wrap{bottom:268px}
+.chart-journey[data-pro="true"][data-toggle="true"] .journey-world-wrap{bottom:290px}
+@media(max-width:767px){
+  .chart-journey[data-spatial="true"] .journey-world-wrap{top:185px;bottom:210px}
+  .chart-journey[data-pro="true"] .journey-world-wrap{bottom:215px}
+  .chart-journey[data-pro="true"][data-toggle="true"] .journey-world-wrap{bottom:265px}
+}
