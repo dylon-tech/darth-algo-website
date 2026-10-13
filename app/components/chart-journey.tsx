@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { chapterAt, chapterProgress, journeyProgress } from "./chart-journey-math";
+import { chapterAt, chapterProgress, journeyProgress, setupPlayback } from "./chart-journey-math";
 import { advanceProLoop, proSimulation, type IndicatorMode } from "./pro-chart-simulation";
 import type { ChartWorld } from "./chart-world";
 import type { EngineScene } from "./immersive-engine";
@@ -19,6 +19,8 @@ const proCopy = [
 export default function ChartJourney({ scenes, accent = "red" }: { scenes: EngineScene[]; accent?: TourAccent }) {
   const isPro = accent === "red" || accent === "pro";
   const [mode, setMode] = useState<IndicatorMode>(accent === "scalp" ? "scalp" : "swing");
+  const [spatial, setSpatial] = useState(true);
+  const chapters = spatial ? ["Chart", "Trend", "Signals", "Risk", "Full setup"] : proChapters;
   const productName = isPro ? "Pro" : accent === "scalp" ? "Scalper" : "Swing";
   const purchaseHref = accent === "red" ? "#pricing" : accent === "swing" ? "/#swing-trial" : accent === "scalp" ? "/#scalper-plan" : "/#pro-plan";
   const paused = useRef(false);
@@ -39,7 +41,11 @@ export default function ChartJourney({ scenes, accent = "red" }: { scenes: Engin
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
   const [nearby, setNearby] = useState(false);
-  const copy = active === 0 ? {
+  const copy = spatial && active === 0 ? {
+    title: "Step inside the setup.", copy: "Scroll to explore the layers in 3D, or choose a feature below.",
+  } : spatial && active === 4 ? {
+    title: "The layers come together.", copy: "Trend, signals and a risk plan, seen from a new angle.",
+  } : active === 0 ? {
     title: isPro ? "Two modes. One Pro." : mode === "swing" ? "Fewer signals. Broader moves." : "More signals. Faster setups.",
     copy: isPro ? "Switch between Swing and Scalp. Explore any feature below." : mode === "swing" ? "Follow broader trend setups at a steadier pace." : "See more frequent setups for a faster trading style.",
   } : proCopy[active];
@@ -57,19 +63,22 @@ export default function ChartJourney({ scenes, accent = "red" }: { scenes: Engin
     const host = canvas.current;
     let cancelled = false;
     let observer: ResizeObserver | undefined;
-    import("./pro-chart-world").then(({ createProChartWorld }) => {
+    const create = spatial
+      ? import("./chart-world").then(({ createChartWorld }) => () => createChartWorld(host, {red:"#ff3046",scalp:"#eb9114",swing:"#1e7ddc",pro:"#8b5cf6"}[accent], () => { setFailed(true); setReady(false); }))
+      : import("./pro-chart-world").then(({ createProChartWorld }) => () => createProChartWorld(host, {mode, pro: isPro}));
+    create.then((createWorld) => {
       if (cancelled) return;
       try {
-        world.current = createProChartWorld(host, {mode, pro: isPro});
+        world.current = createWorld();
         world.current.render(current.current, playback.current, !motion); setReady(true);
         observer = new ResizeObserver(() => world.current?.resize()); observer.observe(host);
         requestFrame.current();
       } catch { setFailed(true); setReady(false); }
     }).catch(() => { if (!cancelled) { setFailed(true); setReady(false); } });
     return () => { cancelled = true; observer?.disconnect(); world.current?.dispose(); world.current = null; setReady(false); };
-  }, [nearby, motion, failed, mode, isPro]);
+  }, [nearby, motion, failed, mode, isPro, spatial, accent]);
   useEffect(() => {
-    if (!motion || failed) { playing.current = false; playback.current = .38; setIsPlaying(false); }
+    if (!motion || failed) { playing.current = false; playback.current = spatial ? 1 : .38; setIsPlaying(false); }
     const section = root.current, viewport = stage.current;
     if (!section || !viewport) return;
     let frame = 0;
@@ -90,7 +99,7 @@ export default function ChartJourney({ scenes, accent = "red" }: { scenes: Engin
         if (run) playback.current = advanceProLoop(playback.current, elapsed);
       }
       world.current?.render(value, playback.current, !motion);
-      if (playbackStatus.current) playbackStatus.current.textContent = proSimulation(playback.current, mode).phase;
+      if (playbackStatus.current) playbackStatus.current.textContent = spatial ? setupPlayback(playback.current).phase : proSimulation(playback.current, mode).phase;
       section.style.setProperty("--journey-progress", String(value));
       section.style.setProperty("--proof-reveal", "0");
       const next = chapterAt(value);
@@ -108,7 +117,7 @@ export default function ChartJourney({ scenes, accent = "red" }: { scenes: Engin
     const visibility = () => { if (document.hidden) { cancelAnimationFrame(frame); frame = 0; } else { lastFrame = 0; readScroll(); } };
     window.addEventListener("scroll", readScroll, { passive: true }); window.addEventListener("resize", readScroll); document.addEventListener("visibilitychange", visibility);
     return () => { intersection.disconnect(); cancelAnimationFrame(frame); requestFrame.current = () => {}; window.removeEventListener("scroll", readScroll); window.removeEventListener("resize", readScroll); document.removeEventListener("visibilitychange", visibility); };
-  }, [motion, failed, mode]);
+  }, [motion, failed, mode, spatial]);
   const select = (index: number) => {
     const progress = chapterProgress[index];
     target.current = progress;
@@ -133,11 +142,11 @@ export default function ChartJourney({ scenes, accent = "red" }: { scenes: Engin
   };
   return (
     <>
-    <section ref={root} id="inside-the-engine" className={`chart-journey immersion-${accent}`} data-pro="true" data-mode={mode} data-product={productName} data-toggle={isPro} data-animated={motion && !failed} data-ready={ready} data-chapter={active} aria-label={`Darth Algo ${productName} interactive product tour`}>
+    <section ref={root} id="inside-the-engine" className={`chart-journey immersion-${accent}`} data-pro={!spatial} data-spatial={spatial} data-mode={mode} data-product={productName} data-toggle={isPro && !spatial} data-animated={motion && !failed} data-ready={ready} data-chapter={active} aria-label={`Darth Algo ${productName} interactive product tour`}>
       <div ref={stage} className="chart-journey-stage">
         <div className="journey-topline"><span>DARTH ALGO / {productName.toUpperCase()} DEMO</span><a href={purchaseHref}>Skip to the tools ↗</a></div>
         <div className="journey-heading" key={active}>
-          <p className="journey-kicker">0{active + 1} <span>/</span> {proChapters[active]}</p>
+          <p className="journey-kicker">0{active + 1} <span>/</span> {chapters[active]}</p>
           <h2>{copy.title}</h2><p className="journey-copy">{copy.copy}</p>
         </div>
         <div className="journey-world-wrap">
@@ -152,10 +161,11 @@ export default function ChartJourney({ scenes, accent = "red" }: { scenes: Engin
           </div>
         </div>
         <div className="journey-bottom">
-          {isPro && <div className="journey-modes" role="group" aria-label="Pro trading mode"><span>PRO MODE</span><button type="button" onClick={() => changeMode("swing")} aria-pressed={mode === "swing"}>Swing</button><button type="button" onClick={() => changeMode("scalp")} aria-pressed={mode === "scalp"}>Scalp</button></div>}
+          <div className="journey-modes journey-view-modes" role="group" aria-label="Tour view"><button type="button" onClick={() => { setSpatial(true); setFailed(false); }} aria-pressed={spatial}>3D view</button><button type="button" onClick={() => { setSpatial(false); setFailed(false); }} aria-pressed={!spatial}>Chart view</button></div>
+          {isPro && !spatial && <div className="journey-modes" role="group" aria-label="Pro trading mode"><span>PRO MODE</span><button type="button" onClick={() => changeMode("swing")} aria-pressed={mode === "swing"}>Swing</button><button type="button" onClick={() => changeMode("scalp")} aria-pressed={mode === "scalp"}>Scalp</button></div>}
           {ready && motion && <div className="journey-playback"><span ref={playbackStatus}>Watch a setup unfold</span><button type="button" onClick={replay} aria-label={isPlaying ? "Pause demo animation" : "Resume demo animation"}>{isPlaying ? "Ⅱ Pause demo" : "▶ Resume demo"}</button></div>}
-          <div className="journey-chapters" role="group" aria-label="Tour chapters">{proChapters.map((label, index) => <button key={label} type="button" onClick={() => select(index)} aria-pressed={active === index}><span>0{index + 1}</span>{label}<i /></button>)}</div>
-          <div className="journey-caption"><span>{ready ? "Scripted winning example · Real trades can lose" : "Recorded product example · Not typical results"}</span><button type="button" onClick={toggleMotion} aria-pressed={motion && !failed} disabled={failed}>{failed ? "Still view" : motion ? "Motion on" : "Motion off"}</button></div>
+          <div className="journey-chapters" role="group" aria-label="Tour chapters">{chapters.map((label, index) => <button key={label} type="button" onClick={() => select(index)} aria-pressed={active === index}><span>0{index + 1}</span>{label}<i /></button>)}</div>
+          <div className="journey-caption"><span>{!ready ? "Recorded product example · Not typical results" : spatial ? "Conceptual 3D walkthrough · Not live market data" : "Scripted winning example · Real trades can lose"}</span><button type="button" onClick={toggleMotion} aria-pressed={motion && !failed} disabled={failed}>{failed ? "Still view" : motion ? "Motion on" : "Motion off"}</button></div>
         </div>
       </div>
     </section>

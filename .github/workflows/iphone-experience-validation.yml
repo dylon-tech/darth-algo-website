@@ -59,6 +59,8 @@ jobs:
         run: node scripts/iphone-experience-browser.mjs
       - name: Public product-first pages and attribution
         run: node scripts/product-first-browser.mjs
+      - name: Restored 3D tour and chart controls
+        run: node scripts/restored-3d-browser.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
