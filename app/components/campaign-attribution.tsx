@@ -2,15 +2,17 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { captureCampaign, attributeCheckout } from "../lib/campaign-attribution";
+import { startAcquisitionMeasurement } from "../lib/acquisition-client";
 
 export default function CampaignAttribution() {
   const pathname=usePathname();
   useEffect(()=>{
-    if(pathname.startsWith("/owner") || pathname.startsWith("/admin")) return;
+    if(pathname.startsWith("/owner") || pathname.startsWith("/admin")) {startAcquisitionMeasurement(pathname,null);return;}
     const key="darth-campaign-v1";
     let previous: unknown=null;
     try {previous=JSON.parse(sessionStorage.getItem(key) || "null");} catch {}
     const attribution=captureCampaign(window.location.search,previous);
+    const measureCheckout=startAcquisitionMeasurement(pathname,attribution);
     if(attribution) try {sessionStorage.setItem(key,JSON.stringify(attribution));} catch {}
     // Only decorate existing known checkout links; never intercept navigation.
     // Failure leaves ordinary Stripe checkout working, including with JS disabled.
@@ -33,7 +35,7 @@ export default function CampaignAttribution() {
       try{sessionStorage.setItem(welcomeKey,JSON.stringify({token,platform:attribution.source,at:saved?.at||Date.now(),visitId}));}catch{}
       void fetch('/api/welcome/visit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({platform:attribution.source,token,visitId,test:attribution.content==='welcome_test'})}).then(r=>r.ok?r.json():null).then(v=>{if(cancelled||!v?.reference)return;welcomeReference=v.reference;welcomeToken=v.token;try{sessionStorage.setItem(welcomeKey,JSON.stringify({token:v.token,platform:attribution.source,at:saved?.at||Date.now(),visitId}));}catch{}decorate();}).catch(()=>{});
     }
-    const click=(event:MouseEvent)=>{const anchor=(event.target as Element)?.closest?.('a');if(!welcome||!welcomeToken||!anchor)return;try{const u=new URL(anchor.href);if(u.origin!=='https://buy.stripe.com'||u.searchParams.get('client_reference_id')!==welcomeReference)return;void fetch('/api/welcome/visit',{method:'POST',headers:{'Content-Type':'application/json'},keepalive:true,body:JSON.stringify({platform:attribution.source,token:welcomeToken,action:'checkout'})}).catch(()=>{});}catch{}};
+    const click=(event:MouseEvent)=>{const anchor=(event.target as Element)?.closest?.('a');if(anchor)measureCheckout(anchor.href);if(!welcome||!welcomeToken||!anchor)return;try{const u=new URL(anchor.href);if(u.origin!=='https://buy.stripe.com'||u.searchParams.get('client_reference_id')!==welcomeReference)return;void fetch('/api/welcome/visit',{method:'POST',headers:{'Content-Type':'application/json'},keepalive:true,body:JSON.stringify({platform:attribution.source,token:welcomeToken,action:'checkout'})}).catch(()=>{});}catch{}};
     document.addEventListener('click',click);
 
     const observer=new MutationObserver(decorate);

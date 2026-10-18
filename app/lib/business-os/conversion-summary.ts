@@ -1,6 +1,6 @@
 import { parseCampaignReference } from "../campaign-attribution";
 
-export type CheckoutObservation = { id:string; livemode:boolean; created:number; status:string|null; payment_status:string; amount_total:number|null; currency:string|null; client_reference_id:string|null; mode:string; subscription?: string | {trial_start?:number|null} | null };
+export type CheckoutObservation = { id:string; livemode:boolean; created:number; status:string|null; payment_status:string; amount_total:number|null; currency:string|null; client_reference_id:string|null; mode:string; subscription?: string | {id?:string;trial_start?:number|null;trial_end?:number|null} | null };
 export function summarizeConversions(rows: CheckoutObservation[], start: number, end: number) {
   const seen=new Set<string>();
   const groups=new Map<string,{source:string;campaign:string;content:string;currency:string;checkoutSessions:number;completedSessions:number;paidCheckouts:number;initialAmountTotal:number;trialStarts:number;noInitialPayment:number}>();

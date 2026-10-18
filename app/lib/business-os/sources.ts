@@ -6,6 +6,7 @@ import { stripe } from "../stripe";
 import { summarizePayments, type PaymentRow } from "./payment-summary";
 import { businessKnowledge } from "./knowledge";
 import { checkoutConversions } from "./conversions";
+import { acquisitionSnapshot } from "./acquisition";
 import { creativePlaybookEvidence } from "./creative-playbook";
 import {nativeRevenueEvidence} from './native-revenue-evidence';
 import {operatingMemory, type MemoryRun} from './operating-memory';
@@ -27,7 +28,8 @@ export async function collectEvidence(): Promise<Evidence[]> {
     ...(process.env.AI_OS_INDICATOR_LAB_ENABLED==="true"?[indicatorMarketEvidence().catch(()=>({id:"indicator_market",status:"unavailable" as const,checkedAt:new Date().toISOString(),scope:"Market discovery unavailable.",data:null}))]:[]),
     readSource("content_workflows", "Saved media policy and latest publication observations. These are execution records, not a guarantee of future delivery or content performance.", async()=>await db()`select event,created_at,details - 'png' as details from os_activity where event in ('media_policy_enabled','buffer_publish_checked','instagram_carousel_draft_verified') order by id desc limit 6`),
     competitorEvidence().catch(()=>({id:"competitor_public_posts",status:"unavailable" as const,checkedAt:new Date().toISOString(),scope:"Public competitor source check unavailable.",data:null})),
-    readSource("paid_conversion", "Live Stripe checkout sessions created in the last 30 days. Campaign-tagged initial paid checkouts and trial starts are separate. Coverage includes untagged sessions; no unique-customer count, click conversion rate, renewals or causation is inferred.", checkoutConversions),
+    readSource("public_page_visits_30d", "First-party public-page browser-tab observations since tracking activation, at most 30 days; owner sessions and private paths excluded. Unknown source and capacity gaps remain explicit. Not unique people or verified qualified visits.", acquisitionSnapshot),
+    readSource("paid_conversion", "Live Stripe checkout sessions created in the last 30 days. Campaign-tagged initial paid checkouts and trial starts are separate. First paid subscription invoices (including trial-to-paid) use original tagged Checkout references; their coverage is separately reported. Never add these invoice and checkout counts. No unique-customer count, click conversion rate or causation is inferred.", checkoutConversions),
     readSource("growth_30d", "Existing community tracking, last 30 days. Clicks are not purchases; no paid conversion attribution is inferred.", async () => {
       return await db()`select source,event_type,count(*)::int as events from community_growth_events where created_at >= now()-interval '30 days' group by source,event_type order by source,event_type`;
     }),

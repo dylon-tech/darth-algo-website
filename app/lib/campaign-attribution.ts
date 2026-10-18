@@ -22,6 +22,9 @@ export function parseCampaignReference(value: unknown): Pick<CampaignAttribution
   } catch {return null;}
 }
 const paymentPaths=new Set(["/14AfZi4T5fRidqS2oc6kg03","/28EcN699l8oQ9aC5Ao6kg02","/4gM8wQfxJ6gI1IabYM6kg05","/6oUcN62KX0WoeuW1k86kg04"]);
+export function knownCheckout(href:string) {
+  try {const url=new URL(href);return url.origin==='https://buy.stripe.com'&&paymentPaths.has(url.pathname)&&!url.username&&!url.password;}catch{return false;}
+}
 export function attributeCheckout(href: string, attribution: CampaignAttribution | null) {
   if(!attribution) return href;
   try {

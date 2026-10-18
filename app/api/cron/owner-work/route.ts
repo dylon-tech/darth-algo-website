@@ -13,6 +13,7 @@ export const maxDuration=120;
 export async function GET(request:Request) {
   if(process.env.AI_OS_ENABLED!=="true") return Response.json({error:"Not available"},{status:404});
   if(!secretMatches(request.headers.get("authorization"),process.env.CRON_SECRET ? `Bearer ${process.env.CRON_SECRET}` : undefined)) return Response.json({error:"Unauthorized"},{status:401});
+  const requestStartedAt=new Date();
   try {
     const {heartbeat}=await import("../../../lib/business-os/coordination");
     await heartbeat("vercel-cron","checking");
@@ -23,6 +24,8 @@ export async function GET(request:Request) {
       const payments=await (await import("../../../lib/welcome/payments")).reconcileWelcomePayments();
       console.info(JSON.stringify({event:"welcome_tick",...welcome,...payments}));
     } catch { console.warn(JSON.stringify({event:"welcome_tick",status:"unavailable"})); }
+    try {await (await import("../../../lib/business-os/acquisition")).maintainAcquisitionRetention(requestStartedAt);}
+    catch {console.warn(JSON.stringify({event:"acquisition_retention",status:"unavailable"}));}
     await processOwnerUpdates();
     await deliverOwnerNotices(2);
     try {const {syncRetentionOpportunities}=await import("../../../lib/business-os/revenue-ops");console.info(JSON.stringify({event:"retention_tick",...await observed("retention",()=>syncRetentionOpportunities())}));}
