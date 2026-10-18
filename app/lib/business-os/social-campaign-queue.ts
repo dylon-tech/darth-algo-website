@@ -1371,5 +1371,72 @@ export const socialCampaignQueue:ReviewedCreative[] = [
       "reviewer": "Codex: founder-approved native v3 workflow; exact encoded PNGs inspected full-size and at 390px against approved type, product sources, current mappings, prior six campaigns, one-function focus, copy, logo, CTA, cooldown and destination. Darth Algo Operations 1.2.0.",
       "reviewedAt": "2026-10-13T12:43:55Z"
     }
+  },
+  {
+    "id": "2026-10-18-morning-swing-risk-reward-literacy",
+    "day": "2026-10-18",
+    "slot": "morning",
+    "theme": "Read the Swing risk/reward row without confusing it with win probability",
+    "text": "The Swing dashboard’s 1:2 risk/reward label compares planned risk with planned reward. It does not tell you the chance of winning. Read the ratio as part of your plan, not as a forecast. Save this guide.\nhttps://www.darthalgo.com/products/swing #TradingView",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-10-18/swing-read-risk-reward-6dccbbd294f1.png",
+        "sha256": "6dccbbd294f119b75c36ab0a7a831fdbbf53fbd7eaa16647c8ea2edb4b617e78",
+        "altText": "Darth Algo Swing guide titled Read 1:2 the Right Way. An authentic Risk/Reward dashboard row shows 1:2. Two explanatory bars compare one unit of planned risk with two of planned reward, separate from win rate.",
+        "mimeType": "image/png"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "educational",
+      "typographyVersion": "condensed-italic-2026-10-02-v2",
+      "sources": [
+        "https://www.darthalgo.com/products/swing",
+        "https://www.darthalgo.com/indicators/swing-dashboard.png",
+        "https://www.tradingview.com/support/solutions/43000475660-how-to-use-long-and-short-position-drawing-tools/",
+        "https://www.tradingview.com/support/solutions/43000681714-percent-profitable/",
+        "docs/social-creative-reviews/2026-10-18-education-recovery.md"
+      ],
+      "learning": "DA-BRAND-20261010-v3; DA-CLARITY-20261010-v1; DA-BENEFIT-20261010-v2; DA-FOCUS-20261011-v1; DA-PROVENANCE-20261012-v1. Audience question: does Swing’s 1:2 Risk/Reward row describe payoff proportions or the likelihood of winning? Verified lesson: planned risk/reward is separate from winning-trade frequency. Source swing-dashboard.png SHA 5e6f824a02a5a0a8d5fe54d02e604197f85a149c33e105d08bc31d38fb48d06b, current Swing mapping checked. Native 212x177; honest contiguous Risk/Reward row crop (0,146)-(212,177), proportionally rendered 944x138 with no retouching. Original complete source remains unchanged; no claim about its historical target status or any executed outcome. Conservative Swing overview/dashboard family last retained October 10 morning; outside preceding six campaigns. Full 41-entry queue and seven archive records contain no risk/reward-versus-win-frequency lesson. New misconception-led hook, one-row product focus and proportional native explanatory bars differ materially from prior levels, status and target/fill work. Both exact final bytes and 390px view passed source integrity, one-function focus, legibility, non-obstruction, typography, copy and freshness review. CTA Save this guide; destination /products/swing. Platform path: direct caption link where supported; Instagram profile path, not an assumed caption tap. Research refresh found sparse, unequal samples and missing qualified-click coverage, so no performance winner is claimed. Single variable: ratio misconception framing. Primary metric: saves plus shares per organic Instagram reach over seven full days after confirmed delivery; require usable coverage and at least 25 reach, otherwise inconclusive. No recommended ratio, probability, outcome, fill or fixed-loss promise. Darth Algo Operations 1.2.0; see dated review."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "d1bf7b150bcbce656887fa6bec98d2b7a064eba66513b904787f3a7f77a65c49",
+      "reviewer": "Codex: exact final native PNG inspected at full size and 390px against original source, current product mapping, typography reference and prior six campaigns; parent clarity/source review passed. Darth Algo Operations 1.2.0.",
+      "reviewedAt": "2026-10-18T03:13:32.521Z"
+    }
+  },
+  {
+    "id": "2026-10-18-afternoon-scalper-delayed-data-check",
+    "day": "2026-10-18",
+    "slot": "afternoon",
+    "theme": "Check the TradingView delayed-data badge before interpreting Scalper signal timing",
+    "text": "Before reviewing a Scalper signal, check the data badge beside the chart symbol. TradingView’s D badge means the chart feed is delayed. Verify your feed before judging signal timing. Save this check.\nhttps://www.darthalgo.com/products/scalper #TradingView",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-10-18/scalper-delayed-data-check-e2fc8a2ca570.png",
+        "sha256": "e2fc8a2ca570bb0fe50b540f2c183b3e1f1ab7851198a2a08c704d52a2c67f50",
+        "altText": "Darth Algo Scalper chart-data guide titled Spot the D. Check the Feed. The authentic Micro Silver Futures chart header shows the yellow D badge beside the exchange. The guide explains that D means delayed chart data.",
+        "mimeType": "image/png"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "educational",
+      "typographyVersion": "condensed-italic-2026-10-02-v2",
+      "sources": [
+        "https://www.darthalgo.com/products/scalper",
+        "https://www.darthalgo.com/indicators/scalper-overview.png",
+        "https://www.tradingview.com/support/solutions/43000476233-the-countdown-is-not-displayed-on-the-chart/",
+        "docs/social-creative-reviews/2026-10-18-education-recovery.md"
+      ],
+      "learning": "DA-BRAND-20261010-v3; DA-CLARITY-20261010-v1; DA-BENEFIT-20261010-v2; DA-FOCUS-20261011-v1; DA-PROVENANCE-20261012-v1. Audience question: what should a Scalper user check in the chart feed before assessing signal timing? Verified official TradingView meaning: the D status beside the chart symbol denotes delayed data. This educational application demonstrates the chart-data input dependency used with Scalper; it is not a new indicator-generated feature, evidence that the indicator causes delay, a live-data promise, or an upgrade solicitation. Current products.ts maps source scalper-overview.png to Scalper; SHA 378246b3d9cdda724627ace352a2408900c71481572ea44f2573347416c9f667, native 1773x765. Honest contiguous header detail (0,0)-(380,100) rendered 944x248 preserves symbol, interval, exchange, D and bid/ask. All candles and signal output lie outside this header-only crop; none was selectively removed, redrawn or altered. Full source is unchanged. Scalper overview/dashboard family last retained October 10 afternoon, outside the preceding six campaigns only after the new October 18 morning Swing entry; keep this slot order. No delayed-data lesson appears in 41 queue entries or seven archive records. Fresh proof-first header detail, external badge pointer, diagonal hook field and data-quality application differ from the recent dashboard, levels and signal-context compositions and the morning proportion-bar design. Exact final PNG and 390px inspection passed focus, readability, non-obstruction, source integrity, identity, type and copy review. CTA Save this guide; caption Save this check; destination /products/scalper. Direct caption link where supported; Instagram profile path, not assumed caption taps. Sparse unequal research samples do not establish a winner. Single variable: a visible feed-status check before signal interpretation. Primary metric: saves plus shares per organic Instagram reach after seven full days; at least 25 usable reach required or inconclusive. Guardrail: no promised delay duration or claim about any current user feed. Darth Algo Operations 1.2.0; see dated review."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "c587433c6c91f5df51dc1789851fff958527d9271e3ca3effa263a6594d31e62",
+      "reviewer": "Codex: exact final native PNG inspected at full size and 390px against original source, current product mapping, typography reference and prior six campaigns; parent clarity/source review passed. Darth Algo Operations 1.2.0.",
+      "reviewedAt": "2026-10-18T03:13:32.521Z"
+    }
   }
 ];
