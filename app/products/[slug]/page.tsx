@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ProductSpotlight from "../../components/product-spotlight";
-import { ImmersiveStory } from "../../components/immersive-engine";
 import SiteFooter from "../../components/site-footer";
 import SiteHeader from "../../components/site-header";
 import TradingViewUsernameHelp from "../../components/tradingview-username-help";
@@ -63,16 +62,9 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         description={{ scalper: "Short-term signals, trend context and planned levels for your active sessions.", swing: "Broader trend context, selective signals and a visible plan for the bigger move.", pro: "Scalper for the session. Swing for the broader move. Get both in one subscription." }[product.slug]}>
         {checkout && <a href={checkout} className="product-primary">{product.slug === "swing" ? "Start 2-Day Free Trial" : `Get ${product.shortName} Access`} <ArrowRight size={17} /></a>}
         <Link href="/compare" className="product-secondary">Compare the tools</Link>
-        <a href="#inside-the-engine" className="product-secondary">Explore in 3D ↓</a>
         <p className="product-terms">{product.price} {product.cadence}. {product.slug === "swing" && "Trial starts at checkout; continues monthly unless canceled. "}Automatic TradingView access after checkout with your exact username.</p>
         {checkout && <TradingViewUsernameHelp />}
       </ProductSpotlight>
-
-      <ImmersiveStory accent={product.color} scenes={product.workflow.map((step, index) => ({
-        label: ["Context", "Setup", "Plan"][index], title: step.title + ".", copy: step.copy,
-        image: index === 0 ? product.overview : index === 1 ? product.gallery[product.gallery.length - 1].src : product.gallery[product.slug === "pro" ? 1 : 0].src,
-        alt: index === 0 ? product.overviewAlt : index === 1 ? product.gallery[product.gallery.length - 1].alt : product.gallery[product.slug === "pro" ? 1 : 0].alt,
-      }))} />
 
       <section className="py-20 sm:py-28">
         <div className="section-shell grid gap-12 lg:grid-cols-[0.72fr_1.28fr]">

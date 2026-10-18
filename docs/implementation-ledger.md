@@ -324,3 +324,14 @@ Scope: documentation/context only; no executable code, queue records, image asse
 ## Restore 3D website experience — October 13, 2026
 
 DA-3D-ADS-20261013-v1; operations 1.2.0, founder-authorized restoration. Reconnect actual 3D geometry and camera motion on the home and product routes, retaining separate chart demonstration, authentic screenshots, reduced motion, fallback and checkout behavior. Add focused desktop/iPhone verification. Ads are separately produced files, not published campaigns. See docs/restore-3d-20261013.md. Exact CI and live deployment verification follow this implementation.
+
+
+## Remove decorative 3D website tour — October 18, 2026 UTC
+
+DA-REMOVE-3D-20261018-v1; Darth Algo Operations 1.2.0; deployment-verification workflow. Founder requested removal because the conceptual 3D view does not show the actual indicator working and occupies extra space. This supersedes the October 13 restoration decision.
+
+Remove the tour render and Explore in 3D link from the homepage and shared Scalper/Swing/Pro product route. Its tall scroll section and closing band leave no placeholder. Preserve the authentic screenshot explorer, enlarged-chart dialogs, galleries, workflow, pricing, checkout and disclosures. Keep dormant renderer modules unmounted for a small, reversible change. Update the existing regression to assert tour absence, adjacent sections and real-chart controls.
+
+Validation before publication: production build/type checks, focused lint, campaign-attribution regression and generated-page checks pass. Build has only three existing owner-indicator image warnings. The local browser check was blocked by a sandbox socket restriction; escalation failed before execution. No automated desktop/mobile pass is claimed. Exact remote commit and deployed-page verification are recorded separately after publication.
+
+Lesson: remove the unwanted visual and its scroll footprint rather than changing its default mode. New founder direction supersedes the former restoration note. No social queue, measurement implementation, credentials, spend, prices or customer records changed.

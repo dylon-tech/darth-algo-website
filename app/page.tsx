@@ -27,7 +27,6 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import ProductSpotlight from "./components/product-spotlight";
-import { ImmersiveStory } from "./components/immersive-engine";
 import SiteBrand from "./components/site-brand";
 import SiteFooter from "./components/site-footer";
 import TradingViewUsernameHelp from "./components/tradingview-username-help";
@@ -651,10 +650,8 @@ export default function Home() {
 
       <ProductSpotlight id="top" eyebrow="Darth Algo · TradingView indicators" title="See the setup. Plan the trade." description="Buy/sell signals, trend context and planned levels. Explore the real tools built for your trading rhythm.">
         <Link href="/products/pro" className="product-primary">Explore Pro — $29/month <ArrowRight size={17} /></Link>
-        <a href="#inside-the-engine" className="product-secondary">Explore in 3D ↓</a>
         <p className="product-terms">Scalper + Swing with Pro. Prefer one style? Compare all plans below, including the 2-day Swing trial.</p>
       </ProductSpotlight>
-      <ImmersiveStory />
 
       <section id="system" className="immersive-section relative z-10 py-24 sm:py-32">
         <div className="section-shell">
