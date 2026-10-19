@@ -1438,5 +1438,38 @@ export const socialCampaignQueue:ReviewedCreative[] = [
       "reviewer": "Codex: exact final native PNG inspected at full size and 390px against original source, current product mapping, typography reference and prior six campaigns; parent clarity/source review passed. Darth Algo Operations 1.2.0.",
       "reviewedAt": "2026-10-18T03:13:32.521Z"
     }
+  },
+  {
+    "id": "2026-10-20-morning-scalper-read-short-plan",
+    "day": "2026-10-20",
+    "slot": "morning",
+    "theme": "Read the vertical layout of a Scalper short plan without treating it as an outcome prediction",
+    "text": "In a short setup, the stop sits above entry and targets sit below it. Darth Algo Scalper keeps that plan visible on TradingView. The layout maps risk; it does not predict the outcome. Save this guide.\nhttps://www.darthalgo.com/products/scalper #TradingView",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-10-20/scalper-read-short-plan-076a0ef252cd.png",
+        "sha256": "076a0ef252cd5e82adeff9940b81209fca22de917b1d8253fff87941654492fa",
+        "altText": "Darth Algo Scalper guide titled Read a Short Plan Top to Bottom. An authentic TradingView short-plan chart shows stop above entry and two targets below entry, with a separate orientation rail. The layout is a plan, not an outcome prediction.",
+        "mimeType": "image/png"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "educational",
+      "typographyVersion": "condensed-italic-2026-10-02-v2",
+      "sources": [
+        "https://www.darthalgo.com/products/scalper",
+        "https://www.darthalgo.com/indicators/scalper-risk-plan.png",
+        "https://www.tradingview.com/support/solutions/43000475660-how-to-use-long-and-short-position-drawing-tools/",
+        "docs/social-creative-reviews/2026-10-20-education.md"
+      ],
+      "learning": "DA-BRAND-20261010-v3; DA-CLARITY-20261010-v1; DA-BENEFIT-20261010-v2; DA-FOCUS-20261011-v1; DA-PROVENANCE-20261012-v1. Audience question: where do stop, entry and targets sit in a short plan? Verified lesson: the current Scalper risk-plan capture shows stop above entry and Target 1/Target 2 below entry; the layout maps a plan and does not predict an outcome. Source scalper-risk-plan.png SHA a44932fb77ca698db94906b5c304bd260b728923e647d92870f42141641d04ee, native 665x471, current Scalper mapping checked. Complete source proportionally rendered 820x581 with ordinary non-generative fitting; no crop, redraw, retouch, candle removal or result claim. Conservative Scalper risk-plan family last retained October 11 morning, outside the preceding six retained campaigns. Full queue and archive review found earlier plan-visibility and target/fill lessons but no short-plan top-to-bottom orientation lesson. The exact final PNG and 390px preview passed wording, all-line sharpness, one-function focus, feature readability, source integrity, non-obstruction, family cooldown, fresh composition, logo and CTA review. CTA Save this guide; destination /products/scalper. Direct caption link only where supported; Instagram uses the existing profile route. Current connected samples are sparse and do not establish a winner. Single variable: short-plan orientation framing. Primary metric: saves plus shares per organic Instagram reach over seven full days after confirmed delivery, requiring usable coverage and at least 25 reach or inconclusive. Guardrail: no recommended trade, automatic decision, fixed loss, fill, performance or outcome implication. Darth Algo Operations 1.2.0; see dated review."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "856e60cba0463ba21c3667bee0b8b541d75a940c9d347b7d45d53f9c64384d4e",
+      "reviewer": "Codex: exact final native PNG inspected at full size and 390px against the original source, current product mapping, prior-six families, full retained history, typography, one-function focus, copy, logo, CTA and destination. Darth Algo Operations 1.2.0.",
+      "reviewedAt": "2026-10-19T13:32:00Z"
+    }
   }
 ];
