@@ -9,7 +9,7 @@ import {randomUUID} from 'node:crypto';
 const require=createRequire(import.meta.url),dir=mkdtempSync(join(tmpdir(),'da-acquisition-'));let database;
 try{
  symlinkSync(process.cwd()+'/node_modules',join(dir,'node_modules'),'dir');
- execFileSync('node_modules/.bin/tsc',['--target','ES2020','--module','commonjs','--moduleResolution','node','--esModuleInterop','--skipLibCheck','--rootDir','app','--outDir',dir,'app/lib/acquisition-client.ts','app/lib/business-os/acquisition.ts','app/lib/business-os/subscription-conversion-summary.ts','app/api/acquisition/visit/route.ts','app/api/owner/acquisition/route.ts']);
+ execFileSync('node_modules/.bin/tsc',['--target','ES2020','--module','commonjs','--moduleResolution','node','--esModuleInterop','--skipLibCheck','--rootDir','app','--outDir',dir,'app/lib/acquisition-client.ts','app/lib/business-os/acquisition.ts','app/lib/business-os/subscription-conversion-summary.ts','app/api/acquisition/visit/route.ts','app/api/owner/acquisition/route.ts','app/go/community/route.ts']);
  const policy=require(join(dir,'lib/acquisition-policy.js')),campaign=require(join(dir,'lib/campaign-attribution.js'));
  assert.deepEqual(policy.acquisitionLabels(null),{source:'unknown',campaign:'unknown',content:''});
  assert.deepEqual(policy.acquisitionLabels({source:'instagram',campaign:'private-customer-name',content:'email@example.com'}),{source:'instagram',campaign:'unregistered',content:'unregistered'});
@@ -78,5 +78,9 @@ try{
  assert.throws(()=>summarizeSubscriptionConversions([session],[{...invoice,livemode:false}],90,500),/TEST_INVOICE/);
  assert.equal(summarizeSubscriptionConversions([session],[{...invoice,billingReason:'manual'}],90,500).ambiguousSubscriptions,1);
  assert.equal(summarizeSubscriptionConversions([session],[invoice,{...invoice,id:'missing-time',paidAt:null}],90,500).ambiguousSubscriptions,1);
+ let inviteUnavailable=true,trackingUnavailable=true,trackingCalls=0;const growthPath=join(dir,'lib/growth-db.js');
+ require.cache[growthPath]={id:growthPath,filename:growthPath,loaded:true,exports:{normalizeGrowthSource:value=>value||'direct',normalizeCampaign:value=>value||'default',getGrowthInvite:async()=>{if(inviteUnavailable)throw Error('quota');return 'https://t.me/+configured';},trackGrowthEvent:async()=>{trackingCalls++;if(trackingUnavailable)throw Error('quota');}}};
+ const communityRoute=require(join(dir,'go/community/route.js')),warnings=[],originalWarn=console.warn;console.warn=(...args)=>warnings.push(args.join(' '));process.env.TELEGRAM_COMMUNITY_URL='https://t.me/+fallback';
+ try{const communityRequest={nextUrl:new URL('https://www.darthalgo.com/go/community?source=x&campaign=october'),cookies:{get:()=>({value:'visitor'})}};let redirect=await communityRoute.GET(communityRequest);assert.equal(redirect.status,307);assert.equal(redirect.headers.get('location'),'https://t.me/+fallback');assert.equal(redirect.headers.get('cache-control'),'no-store');assert.ok(warnings.some(line=>line.includes('growth_invite_unavailable')));assert.ok(warnings.some(line=>line.includes('growth_event_unavailable')));inviteUnavailable=false;redirect=await communityRoute.GET(communityRequest);assert.equal(redirect.status,307);assert.equal(redirect.headers.get('location'),'https://t.me/+configured');assert.equal(trackingCalls,2,'Tracking failure never blocks the community redirect');}finally{console.warn=originalWarn;}
  console.log('PASS: private/public path allowlists, personal-data rejection, owner/preview/test exclusion, concurrent dedupe, click separation, retention/caps, owner-only aggregates, client failures, preserved campaign labels, trial-to-paid vs renewal/zero/unknown/test/ambiguous invoices.');
 }finally{await database?.close();rmSync(dir,{recursive:true,force:true});}
