@@ -39,7 +39,16 @@ try {
       for (const i of [1, 2, 0, 2, 0]) {
         await controls.nth(i).click();
         assert.equal(await controls.nth(i).getAttribute('aria-pressed'), 'true');
-        assert.ok(await explorer.locator('figure img').evaluate(img => img.complete && img.naturalWidth > 0), 'Actual indicator image loads');
+        const imageLoaded = await explorer.locator('figure img').evaluate(async img => {
+          if (img.complete) return img.naturalWidth > 0;
+          return await new Promise(resolve => {
+            const timeout = setTimeout(() => resolve(false), 5000);
+            const settled = () => { clearTimeout(timeout); resolve(img.naturalWidth > 0); };
+            img.addEventListener('load', settled, { once: true });
+            img.addEventListener('error', settled, { once: true });
+          });
+        });
+        assert.ok(imageLoaded, 'Actual indicator image loads');
       }
       const enlarge = explorer.getByRole('button', { name: /^Enlarge / });
       await enlarge.click(); assert.ok(await page.getByRole('dialog').isVisible());
