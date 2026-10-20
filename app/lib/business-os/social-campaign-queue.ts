@@ -1471,5 +1471,42 @@ export const socialCampaignQueue:ReviewedCreative[] = [
       "reviewer": "Codex: exact final native PNG inspected at full size and 390px against the original source, current product mapping, prior-six families, full retained history, typography, one-function focus, copy, logo, CTA and destination. Darth Algo Operations 1.2.0.",
       "reviewedAt": "2026-10-19T13:32:00Z"
     }
+  },
+  {
+    "id": "2026-10-20-afternoon-pro-stop-versus-position-size",
+    "day": "2026-10-20",
+    "slot": "afternoon",
+    "theme": "Separate stop-location invalidation from position-size exposure in the Pro risk engine",
+    "text": "A stop marks where a setup is invalidated. It does not decide how much money to risk. Keep invalidation and position size as separate planning decisions. Save this distinction.\nhttps://www.darthalgo.com/education #TradingView",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-10-20/pro-stop-versus-position-size-ffbcb62afb54.png",
+        "sha256": "ffbcb62afb54a9e493df4bdf773a08803f452d49d937025d8b53b0b92c758876",
+        "altText": "Darth Algo Pro guide titled A Stop Line Isn't Position Size. An authentic chart crop shows SL above entry and two target labels below. Two panels explain that a stop marks invalidation while position size sets exposure.",
+        "mimeType": "image/png"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "educational",
+      "typographyVersion": "condensed-italic-2026-10-02-v2",
+      "sources": [
+        "https://www.darthalgo.com/education",
+        "https://www.darthalgo.com/products/pro",
+        "https://www.darthalgo.com/indicator-examples/darth-algo-feature-map-03.png",
+        "https://www.tradingview.com/support/solutions/43000475660-how-to-use-long-and-short-position-drawing-tools/",
+        "https://www.tradingview.com/support/solutions/43000517002-long-position-drawing-tool/",
+        "https://www.luxalgo.com/blog/adjusting-position-size-managing-risk-without-sacrificing-profit-potential/",
+        "https://algoalpha.io/blog/position-sizing-risk-management",
+        "docs/social-creative-reviews/2026-10-20-education-afternoon.md"
+      ],
+      "learning": "DA-BRAND-20261010-v3; DA-CLARITY-20261010-v1; DA-BENEFIT-20261010-v2; DA-FOCUS-20261011-v1; DA-PROVENANCE-20261012-v1. Audience question: does drawing a stop also determine how much account exposure to take? Verified lesson: the stop marks setup invalidation, while position sizing is a separate planning decision; the live Darth Algo education page states that a stop defines invalidation, not how much money to risk, and TradingView documents separate stop-level and risk/size inputs. Destination and CTA: Save this distinction → /education. Owned Pro risk-engine source feature-map-03.png SHA 3ee50cc35d90aac8ac6d41bd1d9cfe2154bbdfb4b2351ea29420424da8bf3df3, native 1805x767. Honest contiguous crop (1180,150)–(1785,420), 605x270, proportionally rendered 890x397; it retains SL, entry, TP1, TP2, risk/reward zones and price scale with no redraw, retouch or candle/result claim. Conservative darth-algo-feature-map-2026-06-03 family last appeared October 11 afternoon, outside the six preceding campaigns and absent from the morning slot. Full retained history contains plan-visibility, target/fill, ratio and short-orientation lessons but no stop-location-versus-position-size lesson. New two-question hook, wide level crop, paired stop/size panels and no orientation rail differ materially from the morning and prior six creatives. Exact final PNG and 390px inspection passed wording, all-line sharpness, one-function focus, feature readability, source integrity, non-obstruction, family cooldown, fresh composition, logo and CTA. Current Metricool refresh remains sparse: Instagram and Threads include October 18 posts, while qualified clicks, demographics, TikTok, YouTube and X analytics are unavailable; no winner is claimed. Public LuxAlgo and AlgoAlpha position-sizing articles support the audience-question pattern but provide no comparable private or social-performance evidence. Single variable: separating invalidation from exposure. Primary metric: saves plus shares per organic Instagram reach over seven full days after confirmed delivery, requiring usable coverage and at least 25 reach or inconclusive. Guardrail: no recommended stop, risk percentage, position size, fill, outcome or performance claim. Darth Algo Operations 1.2.0; see dated review."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "5c30043c31daddf9a868251561ae68169de2190210605ee82161ff8024efe4b2",
+      "reviewer": "Codex: exact final native PNG inspected at full size and 390px against the original source, current Pro mapping, prior-six families, full retained history, typography, one-function focus, copy, logo, CTA and destination. Darth Algo Operations 1.2.0.",
+      "reviewedAt": "2026-10-20T12:47:40Z"
+    }
   }
 ];
