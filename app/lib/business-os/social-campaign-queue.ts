@@ -1508,5 +1508,42 @@ export const socialCampaignQueue:ReviewedCreative[] = [
       "reviewer": "Codex: exact final native PNG inspected at full size and 390px against the original source, current Pro mapping, prior-six families, full retained history, typography, one-function focus, copy, logo, CTA and destination. Darth Algo Operations 1.2.0.",
       "reviewedAt": "2026-10-20T12:47:40Z"
     }
+  },
+  {
+    "id": "2026-10-23-afternoon-scalper-readable-chart",
+    "day": "2026-10-23",
+    "slot": "afternoon",
+    "theme": "Paid-indicator buyer fit: keep Scalper markers and trend context readable in one view",
+    "text": "Keep the chart readable. Scalper pairs markers with trend context. Need both styles? Pro is $29/month—$4.98 less than separate plans before tax. Need one? Choose that tool. Automatic TradingView access after purchase. Compare via bio or darthalgo.com/alternatives #DarthAlgo",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-10-23/scalper-readable-chart-ad7c8c4ae21e.png",
+        "sha256": "ad7c8c4ae21e2f5dc14799d2d39d006d8a7241667ea529f99b8d0537e937588f",
+        "altText": "Darth Algo Scalper product demonstration titled Keep the Chart Readable. An authentic TradingView view shows buy and sell markers with responsive trend context. Pro is $29 per month and includes Scalper plus Swing. Compare through the link in bio.",
+        "mimeType": "image/png"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "promotional",
+      "typographyVersion": "condensed-italic-2026-10-02-v2",
+      "sources": [
+        "https://www.darthalgo.com/alternatives",
+        "https://www.darthalgo.com/products/scalper",
+        "https://www.darthalgo.com/indicators/signal-context-alt.png",
+        "https://www.tradingview.com/support/solutions/43000473898-the-chart-looks-way-too-compressed/",
+        "https://www.tradingview.com/support/solutions/43000555216-how-to-try-indicators-and-strategies-from-the-community-on-your-chart/",
+        "library:DA_Content_Research_Latest.md#version-24",
+        "library:DA_Revenue_Sprint_2026-10-10.md#version-2",
+        "docs/social-creative-reviews/2026-10-23-promotion.md"
+      ],
+      "learning": "DA-BRAND-20261010-v3; DA-CLARITY-20261010-v1; DA-BENEFIT-20261010-v2; DA-FOCUS-20261011-v1; DA-PROVENANCE-20261012-v1. Audience question: how can a paid-indicator setup keep the chart readable while still showing signal cues and direction? Verified benefit: current products.ts maps signal-context-alt.png to Scalper, and the exact owned capture visibly pairs buy/sell markers with responsive trend context on one TradingView chart. Pro includes Scalper and Swing for $29/month, $4.98 less than the two separate monthly plans before tax; a buyer needing one style should choose that single tool. Automatic TradingView access follows purchase with the correct username. Exact destination and CTA: Compare your options → /alternatives. Instagram uses the existing profile route; X/Threads may expose the direct caption URL. Owned source SHA 492df5b3…, native 1523x485, complete source proportionally rendered 940x299 without crop, redraw, retouch or generative enlargement. Conservative signal-context family last retained October 12 morning; six distinct retained campaigns follow, so cooldown passes and no October 23 same-day family use exists. Full history contains prompt-versus-promise and cloud-color lessons, but not this paid-buyer chart-readability application. Chart-first proof, paired feature rails, evidence-before-headline layout and profile-route CTA differ materially from the prior six. Exact final PNG and 390px inspection passed wording, all-line sharpness, feature readability, source integrity, cooldown, fresh composition, typography, logo and CTA. Current analytics do not establish a winner or qualified traffic; empty networks remain unavailable, not zero. Single variable: chart-readability buyer framing. Primary metric: independently attributable /alternatives product visits per confirmed delivered platform post over seven full days. Guardrail: no performance parity, competitor-price, urgency, result, guaranteed-speed, zero-setup or duplicate-subscription claim. Sample: at least five attributable visits, otherwise insufficient data. Continue only if qualified visits appear without product-fit confusion. Provider publication remains unconfirmed until the production app stores receipts. Darth Algo Operations 1.2.0; see dated review."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "4b2b7c20f47372833a1c3e473a00091168dabbaf2fec79a4bf5ce96ef02d394c",
+      "reviewer": "Codex: exact final native PNG inspected at full size and 390px against the original source, current Scalper mapping, prior-six families, full retained history, typography, one-function focus, copy, logo, CTA and destination. Darth Algo Operations 1.2.0.",
+      "reviewedAt": "2026-10-23T12:57:40Z"
+    }
   }
 ];
