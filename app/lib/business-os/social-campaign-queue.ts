@@ -1545,5 +1545,44 @@ export const socialCampaignQueue:ReviewedCreative[] = [
       "reviewer": "Codex: exact final native PNG inspected at full size and 390px against the original source, current Scalper mapping, prior-six families, full retained history, typography, one-function focus, copy, logo, CTA and destination. Darth Algo Operations 1.2.0.",
       "reviewedAt": "2026-10-23T12:57:40Z"
     }
+  },
+  {
+    "id": "2026-10-24-morning-pro-compare-the-pair",
+    "day": "2026-10-24",
+    "slot": "morning",
+    "theme": "Compare the latest swing-high and swing-low pair before reading the next signal",
+    "text": "Market structure needs a pair. Mark the latest swing high and swing low, then compare both with the prior pair before reading the next signal. Pro’s clean structure view keeps the comparison uncluttered. Save this check. Open Trading Education from our profile. #TradingView",
+    "assets": [
+      {
+        "path": "/social-campaigns/2026-10-24/pro-compare-the-pair-e7ab4af998b7.png",
+        "sha256": "e7ab4af998b7298d436b77b8d83ecf5884ec7c22c6aba916068ecce5debe9784",
+        "altText": "Darth Algo Pro structure guide titled Compare the Pair. An authentic clean chart is followed by two steps: mark the latest swing high and swing low, then compare both with the prior pair.",
+        "mimeType": "image/png"
+      }
+    ],
+    "editorial": {
+      "version": "alternating-results-2026-09-24-v1",
+      "kind": "educational",
+      "typographyVersion": "condensed-italic-2026-10-02-v2",
+      "sources": [
+        "https://www.darthalgo.com/education",
+        "https://www.darthalgo.com/links",
+        "https://www.darthalgo.com/indicators/clean-price-action.png",
+        "https://www.tradingview.com/support/solutions/43000589195-pivot-points-high-low/",
+        "https://www.tradingview.com/script/DBH1Alls-Market-Structure-TFO/",
+        "https://docs.luxalgo.com/platform/algos/price-action-concepts/market-structures",
+        "https://algoalpha.io/indicators",
+        "library:DA_Content_Research_Latest.md#version-24",
+        "library:DA_Revenue_Sprint_2026-10-10.md#version-2",
+        "docs/social-creative-reviews/2026-10-24-education.md"
+      ],
+      "learning": "DA-BRAND-20261010-v3; DA-CLARITY-20261010-v1; DA-BENEFIT-20261010-v2; DA-FOCUS-20261011-v1; DA-PROVENANCE-20261012-v1. Audience question: what should a trader compare before deciding market structure changed? Verified lesson: mark the latest visible swing high and swing low, then compare both with the prior pair before reading the next signal; this is a chart-reading check, not a forecast. Current products.ts maps clean-price-action.png to the Pro gallery as Clean structure. Source SHA a63663af32bac2a0deaba989e720c97deea34e9abbd94a8eec87fe17b9fe5498, native 1142x490, complete source proportionally rendered 940x403 without crop, redraw, retouch, candle removal or generative enlargement. Full queue, reviews and source scripts contain no prior file/hash use or known derived crop; the clean-price-action family is absent from the prior six campaigns and the other daily slot. Full retained history has broader-trend and generic structure/context work but no latest-high/latest-low versus prior-pair application. Wide centered proof, parallel two-step rail and lower conclusion differ materially from the prior six. Exact encoded PNG and 390px inspection passed wording, all-line sharpness, feature readability, source integrity, family cooldown, composition, typography, logo and CTA. CTA Save this structure check; Instagram opens Trading Education through the existing /links profile route, not an assumed caption tap. Fresh analytics coverage remains incomplete and establishes no winner. Single variable: pair-comparison action. Primary metric: (saves+shares)/organic Instagram reach over seven full days after confirmed delivery, requiring usable coverage and at least 25 reach or inconclusive. Guardrail: no signal, result, prediction, live-data, fill or performance implication. Provider publication remains unconfirmed until production receipts exist. Darth Algo Operations 1.2.0; see dated review."
+    },
+    "review": {
+      "referenceVersion": "cinematic-owner-references-2026-09-22-v1",
+      "sha256": "4e96fa08477cd7ef73e393a3a588de59c782c5794975a9d30ed489f189e3d39e",
+      "reviewer": "Codex: exact final native PNG inspected at full size and 390px against the complete original source, current Pro mapping, prior-six families, full retained history, typography, one-function focus, copy, logo, CTA and destination. Darth Algo Operations 1.2.0.",
+      "reviewedAt": "2026-10-24T12:14:00Z"
+    }
   }
 ];
