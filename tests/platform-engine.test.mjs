@@ -1,0 +1,34 @@
+import assert from 'node:assert/strict';
+import {closeTrade,parseCsv,studyCandles,validateTrade,validateCandles,markets} from '../app/lib/platform/engine.ts';
+const start=1700000000;
+const bars=Array.from({length:30},(_,i)=>({time:start+i*900,open:100,high:102,low:98,close:100,volume:20}));
+const short=bars.map(c=>({...c})); short[29]={...short[29],open:103,high:106,low:99,close:100};
+const long=bars.map(c=>({...c})); long[29]={...long[29],open:97,high:101,low:94,close:100};
+for(const profile of ['Scalp','Swing','Pro']) {
+ assert.equal(studyCandles(short,profile,'Reversal').signal,'Bearish reversal candidate');
+ assert.equal(studyCandles(long,profile,'Reversal').signal,'Bullish reversal candidate');
+ assert.equal(studyCandles(short,profile,'Trend').signal,'Wait for confirmation');
+}
+assert.equal(studyCandles(bars,'Pro','Auto').bias,'neutral');
+assert.throws(()=>validateCandles(bars.map((c,i)=>i===20?{...c,time:start}:c)),/timestamps/);
+assert.throws(()=>validateCandles(bars.map((c,i)=>i===20?{...c,high:99}:c)),/prices/);
+assert.throws(()=>parseCsv('time,open,high,low,close,volume\n1,2,3,,2,3'));
+const gapped=bars.map(c=>({...c}));gapped[25]={...gapped[25],open:105,high:107,low:104,close:106};
+const prefix=studyCandles(gapped.slice(0,26),'Pro','Auto');
+assert.ok(prefix.zones.some(z=>z.kind==='FVG'&&z.side==='bullish'&&z.low===102&&z.high===104));
+gapped[26]={...gapped[26],open:104,high:105,low:99,close:100};
+const inverted=studyCandles(gapped.slice(0,27),'Pro','Auto');
+assert.ok(inverted.zones.some(z=>z.kind==='IFVG'&&z.side==='bearish'&&z.low===102&&z.high===104));
+assert.deepEqual(prefix,studyCandles(gapped.slice(0,26),'Pro','Auto'),'Appending future bars must not alter historical prefix analysis');
+assert.equal(gapped[25].low,104,'Study must not mutate source bars');
+const plan={symbol:'MGC',side:'long',entry:3000,stop:2990,target:3020,quantity:1,pointValue:10,fee:2};
+assert.equal(validateTrade(plan,50000,1,0,500),102);
+assert.throws(()=>validateTrade({...plan,quantity:10},50000,1,0,500),/per-trade/);
+assert.throws(()=>validateTrade(plan,50000,1,-450,500),/daily/);
+assert.throws(()=>validateTrade({...plan,stop:3010},50000,1,0,500),/opposite/);
+assert.throws(()=>validateTrade({...plan,entry:NaN},50000,1,0,500),/valid/);
+assert.equal(closeTrade({...plan,id:'1',openedAt:'2026-10-28T00:00:00Z'},3020,'2026-10-28T01:00:00Z').pnl,198);
+assert.equal(closeTrade({...plan,side:'short',id:'1',openedAt:'2026-10-28T00:00:00Z'},2990,'2026-10-28T01:00:00Z').pnl,98);
+assert.throws(()=>closeTrade({...plan,id:'1',openedAt:'',closedAt:'closed'},3001,''),/already/);
+assert.equal(markets.find(m=>m.code==='MNQ').pointValue,2);
+console.log('Platform: directional symmetry, data validation, FVG inversion, prefix stability, risk limits and paper P&L passed.');
