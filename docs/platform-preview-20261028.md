@@ -37,3 +37,18 @@ TypeScript and production build are required before deployment. Existing owner-i
 ## Dated lesson
 
 2026-10-28: existing public code contains marketing and owner operations, not an established end-user trading platform. Building a separate route preserves the paid products while exposing a reviewable product slice. Browser-only journal/progress and original research signals must remain visibly distinct from production accounts and protected Pine output. Supersede this limitation only with verified backend, entitlement and indicator-validation evidence.
+
+## Verification receipt — 2026-10-28 23:15 UTC
+
+- Draft PR: https://github.com/dylon-tech/darth-algo-website/pull/124
+- Implementation commit: `95733b898b2200c71fa2ef9f99b75e083a13eda1`.
+- Local production build, TypeScript and focused platform tests passed. GitHub Business app validation run `40785526456` passed including its production build.
+- Local HTTP smoke: `/platform` returned 200 and the development-preview label; unlisted crypto symbol returned 400; BTC-USD 15-minute endpoint returned 200 with 349 valid completed candles and last-close timestamp `2026-10-28T23:00:00.000Z`. No synthetic fallback.
+- GitHub iPhone run `40785526437` passed typecheck/build but failed installing browser dependencies because ubuntu-latest resolved to unsupported Ubuntu 26.04 for Playwright 1.58.2, before browser tests, so no iPhone browser pass is claimed.
+- Explicit Vercel staging attempts `dpl_Cfsq3VSdnA8obrg2XgUgwySpzbdd` and `dpl_BgnRyM6WwoY8EGWUXfLq5TRz31Cd` failed before build with `Resource provisioning failed`; first attempt had no build events. No working deployment is claimed.
+- An ambiguous retry omitting target was rejected by automatic approval review; it did not execute. A materially safer explicit-staging retry was permitted and failed provisioning as above. Production was not promoted or changed.
+- Cloud browser could not reach workspace localhost. Its URL policy also rejected local file navigation. No alternate browser path was attempted. Browser visual/interaction review remains blocked until a working HTTPS staging deployment is available.
+
+Next action: repair Vercel staging provisioning, deploy the exact reviewed commit explicitly to staging, verify chart embeds and all tab/button flows at desktop and phone widths, then evaluate the release blockers above.
+
+The follow-up pins the existing iPhone workflow to Ubuntu 24.04 (compatible with its current Playwright) and adds platform engine tests to Business app validation. This is a CI repair; it does not deploy or activate new workflows.
