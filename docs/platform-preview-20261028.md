@@ -17,7 +17,7 @@ Task: DA-PLATFORM-20261028-v1. Darth Algo Operations 1.2.0; deployment verificat
 - Validated port of protected Pine logic, compile/replay/non-repaint checks, market/session backtests and out-of-sample results. No private code was copied into this public repository.
 - Authenticated customer accounts, encrypted server-side journal/progress storage, server-side subscription/usage entitlement enforcement, billing setup and founder activation approval.
 - Secure paper-broker adapter and OAuth/secret storage, order idempotency, reconciliation, fail-closed environment validation. Real-money trading remains unimplemented and unauthorized.
-- Advanced performance analytics (expectancy, drawdown, profit factor) beyond current balance, closed P&L, win rate and trade count.
+- Server-verified performance analytics and broker fills. Browser-local manual-journal expectancy, drawdown, profit factor, R, equity curve and directional comparisons are implemented in the October 30 continuation; see `docs/platform-overnight-20261030.md`.
 
 ## Validation
 
@@ -52,3 +52,7 @@ TypeScript and production build are required before deployment. Existing owner-i
 Next action: repair Vercel staging provisioning, deploy the exact reviewed commit explicitly to staging, verify chart embeds and all tab/button flows at desktop and phone widths, then evaluate the release blockers above.
 
 The follow-up pins the existing iPhone workflow to Ubuntu 24.04 (compatible with its current Playwright) and adds platform engine tests to Business app validation. This is a CI repair; it does not deploy or activate new workflows.
+
+## October 30 continuation
+
+Paper analytics and validated backup/restore are implemented with journal-integrity protections. See `docs/platform-overnight-20261030.md` for the current execution receipt, verified public buying/setup path, tests, remaining delivery order and revenue next step. This is still a development preview, not a production launch.

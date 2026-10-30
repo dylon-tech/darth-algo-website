@@ -1,63 +1,1272 @@
-'use client';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Activity, ArrowDownRight, ArrowUpRight, BookOpen, Check, ChevronRight, Compass, Download, GraduationCap, Layers, LockKeyhole, Search, ShieldCheck, Wallet, Zap } from 'lucide-react';
-import { closeTrade, markets, parseCsv, studyCandles, validateTrade, type Candle, type PaperTrade, type Profile, type Strategy } from '../lib/platform/engine';
-import s from './platform.module.css';
-const money=(n:number)=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:2}).format(n);
-const lessons=[
-  {id:'structure',title:'Read the market structure',tag:'01 · Foundation',minutes:4,body:'Compare recent swing highs and lows. Higher highs with higher lows describe an uptrend; lower highs with lower lows describe a downtrend. A close beyond a prior range is evidence of a break, not a guarantee of follow-through. Start with the higher timeframe, then inspect the entry timeframe.',task:'Find the most recent high and low on the chart. Write down the price that would invalidate your current bias.',image:'/indicators/swing-trend-cloud.png',caption:'Historical Darth Algo Swing capture: trend cloud context. This is a recorded example, not current market analysis.'},
-  {id:'liquidity',title:'Understand a liquidity sweep',tag:'02 · ICT concepts',minutes:5,body:'In ICT terminology, traders often call a move beyond a visible high or low followed by a return inside the range a liquidity sweep. It can fail or continue. A price chart cannot prove where resting institutional orders sit. Wait for a completed candle and compare the sweep with structure.',task:'Mark a prior range high. Look for a candle that trades above it but closes back below. Compare a failed sweep with a continuing breakout.',image:'/indicators/clean-price-action.png',caption:'Historical price-action capture for practice. No order-book data or resting order counts are inferred.'},
-  {id:'fvg',title:'FVGs, IFVGs & order blocks',tag:'03 · Price zones',minutes:5,body:'A bullish three-candle fair value gap exists when candle three’s low is above candle one’s high. A bearish gap is the reverse. This study labels a gap as an inverse FVG only after a candle closes through its far edge. An order block here means the opposite-colored candle before a close beyond a recent range. These are explicit research definitions, not proof of institutional orders.',task:'Use completed candles to outline a gap. Record whether price respects it or closes through it; do not assume every gap must fill.',image:'/indicator-examples/darth-algo-feature-map-01.png',caption:'Historical Pro product capture. Academy definitions describe the experimental platform study; they do not claim the existing Pine scripts use identical rules.'},
-  {id:'risk',title:'Plan risk before entry',tag:'04 · Paper practice',minutes:4,body:'Risk in dollars equals the distance from entry to stop multiplied by quantity and the instrument’s dollar value per point, plus costs. Decide the invalidation level first. Then size the position to your risk budget. A stop is a plan; slippage and gaps can make actual loss larger. Paper journal results are hypothetical.',task:'Build one paper plan with a stop and target. Check the dollar risk, then compare the result with your daily loss limit.',image:'/indicators/scalper-risk-plan.png',caption:'Historical Scalper plan capture. Lines illustrate a plan; they do not establish executed fills or realized profit.'},
+"use client";
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  Activity,
+  ArrowDownRight,
+  ArrowUpRight,
+  BookOpen,
+  Check,
+  ChevronRight,
+  Compass,
+  Download,
+  GraduationCap,
+  Layers,
+  LockKeyhole,
+  Search,
+  ShieldCheck,
+  Wallet,
+  Zap,
+} from "lucide-react";
+import {
+  closeTrade,
+  markets,
+  parseCsv,
+  studyCandles,
+  validateTrade,
+  type Candle,
+  type PaperTrade,
+  type Profile,
+  type Strategy,
+} from "../lib/platform/engine";
+import s from "./platform.module.css";
+import PaperPerformance from "./paper-performance";
+import {
+  readJournal,
+  makeBackup,
+  mergeJournals,
+  validateJournalTrade,
+  paperTradePnl,
+  PAPER_STARTING_BALANCE,
+  MAX_BACKUP_BYTES,
+  type JournalState,
+} from "../lib/platform/journal";
+const money = (n: number) =>
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 2,
+  }).format(n);
+const lessons = [
+  {
+    id: "structure",
+    title: "Read the market structure",
+    tag: "01 · Foundation",
+    minutes: 4,
+    body: "Compare recent swing highs and lows. Higher highs with higher lows describe an uptrend; lower highs with lower lows describe a downtrend. A close beyond a prior range is evidence of a break, not a guarantee of follow-through. Start with the higher timeframe, then inspect the entry timeframe.",
+    task: "Find the most recent high and low on the chart. Write down the price that would invalidate your current bias.",
+    image: "/indicators/swing-trend-cloud.png",
+    caption:
+      "Historical Darth Algo Swing capture: trend cloud context. This is a recorded example, not current market analysis.",
+  },
+  {
+    id: "liquidity",
+    title: "Understand a liquidity sweep",
+    tag: "02 · ICT concepts",
+    minutes: 5,
+    body: "In ICT terminology, traders often call a move beyond a visible high or low followed by a return inside the range a liquidity sweep. It can fail or continue. A price chart cannot prove where resting institutional orders sit. Wait for a completed candle and compare the sweep with structure.",
+    task: "Mark a prior range high. Look for a candle that trades above it but closes back below. Compare a failed sweep with a continuing breakout.",
+    image: "/indicators/clean-price-action.png",
+    caption:
+      "Historical price-action capture for practice. No order-book data or resting order counts are inferred.",
+  },
+  {
+    id: "fvg",
+    title: "FVGs, IFVGs & order blocks",
+    tag: "03 · Price zones",
+    minutes: 5,
+    body: "A bullish three-candle fair value gap exists when candle three’s low is above candle one’s high. A bearish gap is the reverse. This study labels a gap as an inverse FVG only after a candle closes through its far edge. An order block here means the opposite-colored candle before a close beyond a recent range. These are explicit research definitions, not proof of institutional orders.",
+    task: "Use completed candles to outline a gap. Record whether price respects it or closes through it; do not assume every gap must fill.",
+    image: "/indicator-examples/darth-algo-feature-map-01.png",
+    caption:
+      "Historical Pro product capture. Academy definitions describe the experimental platform study; they do not claim the existing Pine scripts use identical rules.",
+  },
+  {
+    id: "risk",
+    title: "Plan risk before entry",
+    tag: "04 · Paper practice",
+    minutes: 4,
+    body: "Risk in dollars equals the distance from entry to stop multiplied by quantity and the instrument’s dollar value per point, plus costs. Decide the invalidation level first. Then size the position to your risk budget. A stop is a plan; slippage and gaps can make actual loss larger. Paper journal results are hypothetical.",
+    task: "Build one paper plan with a stop and target. Check the dollar risk, then compare the result with your daily loss limit.",
+    image: "/indicators/scalper-risk-plan.png",
+    caption:
+      "Historical Scalper plan capture. Lines illustrate a plan; they do not establish executed fills or realized profit.",
+  },
 ];
-function Chart({symbol,interval}:{symbol:string;interval:string}) {
-  const ref=useRef<HTMLDivElement>(null); const [failed,setFailed]=useState(false);
-  useEffect(()=>{const el=ref.current;if(!el)return;el.replaceChildren();setFailed(false);
-    const slot=document.createElement('div');slot.className='tradingview-widget-container__widget';slot.style.height='100%';el.append(slot);
-    const script=document.createElement('script');script.src='https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';script.async=true;
-    script.innerHTML=JSON.stringify({autosize:true,symbol,interval,timezone:'America/New_York',theme:'dark',style:'1',locale:'en',allow_symbol_change:false,hide_side_toolbar:false,backgroundColor:'#0b0c10',gridColor:'rgba(255,255,255,0.035)',save_image:false,calendar:false,studies:[]});script.onerror=()=>setFailed(true);el.append(script);
-    return()=>el.replaceChildren();},[symbol,interval]);
-  return <><div className={s.chart} ref={ref}/>{failed&&<p className={s.notice}>The chart provider could not load. Open this market on TradingView using the link below.</p>}<a className={s.attribution} href={`https://www.tradingview.com/chart/?symbol=${encodeURIComponent(symbol)}`} target="_blank" rel="noopener noreferrer">{symbol} chart by TradingView ↗</a></>;
+function Chart({ symbol, interval }: { symbol: string; interval: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.replaceChildren();
+    setFailed(false);
+    const slot = document.createElement("div");
+    slot.className = "tradingview-widget-container__widget";
+    slot.style.height = "100%";
+    el.append(slot);
+    const script = document.createElement("script");
+    script.src =
+      "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
+    script.async = true;
+    script.innerHTML = JSON.stringify({
+      autosize: true,
+      symbol,
+      interval,
+      timezone: "America/New_York",
+      theme: "dark",
+      style: "1",
+      locale: "en",
+      allow_symbol_change: false,
+      hide_side_toolbar: false,
+      backgroundColor: "#0b0c10",
+      gridColor: "rgba(255,255,255,0.035)",
+      save_image: false,
+      calendar: false,
+      studies: [],
+    });
+    script.onerror = () => setFailed(true);
+    el.append(script);
+    return () => el.replaceChildren();
+  }, [symbol, interval]);
+  return (
+    <>
+      <div className={s.chart} ref={ref} />
+      {failed && (
+        <p className={s.notice}>
+          The chart provider could not load. Open this market on TradingView
+          using the link below.
+        </p>
+      )}
+      <a
+        className={s.attribution}
+        href={`https://www.tradingview.com/chart/?symbol=${encodeURIComponent(symbol)}`}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {symbol} chart by TradingView ↗
+      </a>
+    </>
+  );
 }
-function CandleView({bars}:{bars:Candle[]}){
- const b=bars.slice(-55),low=Math.min(...b.map(x=>x.low)),high=Math.max(...b.map(x=>x.high)),range=high-low||1;const y=(p:number)=>180-(p-low)/range*158;
- return <svg className={s.studyChart} viewBox="0 0 600 200" role="img" aria-label="Last 55 imported completed candles"><path d="M0 40H600M0 90H600M0 140H600M0 190H600" stroke="#292b33"/>{b.map((c,i)=><g key={c.time} stroke={c.close>=c.open?'#63d7b0':'#fa5d6b'} fill={c.close>=c.open?'#63d7b0':'#fa5d6b'}><path d={`M${i*10.7+6} ${y(c.high)}V${y(c.low)}`}/><rect x={i*10.7+3} y={y(Math.max(c.open,c.close))} width="6" height={Math.max(1,Math.abs(y(c.open)-y(c.close)))}/></g>)}</svg>;
+function CandleView({ bars }: { bars: Candle[] }) {
+  const b = bars.slice(-55),
+    low = Math.min(...b.map((x) => x.low)),
+    high = Math.max(...b.map((x) => x.high)),
+    range = high - low || 1;
+  const y = (p: number) => 180 - ((p - low) / range) * 158;
+  return (
+    <svg
+      className={s.studyChart}
+      viewBox="0 0 600 200"
+      role="img"
+      aria-label="Last 55 imported completed candles"
+    >
+      <path d="M0 40H600M0 90H600M0 140H600M0 190H600" stroke="#292b33" />
+      {b.map((c, i) => (
+        <g
+          key={c.time}
+          stroke={c.close >= c.open ? "#63d7b0" : "#fa5d6b"}
+          fill={c.close >= c.open ? "#63d7b0" : "#fa5d6b"}
+        >
+          <path d={`M${i * 10.7 + 6} ${y(c.high)}V${y(c.low)}`} />
+          <rect
+            x={i * 10.7 + 3}
+            y={y(Math.max(c.open, c.close))}
+            width="6"
+            height={Math.max(1, Math.abs(y(c.open) - y(c.close)))}
+          />
+        </g>
+      ))}
+    </svg>
+  );
 }
-export default function Platform(){
- const [tab,setTab]=useState('Markets'),[market,setMarket]=useState<(typeof markets)[number]>(markets[2]),[query,setQuery]=useState(''),[category,setCategory]=useState('All'),[interval,setInterval]=useState('15');
- const requestVersion=useRef(0);
- const [profile,setProfile]=useState<Profile>('Pro'),[strategy,setStrategy]=useState<Strategy>('Auto'),[bars,setBars]=useState<Candle[]>([]),[source,setSource]=useState(''),[dataTime,setDataTime]=useState(''),[loading,setLoading]=useState(false),[error,setError]=useState(''),[csv,setCsv]=useState('');
- const [lesson,setLesson]=useState(lessons[0]),[completed,setCompleted]=useState<string[]>([]),[saved,setSaved]=useState<string[]>([]),[trades,setTrades]=useState<PaperTrade[]>([]),[hydrated,setHydrated]=useState(false);
- const [side,setSide]=useState<'long'|'short'>('long'),[entry,setEntry]=useState(''),[stop,setStop]=useState(''),[target,setTarget]=useState(''),[quantity,setQuantity]=useState('1'),[fee,setFee]=useState('0'),[risk,setRisk]=useState('1'),[limit,setLimit]=useState('500'),[exit,setExit]=useState(''),[paperMessage,setPaperMessage]=useState('');
- useEffect(()=>{try{const raw=JSON.parse(localStorage.getItem('da-platform-v1')||'{}');if(Array.isArray(raw.completed))setCompleted(raw.completed.filter((id:unknown)=>typeof id==='string'&&lessons.some(l=>l.id===id)));if(Array.isArray(raw.saved))setSaved(raw.saved.filter((id:unknown)=>typeof id==='string'&&lessons.some(l=>l.id===id)));if(Array.isArray(raw.trades))setTrades(raw.trades.filter((t:PaperTrade)=>t&&typeof t.id==='string'&&markets.some(m=>m.code===t.symbol)&&[t.entry,t.stop,t.target,t.quantity,t.pointValue,t.fee].every(Number.isFinite)&&(!t.closedAt||Number.isFinite(t.pnl))).slice(0,500));}catch{}setHydrated(true);},[]);
- useEffect(()=>{if(hydrated)try{localStorage.setItem('da-platform-v1',JSON.stringify({completed,saved,trades}));}catch{setPaperMessage('Browser storage is unavailable. Export your journal before leaving.');}},[completed,saved,trades,hydrated]);
- useEffect(()=>{requestVersion.current++;setLoading(false);setBars([]);setSource('');setDataTime('');setError('');setEntry('');setStop('');setTarget('');},[market,interval]);
- const closed=trades.filter(t=>t.closedAt),open=trades.find(t=>!t.closedAt),pnl=closed.reduce((n,t)=>n+(t.pnl||0),0),balance=50000+pnl,today=new Date().toISOString().slice(0,10),dayPnl=closed.filter(t=>t.closedAt?.slice(0,10)===today).reduce((n,t)=>n+(t.pnl||0),0),wins=closed.filter(t=>(t.pnl||0)>0).length;
- const study=useMemo(()=>bars.length?studyCandles(bars,profile,strategy):null,[bars,profile,strategy]);
- const filtered=markets.filter(m=>(category==='All'||m.type===category)&&`${m.code} ${m.name}`.toLowerCase().includes(query.toLowerCase()));
- async function load(){const version=++requestVersion.current;setLoading(true);setError('');try{const r=await fetch(`/api/platform/candles?symbol=${market.code}&interval=${interval}`);const data=await r.json();if(version!==requestVersion.current)return;if(!r.ok||data.stale)throw new Error(data.error||'This snapshot is stale. Use newer completed candles.');setBars(data.bars);setSource(data.source+' · delayed snapshot');setDataTime(data.lastClosedAt);}catch(e){if(version!==requestVersion.current)return;setBars([]);setError(e instanceof Error?e.message:'Data unavailable.');}finally{if(version===requestVersion.current)setLoading(false);}}
- function importCsv(){requestVersion.current++;setLoading(false);try{const parsed=parseCsv(csv);const seconds=interval==='D'?86400:Number(interval)*60;if(parsed.at(-1)!.time+seconds>Date.now()/1000)throw new Error('The final candle is not completed yet. Remove the open candle.');if(parsed.some((c,i)=>i>0&&(c.time-parsed[i-1].time)<seconds))throw new Error('Candle spacing does not match the selected interval.');setBars(parsed);setSource('Your CSV · unverified historical data');setDataTime(new Date((parsed.at(-1)!.time+seconds)*1000).toISOString());setError('');}catch(e){setError((e as Error).message);}}
- function openPaper(){try{if(open)throw new Error('Close the current paper position before opening another.');if(trades.length>=500)throw new Error('The journal is full. Export it before starting a new journal.');const t={symbol:market.code,side,entry:Number(entry),stop:Number(stop),target:Number(target),quantity:Number(quantity),pointValue:market.pointValue,fee:Number(fee)};if(market.type==='Futures'&&!Number.isInteger(t.quantity))throw new Error('Futures contracts require a whole-number quantity.');if(market.type==='Futures'&&[t.entry,t.stop,t.target].some(p=>Math.abs(p/market.tick-Math.round(p/market.tick))>.00001))throw new Error(`Use prices in ${market.tick}-point increments.`);validateTrade(t,balance,Number(risk),dayPnl,Number(limit));setTrades([...trades,{...t,id:crypto.randomUUID(),openedAt:new Date().toISOString()}]);setPaperMessage('Paper plan recorded. Enter the exit price when you close it.');}catch(e){setPaperMessage((e as Error).message);}}
- function closePaper(){if(!open)return;try{const result=closeTrade(open,Number(exit),new Date().toISOString());setTrades(trades.map(t=>t.id===open.id?result:t));setExit('');setPaperMessage(`Paper result recorded: ${money(result.pnl!)}.`);}catch(e){setPaperMessage((e as Error).message);}}
- function exportJournal(){const header='symbol,side,entry,stop,target,quantity,pointValue,fee,openedAt,exit,closedAt,pnl';const rows=trades.map(t=>[t.symbol,t.side,t.entry,t.stop,t.target,t.quantity,t.pointValue,t.fee,t.openedAt,t.exit??'',t.closedAt??'',t.pnl??''].join(','));const url=URL.createObjectURL(new Blob([[header,...rows].join('\n')],{type:'text/csv'}));const a=document.createElement('a');a.href=url;a.download='darth-algo-paper-journal.csv';a.click();URL.revokeObjectURL(url);}
- return <main className={s.app} id="main-content">
- <aside className={s.rail}><Link className={s.brand} href="/platform"><Image src="/darth-algo-link-logo.svg" alt="" width={40} height={40}/><span>DARTH<span className={s.red}> ALGO</span><small>THE TRADING WORKSPACE</small></span></Link><div className={s.workspaceLabel}>YOUR WORKSPACE</div><nav aria-label="Platform">{[{name:'Markets',Icon:Compass},{name:'Academy',Icon:GraduationCap},{name:'Paper trading',Icon:Wallet},{name:'Plans',Icon:Layers}].map(({name,Icon})=><button className={tab===name?s.active:''} onClick={()=>setTab(name)} key={name}><Icon size={18}/>{name}{name==='Academy'&&<span className={s.free}>FREE</span>}</button>)}</nav><div className={s.railBottom}><ShieldCheck size={20}/><strong>Practice with a plan.</strong><p>Build confidence one decision at a time.</p><Link href="/products/pro">Your TradingView tools ↗</Link></div></aside>
- <div className={s.workspace}><header className={s.top}><div className={s.breadcrumb}>Workspace <ChevronRight size={13}/> <strong>{tab}</strong></div><div className={s.topRight}><span className={s.preview}>DEVELOPMENT PREVIEW</span><span className={s.avatar}>DF</span></div></header>
- <div className={s.page}>
- {tab==='Markets'&&<><div className={s.heading}><div><span className={s.eyebrow}>A CLEARER VIEW OF THE MARKET</span><h1>Your next move starts here.</h1><p>Explore the chart. Read the context. Define your risk.</p></div><button className={s.secondary} onClick={()=>setTab('Academy')}><BookOpen size={16}/> New here? Start learning</button></div>
- <div className={s.marketStrip}>{markets.slice(0,3).map(m=><button onClick={()=>setMarket(m)} className={market.code===m.code?s.selectedMarket:''} key={m.code}><span className={s.marketIcon}>{m.code==='MGC'?'Au':m.code==='MES'?'S&P':'NQ'}</span><span><strong>{m.code}</strong><small>{m.name}</small></span><ChevronRight size={16}/></button>)}</div>
- <div className={s.marketLayout}><aside className={s.watchlist}><h2>Find a market <span>14</span></h2><label className={s.search}><Search size={16}/><input aria-label="Search markets" placeholder="Symbol or name" value={query} onChange={e=>setQuery(e.target.value)}/></label><div className={s.filters}>{['All','Futures','Crypto','Stocks'].map(c=><button key={c} className={category===c?s.on:''} onClick={()=>setCategory(c)}>{c}</button>)}</div><div className={s.marketList}>{filtered.map(m=><button key={m.code} className={market.code===m.code?s.chosen:''} onClick={()=>setMarket(m)}><span><strong>{m.code}</strong><small>{m.name}</small></span><span className={s.marketType}>{m.type}</span></button>)}{!filtered.length&&<p>No matching market in the starter catalog.</p>}</div></aside>
- <section className={s.chartCard}><div className={s.chartHeader}><div><strong>{market.code}</strong><span>{market.name}</span></div><select aria-label="Chart timeframe" value={interval} onChange={e=>setInterval(e.target.value)}>{[['1','1 min'],['5','5 min'],['15','15 min'],['30','30 min'],['60','1 hour'],['240','4 hours'],['D','1 day']].map(([v,l])=><option value={v} key={v}>{l}</option>)}</select></div><div className={s.dataBadge}>DELAYED / PROVIDER-DEPENDENT · Confirm the chart’s data status. No live feed is promised.</div><Chart symbol={market.symbol} interval={interval}/></section>
- <aside className={s.analysis}><div className={s.sectionHeader}><span className={s.iconBox}><Zap size={18}/></span><div><h2>Analysis lab</h2><small>Experimental platform study</small></div></div><div className={s.segment}>{(['Scalp','Swing','Pro'] as Profile[]).map(v=><button key={v} className={profile===v?s.on:''} onClick={()=>setProfile(v)}>{v}</button>)}</div><label className={s.label}>Strategy<select value={strategy} onChange={e=>setStrategy(e.target.value as Strategy)}>{['Auto','Reversal','Trend'].map(v=><option key={v}>{v}</option>)}</select></label>
- {study?<><div className={s.signal}><span>COMPLETED-BAR OBSERVATION</span><h3>{study.signal}</h3><p>{study.reason}</p></div><div className={s.level}><span>Prior range high</span><strong>{study.high.toFixed(2)}</strong></div><div className={s.level}><span>Prior range low</span><strong>{study.low.toFixed(2)}</strong></div><div className={s.level}><span>Trend context</span><strong>{study.bias}</strong></div><small className={s.source}>{source}<br/>Last closed: {new Date(dataTime).toLocaleString()}</small></>:<div className={s.waiting}><Activity size={30}/><h3>Bring the data into focus.</h3><p>Load completed candles to examine structure and price zones.</p></div>}
- {market.type==='Crypto'&&<button className={s.primary} disabled={loading||['30','240'].includes(interval)} onClick={load}>{loading?'Loading candles…':'Load crypto snapshot'}</button>}{market.type==='Crypto'&&['30','240'].includes(interval)&&<p className={s.muted}>Select 1m, 5m, 15m, 1h or 1d for Coinbase snapshots.</p>}<details className={s.details}><summary>Import historical candles</summary><p>For {market.code}, {interval==='D'?'1 day':interval+' minutes'}. Completed bars only. Header: time,open,high,low,close,volume. Time: Unix seconds (UTC).</p><textarea aria-label="Historical candle CSV" value={csv} onChange={e=>setCsv(e.target.value)} maxLength={250000} placeholder="time,open,high,low,close,volume"/><button className={s.secondary} onClick={importCsv}>Analyze CSV</button></details>{error&&<p className={s.error} role="alert">{error}</p>}<p className={s.small}>These original research rules are separate from your licensed Pine indicators. No verified win rate or automated trading.</p></aside></div>
- {study&&<section className={s.studyPanel}><div><span className={s.eyebrow}>COMPLETED CANDLES · {study.bars} BARS</span><CandleView bars={bars}/></div><div><h2>Price zones</h2><p className={s.muted}>Patterns inferred from OHLC. These do not reveal resting orders.</p>{study.zones.map((z,i)=><div className={s.level} key={i}><span>{z.kind} · {z.side}</span><strong>{z.low.toFixed(2)}–{z.high.toFixed(2)}</strong></div>)}{!study.zones.length&&<p>No active zones under these rules.</p>}</div></section>}
- <div className={s.bottomRow}><button onClick={()=>setTab('Paper trading')}><span className={s.iconBox}><ShieldCheck size={20}/></span><span><strong>Have a setup? Build a paper plan.</strong><small>Define a stop, target and position size before recording it.</small></span><ChevronRight/></button><button onClick={()=>setTab('Academy')}><span className={s.iconBox}><GraduationCap size={20}/></span><span><strong>Learn what the chart is telling you.</strong><small>Free lessons in structure, liquidity and risk.</small></span><ChevronRight/></button></div></>}
- {tab==='Academy'&&<><div className={s.heading}><div><span className={s.eyebrow}>FREE ACADEMY</span><h1>Learn the why behind the move.</h1><p>Short lessons. Real recorded examples. Your own pace.</p></div><span className={s.progressText}>{completed.length} / {lessons.length} complete</span></div><div className={s.progress}><i style={{width:`${completed.length/lessons.length*100}%`}}/></div><div className={s.academyLayout}><aside className={s.lessonList}>{lessons.map(l=><button key={l.id} className={lesson.id===l.id?s.chosen:''} onClick={()=>setLesson(l)}><small>{l.tag} · {l.minutes} MIN</small><strong>{l.title}</strong><span>{completed.includes(l.id)?'✓ Completed':saved.includes(l.id)?'Saved for later':'Start lesson'} <ChevronRight size={14}/></span></button>)}</aside><article className={s.lesson}><span className={s.eyebrow}>{lesson.tag}</span><h2>{lesson.title}</h2><p>{lesson.body}</p><figure><Image src={lesson.image} alt={lesson.caption} width={1600} height={900}/><figcaption>{lesson.caption}</figcaption></figure><div className={s.exercise}><strong>Try it on your chart</strong><p>{lesson.task}</p></div><div className={s.actions}><button className={s.primary} onClick={()=>setCompleted(completed.includes(lesson.id)?completed: [...completed,lesson.id])}><Check size={16}/>{completed.includes(lesson.id)?'Lesson completed':'Mark as completed'}</button><button className={s.secondary} onClick={()=>setSaved(saved.includes(lesson.id)?saved.filter(id=>id!==lesson.id):[...saved,lesson.id])}>{saved.includes(lesson.id)?'Remove saved lesson':'Save for later'}</button></div><p className={s.small}>Progress and saved lessons stay in this browser. Cross-device accounts are planned.</p></article></div></>}
- {tab==='Paper trading'&&<><div className={s.heading}><div><span className={s.eyebrow}>PAPER PRACTICE</span><h1>Build discipline. Track decisions.</h1><p>A manual paper journal with risk checks. No broker orders are submitted.</p></div><button className={s.secondary} onClick={exportJournal}><Download size={16}/> Export journal</button></div><div className={s.stats}>{[{label:'Paper balance',value:money(balance)},{label:'Closed P&L',value:money(pnl)},{label:'Win rate',value:closed.length?`${Math.round(wins/closed.length*100)}%`:'—'},{label:'Closed trades',value:String(closed.length)}].map(x=><div key={x.label}><small>{x.label}</small><strong>{x.value}</strong></div>)}</div><div className={s.paperLayout}><section className={s.paperForm}><h2>Plan a paper trade</h2><label className={s.label}>Market<select value={market.code} onChange={e=>setMarket(markets.find(m=>m.code===e.target.value)!)}>{markets.map(m=><option value={m.code} key={m.code}>{m.code} · {m.name}</option>)}</select></label><div className={s.segment}>{(['long','short'] as const).map(v=><button key={v} className={side===v?s.on:''} onClick={()=>setSide(v)}>{v==='long'?<ArrowUpRight size={16}/>:<ArrowDownRight size={16}/>} {v==='long'?'Long':'Short'}</button>)}</div><div className={s.formGrid}>{[{label:'Entry price',v:entry,set:setEntry},{label:'Stop price',v:stop,set:setStop},{label:'Target price',v:target,set:setTarget},{label:market.type==='Futures'?'Contracts':'Units / shares',v:quantity,set:setQuantity},{label:'Total fees ($)',v:fee,set:setFee},{label:'Max risk (%)',v:risk,set:setRisk},{label:'Daily loss limit ($)',v:limit,set:setLimit}].map(f=><label className={s.label} key={f.label}>{f.label}<input inputMode="decimal" type="number" min="0" step="any" value={f.v} onChange={e=>f.set(e.target.value)}/></label>)}</div><p className={s.muted}>{money(market.pointValue)} per point per unit · Paper starting balance $50,000 · Day boundary UTC</p><button className={s.primary} disabled={!!open||!hydrated} onClick={openPaper}>{open?'Close your current position first':'Record paper plan'}</button><p className={s.small}>Prices are entered by you and are unverified. Stops and targets are planning levels, not automatic fills. Hypothetical P&L includes your entered fees.</p></section><section className={s.paperJournal}><div className={s.sectionHeader}><h2>Your journal</h2><span className={s.preview}>BROWSER ONLY</span></div>{open?<div className={s.openTrade}><span className={s.eyebrow}>OPEN PAPER PLAN</span><h3>{open.symbol} · {open.side.toUpperCase()} · {open.quantity} units</h3><p>Entry {open.entry} · Stop {open.stop} · Target {open.target}</p><label className={s.label}>Your exit price<input type="number" step="any" min="0" value={exit} onChange={e=>setExit(e.target.value)}/></label><button className={s.primary} onClick={closePaper}>Close paper plan</button></div>:<div className={s.waiting}><Wallet size={28}/><h3>No open paper position.</h3><p>Start with a setup and a clear invalidation level.</p></div>}{paperMessage&&<p className={s.notice} role="status">{paperMessage}</p>}<div className={s.history}>{closed.slice().reverse().map(t=><div className={s.historyRow} key={t.id}><span><strong>{t.symbol} · {t.side}</strong><small>{new Date(t.closedAt!).toLocaleString()}</small></span><span className={(t.pnl||0)>=0?s.positive:s.negative}>{money(t.pnl||0)}</span></div>)}</div><div className={s.broker}><LockKeyhole size={20}/><div><strong>Broker connectivity · Planned</strong><p>Secure paper-account integration comes next. No credentials are requested or stored here.</p></div></div></section></div></>}
- {tab==='Plans'&&<><div className={s.heading}><div><span className={s.eyebrow}>PLATFORM MEMBERSHIP · PROPOSED</span><h1>Start free. Grow at your pace.</h1><p>Membership is being prepared. Checkout and subscriptions are not enabled.</p></div></div><div className={s.planGrid}><section className={s.plan}><span className={s.eyebrow}>FREE</span><h2>Find your footing.</h2><div className={s.price}>$0</div><ul><li>Market charts and starter search</li><li>Free Academy and saved progress</li><li>Manual paper journal and risk checks</li><li>Proposed: five premium analysis previews each month</li></ul><button className={s.secondary} onClick={()=>setTab('Markets')}>Explore the workspace</button></section><section className={`${s.plan} ${s.proPlan}`}><span className={s.eyebrow}>PLATFORM PRO · NOT YET AVAILABLE</span><h2>More context. More control.</h2><div className={s.price}>$19.99 <small>/ month proposed</small></div><ul><li>Planned: validated Scalp, Swing and Pro analysis</li><li>Planned: server-side account and usage limits</li><li>Planned: synced journal and advanced analytics</li><li>Planned: secure paper-broker connections</li></ul><button className={s.primary} disabled>Coming after validation</button></section></div><p className={s.notice}>This proposed platform membership is separate from the existing TradingView products. Current indicator prices, licenses and customer access are unchanged. The five-preview allowance is not enforced in this development preview.</p></>}
- <footer className={s.footer}><span>DARTH ALGO <span> / </span> Learn. Plan. Practice.</span><span>Preview · No real-money trading</span></footer>
- </div></div></main>;
+export default function Platform() {
+  const [tab, setTab] = useState("Markets"),
+    [market, setMarket] = useState<(typeof markets)[number]>(markets[2]),
+    [query, setQuery] = useState(""),
+    [category, setCategory] = useState("All"),
+    [interval, setInterval] = useState("15");
+  const requestVersion = useRef(0);
+  const backupRequest = useRef(0);
+  const [profile, setProfile] = useState<Profile>("Pro"),
+    [strategy, setStrategy] = useState<Strategy>("Auto"),
+    [bars, setBars] = useState<Candle[]>([]),
+    [source, setSource] = useState(""),
+    [dataTime, setDataTime] = useState(""),
+    [loading, setLoading] = useState(false),
+    [error, setError] = useState(""),
+    [csv, setCsv] = useState("");
+  const [lesson, setLesson] = useState(lessons[0]),
+    [completed, setCompleted] = useState<string[]>([]),
+    [saved, setSaved] = useState<string[]>([]),
+    [trades, setTrades] = useState<PaperTrade[]>([]),
+    [hydrated, setHydrated] = useState(false);
+  const [side, setSide] = useState<"long" | "short">("long"),
+    [entry, setEntry] = useState(""),
+    [stop, setStop] = useState(""),
+    [target, setTarget] = useState(""),
+    [quantity, setQuantity] = useState("1"),
+    [fee, setFee] = useState("0"),
+    [risk, setRisk] = useState("1"),
+    [limit, setLimit] = useState("500"),
+    [exit, setExit] = useState(""),
+    [paperMessage, setPaperMessage] = useState("");
+  const [storageError, setStorageError] = useState("");
+  const [rawBackup, setRawBackup] = useState("");
+  const [pendingImport, setPendingImport] = useState<JournalState | null>(null);
+  const [importError, setImportError] = useState("");
+  useEffect(() => {
+    let raw: string | null = null;
+    try {
+      raw = localStorage.getItem("da-platform-v1");
+      const journal = readJournal(
+        raw,
+        markets,
+        lessons.map((l) => l.id),
+        { allowLegacy: true },
+      );
+      setCompleted(journal.completed);
+      setSaved(journal.saved);
+      setTrades(journal.trades);
+      setRawBackup(localStorage.getItem("da-platform-recovery-v1") || "");
+    } catch (e) {
+      if (raw) setRawBackup(raw);
+      setStorageError(
+        `Saved data needs review: ${(e as Error).message} It has not been overwritten.`,
+      );
+    }
+    setHydrated(true);
+  }, []);
+  useEffect(() => {
+    if (hydrated && !storageError) {
+      try {
+        localStorage.setItem(
+          "da-platform-v1",
+          JSON.stringify(makeBackup({ completed, saved, trades })),
+        );
+      } catch {
+        setPaperMessage(
+          "Browser storage is unavailable. Download a backup before leaving this page.",
+        );
+      }
+    }
+  }, [completed, saved, trades, hydrated, storageError]);
+  useEffect(() => {
+    requestVersion.current++;
+    setLoading(false);
+    setBars([]);
+    setSource("");
+    setDataTime("");
+    setError("");
+    setEntry("");
+    setStop("");
+    setTarget("");
+  }, [market, interval]);
+  const closed = trades.filter((t) => t.closedAt),
+    open = trades.find((t) => !t.closedAt),
+    pnl = closed.reduce((n, t) => n + (paperTradePnl(t) || 0), 0),
+    balance = PAPER_STARTING_BALANCE + pnl,
+    today = new Date().toISOString().slice(0, 10),
+    dayPnl = closed
+      .filter((t) => t.closedAt?.slice(0, 10) === today)
+      .reduce((n, t) => n + (paperTradePnl(t) || 0), 0),
+    wins = closed.filter((t) => (paperTradePnl(t) || 0) > 0).length;
+  const study = useMemo(
+    () => (bars.length ? studyCandles(bars, profile, strategy) : null),
+    [bars, profile, strategy],
+  );
+  const filtered = markets.filter(
+    (m) =>
+      (category === "All" || m.type === category) &&
+      `${m.code} ${m.name}`.toLowerCase().includes(query.toLowerCase()),
+  );
+  async function load() {
+    const version = ++requestVersion.current;
+    setLoading(true);
+    setError("");
+    try {
+      const r = await fetch(
+        `/api/platform/candles?symbol=${market.code}&interval=${interval}`,
+      );
+      const data = await r.json();
+      if (version !== requestVersion.current) return;
+      if (!r.ok || data.stale)
+        throw new Error(
+          data.error || "This snapshot is stale. Use newer completed candles.",
+        );
+      setBars(data.bars);
+      setSource(data.source + " · delayed snapshot");
+      setDataTime(data.lastClosedAt);
+    } catch (e) {
+      if (version !== requestVersion.current) return;
+      setBars([]);
+      setError(e instanceof Error ? e.message : "Data unavailable.");
+    } finally {
+      if (version === requestVersion.current) setLoading(false);
+    }
+  }
+  function importCsv() {
+    requestVersion.current++;
+    setLoading(false);
+    try {
+      const parsed = parseCsv(csv);
+      const seconds = interval === "D" ? 86400 : Number(interval) * 60;
+      if (parsed.at(-1)!.time + seconds > Date.now() / 1000)
+        throw new Error(
+          "The final candle is not completed yet. Remove the open candle.",
+        );
+      if (parsed.some((c, i) => i > 0 && c.time - parsed[i - 1].time < seconds))
+        throw new Error("Candle spacing does not match the selected interval.");
+      setBars(parsed);
+      setSource("Your CSV · unverified historical data");
+      setDataTime(
+        new Date((parsed.at(-1)!.time + seconds) * 1000).toISOString(),
+      );
+      setError("");
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  }
+  function openPaper() {
+    try {
+      if (storageError)
+        throw new Error("Restore a valid backup before recording new plans.");
+      if (open)
+        throw new Error(
+          "Close the current paper position before opening another.",
+        );
+      if (trades.length >= 500)
+        throw new Error(
+          "The journal is full. Export it before starting a new journal.",
+        );
+      const t = {
+        symbol: market.code,
+        side,
+        entry: Number(entry),
+        stop: Number(stop),
+        target: Number(target),
+        quantity: Number(quantity),
+        pointValue: market.pointValue,
+        fee: Number(fee),
+      };
+      if (market.type === "Futures" && !Number.isInteger(t.quantity))
+        throw new Error("Futures contracts require a whole-number quantity.");
+      if (
+        market.type === "Futures" &&
+        [t.entry, t.stop, t.target].some(
+          (p) =>
+            Math.abs(p / market.tick - Math.round(p / market.tick)) > 0.00001,
+        )
+      )
+        throw new Error(`Use prices in ${market.tick}-point increments.`);
+      validateTrade(t, balance, Number(risk), dayPnl, Number(limit));
+      setTrades([
+        ...trades,
+        validateJournalTrade(
+          { ...t, id: crypto.randomUUID(), openedAt: new Date().toISOString() },
+          markets,
+        ),
+      ]);
+      setPaperMessage(
+        "Paper plan recorded. Enter the exit price when you close it.",
+      );
+    } catch (e) {
+      setPaperMessage((e as Error).message);
+    }
+  }
+  function closePaper() {
+    if (!open) return;
+    try {
+      const result = validateJournalTrade(
+        closeTrade(open, Number(exit), new Date().toISOString()),
+        markets,
+      );
+      setTrades(trades.map((t) => (t.id === open.id ? result : t)));
+      setExit("");
+      setPaperMessage(`Paper result recorded: ${money(result.pnl!)}.`);
+    } catch (e) {
+      setPaperMessage((e as Error).message);
+    }
+  }
+  function downloadText(
+    value: string,
+    name: string,
+    type = "application/json",
+  ) {
+    const url = URL.createObjectURL(new Blob([value], { type }));
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = name;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  }
+  async function inspectBackup(file?: File) {
+    const version = ++backupRequest.current;
+    setPendingImport(null);
+    setImportError("");
+    if (!file) return;
+    try {
+      if (file.size > MAX_BACKUP_BYTES)
+        throw new Error("Choose a backup smaller than 2 MB.");
+      const raw = await file.text();
+      if (version !== backupRequest.current) return;
+      const candidate = readJournal(
+        raw,
+        markets,
+        lessons.map((l) => l.id),
+      );
+      mergeJournals({ completed, saved, trades }, candidate);
+      setPendingImport(candidate);
+    } catch (e) {
+      if (version !== backupRequest.current) return;
+      setImportError((e as Error).message);
+    }
+  }
+  function restoreBackup() {
+    if (!pendingImport) return;
+    try {
+      const merged = mergeJournals({ completed, saved, trades }, pendingImport);
+      if (storageError && rawBackup)
+        localStorage.setItem("da-platform-recovery-v1", rawBackup);
+      localStorage.setItem(
+        "da-platform-v1",
+        JSON.stringify(makeBackup(merged)),
+      );
+      setCompleted(merged.completed);
+      setSaved(merged.saved);
+      setTrades(merged.trades);
+      setStorageError("");
+      setPendingImport(null);
+      setImportError("");
+      setPaperMessage(
+        "Backup merged. Existing trades were preserved and paper P&L was recalculated from prices.",
+      );
+    } catch (e) {
+      setImportError((e as Error).message);
+    }
+  }
+  function exportJournal() {
+    const header =
+      "symbol,side,entry,stop,target,quantity,pointValue,fee,openedAt,exit,closedAt,pnl";
+    const rows = trades.map((t) =>
+      [
+        t.symbol,
+        t.side,
+        t.entry,
+        t.stop,
+        t.target,
+        t.quantity,
+        t.pointValue,
+        t.fee,
+        t.openedAt,
+        t.exit ?? "",
+        t.closedAt ?? "",
+        t.pnl ?? "",
+      ].join(","),
+    );
+    const url = URL.createObjectURL(
+      new Blob([[header, ...rows].join("\n")], { type: "text/csv" }),
+    );
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "darth-algo-paper-journal.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+  return (
+    <main className={s.app} id="main-content">
+      <aside className={s.rail}>
+        <Link className={s.brand} href="/platform">
+          <Image
+            src="/darth-algo-link-logo.svg"
+            alt=""
+            width={40}
+            height={40}
+          />
+          <span>
+            DARTH<span className={s.red}> ALGO</span>
+            <small>THE TRADING WORKSPACE</small>
+          </span>
+        </Link>
+        <div className={s.workspaceLabel}>YOUR WORKSPACE</div>
+        <nav aria-label="Platform">
+          {[
+            { name: "Markets", Icon: Compass },
+            { name: "Academy", Icon: GraduationCap },
+            { name: "Paper trading", Icon: Wallet },
+            { name: "Plans", Icon: Layers },
+          ].map(({ name, Icon }) => (
+            <button
+              className={tab === name ? s.active : ""}
+              onClick={() => setTab(name)}
+              key={name}
+            >
+              <Icon size={18} />
+              {name}
+              {name === "Academy" && <span className={s.free}>FREE</span>}
+            </button>
+          ))}
+        </nav>
+        <div className={s.railBottom}>
+          <ShieldCheck size={20} />
+          <strong>Practice with a plan.</strong>
+          <p>Build confidence one decision at a time.</p>
+          <Link href="/products/pro">Your TradingView tools ↗</Link>
+        </div>
+      </aside>
+      <div className={s.workspace}>
+        <header className={s.top}>
+          <div className={s.breadcrumb}>
+            Workspace <ChevronRight size={13} /> <strong>{tab}</strong>
+          </div>
+          <div className={s.topRight}>
+            <span className={s.preview}>DEVELOPMENT PREVIEW</span>
+            <span className={s.avatar}>DF</span>
+          </div>
+        </header>
+        <div className={s.page}>
+          {tab === "Markets" && (
+            <>
+              <div className={s.heading}>
+                <div>
+                  <span className={s.eyebrow}>
+                    A CLEARER VIEW OF THE MARKET
+                  </span>
+                  <h1>Your next move starts here.</h1>
+                  <p>Explore the chart. Read the context. Define your risk.</p>
+                </div>
+                <button
+                  className={s.secondary}
+                  onClick={() => setTab("Academy")}
+                >
+                  <BookOpen size={16} /> New here? Start learning
+                </button>
+              </div>
+              <div className={s.marketStrip}>
+                {markets.slice(0, 3).map((m) => (
+                  <button
+                    onClick={() => setMarket(m)}
+                    className={market.code === m.code ? s.selectedMarket : ""}
+                    key={m.code}
+                  >
+                    <span className={s.marketIcon}>
+                      {m.code === "MGC"
+                        ? "Au"
+                        : m.code === "MES"
+                          ? "S&P"
+                          : "NQ"}
+                    </span>
+                    <span>
+                      <strong>{m.code}</strong>
+                      <small>{m.name}</small>
+                    </span>
+                    <ChevronRight size={16} />
+                  </button>
+                ))}
+              </div>
+              <div className={s.marketLayout}>
+                <aside className={s.watchlist}>
+                  <h2>
+                    Find a market <span>14</span>
+                  </h2>
+                  <label className={s.search}>
+                    <Search size={16} />
+                    <input
+                      aria-label="Search markets"
+                      placeholder="Symbol or name"
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                    />
+                  </label>
+                  <div className={s.filters}>
+                    {["All", "Futures", "Crypto", "Stocks"].map((c) => (
+                      <button
+                        key={c}
+                        className={category === c ? s.on : ""}
+                        onClick={() => setCategory(c)}
+                      >
+                        {c}
+                      </button>
+                    ))}
+                  </div>
+                  <div className={s.marketList}>
+                    {filtered.map((m) => (
+                      <button
+                        key={m.code}
+                        className={market.code === m.code ? s.chosen : ""}
+                        onClick={() => setMarket(m)}
+                      >
+                        <span>
+                          <strong>{m.code}</strong>
+                          <small>{m.name}</small>
+                        </span>
+                        <span className={s.marketType}>{m.type}</span>
+                      </button>
+                    ))}
+                    {!filtered.length && (
+                      <p>No matching market in the starter catalog.</p>
+                    )}
+                  </div>
+                </aside>
+                <section className={s.chartCard}>
+                  <div className={s.chartHeader}>
+                    <div>
+                      <strong>{market.code}</strong>
+                      <span>{market.name}</span>
+                    </div>
+                    <select
+                      aria-label="Chart timeframe"
+                      value={interval}
+                      onChange={(e) => setInterval(e.target.value)}
+                    >
+                      {[
+                        ["1", "1 min"],
+                        ["5", "5 min"],
+                        ["15", "15 min"],
+                        ["30", "30 min"],
+                        ["60", "1 hour"],
+                        ["240", "4 hours"],
+                        ["D", "1 day"],
+                      ].map(([v, l]) => (
+                        <option value={v} key={v}>
+                          {l}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className={s.dataBadge}>
+                    DELAYED / PROVIDER-DEPENDENT · Confirm the chart’s data
+                    status. No live feed is promised.
+                  </div>
+                  <Chart symbol={market.symbol} interval={interval} />
+                </section>
+                <aside className={s.analysis}>
+                  <div className={s.sectionHeader}>
+                    <span className={s.iconBox}>
+                      <Zap size={18} />
+                    </span>
+                    <div>
+                      <h2>Analysis lab</h2>
+                      <small>Experimental platform study</small>
+                    </div>
+                  </div>
+                  <div className={s.segment}>
+                    {(["Scalp", "Swing", "Pro"] as Profile[]).map((v) => (
+                      <button
+                        key={v}
+                        className={profile === v ? s.on : ""}
+                        onClick={() => setProfile(v)}
+                      >
+                        {v}
+                      </button>
+                    ))}
+                  </div>
+                  <label className={s.label}>
+                    Strategy
+                    <select
+                      value={strategy}
+                      onChange={(e) => setStrategy(e.target.value as Strategy)}
+                    >
+                      {["Auto", "Reversal", "Trend"].map((v) => (
+                        <option key={v}>{v}</option>
+                      ))}
+                    </select>
+                  </label>
+                  {study ? (
+                    <>
+                      <div className={s.signal}>
+                        <span>COMPLETED-BAR OBSERVATION</span>
+                        <h3>{study.signal}</h3>
+                        <p>{study.reason}</p>
+                      </div>
+                      <div className={s.level}>
+                        <span>Prior range high</span>
+                        <strong>{study.high.toFixed(2)}</strong>
+                      </div>
+                      <div className={s.level}>
+                        <span>Prior range low</span>
+                        <strong>{study.low.toFixed(2)}</strong>
+                      </div>
+                      <div className={s.level}>
+                        <span>Trend context</span>
+                        <strong>{study.bias}</strong>
+                      </div>
+                      <small className={s.source}>
+                        {source}
+                        <br />
+                        Last closed: {new Date(dataTime).toLocaleString()}
+                      </small>
+                    </>
+                  ) : (
+                    <div className={s.waiting}>
+                      <Activity size={30} />
+                      <h3>Bring the data into focus.</h3>
+                      <p>
+                        Load completed candles to examine structure and price
+                        zones.
+                      </p>
+                    </div>
+                  )}
+                  {market.type === "Crypto" && (
+                    <button
+                      className={s.primary}
+                      disabled={loading || ["30", "240"].includes(interval)}
+                      onClick={load}
+                    >
+                      {loading ? "Loading candles…" : "Load crypto snapshot"}
+                    </button>
+                  )}
+                  {market.type === "Crypto" &&
+                    ["30", "240"].includes(interval) && (
+                      <p className={s.muted}>
+                        Select 1m, 5m, 15m, 1h or 1d for Coinbase snapshots.
+                      </p>
+                    )}
+                  <details className={s.details}>
+                    <summary>Import historical candles</summary>
+                    <p>
+                      For {market.code},{" "}
+                      {interval === "D" ? "1 day" : interval + " minutes"}.
+                      Completed bars only. Header:
+                      time,open,high,low,close,volume. Time: Unix seconds (UTC).
+                    </p>
+                    <textarea
+                      aria-label="Historical candle CSV"
+                      value={csv}
+                      onChange={(e) => setCsv(e.target.value)}
+                      maxLength={250000}
+                      placeholder="time,open,high,low,close,volume"
+                    />
+                    <button className={s.secondary} onClick={importCsv}>
+                      Analyze CSV
+                    </button>
+                  </details>
+                  {error && (
+                    <p className={s.error} role="alert">
+                      {error}
+                    </p>
+                  )}
+                  <p className={s.small}>
+                    These original research rules are separate from your
+                    licensed Pine indicators. No verified win rate or automated
+                    trading.
+                  </p>
+                </aside>
+              </div>
+              {study && (
+                <section className={s.studyPanel}>
+                  <div>
+                    <span className={s.eyebrow}>
+                      COMPLETED CANDLES · {study.bars} BARS
+                    </span>
+                    <CandleView bars={bars} />
+                  </div>
+                  <div>
+                    <h2>Price zones</h2>
+                    <p className={s.muted}>
+                      Patterns inferred from OHLC. These do not reveal resting
+                      orders.
+                    </p>
+                    {study.zones.map((z, i) => (
+                      <div className={s.level} key={i}>
+                        <span>
+                          {z.kind} · {z.side}
+                        </span>
+                        <strong>
+                          {z.low.toFixed(2)}–{z.high.toFixed(2)}
+                        </strong>
+                      </div>
+                    ))}
+                    {!study.zones.length && (
+                      <p>No active zones under these rules.</p>
+                    )}
+                  </div>
+                </section>
+              )}
+              <div className={s.bottomRow}>
+                <button onClick={() => setTab("Paper trading")}>
+                  <span className={s.iconBox}>
+                    <ShieldCheck size={20} />
+                  </span>
+                  <span>
+                    <strong>Have a setup? Build a paper plan.</strong>
+                    <small>
+                      Define a stop, target and position size before recording
+                      it.
+                    </small>
+                  </span>
+                  <ChevronRight />
+                </button>
+                <button onClick={() => setTab("Academy")}>
+                  <span className={s.iconBox}>
+                    <GraduationCap size={20} />
+                  </span>
+                  <span>
+                    <strong>Learn what the chart is telling you.</strong>
+                    <small>
+                      Free lessons in structure, liquidity and risk.
+                    </small>
+                  </span>
+                  <ChevronRight />
+                </button>
+              </div>
+            </>
+          )}
+          {tab === "Academy" && (
+            <>
+              <div className={s.heading}>
+                <div>
+                  <span className={s.eyebrow}>FREE ACADEMY</span>
+                  <h1>Learn the why behind the move.</h1>
+                  <p>Short lessons. Real recorded examples. Your own pace.</p>
+                </div>
+                <span className={s.progressText}>
+                  {completed.length} / {lessons.length} complete
+                </span>
+              </div>
+              <div className={s.progress}>
+                <i
+                  style={{
+                    width: `${(completed.length / lessons.length) * 100}%`,
+                  }}
+                />
+              </div>
+              <div className={s.academyLayout}>
+                <aside className={s.lessonList}>
+                  {lessons.map((l) => (
+                    <button
+                      key={l.id}
+                      className={lesson.id === l.id ? s.chosen : ""}
+                      onClick={() => setLesson(l)}
+                    >
+                      <small>
+                        {l.tag} · {l.minutes} MIN
+                      </small>
+                      <strong>{l.title}</strong>
+                      <span>
+                        {completed.includes(l.id)
+                          ? "✓ Completed"
+                          : saved.includes(l.id)
+                            ? "Saved for later"
+                            : "Start lesson"}{" "}
+                        <ChevronRight size={14} />
+                      </span>
+                    </button>
+                  ))}
+                </aside>
+                <article className={s.lesson}>
+                  <span className={s.eyebrow}>{lesson.tag}</span>
+                  <h2>{lesson.title}</h2>
+                  <p>{lesson.body}</p>
+                  <figure>
+                    <Image
+                      src={lesson.image}
+                      alt={lesson.caption}
+                      width={1600}
+                      height={900}
+                    />
+                    <figcaption>{lesson.caption}</figcaption>
+                  </figure>
+                  <div className={s.exercise}>
+                    <strong>Try it on your chart</strong>
+                    <p>{lesson.task}</p>
+                  </div>
+                  <div className={s.actions}>
+                    <button
+                      className={s.primary}
+                      onClick={() =>
+                        setCompleted(
+                          completed.includes(lesson.id)
+                            ? completed
+                            : [...completed, lesson.id],
+                        )
+                      }
+                    >
+                      <Check size={16} />
+                      {completed.includes(lesson.id)
+                        ? "Lesson completed"
+                        : "Mark as completed"}
+                    </button>
+                    <button
+                      className={s.secondary}
+                      onClick={() =>
+                        setSaved(
+                          saved.includes(lesson.id)
+                            ? saved.filter((id) => id !== lesson.id)
+                            : [...saved, lesson.id],
+                        )
+                      }
+                    >
+                      {saved.includes(lesson.id)
+                        ? "Remove saved lesson"
+                        : "Save for later"}
+                    </button>
+                  </div>
+                  <p className={s.small}>
+                    Progress and saved lessons stay in this browser.
+                    Cross-device accounts are planned.
+                  </p>
+                </article>
+              </div>
+            </>
+          )}
+          {tab === "Paper trading" && (
+            <>
+              <div className={s.heading}>
+                <div>
+                  <span className={s.eyebrow}>PAPER PRACTICE</span>
+                  <h1>Build discipline. Track decisions.</h1>
+                  <p>
+                    A manual paper journal with risk checks. No broker orders
+                    are submitted.
+                  </p>
+                </div>
+                <button className={s.secondary} onClick={exportJournal}>
+                  <Download size={16} /> Export journal
+                </button>
+              </div>
+              {storageError && (
+                <p className={s.error} role="alert">
+                  {storageError} Download the original data below, then restore
+                  a valid backup.
+                </p>
+              )}
+              <div className={s.stats}>
+                {[
+                  { label: "Paper balance", value: money(balance) },
+                  { label: "Closed P&L", value: money(pnl) },
+                  {
+                    label: "Win rate",
+                    value: closed.length
+                      ? `${Math.round((wins / closed.length) * 100)}%`
+                      : "—",
+                  },
+                  { label: "Closed trades", value: String(closed.length) },
+                ].map((x) => (
+                  <div key={x.label}>
+                    <small>{x.label}</small>
+                    <strong>{x.value}</strong>
+                  </div>
+                ))}
+              </div>
+              <PaperPerformance trades={trades} />
+              <div className={s.paperLayout}>
+                <section className={s.paperForm}>
+                  <h2>Plan a paper trade</h2>
+                  <label className={s.label}>
+                    Market
+                    <select
+                      value={market.code}
+                      onChange={(e) =>
+                        setMarket(
+                          markets.find((m) => m.code === e.target.value)!,
+                        )
+                      }
+                    >
+                      {markets.map((m) => (
+                        <option value={m.code} key={m.code}>
+                          {m.code} · {m.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <div className={s.segment}>
+                    {(["long", "short"] as const).map((v) => (
+                      <button
+                        key={v}
+                        className={side === v ? s.on : ""}
+                        onClick={() => setSide(v)}
+                      >
+                        {v === "long" ? (
+                          <ArrowUpRight size={16} />
+                        ) : (
+                          <ArrowDownRight size={16} />
+                        )}{" "}
+                        {v === "long" ? "Long" : "Short"}
+                      </button>
+                    ))}
+                  </div>
+                  <div className={s.formGrid}>
+                    {[
+                      { label: "Entry price", v: entry, set: setEntry },
+                      { label: "Stop price", v: stop, set: setStop },
+                      { label: "Target price", v: target, set: setTarget },
+                      {
+                        label:
+                          market.type === "Futures"
+                            ? "Contracts"
+                            : "Units / shares",
+                        v: quantity,
+                        set: setQuantity,
+                      },
+                      { label: "Total fees ($)", v: fee, set: setFee },
+                      { label: "Max risk (%)", v: risk, set: setRisk },
+                      {
+                        label: "Daily loss limit ($)",
+                        v: limit,
+                        set: setLimit,
+                      },
+                    ].map((f) => (
+                      <label className={s.label} key={f.label}>
+                        {f.label}
+                        <input
+                          inputMode="decimal"
+                          type="number"
+                          min="0"
+                          step="any"
+                          value={f.v}
+                          onChange={(e) => f.set(e.target.value)}
+                        />
+                      </label>
+                    ))}
+                  </div>
+                  <p className={s.muted}>
+                    {money(market.pointValue)} per point per unit · Paper
+                    starting balance $50,000 · Day boundary UTC
+                  </p>
+                  <button
+                    className={s.primary}
+                    disabled={!!open || !hydrated || !!storageError}
+                    onClick={openPaper}
+                  >
+                    {open
+                      ? "Close your current position first"
+                      : "Record paper plan"}
+                  </button>
+                  <p className={s.small}>
+                    Prices are entered by you and are unverified. Stops and
+                    targets are planning levels, not automatic fills.
+                    Hypothetical P&L includes your entered fees.
+                  </p>
+                </section>
+                <section className={s.paperJournal}>
+                  <div className={s.sectionHeader}>
+                    <h2>Your journal</h2>
+                    <span className={s.preview}>BROWSER ONLY</span>
+                  </div>
+                  {open ? (
+                    <div className={s.openTrade}>
+                      <span className={s.eyebrow}>OPEN PAPER PLAN</span>
+                      <h3>
+                        {open.symbol} · {open.side.toUpperCase()} ·{" "}
+                        {open.quantity} units
+                      </h3>
+                      <p>
+                        Entry {open.entry} · Stop {open.stop} · Target{" "}
+                        {open.target}
+                      </p>
+                      <label className={s.label}>
+                        Your exit price
+                        <input
+                          type="number"
+                          step="any"
+                          min="0"
+                          value={exit}
+                          onChange={(e) => setExit(e.target.value)}
+                        />
+                      </label>
+                      <button className={s.primary} onClick={closePaper}>
+                        Close paper plan
+                      </button>
+                    </div>
+                  ) : (
+                    <div className={s.waiting}>
+                      <Wallet size={28} />
+                      <h3>No open paper position.</h3>
+                      <p>Start with a setup and a clear invalidation level.</p>
+                    </div>
+                  )}
+                  {paperMessage && (
+                    <p className={s.notice} role="status">
+                      {paperMessage}
+                    </p>
+                  )}
+                  <div className={s.history}>
+                    {closed
+                      .slice()
+                      .reverse()
+                      .map((t) => (
+                        <div className={s.historyRow} key={t.id}>
+                          <span>
+                            <strong>
+                              {t.symbol} · {t.side}
+                            </strong>
+                            <small>
+                              {new Date(t.closedAt!).toLocaleString()}
+                            </small>
+                          </span>
+                          <span
+                            className={
+                              (t.pnl || 0) >= 0 ? s.positive : s.negative
+                            }
+                          >
+                            {money(t.pnl || 0)}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                  <div className={s.broker}>
+                    <LockKeyhole size={20} />
+                    <div>
+                      <strong>Broker connectivity · Planned</strong>
+                      <p>
+                        Secure paper-account integration comes next. No
+                        credentials are requested or stored here.
+                      </p>
+                    </div>
+                  </div>
+                </section>
+              </div>
+              <section
+                className={s.backupPanel}
+                aria-label="Journal backup and restore"
+              >
+                <div>
+                  <span className={s.eyebrow}>KEEP YOUR PROGRESS</span>
+                  <h2>Back up your workspace.</h2>
+                  <p className={s.muted}>
+                    Download trades and Academy progress as a JSON file. Restore
+                    merges validated records without deleting your current
+                    journal. Files stay in your browser; nothing is uploaded.
+                  </p>
+                </div>
+                <div className={s.actions}>
+                  <button
+                    className={s.secondary}
+                    disabled={!!storageError || !hydrated}
+                    onClick={() =>
+                      downloadText(
+                        JSON.stringify(
+                          makeBackup({ completed, saved, trades }),
+                          null,
+                          2,
+                        ),
+                        "darth-algo-workspace-backup.json",
+                      )
+                    }
+                  >
+                    <Download size={16} /> Download backup
+                  </button>
+                  <label className={s.restoreInput}>
+                    Choose backup
+                    <input
+                      type="file"
+                      accept="application/json,.json"
+                      aria-label="Choose journal backup"
+                      onChange={(e) => {
+                        void inspectBackup(e.target.files?.[0]);
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+                  {rawBackup && (
+                    <button
+                      className={s.secondary}
+                      onClick={() =>
+                        downloadText(rawBackup, "darth-algo-original-data.json")
+                      }
+                    >
+                      Download preserved original data
+                    </button>
+                  )}
+                </div>
+                {pendingImport && (
+                  <div className={s.notice}>
+                    <p>
+                      Validated backup: {pendingImport.trades.length} trades,{" "}
+                      {pendingImport.completed.length} completed lessons.
+                      Duplicate identical trades will be kept once.
+                    </p>
+                    <div className={s.actions}>
+                      <button className={s.primary} onClick={restoreBackup}>
+                        Merge backup
+                      </button>
+                      <button
+                        className={s.secondary}
+                        onClick={() => setPendingImport(null)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {importError && (
+                  <p className={s.error} role="alert">
+                    {importError}
+                  </p>
+                )}
+              </section>
+            </>
+          )}
+          {tab === "Plans" && (
+            <>
+              <div className={s.heading}>
+                <div>
+                  <span className={s.eyebrow}>
+                    PLATFORM MEMBERSHIP · PROPOSED
+                  </span>
+                  <h1>Start free. Grow at your pace.</h1>
+                  <p>
+                    Membership is being prepared. Checkout and subscriptions are
+                    not enabled.
+                  </p>
+                </div>
+              </div>
+              <div className={s.planGrid}>
+                <section className={s.plan}>
+                  <span className={s.eyebrow}>FREE</span>
+                  <h2>Find your footing.</h2>
+                  <div className={s.price}>$0</div>
+                  <ul>
+                    <li>Market charts and starter search</li>
+                    <li>Free Academy and saved progress</li>
+                    <li>Manual paper journal and risk checks</li>
+                    <li>Proposed: five premium analysis previews each month</li>
+                  </ul>
+                  <button
+                    className={s.secondary}
+                    onClick={() => setTab("Markets")}
+                  >
+                    Explore the workspace
+                  </button>
+                </section>
+                <section className={`${s.plan} ${s.proPlan}`}>
+                  <span className={s.eyebrow}>
+                    PLATFORM PRO · NOT YET AVAILABLE
+                  </span>
+                  <h2>More context. More control.</h2>
+                  <div className={s.price}>
+                    $19.99 <small>/ month proposed</small>
+                  </div>
+                  <ul>
+                    <li>Planned: validated Scalp, Swing and Pro analysis</li>
+                    <li>Planned: server-side account and usage limits</li>
+                    <li>Planned: secure cross-device journal sync</li>
+                    <li>Planned: secure paper-broker connections</li>
+                  </ul>
+                  <button className={s.primary} disabled>
+                    Coming after validation
+                  </button>
+                </section>
+              </div>
+              <p className={s.notice}>
+                This proposed platform membership is separate from the existing
+                TradingView products. Current indicator prices, licenses and
+                customer access are unchanged. The five-preview allowance is not
+                enforced in this development preview.
+              </p>
+            </>
+          )}
+          <footer className={s.footer}>
+            <span>
+              DARTH ALGO <span> / </span> Learn. Plan. Practice.
+            </span>
+            <span>Preview · No real-money trading</span>
+          </footer>
+        </div>
+      </div>
+    </main>
+  );
 }

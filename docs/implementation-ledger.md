@@ -340,3 +340,8 @@ Lesson: remove the unwanted visual and its scroll footprint rather than changing
 ## Platform development preview — October 28, 2026
 
 DA-PLATFORM-20261028-v1; Darth Algo Operations 1.2.0; founder-authorized separate platform development. Add an isolated `/platform` workspace with provider charts, closed-candle research, Academy and a manual risk-checked paper journal. Existing TradingView products/pricing/access, production routes and protected Pine sources remain unchanged. No payments or broker orders are enabled. Local-only account state and proposed membership are explicitly labeled. See `docs/platform-preview-20261028.md` for exact working scope, data provenance, tests and release blockers. Keep on the development branch and staging until production authorization and validation.
+
+
+## Paper journal analytics and recovery — October 30, 2026
+
+DA-PAPER-20261030-v1 continues DA-PLATFORM-20261028-v1; Darth Algo Operations 1.2.0. Add fee-aware paper analytics, market/period filters, explicit metric definitions and validated versioned backup/merge. Reject corrupt stored records without overwriting and recompute stored P&L from canonical contract metadata. Preserve current product/pricing/checkout/access and leave all work on PR124. No billing, broker, indicator or production activation. Local focused tests, TypeScript and build pass; final GitHub CI is recorded in the PR. Public Pro/Compare/Start/Support returned 200 during the read-only audit; customer checkout and access grants remain unverified. See docs/platform-overnight-20261030.md for evidence, dated lesson, the remaining delivery order and next revenue action.
