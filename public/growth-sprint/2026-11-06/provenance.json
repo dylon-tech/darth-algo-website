@@ -1,0 +1,24 @@
+[
+  {
+    "id": "two-targets",
+    "source": "public/indicators/swing-risk-plan.png",
+    "sourceSha256": "a68cb85dca3b62c3fa79366baf9851755ffa3b426a326c70c4dd3d5939300c78",
+    "videoSha256": "4958e25184089f8f44f2dbcbec7640fa080a673519532f7433565d531f6e0b89",
+    "durationSeconds": 20,
+    "format": "1080x1920, 30fps, H.264/AAC (silent), native screenshot and captions",
+    "claims": "Recorded product feature demonstration, not executed trades, backtest performance or live market footage",
+    "sourceMapping": "app/lib/products.ts",
+    "publicationOwner": "Metricool acquisition sprint; do not enqueue in the app publisher"
+  },
+  {
+    "id": "read-the-dashboard",
+    "source": "public/indicators/scalper-dashboard.png",
+    "sourceSha256": "f207e85578591007bec688ee4b74db994859dfe563d80fa944d61a8313487121",
+    "videoSha256": "2c7d777be05ea420c2045bd87d86700f25b8fc0119b3e1007c6a29b37aa2fb39",
+    "durationSeconds": 20,
+    "format": "1080x1920, 30fps, H.264/AAC (silent), native screenshot and captions",
+    "claims": "Recorded product feature demonstration, not executed trades, backtest performance or live market footage",
+    "sourceMapping": "app/lib/products.ts",
+    "publicationOwner": "Metricool acquisition sprint; do not enqueue in the app publisher"
+  }
+]
