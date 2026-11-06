@@ -7,7 +7,7 @@ import SiteBrand from "./site-brand";
 
 const links = [
   ["Products", "/#examples"],
-  ["Results", "/#performance"],
+  ["Workflow", "/#performance"],
   ["Education", "/education"],
   ["Community", "/community"],
   ["Pricing", "/#pricing"],

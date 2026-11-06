@@ -12,7 +12,6 @@ import {
   CloudLightning,
   Code2,
   Crown,
-  Gauge,
   Layers3,
   LineChart,
   LockKeyhole,
@@ -33,7 +32,7 @@ import TradingViewUsernameHelp from "./components/tradingview-username-help";
 
 const navLinks = [
   { label: "The System", href: "#system" },
-  { label: "Results", href: "#performance" },
+  { label: "Workflow", href: "#performance" },
   { label: "Products", href: "#examples" },
   { label: "Pricing", href: "#pricing" },
   { label: "FAQ", href: "#faq" },
@@ -302,16 +301,6 @@ const checkoutLinks = {
   lifetime: "https://buy.stripe.com/6oUcN62KX0WoeuW1k86kg04",
 };
 
-const performanceMetrics = [
-  { label: "Total trades", value: "100" },
-  { label: "Winning trades", value: "87" },
-  { label: "Losing trades", value: "13" },
-  { label: "Largest win", value: "+5.2R" },
-  { label: "Largest loss", value: "-1R" },
-  { label: "Average trade", value: "+1.12R" },
-  { label: "Max drawdown", value: "3.8%" },
-  { label: "Trades / week", value: "20" },
-];
 
 const indicatorExamples = [
   {
@@ -895,79 +884,24 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="performance" className="immersive-section immersive-section-reverse relative z-10 border-y border-white/10 bg-[#080809] py-24 sm:py-32">
+      <section id="performance" className="immersive-section immersive-section-reverse relative z-10 border-y border-white/10 bg-[#080809] py-20 sm:py-24">
         <div className="section-shell">
-          <div className="grid gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:items-end">
-            <SectionHeading
-              eyebrow="Performance Snapshot"
-              title="The numbers, without the noise."
-              copy="A 100-trade sample presented as a transparent, at-a-glance review of outcome quality and risk control."
-            />
-            <div className="grid gap-3 sm:grid-cols-3">
-              {[
-                ["87%", "Win rate", "87 of 100 sample trades"],
-                ["1:2.3", "Avg. risk / reward", "Measured in R"],
-                ["3.4", "Profit factor", "Sample gross profit / loss"],
-              ].map(([value, label, detail], index) => (
-                <article key={label} className={`stat-panel relative overflow-hidden rounded-md border p-5 ${index === 0 ? "border-ember/60 bg-ember/[0.09]" : "border-white/10 bg-black/45"}`}>
-                  <div className="absolute inset-x-0 top-0 h-px red-line" />
-                  <p className="font-display text-5xl font-black text-white">{value}</p>
-                  <p className="mt-3 text-sm font-extrabold text-zinc-200">{label}</p>
-                  <p className="mt-1 text-xs text-zinc-600">{detail}</p>
-                </article>
-              ))}
-            </div>
+          <SectionHeading eyebrow="Explore the workflow" title="See what belongs in your plan." copy="Use the recorded chart examples to check how signals, trend context and planned levels fit the way you trade." />
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            {[
+              ["01", "Inspect the chart", "Open the actual tool screenshots. Check the signal, trend layer and planned levels together.", "/compare", "Compare the tools"],
+              ["02", "Choose your pace", "Scalper focuses on active sessions. Swing follows broader moves. Pro includes both approaches.", "#pricing", "See plans and prices"],
+              ["03", "Try the workflow", "Swing includes a 2-day free trial, then $14.99/month unless you cancel before it ends.", "#swing-trial", "Explore the Swing trial"],
+            ].map(([number, title, copy, href, label]) => (
+              <article key={number} className="rounded-md border border-white/10 bg-black/45 p-6">
+                <p className="font-mono text-sm font-bold text-ember">{number}</p>
+                <h3 className="mt-4 font-display text-2xl font-black text-white">{title}</h3>
+                <p className="mt-3 text-sm leading-7 text-zinc-400">{copy}</p>
+                <Link href={href} className="mt-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-white hover:text-red-300">{label}<ArrowRight className="h-4 w-4" /></Link>
+              </article>
+            ))}
           </div>
-
-          <div className="mt-10 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-            <div className="rounded-md border border-white/10 bg-black/50 p-5 sm:p-7">
-              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5">
-                <div>
-                  <p className="font-display text-2xl font-black text-white">Performance matrix</p>
-                  <p className="mt-1 text-sm text-zinc-500">100-trade backtest snapshot</p>
-                </div>
-                <span className="inline-flex items-center gap-2 rounded-md border border-emerald-500/25 bg-emerald-500/10 px-3 py-2 text-xs font-bold text-emerald-400">
-                  <Activity className="h-3.5 w-3.5" /> Sample complete
-                </span>
-              </div>
-              <div className="mt-5 grid gap-px overflow-hidden rounded-md border border-white/10 bg-white/10 sm:grid-cols-2 lg:grid-cols-4">
-                {performanceMetrics.map((metric) => (
-                  <div key={metric.label} className="bg-[#09090a] p-4">
-                    <p className="text-[11px] font-bold uppercase text-zinc-600">{metric.label}</p>
-                    <p className="mt-2 font-display text-3xl font-black text-white">{metric.value}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="relative overflow-hidden rounded-md border border-white/10 bg-card p-5 sm:p-7">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="font-display text-2xl font-black text-white">Outcome profile</p>
-                  <p className="mt-1 text-sm text-zinc-500">Wins versus losses</p>
-                </div>
-                <Gauge className="h-7 w-7 text-ember" />
-              </div>
-              <div className="mt-9 flex items-center gap-6">
-                <div className="stat-ring grid h-36 w-36 shrink-0 place-items-center rounded-full">
-                  <div className="grid h-[108px] w-[108px] place-items-center rounded-full bg-[#080809] text-center">
-                    <div><p className="font-display text-4xl font-black text-white">87%</p><p className="text-[10px] uppercase text-zinc-500">win rate</p></div>
-                  </div>
-                </div>
-                <div className="w-full space-y-5">
-                  <div><div className="mb-2 flex justify-between text-xs"><span className="text-zinc-400">Winning</span><span className="font-bold text-emerald-400">87</span></div><div className="h-1.5 bg-white/10"><div className="h-full w-[87%] bg-emerald-500" /></div></div>
-                  <div><div className="mb-2 flex justify-between text-xs"><span className="text-zinc-400">Losing</span><span className="font-bold text-ember">13</span></div><div className="h-1.5 bg-white/10"><div className="h-full w-[13%] bg-ember" /></div></div>
-                </div>
-              </div>
-              <div className="mt-8 border-t border-white/10 pt-5">
-                <p className="font-mono text-[9px] font-bold uppercase text-ember">How to read this sample</p>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  {["100 recorded trades", "Results measured in R", "Largest loss: -1R", "No guarantee of future results"].map((item) => <div key={item} className="flex items-center gap-2 text-xs text-zinc-400"><CircleCheck className="h-3.5 w-3.5 shrink-0 text-emerald-400" />{item}</div>)}
-                </div>
-              </div>
-            </div>
-          </div>
-          <p className="mt-5 max-w-4xl text-xs leading-6 text-zinc-600">Performance figures are a supplied 100-trade analytical sample. Instrument, timeframe, date range, fees, slippage, and independent verification should be reviewed before treating the sample as representative. Past performance does not guarantee future results.</p>
+          <p className="mt-6 max-w-4xl text-sm leading-7 text-zinc-400">Chart examples demonstrate indicator features. They do not establish a win rate, an executed trade or future returns. Test settings on your chosen market and timeframe, including fees and slippage.</p>
         </div>
       </section>
 
@@ -1024,6 +958,7 @@ export default function Home() {
       <section id="pricing" className="relative z-10 py-24 sm:py-32">
         <div className="section-shell">
           <SectionHeading centered eyebrow="Simple Pricing" title="Choose the tool that fits your trading." copy="Choose Scalper, Swing, Pro, or Lifetime. Get automatic TradingView access after checkout with your exact username." />
+          <p className="mx-auto mt-5 max-w-2xl text-center text-sm leading-7 text-zinc-300">Monthly plans renew until canceled. Lifetime is a separate one-time purchase. Already subscribed and switching plans? <Link href="/support" className="font-bold text-white underline underline-offset-4">Contact support before purchasing</Link> so we can help with the transition.</p>
           <div className="pricing-command mx-auto mt-10 max-w-6xl overflow-hidden rounded-md border border-white/10 bg-black/70">
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 px-5 py-4">
               <div>
@@ -1149,14 +1084,14 @@ export default function Home() {
           <div className="grid gap-8 lg:grid-cols-[0.68fr_1.32fr] lg:items-center">
             <div>
               <p className="font-display text-xs font-black uppercase text-ember">Why this is different</p>
-              <h2 className="mt-4 text-balance font-display text-4xl font-black leading-tight text-white sm:text-5xl">Built to feel like a trading terminal, not a basic indicator page.</h2>
-              <p className="mt-5 text-base leading-7 text-zinc-400">The site now sells the full experience: cleaner charts, obvious plan choices, real screenshots, risk language, and a faster phone path from interest to checkout.</p>
+              <h2 className="mt-4 text-balance font-display text-4xl font-black leading-tight text-white sm:text-5xl">Find the tool that fits your routine.</h2>
+              <p className="mt-5 text-base leading-7 text-zinc-400">Explore the actual chart views, compare monthly and lifetime access, and get help choosing a plan.</p>
             </div>
             <div className="terminal-stack grid gap-4 md:grid-cols-3">
               {[
                 ["01", "Clarity layer", "Signals, trend, and trade zones are shown as one readable system."],
-                ["02", "Decision path", "Visitors can quickly choose Scalper, Swing, Pro, or Lifetime."],
-                ["03", "Conversion path", "Trial, pricing, username help, and Stripe links stay easy to reach."],
+                ["02", "Your trading pace", "Choose Scalper for active sessions, Swing for broader moves, or Pro for both."],
+                ["03", "Setup support", "Find your TradingView username and follow the setup guide to add your indicator."],
               ].map(([number, title, copy]) => (
                 <article key={number} className="terminal-card rounded-md border border-white/10 bg-black p-5">
                   <span className="font-mono text-[10px] font-black uppercase text-ember">{number}</span>
