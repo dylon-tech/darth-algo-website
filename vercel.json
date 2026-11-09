@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/owner-work",
-      "schedule": "* * * * *"
+      "schedule": "*/5 * * * *"
     },
     {
       "path": "/api/cron/owner-brief",
