@@ -62,7 +62,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         description={{ scalper: "Short-term signals, trend context and planned levels for your active sessions.", swing: "Broader trend context, selective signals and a visible plan for the bigger move.", pro: "Scalper for the session. Swing for the broader move. Get both in one subscription." }[product.slug]}>
         {checkout && <a href={checkout} className="product-primary">{product.slug === "swing" ? "Start 2-Day Free Trial" : `Get ${product.shortName} Access`} <ArrowRight size={17} /></a>}
         <Link href="/compare" className="product-secondary">Compare the tools</Link>
-        <p className="product-terms">{product.price} {product.cadence}. {product.slug === "swing" && "Trial starts at checkout; continues monthly unless canceled. "}Automatic TradingView access after checkout with your exact username.</p>
+        <p className="product-terms">{product.price} {product.cadence}. {product.slug === "swing" && "Trial starts at checkout; continues monthly unless canceled. "}Access is processed using your exact TradingView username. <Link href="/support" className="underline underline-offset-4">Setup and access help</Link>.</p>
         {checkout && <TradingViewUsernameHelp />}
       </ProductSpotlight>
 
@@ -117,7 +117,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
       <section className="border-y border-white/10 bg-[#090c11] py-16">
         <div className="section-shell grid gap-6 sm:grid-cols-3">
-          {[[BellRing, "Real-time alerts", "Stay connected away from the chart"], [Target, "Defined risk", "Entry, stop, and target planning"], [ShieldCheck, "Automatic access", "TradingView access immediately after purchase"]].map(([Icon, title, copy]) => {
+          {[[BellRing, "Real-time alerts", "Stay connected away from the chart"], [Target, "Defined risk", "Entry, stop, and target planning"], [ShieldCheck, "TradingView access", "Use your exact TradingView username at checkout"]].map(([Icon, title, copy]) => {
             const ModuleIcon = Icon as typeof BellRing;
             return <div key={String(title)} className="flex gap-4"><ModuleIcon className={`mt-1 h-5 w-5 shrink-0 ${styles.text}`} /><div><p className="font-display text-lg font-bold">{String(title)}</p><p className="mt-1 text-xs leading-5 text-zinc-500">{String(copy)}</p></div></div>;
           })}
@@ -128,7 +128,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         <div className="section-shell max-w-3xl">
           <p className={`font-mono text-[10px] font-bold uppercase ${styles.text}`}>Choose your access</p>
           <h2 className="mt-4 text-balance font-display text-4xl font-black sm:text-6xl">Trade with structure, not emotion.</h2>
-          <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-zinc-400">{product.shortName}: {product.price} {product.cadence}. Automatic TradingView access after checkout using your exact username.</p>
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-zinc-400">{product.shortName}: {product.price} {product.cadence}. Access is processed using your exact TradingView username. <Link href="/support" className="underline underline-offset-4">See setup steps and get access help</Link>.</p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             {checkout && <a href={checkout} className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-md px-7 text-sm font-extrabold text-white transition ${styles.button} ${styles.glow}`}>{product.slug === "swing" ? "Start 2-Day Free Trial" : `Get ${product.shortName} Access`}<ArrowRight className="h-4 w-4" /></a>}
             <Link href="/compare" className="inline-flex min-h-12 items-center justify-center rounded-md border border-white/15 px-6 text-sm font-bold text-white">Compare the tools</Link>

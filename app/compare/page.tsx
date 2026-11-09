@@ -65,7 +65,7 @@ export default function ComparePage() {
           </div>
           <div className="rounded-md border border-white/15 bg-black/30 p-6 sm:p-8">
             <h2 className="font-display text-3xl font-black">What happens after checkout?</h2>
-            <p className="mt-5 text-sm leading-7 text-zinc-300">TradingView access is granted automatically using the exact username you enter at checkout. Sign in to that account, open Indicators → Invite-only scripts, and add your tool.</p>
+            <p className="mt-5 text-sm leading-7 text-zinc-300">Access is processed using the exact TradingView username you enter at checkout. Sign in to that account, open a chart, then select Indicators → Invite-only scripts. If your tool is missing after refreshing, <Link href="/support" className="underline underline-offset-4">contact support for access help</Link>.</p>
             <p className="mt-4 text-sm leading-7 text-zinc-300">The Swing trial starts at checkout and lasts two days. It then costs $14.99/month. Check your confirmation for timing and cancellation details.</p>
             <Link href="/start#setup-title-details" className="mt-5 inline-flex min-h-11 items-center font-bold text-white underline underline-offset-4">Read the setup guide</Link>
             <p className="mt-4 border-t border-white/10 pt-4 text-sm leading-7 text-zinc-400">Already subscribed? <Link href="/support" className="font-semibold text-white underline underline-offset-4">Contact support about changing plans</Link> before starting another subscription.</p>
