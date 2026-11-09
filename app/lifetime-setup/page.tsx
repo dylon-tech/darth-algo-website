@@ -113,7 +113,7 @@ export default function LifetimeSetupPage() {
         </div>
         <p className="mt-12 text-xs font-bold uppercase tracking-[.25em] text-[#fb7185]">Pine Script / Setup</p>
         <h1 className="mt-4 max-w-3xl font-display text-4xl font-extrabold leading-tight sm:text-6xl">Your Pro indicator.<br /><span className="text-[#fb7185]">Ready in 10 steps.</span></h1>
-        <p className="mt-5 max-w-2xl text-base leading-8 text-zinc-300">Follow the actual TradingView interface screenshots below to create, save, rename and run your personal Darth Algo Pro Pine Script. Designed for desktop browsers.</p>
+        <p className="mt-5 max-w-2xl text-base leading-8 text-zinc-300">Follow the real TradingView Help Center screenshots below to create, save, rename and run your personal Darth Algo Pro Pine Script. Designed for desktop browsers. Select any image to enlarge it.</p>
         <div className="mt-7 grid gap-3 sm:grid-cols-3">
           <div className="rounded-xl border border-white/10 bg-[#141922] p-4"><p className="text-xs uppercase text-zinc-500">You need</p><p className="mt-1 font-bold">TradingView account</p></div>
           <div className="rounded-xl border border-white/10 bg-[#141922] p-4"><p className="text-xs uppercase text-zinc-500">You need</p><p className="mt-1 font-bold">Private .pine attachment</p></div>
