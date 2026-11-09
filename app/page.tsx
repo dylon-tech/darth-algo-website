@@ -201,7 +201,7 @@ const indicatorWalkthroughs = {
 const steps = [
   ["01", "Choose access", "Select Scalper, Swing, Pro, or Lifetime access."],
   ["02", "Enter username", "Add your TradingView username at checkout."],
-  ["03", "Automatic access", "Your TradingView access is granted automatically after checkout."],
+  ["03", "Access confirmation", "We'll use your TradingView username to arrange and confirm your indicator access."],
   ["04", "Add to chart", "Open TradingView and load Darth Algo."],
   ["05", "Trade with structure", "Build your process around clearer signals."],
 ];
@@ -329,7 +329,7 @@ const indicatorExamples = [
 const faqs = [
   {
     question: "How do I receive access?",
-    answer: "Enter your TradingView username during Stripe checkout. Access is granted automatically immediately after purchase. Open TradingView → Indicators → Invite-only scripts to add your tool.",
+    answer: "Enter your exact TradingView username during Stripe checkout. We'll confirm when your access is ready. Then open TradingView → Indicators → Invite-only scripts to find your tool.",
   },
   {
     question: "Which markets does Darth Algo support?",
@@ -349,7 +349,7 @@ const faqs = [
   },
   {
     question: "What happens after I purchase?",
-    answer: "Your TradingView indicator access is granted automatically immediately after purchase using the exact username entered at checkout. Open Indicators → Invite-only scripts to add your tool. If it is missing, refresh TradingView, check your username, and contact support.",
+    answer: "Enter your exact TradingView username at checkout so your access can be arranged. Once access is confirmed, open Indicators → Invite-only scripts to add your tool. If it is missing, refresh TradingView, check your username, and contact support.",
   },
 ];
 
@@ -942,7 +942,7 @@ export default function Home() {
 
       <section id="how-it-works" className="relative z-10 border-y border-white/10 bg-[#080809] py-24 sm:py-32">
         <div className="section-shell">
-          <SectionHeading centered eyebrow="Automatic Access" title="From checkout to chart." copy="Enter your exact TradingView username at checkout. Your indicator access is granted automatically immediately after purchase." />
+          <SectionHeading centered eyebrow="TradingView Access" title="From checkout to chart." copy="Enter your exact TradingView username at checkout. We'll confirm when your indicator access is ready." />
           <div className="mt-14 grid gap-3 lg:grid-cols-5">
             {steps.map(([number, title, copy], index) => (
               <article key={number} className="relative rounded-md border border-white/10 bg-black/45 p-5">
