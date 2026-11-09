@@ -4,6 +4,7 @@ import { db, ensureAffiliateSchema } from "../../../lib/affiliate-db";
 import { stripe } from "../../../lib/stripe";
 import { recordRevenueException } from "../../../lib/business-os/revenue-health";
 import { captureLifetimeOrder } from "../../../lib/lifetime-fulfillment";
+import { captureSubscriptionActivation } from "../../../lib/subscription-activation";
 
 type DiscountLike={promotion_code?:string|{id:string}|null};
 type AffiliateStripeObject={discounts?:Array<string|DiscountLike>;amount_paid?:number;amount_total?:number;amount_refunded?:number;customer?:string|{id:string}|null;customer_details?:{email?:string|null}|null;customer_email?:string|null;payment_intent?:string|{id:string}|null;charge?:string|{id:string}|null;currency?:string;mode?:string};
@@ -17,6 +18,7 @@ export async function POST(request:Request){
   let event:Stripe.Event;try{event=stripe().webhooks.constructEvent(await request.text(),signature,secret);}catch{return new Response('Invalid signature',{status:400});}
   try { await (await import("../../../lib/welcome/payments")).captureWelcomeStripeEvent(event); } catch { return Response.json({error:"Analytics inbox temporarily unavailable"},{status:503}); }
   try { await captureLifetimeOrder(event); } catch { return Response.json({error:"Lifetime fulfillment inbox temporarily unavailable"},{status:503}); }
+  try { await captureSubscriptionActivation(event); } catch { return Response.json({error:"Subscription activation inbox temporarily unavailable"},{status:503}); }
   await ensureAffiliateSchema();
   if(event.type==='checkout.session.completed'||event.type==='invoice.paid'){
     const object=event.data.object as unknown as AffiliateStripeObject;const promoId=promotionId(object.discounts);
