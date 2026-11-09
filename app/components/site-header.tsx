@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import SiteBrand from "./site-brand";
 
 const links = [
+  ["Black Friday", "/black-friday"],
   ["Products", "/#examples"],
   ["Workflow", "/#performance"],
   ["Education", "/education"],
