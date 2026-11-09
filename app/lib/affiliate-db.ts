@@ -68,7 +68,7 @@ export function ensureAffiliateSchema() {
     await sql`create index if not exists affiliate_commissions_payable_at_idx on affiliate_commissions(payable_at)`;
     await sql`create unique index if not exists affiliate_commissions_first_customer_idx on affiliate_commissions(customer_key) where customer_key is not null`;
     await sql`create table if not exists affiliate_webhook_events (stripe_event_id text primary key, processed_at timestamptz not null default now())`;
-  })();
+  })().catch((error) => { schemaReady = undefined; throw error; });
   return schemaReady;
 }
 

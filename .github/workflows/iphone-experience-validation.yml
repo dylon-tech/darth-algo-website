@@ -43,6 +43,8 @@ jobs:
       - run: npm ci --ignore-scripts
       - name: Presence and queue model regressions
         run: node --experimental-strip-types --test scripts/visual-hq-model.test.mjs scripts/video-studio.test.mjs
+      - name: Lifetime refund and payment-order safety
+        run: node --experimental-strip-types --test scripts/lifetime-refund-policy.test.mjs
       - name: Isolated content holds and duplicate protection
         run: node scripts/visual-hq-database.cjs
         env:
