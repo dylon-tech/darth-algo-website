@@ -11,6 +11,15 @@
 - Marketing accounts: Metricool brand 6883362 (America/New_York) has connected Instagram, Threads, TikTok, and YouTube. Twelve posts were scheduled Nov 8 for Nov 9–13 (9 Threads, 3 Instagram). Check planner before scheduling duplicates: https://app.metricool.com/planner/calendar?blogId=6883362
 - An access-clarity change for homepage/catalog is proposed in draft GitHub PR #126, not deployed.
 
+
+## Read-only live Stripe baseline (Nov 8)
+
+- 65 total subscription objects: 5 active, 2 past_due, 58 canceled. These are subscriptions, not necessarily separate legitimate paying customers or current net revenue.
+- 45 trial subscriptions had been canceled within 24 hours; **38 of these began Aug 8–9**, a historical cluster. Do not present this as a current 2026-November churn-rate or assume the causes. Audit potential testing, trial setup, duplicate campaigns, bot traffic, and real user experience before making changes.
+- Last 30 days from October 9: seven succeeded payment intents, total $269.92 before refunds/fees and including renewals. This is not net revenue or seven new customers.
+- Live Stripe balance at read time: $-9.18 available and $130.78 pending. Do not assume the owner's authorized $100 marketing allocation is immediately settled in Stripe; check funds and obligations before spending.
+- Immediate action: verify and log the actual TradingView grant process, reconcile canceled-trial metadata and site entry sources, avoid unsolicited campaigns to historical trial signups without marketing consent.
+
 ## Core positioning
 
 **Headline:** See the setup. Plan the trade.
