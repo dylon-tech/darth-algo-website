@@ -636,6 +636,14 @@ export default function Home() {
           </div>
         )}
       </header>
+      <div className="relative z-10 border-b border-rose-500/30 bg-[#43131f] px-4 py-3 text-center">
+        <a href="/black-friday" className="inline-flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm font-extrabold text-white hover:text-rose-100">
+          <span className="rounded bg-[#eb3655] px-2 py-1 text-[10px] uppercase tracking-wide">Black Friday</span>
+          <span>25% off your first month · Pro Lifetime $89</span>
+          <span className="underline underline-offset-4">View the offer →</span>
+        </a>
+      </div>
+
 
       <ProductSpotlight id="top" eyebrow="Darth Algo · TradingView indicators" title="See the setup. Plan the trade." description="Buy/sell signals, trend context and planned levels. Explore the real tools built for your trading rhythm.">
         <Link href="/products/pro" className="product-primary">Explore Pro — $29/month <ArrowRight size={17} /></Link>
