@@ -18,9 +18,9 @@ const views = {
     { label: "Trend cloud", src: "/indicators/swing-trend-cloud.png", alt: "Swing trend cloud transitioning between bullish and bearish conditions", title: "Read the direction first.", copy: "The cloud shows changes in trend context, not a promise of the next move." },
   ],
   pro: [
-    { label: "Full chart", src: products.pro.overview, alt: products.pro.overviewAlt, title: "Signals. Context. A visible plan.", copy: "See how Darth Algo brings the decision-making layers onto your chart." },
+    { label: "Swing view", src: products.pro.overview, alt: products.pro.overviewAlt, title: "See Swing inside Pro.", copy: "Pro includes both Swing and Scalper. This recorded Swing chart shows one of those tools." },
     { label: "Scalper", src: products.scalper.overview, alt: products.scalper.overviewAlt, title: "Work the shorter-term setup.", copy: "Scalper is built for active sessions. It is included with Pro." },
-    { label: "Swing", src: products.swing.overview, alt: products.swing.overviewAlt, title: "Step back to the broader trend.", copy: "Swing is built for larger directional moves. It is included with Pro." },
+    { label: "Trade plan", src: "/indicators/scalper-risk-plan.png", alt: "Recorded Scalper risk map with stop entry and two targets, included with Pro", title: "See the risk map.", copy: "The Scalper view shows the planned stop, entry and two targets without covering the candles with callouts." },
   ],
 };
 
