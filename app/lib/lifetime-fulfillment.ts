@@ -1,6 +1,7 @@
 import type Stripe from "stripe";
 import { db } from "./affiliate-db";
 import { stripe } from "./stripe";
+import { lifetimeRefundStatus } from "./lifetime-refund-policy";
 
 // This is a PRIVATE order-operations queue, not a content delivery endpoint.
 // Never check the proprietary Pine source into the public website repository.
@@ -81,13 +82,37 @@ export async function captureLifetimeOrder(event: Stripe.Event) {
   const found = items.data.some(item => item.quantity && item.quantity > 0 &&
     item.price?.id === LIFETIME_PRICE_ID && idOf(item.price.product) === LIFETIME_PRODUCT_ID);
   if (!found) return;
-  await ensureLifetimeFulfillmentSchema();
   const intent = idOf(session.payment_intent);
+
+  // Checkout events are not guaranteed to arrive in chronological order.
+  // A refund may have completed before a delayed "checkout.session.completed"
+  // event is processed. Read the CURRENT Stripe charge so an already-refunded
+  // Lifetime order never enters the unrefunded manual delivery queue.
+  const paymentIntent = await stripe().paymentIntents.retrieve(
+    intent,
+    { expand: ["latest_charge"] },
+    { timeout: 7000, maxNetworkRetries: 1 },
+  );
+  if (paymentIntent.status !== "succeeded" || paymentIntent.amount_received <= 0) {
+    throw Error("Lifetime fulfillment: payment intent is not settled");
+  }
+  const lastCharge = paymentIntent.latest_charge;
+  const charge = lastCharge && typeof lastCharge !== "string" ? lastCharge : null;
+  const initialStatus = lifetimeRefundStatus(
+    charge?.amount_refunded,
+    charge?.amount_captured,
+  );
+
+  await ensureLifetimeFulfillmentSchema();
   await db()`
     insert into os_lifetime_fulfillment (
-      checkout_session_id, paid_event_id, stripe_payment_intent_id, amount_paid_cents, currency
+      checkout_session_id, paid_event_id, stripe_payment_intent_id,
+      amount_paid_cents, currency, status, refunded_at
     ) values (
-      ${session.id}, ${event.id}, ${intent}, ${session.amount_total}, ${session.currency || "usd"}
+      ${session.id}, ${event.id}, ${intent},
+      ${session.amount_total}, ${session.currency || "usd"},
+      ${initialStatus},
+      ${initialStatus === "awaiting_source_review" ? null : new Date()}
     )
     on conflict (checkout_session_id) do nothing
   `;
