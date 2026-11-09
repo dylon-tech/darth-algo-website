@@ -311,17 +311,17 @@ const indicatorExamples = [
     height: 767,
   },
   {
-    title: "Complete System View",
+    title: "Swing View: Trend + Targets",
     tag: "Full feature map",
-    copy: "Signals, live trend dashboard, entry, stop, and take-profit zones working together.",
-    image: "/indicator-examples/darth-algo-feature-map-01.png",
+    copy: "A recorded Swing chart showing trend context, trade signals, dashboard guidance and projected levels.",
+    image: "/indicators/swing-overview.png",
     height: 767,
   },
   {
-    title: "Precision Risk Mapping",
+    title: "Scalper View: Full Setup",
     tag: "Risk engine",
-    copy: "A structured entry with defined invalidation and two measured profit targets.",
-    image: "/indicator-examples/darth-algo-feature-map-03.png",
+    copy: "A full Scalper chart showing signal context, stop, entry and both targets without cluttered callout boxes.",
+    image: "/indicators/scalper-overview.png",
     height: 767,
   },
 ];
@@ -670,8 +670,8 @@ export default function Home() {
           <div className="mt-12 grid overflow-hidden rounded-md border border-white/10 bg-[#080809] lg:grid-cols-[1.32fr_0.68fr]">
             <div className="relative min-h-[320px] border-b border-white/10 lg:min-h-[640px] lg:border-b-0 lg:border-r">
               <Image
-                src="/indicator-examples/darth-algo-feature-map-01.png"
-                alt="Darth Algo live indicator system on Micro Gold Futures"
+                src="/indicators/swing-overview.png"
+                alt="Recorded Darth Algo Swing Tool on Micro Gold Futures; Swing is included in Pro"
                 fill
                 className="object-cover object-left"
                 sizes="(min-width: 1024px) 66vw, 100vw"
@@ -682,7 +682,7 @@ export default function Home() {
                   <p className="text-xs font-black uppercase text-ember">Live chart environment</p>
                   <p className="mt-2 font-display text-2xl font-black text-white sm:text-3xl">Built into your TradingView workflow.</p>
                 </div>
-                <span className="hidden rounded-md border border-white/15 bg-black/70 px-3 py-2 text-xs font-bold text-zinc-300 backdrop-blur sm:block">MGC / 30M</span>
+                <span className="hidden rounded-md border border-white/15 bg-black/70 px-3 py-2 text-xs font-bold text-zinc-300 backdrop-blur sm:block">MGC / 5M</span>
               </div>
             </div>
             <div className="divide-y divide-white/10">
