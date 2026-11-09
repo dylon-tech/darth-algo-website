@@ -112,8 +112,8 @@ export default function BlackFridayPage() {
                   <p className="mt-1 text-sm text-zinc-400">{product.subtitle}</p>
                   <div className="mt-6 flex items-end gap-3"><span className="text-3xl font-black text-white">{promoActive ? product.after : product.before}</span>{promoActive && <span className="pb-1 text-sm text-zinc-500 line-through">{product.before}</span>}</div>
                   <p className="mt-2 text-xs leading-5 text-zinc-400">{promoActive ? product.renewal : "Standard monthly price"} · taxes may apply.</p>
-                  {promoActive && <p className="mt-5 rounded-lg border border-[#fa506b]/30 bg-[#661b2a]/30 px-4 py-3 text-xs font-bold">Enter code <strong className="select-all text-rose-200">BLACKFRIDAY25</strong> at checkout</p>}
-                  <a href={product.href} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#cc1d39] px-4 text-sm font-bold hover:bg-[#ed3651]">Continue to secure checkout <ArrowRight className="h-4 w-4"/></a>
+                  {promoActive && <p className="mt-5 rounded-lg border border-[#fa506b]/30 bg-[#661b2a]/30 px-4 py-3 text-xs font-bold">Code <strong className="select-all text-rose-200">BLACKFRIDAY25</strong> should appear at checkout. If not, enter it before paying</p>}
+                  <a href={promoActive ? `${product.href}?prefilled_promo_code=BLACKFRIDAY25` : product.href} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#cc1d39] px-4 text-sm font-bold hover:bg-[#ed3651]">Continue to secure checkout <ArrowRight className="h-4 w-4"/></a>
                 </div>
               </article>
             ))}
@@ -127,9 +127,9 @@ export default function BlackFridayPage() {
               <h2 className="mt-3 text-3xl font-black sm:text-4xl">Pro Lifetime. No monthly Pro subscription required.</h2>
               <p className="mt-5 text-sm leading-7 text-zinc-300">Lifetime includes Darth Algo Pro access plus an archived private copy of the Pro Pine Script and a <Link href="/lifetime-setup" className="text-rose-300 underline">10-step visual setup guide</Link>. Support delivers the source after verified purchase. Keep the code private.</p>
               <div className="mt-6 flex items-end gap-4"><span className="text-5xl font-black text-white">{promoActive ? "$89.00" : "$134.99"}</span>{promoActive && <span className="pb-2 text-lg text-zinc-500 line-through">$134.99</span>}</div>
-              {promoActive && <p className="mt-5 inline-block rounded-lg border border-[#fa506b]/30 bg-[#661b2a]/30 px-5 py-3 text-sm font-black">Use code <span className="select-all text-rose-200">BLACKFRIDAY89</span></p>}
+              {promoActive && <p className="mt-5 inline-block rounded-lg border border-[#fa506b]/30 bg-[#661b2a]/30 px-5 py-3 text-sm font-black">Code <span className="select-all text-rose-200">BLACKFRIDAY89</span> should appear at checkout. If not, enter it</p>}
               <p className="mt-5 max-w-xl text-sm leading-7 text-zinc-400">Already subscribed monthly? Buying Lifetime does not automatically cancel your existing monthly subscription. Contact support to arrange the transition and avoid additional monthly charges.</p>
-              <a href="https://buy.stripe.com/6oUcN62KX0WoeuW1k86kg04" target="_blank" rel="noopener noreferrer" className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-lg bg-[#cc1d39] px-6 py-3 text-sm font-bold hover:bg-[#ed3651]">Get Lifetime through Stripe <ArrowRight className="h-4 w-4"/></a>
+              <a href={promoActive ? "https://buy.stripe.com/6oUcN62KX0WoeuW1k86kg04?prefilled_promo_code=BLACKFRIDAY89" : "https://buy.stripe.com/6oUcN62KX0WoeuW1k86kg04"} target="_blank" rel="noopener noreferrer" className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-lg bg-[#cc1d39] px-6 py-3 text-sm font-bold hover:bg-[#ed3651]">Get Lifetime through Stripe <ArrowRight className="h-4 w-4"/></a>
             </div>
             <figure className="overflow-hidden rounded-2xl border border-white/10 bg-[#090b10]">
               <div className="relative aspect-[1.35] w-full"><Image src="/indicator-examples/darth-algo-feature-map-01.png" alt="Real Darth Algo Pro TradingView product screenshot" fill className="object-contain" sizes="(max-width: 1024px) 100vw, 48vw"/></div>
