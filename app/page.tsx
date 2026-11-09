@@ -201,7 +201,7 @@ const indicatorWalkthroughs = {
 const steps = [
   ["01", "Choose access", "Select Scalper, Swing, Pro, or Lifetime access."],
   ["02", "Enter username", "Add your TradingView username at checkout."],
-  ["03", "Automatic access", "Your TradingView access is granted automatically after checkout."],
+  ["03", "Access processing", "After Stripe confirms your order, your TradingView access is processed using the username you entered. Activation may take time."],
   ["04", "Add to chart", "Open TradingView and load Darth Algo."],
   ["05", "Trade with structure", "Build your process around clearer signals."],
 ];
@@ -329,7 +329,7 @@ const indicatorExamples = [
 const faqs = [
   {
     question: "How do I receive access?",
-    answer: "Enter your TradingView username during Stripe checkout. Access is granted automatically immediately after purchase. Open TradingView → Indicators → Invite-only scripts to add your tool.",
+    answer: "Enter your exact TradingView username during Stripe checkout. After payment confirmation, your access is processed and may take time. Once activated, open TradingView → Indicators → Invite-only scripts. Contact support if your tool is missing.",
   },
   {
     question: "Which markets does Darth Algo support?",
@@ -349,7 +349,7 @@ const faqs = [
   },
   {
     question: "What happens after I purchase?",
-    answer: "Your TradingView indicator access is granted automatically immediately after purchase using the exact username entered at checkout. Open Indicators → Invite-only scripts to add your tool. If it is missing, refresh TradingView, check your username, and contact support.",
+    answer: "We process indicator access using the exact TradingView username entered at checkout. Activation may take time. Once ready, check Indicators → Invite-only scripts. If access is missing, contact support with your checkout email and TradingView username.",
   },
 ];
 
@@ -950,7 +950,7 @@ export default function Home() {
 
       <section id="how-it-works" className="relative z-10 border-y border-white/10 bg-[#080809] py-24 sm:py-32">
         <div className="section-shell">
-          <SectionHeading centered eyebrow="Automatic Access" title="From checkout to chart." copy="Enter your exact TradingView username at checkout. Your indicator access is granted automatically immediately after purchase." />
+          <SectionHeading centered eyebrow="Getting Started" title="From checkout to chart." copy="Enter your exact TradingView username at checkout. Your order is processed after Stripe confirms payment; activation may take time. Check Invite-only scripts and contact support if access is missing." />
           <div className="mt-14 grid gap-3 lg:grid-cols-5">
             {steps.map(([number, title, copy], index) => (
               <article key={number} className="relative rounded-md border border-white/10 bg-black/45 p-5">
@@ -965,7 +965,7 @@ export default function Home() {
 
       <section id="pricing" className="relative z-10 py-24 sm:py-32">
         <div className="section-shell">
-          <SectionHeading centered eyebrow="Simple Pricing" title="Choose the tool that fits your trading." copy="Choose Scalper, Swing, Pro, or Lifetime. Get automatic TradingView access after checkout with your exact username." />
+          <SectionHeading centered eyebrow="Simple Pricing" title="Choose the tool that fits your trading." copy="Choose Scalper, Swing, Pro, or Lifetime. Enter your TradingView username at checkout so access can be processed after payment confirmation." />
           <p className="mx-auto mt-5 max-w-2xl text-center text-sm leading-7 text-zinc-300">Monthly plans renew until canceled. Lifetime is a separate one-time purchase. Already subscribed and switching plans? <Link href="/support" className="font-bold text-white underline underline-offset-4">Contact support before purchasing</Link> so we can help with the transition.</p>
           <div className="pricing-command mx-auto mt-10 max-w-6xl overflow-hidden rounded-md border border-white/10 bg-black/70">
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 px-5 py-4">
