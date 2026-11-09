@@ -1,9 +1,9 @@
 import type { CampaignAttribution } from './campaign-attribution';
 
 // Exact public destinations only. Never collect query strings or arbitrary paths.
-export const acquisitionPaths = new Set(['/', '/links', '/compare', '/alternatives', '/start', '/products/scalper', '/products/swing', '/products/pro']);
-const sources = new Set(['x','instagram','threads','whop','tiktok','youtube','facebook','reddit','telegram','email','affiliate','search','ads']);
-const campaigns = new Set(['default','welcome25','links','tool-comparison']);
+export const acquisitionPaths = new Set(['/', '/links', '/compare', '/alternatives', '/start', '/products/scalper', '/products/swing', '/products/pro', '/black-friday']);
+const sources = new Set(['x','instagram','threads','whop','tiktok','youtube','facebook','reddit','telegram','email','affiliate','search','ads','social']);
+const campaigns = new Set(['default','welcome25','links','tool-comparison','black-friday-2026']);
 const contents = new Set(['','profile','link_in_bio','caption','bio','welcome_test']);
 export type AcquisitionLabels = {source:string;campaign:string;content:string};
 export function acquisitionLabels(value: Pick<CampaignAttribution,'source'|'campaign'|'content'> | null): AcquisitionLabels {
