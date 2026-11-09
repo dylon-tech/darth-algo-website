@@ -101,7 +101,7 @@ export default function PurchaseSurvey({ sessionId }: { sessionId: string }) {
               <h2 id="access-next-steps" className="text-2xl font-bold">Get your tool on the chart</h2>
               <ol className="mt-5 list-decimal space-y-4 pl-5 text-sm leading-7 text-zinc-300">
                 <li>Check your Stripe confirmation and the TradingView username you entered at checkout.</li>
-                <li>Indicator access is granted automatically after checkout using your exact TradingView username. If your tool is missing, refresh TradingView, check that you are signed in to that account, and contact support.</li>
+                <li>Use the exact TradingView username entered at checkout. Once access is activated, refresh TradingView and check that you are signed in to the same account. If the indicator is not available, contact support with your checkout email and TradingView username so we can verify your order and access.</li>
                 <li>Open TradingView → Indicators → Invite-only scripts. Add your Darth Algo tool.</li>
               </ol>
               <p className="mt-4 text-sm leading-6 text-zinc-400">If you chose the Swing trial, its two days start at checkout, not at activation. Check the timing in your checkout confirmation.</p>
