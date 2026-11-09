@@ -93,7 +93,7 @@ export default function BuySellIndicatorsGuide() {
             <div>
               <p className="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.16em] text-rose-300"><BookOpen size={16} /> Free trading education</p>
               <h1 className="mt-5 max-w-3xl text-4xl font-black leading-[1.1] tracking-tight sm:text-5xl">TradingView buy/sell indicators: <span className="text-[#fa5269]">5 checks before trusting a signal.</span></h1>
-              <p className="mt-6 text-base leading-8 text-zinc-300">Whether you're reviewing NQ, ES, Gold or another futures chart, an indicator is only useful when you understand its limitations. This practical checklist separates genuine chart context from marketing hype.</p>
+              <p className="mt-6 text-base leading-8 text-zinc-300">Whether you are reviewing NQ, ES, Gold or another futures chart, an indicator is only useful when you understand its limitations. This practical checklist separates genuine chart context from marketing hype.</p>
               <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-zinc-500">Updated November 2026 · Approx. 5-minute read</p>
               <a href="#checklist" className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-lg bg-[#c61e39] px-6 py-3 text-sm font-bold hover:bg-[#eb3c58]">Read the 5 checks <ArrowRight size={16} /></a>
             </div>
@@ -106,7 +106,7 @@ export default function BuySellIndicatorsGuide() {
         <section id="checklist" className="border-y border-white/10 bg-[#11161e]">
           <div className="section-shell py-14 sm:py-20">
             <div className="max-w-3xl">
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-rose-300">Practical buyer's checklist</p>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-rose-300">Practical buyer checklist</p>
               <h2 className="mt-4 text-3xl font-black sm:text-4xl">A signal is the beginning of the process.</h2>
               <p className="mt-4 text-base leading-8 text-zinc-300">A single marker cannot account for every market condition. Before relying on a chart tool, ask these five questions on a real chart—preferably in replay and forward observation, not only after a winning move.</p>
             </div>
