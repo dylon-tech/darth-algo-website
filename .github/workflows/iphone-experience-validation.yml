@@ -45,6 +45,8 @@ jobs:
         run: node --experimental-strip-types --test scripts/visual-hq-model.test.mjs scripts/video-studio.test.mjs
       - name: Lifetime refund and payment-order safety
         run: node --experimental-strip-types --test scripts/lifetime-refund-policy.test.mjs
+      - name: Monthly activation product and username safety
+        run: node --experimental-strip-types --test scripts/subscription-activation-policy.test.mjs
       - name: Isolated content holds and duplicate protection
         run: node scripts/visual-hq-database.cjs
         env:
