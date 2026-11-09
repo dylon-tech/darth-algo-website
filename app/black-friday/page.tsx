@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     title: "Darth Algo Black Friday | Pro Lifetime $89",
     description: "See real Darth Algo charts and unlock Black Friday pricing on Swing, Scalper, Pro and Lifetime.",
     url: "/black-friday",
-    images: ["/indicator-examples/darth-algo-feature-map-03.png"],
+    images: ["/indicators/swing-overview.png"],
   },
 };
 
@@ -37,7 +37,7 @@ const products = [
     before: "$18.99",
     after: "$14.24",
     renewal: "$18.99/month after the discounted first payment",
-    image: "/indicators/scalper-risk-plan.png",
+    image: "/indicators/scalper-overview.png",
     alt: "Authentic Darth Algo Scalper indicator displaying planned levels",
     href: "https://buy.stripe.com/14AfZi4T5fRidqS2oc6kg03",
     badge: "For active sessions",
@@ -48,8 +48,8 @@ const products = [
     before: "$29.00",
     after: "$21.75",
     renewal: "$29/month after the discounted first payment",
-    image: "/indicator-examples/darth-algo-feature-map-03.png",
-    alt: "Authentic Darth Algo Pro indicator chart with trend and trade planning features",
+    image: "/indicators/swing-overview.png",
+    alt: "Recorded Swing chart showing one of the two tools included with Darth Algo Pro",
     href: "https://buy.stripe.com/4gM8wQfxJ6gI1IabYM6kg05",
     badge: "The combined system",
   },
@@ -89,9 +89,9 @@ export default function BlackFridayPage() {
             </div>
             <figure className="overflow-hidden rounded-2xl border border-white/10 bg-black shadow-[0_0_80px_rgba(190,26,56,0.14)]">
               <div className="relative aspect-[1.3] w-full">
-                <Image src="/indicator-examples/darth-algo-feature-map-03.png" alt="Actual Darth Algo Pro product screenshot showing market chart and indicator planning tools" fill priority className="object-contain" sizes="(max-width: 1024px) 100vw, 48vw" />
+                <Image src="/indicators/swing-overview.png" alt="Recorded Darth Algo Swing Tool on Micro Gold Futures, included in Pro and Lifetime" fill priority className="object-contain" sizes="(max-width: 1024px) 100vw, 48vw" />
               </div>
-              <figcaption className="border-t border-white/10 p-3 text-xs leading-5 text-zinc-400">Authentic Darth Algo product screenshot. Example chart view; not proof of a filled or profitable trade.</figcaption>
+              <figcaption className="border-t border-white/10 p-3 text-xs leading-5 text-zinc-400">Actual recorded Swing Tool chart, included with Pro and Lifetime. This shows the product interface, not a guaranteed result.</figcaption>
             </figure>
           </div>
         </section>
@@ -132,8 +132,8 @@ export default function BlackFridayPage() {
               <a href={promoActive ? "https://buy.stripe.com/6oUcN62KX0WoeuW1k86kg04?prefilled_promo_code=BLACKFRIDAY89" : "https://buy.stripe.com/6oUcN62KX0WoeuW1k86kg04"} target="_blank" rel="noopener noreferrer" className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-lg bg-[#cc1d39] px-6 py-3 text-sm font-bold hover:bg-[#ed3651]">Get Lifetime through Stripe <ArrowRight className="h-4 w-4"/></a>
             </div>
             <figure className="overflow-hidden rounded-2xl border border-white/10 bg-[#090b10]">
-              <div className="relative aspect-[1.35] w-full"><Image src="/indicator-examples/darth-algo-feature-map-01.png" alt="Real Darth Algo Pro TradingView product screenshot" fill className="object-contain" sizes="(max-width: 1024px) 100vw, 48vw"/></div>
-              <figcaption className="border-t border-white/10 p-4 text-xs leading-5 text-zinc-400">The indicator and chart are for evaluating the product interface, not a guarantee of trading returns.</figcaption>
+              <div className="relative aspect-[1.35] w-full"><Image src="/indicators/scalper-overview.png" alt="Recorded Scalper Tool chart showing buy sell signals and trade levels, included with Lifetime" fill className="object-contain" sizes="(max-width: 1024px) 100vw, 48vw"/></div>
+              <figcaption className="border-t border-white/10 p-4 text-xs leading-5 text-zinc-400">Scalper Tool view shown. Lifetime includes Scalper, Swing and Pro access. Recorded chart, not a guarantee of returns.</figcaption>
             </figure>
           </div>
         </section>
