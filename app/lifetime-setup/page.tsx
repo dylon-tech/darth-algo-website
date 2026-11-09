@@ -151,7 +151,7 @@ export default function LifetimeSetupPage() {
         <div className="mt-9 rounded-xl border border-white/10 bg-[#141922] p-6 sm:p-8">
           <h2 className="text-xl font-bold">Need a hand?</h2>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-300">If your code displays an error or you cannot find the Pine Editor, email <a href="mailto:darthalgo67@gmail.com" className="font-semibold text-rose-300 underline">darthalgo67@gmail.com</a> with the error message and a screenshot. Do not email the full source to strangers or publish it publicly.</p>
-          <p className="mt-4 text-xs leading-6 text-zinc-500">Screenshots are from TradingView's official support documentation, accessed November 2026; the interface may differ with theme, account tier, or a later update. Darth Algo is independent of TradingView. The original source package sent to Lifetime owners is archived as of October 28, 2026; verify any later live version before treating that file as the latest release.</p>
+          <p className="mt-4 text-xs leading-6 text-zinc-500">Screenshots are from TradingView&apos;s official support documentation, accessed November 2026; the interface may differ with theme, account tier, or a later update. Darth Algo is independent of TradingView. The original source package sent to Lifetime owners is archived as of October 28, 2026; verify any later live version before treating that file as the latest release.</p>
           <Link href="/support" className="mt-5 inline-flex rounded-lg bg-[#cb213a] px-5 py-3 text-sm font-extrabold text-white hover:bg-[#ed3654]">Get help with your setup</Link>
         </div>
       </main>
