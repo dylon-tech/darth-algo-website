@@ -5,6 +5,8 @@ import { ArrowRight, ShieldCheck, CalendarDays, Sparkles } from "lucide-react";
 import SiteHeader from "../components/site-header";
 import SiteFooter from "../components/site-footer";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Black Friday | 25% Off TradingView Indicators + $89 Lifetime",
   description: "Darth Algo Black Friday: 25% off your first month of Swing, Scalper or Pro, or Lifetime Pro for $89. See real indicator screenshots, terms and secure Stripe checkout.",
