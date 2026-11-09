@@ -102,8 +102,8 @@ export const products: Record<ProductSlug, DarthProduct> = {
     description:
       "The full Darth Algo monthly system for traders who want both fast intraday structure and broader swing confirmation without switching between separate subscriptions.",
     color: "pro",
-    overview: "/indicator-examples/darth-algo-feature-map-01.png",
-    overviewAlt: "Complete Darth Algo Pro indicator system on Micro Gold Futures",
+    overview: "/indicators/swing-overview.png",
+    overviewAlt: "Recorded Darth Algo Swing Tool on Micro Gold Futures, one of the two tools included in Pro",
     features: [
       "Darth Algo Scalper Tool",
       "Darth Algo Swing Tool",
@@ -120,8 +120,8 @@ export const products: Record<ProductSlug, DarthProduct> = {
     ],
     gallery: [
       { src: "/indicators/clean-price-action.png", alt: "Clean market structure view", label: "Clean structure" },
-      { src: "/indicator-examples/darth-algo-feature-map-03.png", alt: "Darth Algo risk plan with entry stop and profit targets", label: "Risk engine" },
-      { src: "/indicator-examples/darth-algo-feature-map-04.png", alt: "Darth Algo trend-following signals and cloud", label: "System view" },
+      { src: "/indicators/scalper-risk-plan.png", alt: "Recorded Scalper trade plan with stop, entry and targets, included with Pro", label: "Scalper risk mapping" },
+      { src: "/indicators/scalper-overview.png", alt: "Recorded Scalper Tool showing signals, trend cloud and trade levels, included with Pro", label: "Scalper full chart" },
     ],
   },
 };
