@@ -21,7 +21,13 @@ export default function EducationPage() {
         <p className="product-terms">Educational content only, never financial advice.</p>
       </ProductSpotlight>
       <div id="lessons" />
-      <section className="py-16 sm:py-24"><div className="section-shell"><Link href="/start?campaign=chart_clarity" className="block rounded-xl border border-swing/40 bg-swing/10 p-6 hover:bg-swing/20"><span className="text-sm font-bold uppercase text-blue-200">Start with a real chart example</span><h2 className="mt-2 text-2xl font-bold">Try the free interactive walkthrough</h2><p className="mt-3 text-base leading-7 text-zinc-300">Read context, invalidation, and targets. Three short steps, no signup needed.</p></Link><EducationLibrary /></div></section>
+      <section className="py-16 sm:py-24"><div className="section-shell"><Link href="/start?campaign=chart_clarity" className="block rounded-xl border border-swing/40 bg-swing/10 p-6 hover:bg-swing/20"><span className="text-sm font-bold uppercase text-blue-200">Start with a real chart example</span><h2 className="mt-2 text-2xl font-bold">Try the free interactive walkthrough</h2><p className="mt-3 text-base leading-7 text-zinc-300">Read context, invalidation, and targets. Three short steps, no signup needed.</p></Link><Link href="/education/buy-sell-indicators" className="mt-7 block rounded-xl border border-rose-500/30 bg-[#20141c] p-6 transition hover:bg-[#2b1822]">
+            <span className="text-xs font-bold uppercase tracking-wider text-rose-300">New 2026 guide · Free</span>
+            <h2 className="mt-2 text-2xl font-black">TradingView buy/sell indicators: five checks before trusting a signal</h2>
+            <p className="mt-3 text-sm leading-7 text-zinc-300">How to review trend, market structure, invalidation, repainting and fees using authentic chart screenshots.</p>
+            <span className="mt-4 inline-block text-sm font-bold text-rose-300">Read the buyer’s guide →</span>
+          </Link>
+          <EducationLibrary /></div></section>
       <SiteFooter />
     </main>
   );
