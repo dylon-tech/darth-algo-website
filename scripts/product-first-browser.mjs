@@ -93,9 +93,10 @@ try {
     // Actual hydrated attribution survives navigation, feature switches and dynamic links.
     for (const source of ['threads', 'whop', 'search']) {
       phase = `attribution ${source}`;
-      await page.goto(`${origin}/alternatives?utm_source=${source}&utm_campaign=ui-check&utm_content=chart`);
+      await page.goto(`${origin}/alternatives?utm_source=${source}&utm_campaign=ui-check&utm_content=chart`, { waitUntil: 'networkidle' });
       await page.getByRole('link', { name: 'Explore Pro — $29/month', exact: true }).click();
       await page.waitForURL('**/products/pro');
+      await page.waitForLoadState('networkidle');
       await page.waitForFunction(() => document.querySelector('a[href^="https://buy.stripe.com/"]')?.href.includes('client_reference_id=da1_'));
       const url = new URL(await page.locator('a[href^="https://buy.stripe.com/"]').first().getAttribute('href'));
       assert.equal(url.searchParams.get('utm_source'), source);
@@ -108,10 +109,12 @@ try {
     await page.waitForTimeout(100);
     assert.equal(new URL(await page.locator('#affiliate-fixture').getAttribute('href')).searchParams.get('client_reference_id'), 'affiliate-fixture');
     phase = 'start community attribution';
-    await page.goto(origin + '/start?source=whop&campaign=ui-check');
+    // Let hydrated Link prefetches settle before the next full-document navigation.
+    // WebKit can surface a cancelled in-flight RSC fetch as a pageerror.
+    await page.goto(origin + '/start?source=whop&campaign=ui-check', { waitUntil: 'networkidle' });
     assert.equal(await page.getByRole('link', { name: 'Explore the free community', exact: true }).getAttribute('href'), '/community?source=whop&campaign=ui-check');
     phase = 'home plan anchors';
-    await page.goto(origin + '/?utm_source=threads&utm_campaign=ui-check');
+    await page.goto(origin + '/?utm_source=threads&utm_campaign=ui-check', { waitUntil: 'networkidle' });
     for (const [id, slug] of [['scalper-plan','scalper'], ['swing-trial','swing'], ['pro-plan','pro']]) {
       await page.locator(`a[href="#${id}"]:visible`).first().click();
       assert.ok(await page.locator('#' + id).count());
@@ -120,7 +123,7 @@ try {
     await page.setViewportSize({ width: 320, height: 700 });
     for (const path of ['/alternatives', '/products/swing', '/links']) {
       phase = `narrow route ${path}`;
-      await page.goto(origin + path); assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), path + ' narrow screen');
+      await page.goto(origin + path, { waitUntil: 'networkidle' }); assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), path + ' narrow screen');
     }
     phase = 'context close';
     await context.close();
