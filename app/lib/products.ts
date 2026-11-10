@@ -53,7 +53,7 @@ export const products: Record<ProductSlug, DarthProduct> = {
     gallery: [
       { src: "/indicators/scalper-risk-plan.png", alt: "Scalper short trade plan with entry, stop and two targets", label: "Risk mapping" },
       { src: "/indicators/signal-context-alt.png", alt: "Scalper signals and trend cloud across changing conditions", label: "Signal context" },
-      { src: "/indicators/scalper-execution.png", alt: "Scalper short setup progressing through its profit targets", label: "Execution view" },
+      { src: "/indicators/scalper-execution.png", alt: "Recorded Scalper chart with projected entry, stop and target levels", label: "Plan detail" },
     ],
   },
   swing: {
@@ -68,7 +68,7 @@ export const products: Record<ProductSlug, DarthProduct> = {
       "A patient trend-following view for traders holding through broader market moves, with structured levels, market-bias confirmation, alerts, and trade-status feedback.",
     color: "swing",
     overview: "/indicators/swing-overview.png",
-    overviewAlt: "Darth Algo Swing Tool showing an active long trade on Micro Gold Futures",
+    overviewAlt: "Recorded Darth Algo Swing Tool showing a long trade plan on Micro Gold Futures",
     dashboard: "/indicators/swing-dashboard.png",
     dashboardAlt: "Swing dashboard showing uptrend guidance and target status",
     features: [
