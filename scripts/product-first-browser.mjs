@@ -9,7 +9,7 @@ const server = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'star
 });
 const routes = ['/', '/alternatives', '/compare', '/products/scalper', '/products/swing', '/products/pro', '/links', '/education', '/indicators', '/start', '/community', '/affiliates', '/about-darth-algo', '/support'];
 const checkoutPaths = { scalper: '/14AfZi4T5fRidqS2oc6kg03', swing: '/28EcN699l8oQ9aC5Ao6kg02', pro: '/4gM8wQfxJ6gI1IabYM6kg05' };
-const errors = [], checks = [];
+const errors = [], checks = [], diagnostics = [];
 let browser;
 try {
   let ready = false;
@@ -27,8 +27,20 @@ try {
       return route.continue();
     });
     const page = await context.newPage();
-    page.on('pageerror', e => errors.push(`${name}: ${e.message}`));
+    let phase = 'initial';
+    page.on('pageerror', e => {
+      errors.push(`${name}: ${e.message}`);
+      const detail = { kind: 'pageerror', engine: name, phase, url: page.url(), message: e.message, stack: e.stack };
+      diagnostics.push(detail);
+      console.error('PRODUCT_BROWSER_DIAGNOSTIC', JSON.stringify(detail));
+    });
+    page.on('requestfailed', request => {
+      const detail = { kind: 'requestfailed', engine: name, phase, url: request.url(), method: request.method(), failure: request.failure() };
+      diagnostics.push(detail);
+      console.error('PRODUCT_BROWSER_DIAGNOSTIC', JSON.stringify(detail));
+    });
     for (const path of routes) {
+      phase = `route ${path}`;
       const response = await page.goto(origin + path, { waitUntil: 'networkidle' });
       assert.equal(response.status(), 200, path);
       await page.evaluate(() => document.fonts.ready);
@@ -80,6 +92,7 @@ try {
     }
     // Actual hydrated attribution survives navigation, feature switches and dynamic links.
     for (const source of ['threads', 'whop', 'search']) {
+      phase = `attribution ${source}`;
       await page.goto(`${origin}/alternatives?utm_source=${source}&utm_campaign=ui-check&utm_content=chart`);
       await page.getByRole('link', { name: 'Explore Pro — $29/month', exact: true }).click();
       await page.waitForURL('**/products/pro');
@@ -94,8 +107,10 @@ try {
     });
     await page.waitForTimeout(100);
     assert.equal(new URL(await page.locator('#affiliate-fixture').getAttribute('href')).searchParams.get('client_reference_id'), 'affiliate-fixture');
+    phase = 'start community attribution';
     await page.goto(origin + '/start?source=whop&campaign=ui-check');
     assert.equal(await page.getByRole('link', { name: 'Explore the free community', exact: true }).getAttribute('href'), '/community?source=whop&campaign=ui-check');
+    phase = 'home plan anchors';
     await page.goto(origin + '/?utm_source=threads&utm_campaign=ui-check');
     for (const [id, slug] of [['scalper-plan','scalper'], ['swing-trial','swing'], ['pro-plan','pro']]) {
       await page.locator(`a[href="#${id}"]:visible`).first().click();
@@ -104,14 +119,17 @@ try {
     }
     await page.setViewportSize({ width: 320, height: 700 });
     for (const path of ['/alternatives', '/products/swing', '/links']) {
+      phase = `narrow route ${path}`;
       await page.goto(origin + path); assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), path + ' narrow screen');
     }
+    phase = 'context close';
     await context.close();
     const nojs = await browser.newContext({ javaScriptEnabled: false });
     const staticPage = await nojs.newPage(); await staticPage.goto(origin + '/products/pro');
     assert.ok(await staticPage.locator('a[href="https://buy.stripe.com/4gM8wQfxJ6gI1IabYM6kg05"]').count());
     await nojs.close(); await browser.close(); browser = null;
   }
+  await writeFile('artifacts/product-first/diagnostics.json', JSON.stringify({ errors, diagnostics, checks }, null, 2));
   assert.deepEqual(errors, []);
   await writeFile('artifacts/product-first/report.json', JSON.stringify({ result: 'PASS', checks, attribution: ['threads', 'whop', 'search', 'existing affiliate reference'], productionWrites: 0, externalNavigations: 0 }, null, 2));
   console.log('PASS product-first Chromium + WebKit, 320/390/1280 widths, chart/dialog controls, selected checkout, no-JS and attribution.');
