@@ -98,6 +98,16 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               </figure>
             ))}
           </div>
+          {product.slug === "scalper" && (
+            <aside className="mt-8 rounded-md border border-white/10 bg-card p-6 sm:p-7" aria-label="Scalper chart guide">
+              <a href="/guides/darth-algo-scalper-chart-walkthrough.pdf" target="_blank" rel="noopener noreferrer" aria-describedby="scalper-guide-context" className="inline-flex min-h-12 items-center gap-3 text-base font-bold text-white underline decoration-scalp/60 underline-offset-4 transition hover:text-orange-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-scalp">
+                Read the Scalper chart walkthrough (PDF)
+                <ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />
+                <span className="sr-only"> - opens in a new tab</span>
+              </a>
+              <p id="scalper-guide-context" className="mt-2 max-w-2xl text-sm leading-7 text-zinc-400">A free three-page guide to entry, stop and target planning on a recorded Micro Silver chart, with the wider chart context. Planning references are not verified trade results.</p>
+            </aside>
+          )}
         </div>
       </section>
 
