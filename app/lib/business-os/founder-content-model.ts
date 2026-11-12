@@ -17,6 +17,7 @@ export type FounderContentItem = {
   status: FounderContentStatus; locked: boolean; extra: boolean; createdAt: string;
   updatedAt: string; deliveries: FounderDelivery[]; jobId: string|null;
   lastError: string|null;
+  renderStatus?: FounderRenderJobStatus|null; renderStage?: string|null; renderProgress?: number;
 };
 export type FounderContentDraft = Pick<FounderContentItem,
   'day'|'time'|'type'|'title'|'idea'|'script'|'caption'|'templateId'|'destinations'|'mediaAssetId'|'coverAssetId'|'extra'> & {
@@ -28,17 +29,25 @@ export type FounderContentSlot = {
 };
 export type FounderContentDay = {day: string; isToday: boolean; slots: FounderContentSlot[]};
 export type FounderContentCoverage = {
-  futureDays: number; expectedOriginals: number; planned: number; produced: number;
+  futureDays: number; expectedOriginals: number; planned: number; generated: number; produced: number;
   scheduled: number; published: number; skipped: number; held: number; missing: number;
   expectedDeliveries: number; acceptedDeliveries: number; publishedDeliveries: number;
   todayRemaining: number; definition: string;
 };
+export type FounderRenderJobStatus = 'queued'|'running'|'completed'|'failed'|'blocked'|'canceled'|'obsolete';
+export type FounderRenderJob = {
+  id: string; itemId: string; contentVersion: number; type: FounderMediaType;
+  source: 'agent'|'owner'; status: FounderRenderJobStatus; stage: string; progress: number;
+  attempts: number; retryable: boolean; createdAt: string; updatedAt: string;
+  startedAt: string|null; finishedAt: string|null; error: string|null;
+};
 export type FounderContentSnapshot = {
   checkedAt: string; today: string; timeZone: typeof founderTimeZone; month: string;
-  items: FounderContentItem[]; archivedItems: FounderContentItem[]; days: FounderContentDay[]; coverage: FounderContentCoverage;
+  items: FounderContentItem[]; archivedItems: FounderContentItem[]; days: FounderContentDay[]; coverage: FounderContentCoverage; jobs: FounderRenderJob[];
   agent: {paused: boolean; version: number; status: string; lastSuccessfulRun: string|null;
     lastSeenAt: string|null; lastCreatedCount: number|null; nextRun: string|null; currentWork: string|null; incrementalBudgetUsd: 0;
-    publishingPause: 'not_confirmed'; message: string};
+    publishingPause: 'not_confirmed'; message: string; generated: number;
+    counts: {queued:number;running:number;failed:number;blocked:number;completed:number}};
   templates: typeof founderTemplates;
   capabilities: {drafts: boolean; uploads: boolean; imageGeneration: boolean; videoGeneration: boolean;
     scheduling: boolean; publishingPause: boolean; rendererReason: string; publisherReason: string};
@@ -98,8 +107,8 @@ export function normalizeFounderDraft(value: unknown): FounderContentDraft {
   return {
     ...(v.id?{id:v.id as string,expectedVersion:Number(v.expectedVersion)}:{}),
     day:v.day,time:v.time,type:v.type,title:textField(v.title,'Title',160,true),
-    idea:textField(v.idea??'','Idea',5000),script:textField(v.script??'','Script',24000),
-    caption:textField(v.caption??'','Caption',12000),templateId:template.id,destinations,
+    idea:textField(v.idea??'','Idea',3000),script:textField(v.script??'','Script',18000),
+    caption:textField(v.caption??'','Caption',10000),templateId:template.id,destinations,
     mediaAssetId:(v.mediaAssetId as string|null)||null,coverAssetId:(v.coverAssetId as string|null)||null,extra:v.extra===true,
   };
 }
@@ -138,6 +147,7 @@ export function founderCoverage(items:FounderContentItem[],now=new Date()):Found
   const produced=active.filter(i=>i.status==='ready'&&Boolean(i.mediaAssetId)&&Boolean(i.mediaVerifiedAt));
   const allDestinations=(item:FounderContentItem,predicate:typeof deliveryIsAccepted)=>item.destinations.length>0&&item.destinations.every(network=>item.deliveries.some(d=>d.network===network&&predicate(item,d)));
   return {futureDays:5,expectedOriginals:10,planned:active.filter(i=>Boolean(i.idea||i.title)).length,
+    generated:active.filter(i=>Boolean(i.mediaAssetId&&i.mediaVerifiedAt&&(i.type==='image'||i.coverAssetId))).length,
     produced:produced.length,scheduled:produced.filter(i=>allDestinations(i,deliveryIsAccepted)).length,
     published:produced.filter(i=>allDestinations(i,deliveryIsPublished)).length,
     skipped:originals.filter(i=>i.status==='skipped').length,held:originals.filter(i=>i.status==='held').length,
@@ -146,7 +156,7 @@ export function founderCoverage(items:FounderContentItem[],now=new Date()):Found
     acceptedDeliveries:active.reduce((n,i)=>n+i.destinations.filter(network=>i.deliveries.some(d=>d.network===network&&deliveryIsAccepted(i,d))).length,0),
     publishedDeliveries:active.reduce((n,i)=>n+i.destinations.filter(network=>i.deliveries.some(d=>d.network===network&&deliveryIsPublished(i,d))).length,0),
     todayRemaining:days[0].slots.filter(s=>s.remainingToday).length,
-    definition:'Five complete future Eastern dates, ten original slots. Skips and holds remain visible; destination receipts are counted separately. Planned does not mean produced or scheduled.'};
+    definition:'Five complete future Eastern dates, ten original slots. Generated means a verified saved file; produced means reviewed. Skips, holds and destination receipts are counted separately.'};
 }
 export function assertFounderVersion(current:FounderContentItem,expected:unknown) {
   if(!Number.isInteger(expected)||current.version!==expected)throw new FounderContentError('This content changed on another device. Review the current saved version before saving.',409,'VERSION_CONFLICT',current);

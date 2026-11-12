@@ -33,6 +33,20 @@ const ts = require('typescript');
   const env = {...process.env};
   const supportId = 'support:00000000-0000-0000-0000-000000000001';
   try {
+    const renderItem = '00000000-0000-0000-0000-000000000006', renderJob = '00000000-0000-0000-0000-000000000007';
+    const renderSource = `/owner?tab=content&item=${renderItem}`;
+    const renderBody = `Result: Your video is ready.\nNext: Review the video.\nSource: ${renderSource}\nJob: ${renderJob}`;
+    const mappedRender = api.mapInboxSource('agents',{id:renderJob,department:'content',body:renderBody});
+    assert.equal(mappedRender.sourceHref,renderSource);assert.equal(mappedRender.jobId,renderJob);assert.equal(mappedRender.kind,'content_update');
+    assert.equal(mappedRender.body,renderBody,'Render source metadata does not change the saved original');
+    assert.equal(mappedRender.summary.result,'Your video is ready.');assert.doesNotMatch(mappedRender.preview,/Source:|Job:/);
+    assert.equal(api.mapInboxSource('agents',{id:renderJob,department:'research',body:renderBody}).sourceHref,'/owner/team','Only content reports promote Content metadata');
+    for (const invalidSource of ['https://example.test/',`${renderSource}&redirect=https://example.test/`,`/owner?tab=content&item=invalid`,`${renderSource}\nSource: /owner?tab=content&item=${renderJob}`]) {
+      const mapped = api.mapInboxSource('agents',{id:renderJob,department:'content',body:`Result: Saved.\nSource: ${invalidSource}\nJob: ${renderJob}`});
+      assert.equal(mapped.sourceHref,'/owner/team','Only one exact internal Content source is accepted');assert.equal(mapped.jobId,null);
+    }
+    assert.equal(api.mapInboxSource('agents',{id:renderJob,department:'content',body:`Source: ${renderSource}\nJob: invalid`}).jobId,null);
+    assert.equal(api.mapInboxSource('agents',{id:renderJob,department:'content',body:`${renderBody}\nJob: ${renderItem}`}).jobId,null,'Ambiguous Job metadata is not linked');
     await database.exec(fs.readFileSync('app/lib/business-os/schema.ts', 'utf8').match(/export const schema = `([\s\S]*?)`;/)[1]);
     await database.exec(`
       insert into os_support_conversations(id,provider,provider_thread_id,customer_key,category,status,subject,last_message_at,summary,requires_founder)
@@ -47,6 +61,14 @@ const ts = require('typescript');
     assert.equal(snapshot.items.length, 3); assert.equal(snapshot.unreadCount, 3);
     assert.equal(snapshot.email.status, 'disconnected'); assert.equal(snapshot.capabilities.sendEmail, false);
     assert.equal(snapshot.items.find(item => item.id === supportId).contentCoverage, 'summary_only');
+    assert.equal(snapshot.items.find(item => item.id === supportId).body, 'How do I add the indicator?');
+    assert.equal(snapshot.items.find(item => item.id === supportId).summary, undefined, 'Customer wording is not rewritten into an agent summary');
+    const agentSummary = snapshot.items.find(item => item.category === 'agent');
+    assert.equal(agentSummary.summary.result, 'Saved a complete script. Rendering is not connected.');
+    assert.equal(agentSummary.body, 'Saved a complete script. Rendering is not connected.', 'The complete saved original remains available');
+    const alertSummary = snapshot.items.find(item => item.id.startsWith('loop:')).summary;
+    assert.equal(alertSummary.result, 'The last sync failed');
+    assert.equal(alertSummary.action, 'Verify the saved receipt');
     assert.match(snapshot.items.find(item => item.id === supportId).sourceHref, /^https:\/\/mail\.google\.com\//);
     assert.equal(snapshot.items.find(item => item.id.startsWith('loop:')).sourceHref, '/owner/connections');
     assert(queries.every(query => query.trim().startsWith('select ')), 'Inbox GET must be read-only, including before state initialization');

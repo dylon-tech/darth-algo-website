@@ -26,10 +26,10 @@ export async function GET(request:Request) {
     } catch { console.warn(JSON.stringify({event:"welcome_tick",status:"unavailable"})); }
     try {await (await import("../../../lib/business-os/acquisition")).maintainAcquisitionRetention(requestStartedAt);}
     catch {console.warn(JSON.stringify({event:"acquisition_retention",status:"unavailable"}));}
-    // Existing scheduler, database-only idea planning, separately paused by the
-    // owner. This does not activate a renderer or a second social publisher.
-    try {console.info(JSON.stringify({event:"founder_content_planner",...await (await import("../../../lib/business-os/founder-content")).founderContentPlannerTick(requestStartedAt)}));}
-    catch {console.warn(JSON.stringify({event:"founder_content_planner",status:"unavailable"}));}
+    // The existing scheduler alone replenishes the five-day generation queue.
+    // The separate media worker only claims these jobs; it never publishes.
+    try {console.info(JSON.stringify({event:"founder_content_generation",...await (await import("../../../lib/business-os/founder-content")).founderContentPlannerTick(requestStartedAt)}));}
+    catch {console.warn(JSON.stringify({event:"founder_content_generation",status:"unavailable"}));}
     await processOwnerUpdates();
     await deliverOwnerNotices(2);
     try {const {syncRetentionOpportunities}=await import("../../../lib/business-os/revenue-ops");console.info(JSON.stringify({event:"retention_tick",...await observed("retention",()=>syncRetentionOpportunities())}));}

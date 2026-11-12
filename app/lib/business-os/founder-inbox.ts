@@ -1,4 +1,5 @@
 import {db} from '../affiliate-db';
+import {summarizeAgentMessage,summarizeBusinessAlert,type FounderInboxSummary} from './founder-inbox-summary';
 
 type Row = Record<string, unknown>;
 export type FounderInboxCategory = 'customer' | 'alert' | 'agent';
@@ -13,6 +14,7 @@ export type FounderInboxItem = {
   jobId: string | null; runId: string | null; severity: 'info' | 'warning' | 'critical';
   sourceStatus: string; contentCoverage: 'full_message' | 'summary_only' | 'alert';
   unread: boolean | null; state: FounderInboxState;
+  summary?: FounderInboxSummary | null;
 };
 export type FounderInboxPatch = {read?: boolean; snoozedUntil?: string | null; resolved?: boolean; draft?: string};
 type SourceResult = {id: string; status: 'read' | 'unavailable'; rows: Row[]; limit: number};
@@ -43,6 +45,16 @@ function gmailHref(provider: unknown, threadId: unknown): string | null {
   return provider === 'gmail' && typeof threadId === 'string' && /^[a-f0-9]{10,64}$/i.test(threadId)
     ? `https://mail.google.com/mail/u/?authuser=${encodeURIComponent(process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'darthalgo67@gmail.com')}#all/${threadId}` : null;
 }
+function contentMessageSource(department: unknown, body: string) {
+  if (department !== 'content') return null;
+  const lines = body.split(/\r?\n/);
+  const sources = lines.filter(line => /^Source:/.test(line));
+  const match = sources.length === 1 ? sources[0].match(new RegExp(`^Source: (/owner\\?tab=content&item=${uuid})$`)) : null;
+  if (!match) return null;
+  const jobs = lines.filter(line => /^Job:/.test(line));
+  const job = jobs.length === 1 ? jobs[0].match(new RegExp(`^Job: (${uuid})$`)) : null;
+  return {href: match[1], jobId: job?.[1] || null};
+}
 function base(id: string, category: FounderInboxCategory, source: string, at: unknown): FounderInboxItem {
   return {id, category, source, at: date(at), kind: category, title: '', preview: '', body: '', sender: '', sourceHref: null, customerId: null, jobId: null, runId: null, severity: 'info', sourceStatus: 'recorded', contentCoverage: 'alert', unread: true, state: emptyInboxState()};
 }
@@ -65,6 +77,7 @@ export function mapInboxSource(source: string, value: Row): FounderInboxItem {
     item.sourceHref = safeInboxHref(row(value.details).href) || '/owner/connections';
     item.jobId = value.source_type === 'job' ? text(value.source_id, 100) || null : null;
     item.severity = value.severity === 'critical' ? 'critical' : value.severity === 'warning' ? 'warning' : 'info';
+    item.summary = summarizeBusinessAlert({result: text(value.why), ownerAction: text(value.founder_action), nextStep: text(value.resume_action)});
   } else if (source === 'approvals') {
     const payload = row(value.payload);
     item = base(`approval:${value.id}`, 'alert', 'Exact-version decision ledger', value.created_at);
@@ -72,14 +85,18 @@ export function mapInboxSource(source: string, value: Row): FounderInboxItem {
     item.body = text(payload.details) || text(payload.text) || 'Open the existing decision workflow to review the exact scope and version.';
     item.sender = 'Decision review'; item.sourceHref = payload.executor === 'indicator_release_v1' ? '/owner/indicators' : '/owner?legacy=1&view=inbox';
     item.sourceStatus = text(value.status, 100); item.severity = 'warning';
+    item.summary = summarizeBusinessAlert({result: text(payload.summary) || 'A saved decision needs review.', ownerAction: 'Review the proposal and choose a decision.'});
   } else {
     item = base(`message:${value.id}`, 'agent', 'Persisted agent messages', value.created_at);
     item.kind = 'agent_update'; item.sender = `${text(value.department, 100).replaceAll('_', ' ')} agent`;
     item.body = text(value.body); item.title = item.body.split('\n').find(line => line.trim())?.slice(0, 120) || 'Agent update';
     item.runId = text(value.run_id, 100) || null; item.jobId = text(value.job_id, 100) || null;
     item.sourceHref = '/owner/team'; item.contentCoverage = typeof value.body === 'string' && value.body.length > 20000 ? 'summary_only' : 'full_message';
+    const contentSource = contentMessageSource(value.department, item.body);
+    if (contentSource) {item.kind = 'content_update';item.sourceHref = contentSource.href;item.jobId = contentSource.jobId;}
+    item.summary = summarizeAgentMessage(item.body);
   }
-  item.preview = item.body.replace(/\s+/g, ' ').slice(0, 220);
+  item.preview = item.summary ? [item.summary.result, item.summary.action ? `${item.summary.actionLabel}: ${item.summary.action}` : ''].filter(Boolean).join(' ') : item.body.replace(/\s+/g, ' ').slice(0, 220);
   return item;
 }
 

@@ -70,8 +70,14 @@ try{
   const labels=await page.getByRole('navigation',{name:'Watch a department'}).getByRole('button').evaluateAll(els=>els.map(el=>({font:parseFloat(getComputedStyle(el).fontSize),height:el.getBoundingClientRect().height})));assert.ok(labels.every(l=>l.font>=12&&l.height>=44));
   pass(engine+': crisp vector rooms at native device scale, eight-room overview, real lifecycle adapter, visibly moving active character, idle stop, motion control and reduced motion');
   await page.getByRole('complementary',{name:'Room workbench'}).getByRole('button',{name:'Help Research',exact:true}).click();await page.getByRole('textbox',{name:'Message this agent'}).waitFor();await page.getByRole('button',{name:'Close agent',exact:true}).click();
+  await page.getByRole('dialog').waitFor({state:'hidden'});
+  await page.waitForFunction(()=>document.activeElement===document.querySelector('[aria-label="Help Research"]'));
   await page.getByRole('complementary',{name:'Room workbench'}).getByRole('button',{name:'Give work',exact:true}).click();
-  await page.getByRole('textbox',{name:'Your assignment'}).fill('ISOLATED HQ ACCEPTANCE '+engine+': prepare an internal research brief. No external action.');
+  const assignment=page.getByRole('textbox',{name:'Your assignment'}),assignmentText='ISOLATED HQ ACCEPTANCE '+engine+': prepare an internal research brief. No external action.';
+  await assignment.waitFor();await page.waitForFunction(()=>document.activeElement?.id==='agent-message');
+  await assignment.fill(assignmentText);
+  assert.equal(await assignment.inputValue(),assignmentText,'The new assignment composer accepts the draft');
+  await page.waitForFunction(text=>JSON.parse(sessionStorage.getItem('darth-agent-draft:research')||'null')?.draft===text,assignmentText);
   await page.locator('form').getByRole('button',{name:'Give work',exact:true}).click();await page.getByRole('status').filter({hasText:/Request .* saved/}).waitFor();
   const [job]=await sql`select id,status,request_key from os_jobs where message like ${'ISOLATED HQ ACCEPTANCE '+engine+'%'} order by created_at desc limit 1`;assert.equal(job.status,'queued');results.jobs.push({engine,id:job.id,status:job.status,observedAt:stamp()});
   await page.screenshot({path:`artifacts/hq-world/${engine}-saved-task-synthetic.png`,fullPage:true});

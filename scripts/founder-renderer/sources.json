@@ -1,0 +1,90 @@
+{
+  "version": "approved-20261112",
+  "meaning": "Owned recorded product views. No live/current-trade or performance claim. Only audited screenshot/font/emblem files extracted from approved v4/v15 packages.",
+  "sources": [
+    {
+      "path": "public/fonts/darth-social/BarlowCondensed-BlackItalic.ttf",
+      "sha256": "e1ed5d7e50c6a4498454d40509ce2362384a2c7870df3418fdbd010f81dffad3"
+    },
+    {
+      "path": "public/indicators/clean-price-action.png",
+      "sha256": "a63663af32bac2a0deaba989e720c97deea34e9abbd94a8eec87fe17b9fe5498"
+    },
+    {
+      "path": "public/indicators/scalper-dashboard.png",
+      "sha256": "f207e85578591007bec688ee4b74db994859dfe563d80fa944d61a8313487121"
+    },
+    {
+      "path": "public/indicators/scalper-execution.png",
+      "sha256": "0e506e8e56c965ed86d9ce201d92a1b5a2ca2cc16083a0c8a3edfcf245f1ab22"
+    },
+    {
+      "path": "public/indicators/scalper-overview.png",
+      "sha256": "378246b3d9cdda724627ace352a2408900c71481572ea44f2573347416c9f667"
+    },
+    {
+      "path": "public/indicators/scalper-risk-plan.png",
+      "sha256": "a44932fb77ca698db94906b5c304bd260b728923e647d92870f42141641d04ee"
+    },
+    {
+      "path": "public/indicators/signal-context-alt.png",
+      "sha256": "492df5b3f341e1184484142408fbc366d0525ff7a64a5516430ea65167822f8c"
+    },
+    {
+      "path": "public/indicators/signal-context.png",
+      "sha256": "568ebd47dc74089c7dc3ef073d4055095f35ec10eeabe693e1d1ecef4b18f006"
+    },
+    {
+      "path": "public/indicators/swing-dashboard.png",
+      "sha256": "5e6f824a02a5a0a8d5fe54d02e604197f85a149c33e105d08bc31d38fb48d06b"
+    },
+    {
+      "path": "public/indicators/swing-overview.png",
+      "sha256": "40b2b8646ac28f6193ec2c34d1ac6fb305f7dfe9073d5710038fc7e1f1bf2710"
+    },
+    {
+      "path": "public/indicators/swing-risk-plan.png",
+      "sha256": "a68cb85dca3b62c3fa79366baf9851755ffa3b426a326c70c4dd3d5939300c78"
+    },
+    {
+      "path": "public/indicators/swing-trend-cloud.png",
+      "sha256": "6804c35b2d852969be7570c6dde5c5dc8867e38314e68ddd4972838bcc923364"
+    },
+    {
+      "path": "scripts/founder-renderer/assets/Inter-LICENSE.txt",
+      "sha256": "262481e844521b326f5ecd053e59b98c8b2da78c8ee1bdbb6e8174305e54935a"
+    },
+    {
+      "path": "scripts/founder-renderer/assets/InterDisplay-Bold.ttf",
+      "sha256": "0b29810bbbae41d36603271ba2746e5a2e94317b2d17b724d8810b01dfdb9bc8"
+    },
+    {
+      "path": "scripts/founder-renderer/assets/InterDisplay-Medium.ttf",
+      "sha256": "0bb4bf7e8b64becfa008d4541e8499487cf2fecb36e9bff4c91af93aaf5fe359"
+    },
+    {
+      "path": "scripts/founder-renderer/assets/approved-v4-emblem.png",
+      "sha256": "0503dd60f018d8eaa79397f1b8250180d15aa5ba852177ceac000ff13f0d8c1b"
+    },
+    {
+      "path": "scripts/founder-renderer/assets/da_v8_invite_full.png",
+      "sha256": "72543f9b30b0abb8831d902d194fa7da5368962861c582722430e6144e43f05b"
+    },
+    {
+      "path": "scripts/founder-renderer/assets/da_v8_settings_lower.png",
+      "sha256": "b3b8efb0f6aca77b368385ab05ff800f46d5580f4cca97f2e62a240eb581ea6b"
+    },
+    {
+      "path": "scripts/founder-renderer/assets/da_v8_settings_top.png",
+      "sha256": "7461185517898dc92bcd3e23a5ee770a31adf7c389112ccd8655fe59bb23a24b"
+    },
+    {
+      "path": "scripts/founder-renderer/assets/da_v8_timeframe_full.png",
+      "sha256": "b6a44c619aae614878c977646f7965a7b8d686760b0ba58c2e47fd8d37061208"
+    },
+    {
+      "path": "scripts/founder-renderer/assets/mes_replay.png",
+      "sha256": "2fc19a0690eb9ea5076875ec64cc679b01840864376984c9fa12bcf930f0015e"
+    }
+  ]
+}

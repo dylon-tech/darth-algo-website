@@ -14,6 +14,7 @@ import { workSummary } from "./work-summary";
 import { ensureTelegramPanels, queuePanelReply } from "./telegram-panel";
 import { ceoScorecard, ownerNeeds } from "./ceo-scorecard";
 import { workAssignments, assignmentMessage } from "../../owner/work-assignments";
+import { ownerReportPreview } from './owner-report-style';
 
 export async function recordOwnerUpdate(update: OwnerUpdate) {
   const sql=db();
@@ -174,7 +175,7 @@ export async function workAndNotify() {
     if(panel){
       const brief=run?.result?.brief;
       await queuePanelReply({owner,key:`job-result:${result.jobId}`,department,view:"result",jobId:result.jobId,expectedSession:panel.session_id,expectedRevision:Number(panel.revision),
-        text:`${agentNames[department]} · ${brief?"RESULT":"NEEDS A CHECK"}\n\n${brief?shortReply(brief):"This job couldn’t finish. Open Last result for its status."}`,
+        text:`${agentNames[department]} · ${brief?"RESULT":"NEEDS A CHECK"}\n\n${brief?ownerReportPreview(brief):"This job couldn’t finish. Open Last result for its status."}`,
         buttons:brief?[[{text:"Read result",callback_data:`ui:result:${result.jobId}:0`},{text:"Agent options",callback_data:`ui:agent:${department}`}],[homeButton]]:agentMenu(department)});
     }
     // Background completions and failures are covered by the scorecard/digest.
