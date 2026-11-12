@@ -16,3 +16,5 @@ outputs/
 work/
 .agents/
 .codex/
+
+scripts/founder-renderer/**/__pycache__/

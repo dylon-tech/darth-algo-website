@@ -4,6 +4,7 @@ import {FounderContentError} from '../../../lib/business-os/founder-content-mode
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
+export const maxDuration=60;
 const headers={...privateHeaders,'Cache-Control':'private, no-store, max-age=0',Vary:'Cookie','X-Content-Type-Options':'nosniff'};
 const json=(value:unknown,status=200)=>Response.json(value,{status,headers});
 function failure(error:unknown) {

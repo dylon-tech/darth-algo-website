@@ -48,7 +48,10 @@ jobs:
           node tests/founder-finance.test.cjs
           node tests/founder-content.test.cjs
           node tests/founder-inbox.test.cjs
+          node tests/founder-inbox-summary.test.cjs
+          node tests/owner-report-style.test.cjs
           node tests/founder-media.test.cjs
+          node tests/founder-renderer.test.cjs
         env:
           OS_TEST_PGLITE_MODULE: "@electric-sql/pglite"
       - name: Presence and queue model regressions
