@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     env:
-      DARTH_RENDER_MODEL_DIR: ${{ runner.temp }}/darth-render-models
+      DARTH_RENDER_MODEL_DIR: /tmp/darth-render-models
       PYTHONUNBUFFERED: '1'
       ONNX_PROVIDER: CPUExecutionProvider
       HF_HUB_DISABLE_TELEMETRY: '1'
