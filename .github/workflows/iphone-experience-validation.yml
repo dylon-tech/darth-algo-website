@@ -41,6 +41,16 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --ignore-scripts
+      - name: Install isolated SQL test runtime
+        run: npm install --no-save --package-lock=false --ignore-scripts @electric-sql/pglite@0.5.8
+      - name: Founder money, calendar, inbox and media safety
+        run: |
+          node tests/founder-finance.test.cjs
+          node tests/founder-content.test.cjs
+          node tests/founder-inbox.test.cjs
+          node tests/founder-media.test.cjs
+        env:
+          OS_TEST_PGLITE_MODULE: "@electric-sql/pglite"
       - name: Presence and queue model regressions
         run: node --experimental-strip-types --test scripts/visual-hq-model.test.mjs scripts/video-studio.test.mjs
       - name: Lifetime refund and payment-order safety
@@ -62,6 +72,8 @@ jobs:
         run: node scripts/video-studio-browser.mjs
       - name: WebKit iPhone-width experience
         run: node scripts/iphone-experience-browser.mjs
+      - name: Phone-first founder dashboard journeys
+        run: node scripts/founder-dashboard-browser.mjs
       - name: Public product-first pages and attribution
         run: node scripts/product-first-browser.mjs
       - name: Removed 3D tour and retained indicator controls
