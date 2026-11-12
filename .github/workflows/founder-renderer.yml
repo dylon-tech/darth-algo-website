@@ -35,6 +35,8 @@ jobs:
           python-version: '3.12'
       - name: Install local media tools
         run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends ffmpeg
           python -m pip install --disable-pip-version-check --no-cache-dir -r scripts/founder-renderer/requirements.txt
           command -v ffmpeg
           command -v ffprobe
