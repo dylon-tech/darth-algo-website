@@ -166,6 +166,7 @@ try{
   await noOverflow('Populated Inbox detail');await page.screenshot({path:'artifacts/founder-inbox-detail-synthetic.png',fullPage:true});
   await closeDialog();await page.reload();
   await page.getByRole('heading',{name:'Inbox',exact:true,level:1}).waitFor();
+  await page.getByRole('button',{name:'Customer messages',exact:true,pressed:true}).waitFor();
   assert.equal(await page.getByRole('button',{name:'Customer messages',exact:true}).getAttribute('aria-pressed'),'true','Inbox filter survives reload');
   await page.getByRole('button',{name:/Synthetic question: find my invite-only indicator/}).click();await conversation.waitFor();
   await replyField.waitFor();
