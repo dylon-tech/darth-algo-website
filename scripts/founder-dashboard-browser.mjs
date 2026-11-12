@@ -32,7 +32,10 @@ function finance(){return {
   trend:null,customers:[customer],payments:[],issues:['Synthetic incomplete coverage. No financial amount is known.'],
   definitions:{collectedSales:'Known sales only.',mrr:'Lifetime excluded from recurring revenue.',forecast:'Existing customers only; unavailable terms stay unknown.',processorNet:'Processor net before tax, not profit.',profit:'Expense coverage is incomplete.',customers:'Synthetic customer for UI verification.',access:'Independent Lifetime entitlement remains valid.'},
 };}
-const inbox={checkedAt:stamp(),status:'partial',items:[],unreadCount:null,statePersistence:'available',sources:[],coverage:'Synthetic test fixture; message synchronization unavailable.',
+const inboxId='support:603bbf53-63a3-4bf4-a2de-98eb04301931';
+const inboxItems=[{id:inboxId,category:'customer',kind:'support',title:'Synthetic question: find my invite-only indicator',preview:'A synthetic customer asks where the indicator appears after purchase.',body:'Synthetic support summary for browser testing. Where can I find invite-only indicators? This is not a real email.',sender:'Synthetic customer',at:stamp(),source:'Synthetic support ledger',sourceHref:'https://mail.google.com/',customerId:'cus_inbox_fixture',jobId:null,runId:null,severity:'info',sourceStatus:'open',contentCoverage:'summary_only',unread:true,state:{version:0,readAt:null,snoozedUntil:null,resolvedAt:null,draft:'',updatedAt:null}}];
+const inboxHistory=[],inboxRequests=[];let forceInboxConflict=false;
+const inbox={checkedAt:stamp(),status:'ready',items:inboxItems,unreadCount:1,statePersistence:'ready',sources:[{id:'support',status:'read',returned:1,limit:80,bounded:false,lastRecordAt:stamp()}],coverage:'Synthetic test fixture; email synchronization unavailable.',
   email:{status:'disconnected',source:'Gmail',lastSuccessfulSyncAt:null,reason:'Email synchronization has not been connected.',href:'https://mail.google.com/'},
   capabilities:{readNativeMessages:true,saveDraft:true,markRead:true,snooze:true,resolveInboxItem:true,emailSync:false,aiDraft:false,sendEmail:false},
 };
@@ -77,7 +80,26 @@ try{
     const reply=(body,status=200)=>route.fulfill({status,contentType:'application/json',headers:{'Cache-Control':'no-store'},body:JSON.stringify(body)});
     if(name==='session')return reply({authenticated:true});
     if(name==='founder-finance')return reply(finance());
-    if(name==='founder-inbox')return reply(inbox);
+    if(name==='founder-inbox'){
+      if(request.method()==='GET'){
+        const id=url.searchParams.get('id');
+        if(!id)return reply({...inbox,checkedAt:stamp(),unreadCount:inboxItems.filter(item=>!item.state.readAt&&!item.state.resolvedAt&&!(item.state.snoozedUntil&&Date.parse(item.state.snoozedUntil)>Date.now())).length});
+        const item=inboxItems.find(value=>value.id===id);if(!item)return reply({error:'Synthetic message not found.'},404);
+        return reply({item,messages:[{id:item.id,role:'summary',body:item.body,at:item.at,truncated:true}],draftHistory:inboxHistory,stateAvailable:true,email:inbox.email,canSend:false,checkedAt:stamp()});
+      }
+      const body=request.postDataJSON();inboxRequests.push(body);
+      assert.equal(body.operation,'update','Inbox only changes a safe draft or presentation state');
+      const item=inboxItems.find(value=>value.id===body.id);assert.ok(item,'Known synthetic Inbox item');
+      if(forceInboxConflict){forceInboxConflict=false;item.state.version++;item.state.draft='A newer account reply from the computer';item.state.updatedAt=stamp();return reply({error:'This item changed on another device.',state:item.state},409);}
+      assert.equal(body.expectedVersion,item.state.version,'Inbox saves compare the account version');
+      const patch=body.patch,previousDraft=item.state.draft;
+      item.state={...item.state,version:item.state.version+1,updatedAt:stamp(),draft:typeof patch.draft==='string'?patch.draft:item.state.draft,
+        readAt:patch.read===undefined?item.state.readAt:patch.read?stamp():null,resolvedAt:patch.resolved===undefined?item.state.resolvedAt:patch.resolved?stamp():null,
+        snoozedUntil:patch.snoozedUntil===undefined?item.state.snoozedUntil:patch.snoozedUntil};
+      item.unread=!item.state.readAt;
+      if(item.state.draft!==previousDraft)inboxHistory.unshift({version:item.state.version,body:item.state.draft,at:stamp()});
+      return reply({status:'saved',state:item.state,message:'Draft saved to your account. No email was sent.',sent:false});
+    }
     if(name==='founder-media')return reply(media);
     if(name==='acquisition')return reply({checkedAt:stamp(),visits:{status:'unavailable',data:null},conversions:{status:'unavailable',data:null}});
     if(name!=='founder-content')return reply({error:'No synthetic route for this operation.'},503);
@@ -100,8 +122,9 @@ try{
     const response={item,message:'Saved to account. Your edit is protected from agent changes.',duplicate:false};replies.set(body.requestKey,response);return reply(response);
   });
   await mkdir('artifacts',{recursive:true});
-  await page.goto(origin+'/owner');
+  await page.goto(origin+'/owner',{waitUntil:'networkidle'});
   await page.getByRole('heading',{name:'Business overview',exact:true,level:1}).waitFor();
+  await page.getByText(customer.name,{exact:true}).first().waitFor();
   const sales=page.getByRole('region',{name:'Collected sales',exact:true});
   await sales.getByText('Waiting for complete payment and tax evidence',{exact:true}).waitFor();
   assert.match(await sales.innerText(),/—/);assert.doesNotMatch(await sales.innerText(),/\$\d/,'Unavailable sales must not become zero or sample amounts');
@@ -125,6 +148,54 @@ try{
   await noOverflow('Customer detail');await page.screenshot({path:'artifacts/founder-customer-detail-synthetic.png',fullPage:true});
   await closeDialog();assert.ok(await opener.evaluate(el=>el===document.activeElement),'Back restores customer opener focus');
   assert.equal(await page.getByRole('textbox',{name:'Search customers'}).inputValue(),'Synthetic','Search survives detail navigation');
+
+  // Inbox uses the real list/detail contract, with only synthetic transport and
+  // safe local/account draft writes. No Gmail request or email send is made.
+  await nav('Inbox');
+  await page.getByRole('button',{name:'Customer messages',exact:true}).click();
+  await page.getByRole('button',{name:/Synthetic question: find my invite-only indicator/}).click();
+  const conversation=page.getByRole('dialog',{name:'Customer conversation'});await conversation.waitFor();
+  await conversation.getByText('Synthetic support summary for browser testing. Where can I find invite-only indicators? This is not a real email.',{exact:true}).waitFor();
+  await conversation.getByText(/This is a saved summary, not the complete original thread/).waitFor();
+  assert.equal(await conversation.getByRole('button',{name:/^Send(?: reply| email)?$/}).count(),0,'Unconnected sending cannot appear as an executable action');
+  const replyField=conversation.getByRole('textbox',{name:/^Your reply/});
+  await replyField.fill('Synthetic saved reply: open Indicators, then Invite-only scripts.');
+  await conversation.getByRole('button',{name:'Save draft',exact:true}).click();
+  await conversation.getByText('Draft saved to your account. No email was sent.',{exact:true}).waitFor();
+  assert.equal(inboxItems[0].state.version,1);assert.equal(inboxItems[0].state.draft,'Synthetic saved reply: open Indicators, then Invite-only scripts.');
+  await noOverflow('Populated Inbox detail');await page.screenshot({path:'artifacts/founder-inbox-detail-synthetic.png',fullPage:true});
+  await closeDialog();await page.reload();
+  await page.getByRole('heading',{name:'Inbox',exact:true,level:1}).waitFor();
+  assert.equal(await page.getByRole('button',{name:'Customer messages',exact:true}).getAttribute('aria-pressed'),'true','Inbox filter survives reload');
+  await page.getByRole('button',{name:/Synthetic question: find my invite-only indicator/}).click();await conversation.waitFor();
+  await replyField.waitFor();
+  await page.waitForFunction(expected=>document.querySelector('dialog textarea')?.value===expected,'Synthetic saved reply: open Indicators, then Invite-only scripts.');
+  await replyField.fill('Unfinished phone reply remains after returning to the list.');
+  await closeDialog();await page.getByRole('button',{name:/Synthetic question: find my invite-only indicator/}).click();await conversation.waitFor();
+  await page.waitForFunction(expected=>document.querySelector('dialog textarea')?.value===expected,'Unfinished phone reply remains after returning to the list.');
+  forceInboxConflict=true;await conversation.getByRole('button',{name:'Save draft',exact:true}).click();
+  await conversation.getByText('Review the newer account version',{exact:true}).waitFor();
+  assert.equal(await replyField.inputValue(),'Unfinished phone reply remains after returning to the list.','Inbox conflict preserves the phone reply');
+  await conversation.getByText(/Show account draft/).click();
+  await conversation.getByText('A newer account reply from the computer',{exact:true}).waitFor();
+  await noOverflow('Inbox conflict');await page.screenshot({path:'artifacts/founder-inbox-conflict-synthetic.png',fullPage:true});
+  await conversation.getByRole('button',{name:'Keep my draft',exact:true}).click();
+  const inboxWritesBeforeOffline=inboxRequests.length;
+  await context.setOffline(true);await replyField.fill('Offline synthetic reply, saved only when I choose.');
+  await conversation.getByText(/Offline draft\. Your reply stays in this browser session/).waitFor();
+  assert.ok(await conversation.getByRole('button',{name:'Save draft',exact:true}).isDisabled(),'Offline Inbox draft cannot dispatch');
+  assert.equal(inboxRequests.length,inboxWritesBeforeOffline,'Offline Inbox changes never send');
+  await context.setOffline(false);
+  await page.waitForFunction(()=>navigator.onLine);
+  assert.equal(inboxRequests.length,inboxWritesBeforeOffline,'Reconnection does not submit the unfinished reply');
+  assert.equal(await replyField.inputValue(),'Offline synthetic reply, saved only when I choose.');
+  await conversation.getByRole('button',{name:'Save draft',exact:true}).click();
+  await conversation.getByText('Draft saved to your account. No email was sent.',{exact:true}).waitFor();
+  assert.equal(inboxItems[0].state.draft,'Offline synthetic reply, saved only when I choose.');
+  await conversation.getByRole('button',{name:'Mark read',exact:true}).click();
+  await conversation.getByRole('button',{name:'Mark unread',exact:true}).waitFor();
+  assert.ok(inboxItems[0].state.readAt,'Reading is persisted separately from the draft');
+  await closeDialog();
 
   await nav('Content');
   await page.getByRole('button',{name:'Month',exact:true}).click();
@@ -154,7 +225,7 @@ try{
   await editor.waitFor();assert.equal(await editor.getByLabel('Caption',{exact:true}).inputValue(),'Initial phone caption','Reload reads the persisted account version');
   await editor.getByLabel('Caption',{exact:true}).fill('Unsaved phone edit must survive conflict');
   forceConflict=true;await editor.getByRole('button',{name:'Save to account',exact:true}).click();
-  await editor.getByText(/changed on another device/).waitFor();
+  await editor.getByText(/changed on another device/).first().waitFor();
   assert.equal(await editor.getByLabel('Caption',{exact:true}).inputValue(),'Unsaved phone edit must survive conflict','409 preserves the unsaved phone draft');
   await noOverflow('Version conflict editor');await page.screenshot({path:'artifacts/founder-content-conflict-synthetic.png',fullPage:true});
   await editor.getByRole('button',{name:'Keep my draft for review',exact:true}).click();
@@ -181,6 +252,6 @@ try{
   await page.screenshot({path:'artifacts/founder-editor-enlarged-synthetic.png',fullPage:true});
   assert.deepEqual(errors,[],'No browser runtime errors');
   const report={result:'PASS',engine:'Playwright WebKit; not a physical iPhone',widths,data:'Synthetic API responses only',productionWrites:0,
-    checks:['real private API 401/no-store','five destinations','unavailable money without fake zeros','Lifetime overlap explanation and unknown provider access','dialog focus containment and restoration','empty-date draft creation','input limits agree with server','saved account version after reload','409 preserves unsaved text','offline/reconnect does not silently send','month and six-date agenda controls','no horizontal overflow','125% rendered text size']};
+    checks:['real private API 401/no-store','five destinations','unavailable money without fake zeros','Lifetime overlap explanation and unknown provider access','dialog focus containment and restoration','populated Inbox detail and summary coverage','versioned reply save and reload','session-only unfinished reply recovery','Inbox conflict preserves local reply and exposes account version','offline Inbox never sends or auto-saves on reconnect','persisted read state preserves reply','empty-date draft creation','input limits agree with server','saved account version after reload','409 preserves unsaved text','offline/reconnect does not silently send','month and six-date agenda controls','no horizontal overflow','125% rendered text size']};
   await writeFile('artifacts/founder-dashboard-validation.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));
 }finally{await context?.close();await browser?.close();server.kill('SIGTERM');}

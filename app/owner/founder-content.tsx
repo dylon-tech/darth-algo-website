@@ -1,6 +1,6 @@
 'use client';
 import {useCallback,useEffect,useRef,useState} from 'react';
-import {ArrowUpRight,CalendarDays,Check,ChevronLeft,ChevronRight,Download,Film,Image as ImageIcon,Lock,Pause,Play,Plus,Share2,Upload} from 'lucide-react';
+import {ArrowUpRight,Check,ChevronLeft,ChevronRight,Download,Film,Image as ImageIcon,Lock,Pause,Play,Plus,Share2,Upload} from 'lucide-react';
 import type {FounderContentDraft,FounderContentItem,FounderContentSnapshot,FounderDestination,FounderMediaType} from '../lib/business-os/founder-content-model';
 import {founderDestinations,founderTemplates} from '../lib/business-os/founder-content-model';
 import type {FounderMediaAsset,FounderMediaSnapshot,FounderMediaUpload} from '../lib/business-os/founder-media-model';
@@ -19,7 +19,8 @@ export default function FounderContent({base}:{base:string}){
  useEffect(()=>{try{const stored=JSON.parse(sessionStorage.getItem('da-founder-calendar-view')||'null');if(stored&&/^20\d\d-\d\d$/.test(stored.month)){setMonth(stored.month);setSelectedDay(stored.day);setMode(stored.mode==='Month'?'Month':'Agenda');}}catch{}},[]);
  useEffect(()=>{try{sessionStorage.setItem('da-founder-calendar-view',JSON.stringify({month,day:selectedDay,mode}));}catch{}},[month,selectedDay,mode]);
  useEffect(()=>{const id=new URLSearchParams(location.search).get('item');if(!id||id===openHandled.current||!feed.data)return;const item=feed.data.items.find(i=>i.id===id);if(item){openHandled.current=id;setEditor({day:item.day,type:item.type,item});}},[feed.data]);
- const closeEditor=useCallback(()=>{setEditor(null);void feed.refresh();void media.refresh();},[feed.refresh,media.refresh]);
+ const refreshContent=feed.refresh,refreshMedia=media.refresh;
+ const closeEditor=useCallback(()=>{setEditor(null);void refreshContent();void refreshMedia();},[refreshContent,refreshMedia]);
  function open(item:FounderContentItem){setEditor({day:item.day,type:item.type,item});}
  function create(day=selectedDay,type:FounderMediaType='image'){setEditor({day,type});}
  async function act(operation:string,body:Record<string,unknown>={}){if(busy)return;setBusy(true);setMessage('');const fingerprint=JSON.stringify({operation,...body}),requestKey=requestKeys.current.get(fingerprint)||crypto.randomUUID();requestKeys.current.set(fingerprint,requestKey);try{const result=await saveRequest<{message:string}>(base+'/founder-content',{operation,requestKey,...body});setMessage(result.message);requestKeys.current.delete(fingerprint);await feed.refresh();}catch(e){setMessage(e instanceof Error?e.message:'Change not confirmed.');}finally{setBusy(false);}}

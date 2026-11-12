@@ -44,6 +44,8 @@ assert.throws(()=>model.assertFounderDispatch(ready,1,false),/locked/);
 assert.throws(()=>model.assertFounderDispatch({...ready,locked:false,deliveries:[{state:'outcome_unknown'}]},1,false),/Reconcile/);
 assert.throws(()=>model.normalizeFounderDraft({...blank,id:undefined,type:'image',destinations:['youtube']}),/YouTube/);
 assert.throws(()=>model.normalizeFounderDraft({...blank,id:undefined,time:'24:00'}),/valid date and time/);
+assert.throws(()=>model.normalizeFounderDraft({...blank,id:undefined,title:'x'.repeat(161)}),/160 characters/);
+assert.equal(model.normalizeFounderDraft({...blank,id:undefined,title:'x'.repeat(160)}).title.length,160);
 
 (async()=>{
   const modulePath=process.env.OS_TEST_PGLITE_MODULE||'@electric-sql/pglite';

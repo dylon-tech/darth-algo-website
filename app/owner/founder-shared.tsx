@@ -17,7 +17,7 @@ export function useFounderFeed<T>(url:string,active=true){
   catch(e){if(mounted.current&&request.current===c){if(!c.signal.aborted)setError(e instanceof Error?e.message:'Update unavailable.');else setError('This read timed out. The last saved data may be out of date.');}}
   finally{clearTimeout(timer);if(request.current===c){request.current=null;if(mounted.current)setLoading(false);}}
  },[url]);
- useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;request.current?.abort();};},[]);
+ useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;const current=request.current;request.current=null;current?.abort();};},[]);
  useEffect(()=>{setData(null);setError('');},[url]);
  useEffect(()=>{if(!active)return;void refresh();const visible=()=>{if(document.visibilityState==='visible'&&navigator.onLine)void refresh();};const timer=setInterval(visible,60000);document.addEventListener('visibilitychange',visible);window.addEventListener('online',visible);return()=>{clearInterval(timer);document.removeEventListener('visibilitychange',visible);window.removeEventListener('online',visible);};},[active,refresh]);
  return {data,setData,error,loading,refresh};

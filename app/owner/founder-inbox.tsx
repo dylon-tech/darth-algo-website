@@ -31,15 +31,16 @@ export default function FounderInbox({base,feed}:{base:string;feed:Feed}){
  useEffect(()=>setLimit(40),[filter,query]);
  const open=useCallback((id:string)=>{setSelected(id);const url=new URL(location.href);url.searchParams.set('item',id);history.replaceState({},'',url);},[]);
  const close=useCallback(()=>{setSelected(null);const url=new URL(location.href);url.searchParams.delete('item');history.replaceState({},'',url);},[]);
+ const setFeedData=feed.setData,refreshFeed=feed.refresh;
  const applyState=useCallback((id:string,state:FounderInboxState)=>{
-  feed.setData(previous=>{
+  setFeedData(previous=>{
    if(!previous)return previous;
    const items=previous.items.map(item=>item.id===id?{...item,state,unread:!state.readAt||Boolean(item.at&&Date.parse(item.at)>Date.parse(state.readAt))}:item);
    const unreadCount=previous.unreadCount===null?null:items.filter(item=>item.unread&&!item.state.resolvedAt&&!(item.state.snoozedUntil&&Date.parse(item.state.snoozedUntil)>Date.now())).length;
    return {...previous,items,unreadCount};
   });
-  void feed.refresh();
- },[feed.setData,feed.refresh]);
+  void refreshFeed();
+ },[setFeedData,refreshFeed]);
  const now=Date.now(),normalizedQuery=query.trim().toLowerCase();
  const items=(feed.data?.items||[]).filter(item=>{
   const hidden=Boolean(item.state.resolvedAt),snoozed=Boolean(item.state.snoozedUntil&&Date.parse(item.state.snoozedUntil)>now);
