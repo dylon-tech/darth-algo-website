@@ -10,7 +10,7 @@ let rendererReady=false,rendererCost=0,wakes=0;
 const renderStatus=()=>({ready:rendererReady,incrementalCostUsd:rendererReady?rendererCost:null,image:{available:rendererReady,reason:'Free worker setup is required.'},video:{available:rendererReady,reason:'Free worker setup is required.'},reason:'Free worker setup is required.',lastSeenAt:rendererReady?'2026-11-12T07:00:00.000Z':null});
 const mocks={
   'app/lib/affiliate-db.ts':{db:()=>sql},
-  'app/lib/business-os/founder-renderer.ts':{founderRendererStatus:async()=>renderStatus(),wakeFounderRenderer:async()=>{wakes++;return {accepted:false,reason:'Waiting for worker check.'};}},
+  'app/lib/business-os/founder-renderer.ts':{withNativeRequestLifetime:(_start,fn)=>fn(),founderRendererStatus:async()=>renderStatus(),wakeFounderRenderer:async()=>{wakes++;return {accepted:false,reason:'Waiting for worker check.'};}},
   'app/lib/business-os/founder-media.ts':{getFounderMediaAsset:async id=>assets.get(id)||null},
   'app/lib/business-os/daily-content-review.ts':{readContentQueue:async()=>{throw Error('fixture source unavailable');}},
 };
@@ -239,7 +239,7 @@ for(const [field,limit] of [['idea',3000],['script',18000],['caption',10000]]){
     rendererReady=false;
     assert.equal(await content.claimFounderRenderJob({workerId:'unverified-host',now}),null,'An unverified production host cannot claim work');
     assert.equal((await content.founderContentPlannerTick(now)).status,'blocked');
-    assert.equal((await content.readFounderContent('2026-11',now)).agent.paused,true,'A lost renderer is durably Off, not pretend On');
+    assert.equal((await content.readFounderContent('2026-11',now)).agent.paused,false,'A recoverable runtime blocker preserves the owner’s On intent');
     let authorized=false,sameOrigin=false;
     mocks['app/lib/business-os/owner-session.ts']={ownerSessionFromRequest:()=>authorized,sameOrigin:()=>sameOrigin,privateHeaders:{'Cache-Control':'no-store','X-Robots-Tag':'noindex, nofollow'}};
     const route=load('app/api/owner/founder-content/route.ts');

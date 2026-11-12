@@ -1,3 +1,4 @@
+import {withNativeRequestLifetime} from '../../../lib/business-os/founder-renderer';
 import { syncTelegramDesk } from "../../../lib/business-os/telegram-panel";
 import { coordinationTick } from "../../../lib/business-os/coordination";
 import { syncContentApprovals } from "../../../lib/business-os/content-handoff";
@@ -9,12 +10,17 @@ import { workAndNotify } from "../../../lib/business-os/telegram-command";
 import { secretMatches, type Department } from "../../../lib/business-os/policy";
 
 export const runtime="nodejs";
-export const maxDuration=120;
-export async function GET(request:Request) {
+export const maxDuration=300;
+export async function GET(request:Request) {return withNativeRequestLifetime(Date.now(),()=>handleOwnerWork(request));}
+async function handleOwnerWork(request:Request) {
   if(process.env.AI_OS_ENABLED!=="true") return Response.json({error:"Not available"},{status:404});
   if(!secretMatches(request.headers.get("authorization"),process.env.CRON_SECRET ? `Bearer ${process.env.CRON_SECRET}` : undefined)) return Response.json({error:"Unauthorized"},{status:401});
   const requestStartedAt=new Date();
   try {
+    // The existing scheduler alone replenishes the five-day generation queue.
+    // The separate media worker only claims these jobs; it never publishes.
+    try {console.info(JSON.stringify({event:"founder_content_generation",...await (await import("../../../lib/business-os/founder-content")).founderContentPlannerTick(requestStartedAt)}));await (await import("../../../lib/business-os/founder-renderer")).wakePendingOwnerRenders();}
+    catch {console.warn(JSON.stringify({event:"founder_content_generation",status:"unavailable"}));}
     const {heartbeat}=await import("../../../lib/business-os/coordination");
     await heartbeat("vercel-cron","checking");
     const {processOwnerUpdates}=await import("../../../lib/business-os/telegram-command");
@@ -26,10 +32,6 @@ export async function GET(request:Request) {
     } catch { console.warn(JSON.stringify({event:"welcome_tick",status:"unavailable"})); }
     try {await (await import("../../../lib/business-os/acquisition")).maintainAcquisitionRetention(requestStartedAt);}
     catch {console.warn(JSON.stringify({event:"acquisition_retention",status:"unavailable"}));}
-    // The existing scheduler alone replenishes the five-day generation queue.
-    // The separate media worker only claims these jobs; it never publishes.
-    try {console.info(JSON.stringify({event:"founder_content_generation",...await (await import("../../../lib/business-os/founder-content")).founderContentPlannerTick(requestStartedAt)}));}
-    catch {console.warn(JSON.stringify({event:"founder_content_generation",status:"unavailable"}));}
     await processOwnerUpdates();
     await deliverOwnerNotices(2);
     try {const {syncRetentionOpportunities}=await import("../../../lib/business-os/revenue-ops");console.info(JSON.stringify({event:"retention_tick",...await observed("retention",()=>syncRetentionOpportunities())}));}

@@ -45,12 +45,12 @@ export type FounderContentSnapshot = {
   checkedAt: string; today: string; timeZone: typeof founderTimeZone; month: string;
   items: FounderContentItem[]; archivedItems: FounderContentItem[]; days: FounderContentDay[]; coverage: FounderContentCoverage; jobs: FounderRenderJob[];
   agent: {paused: boolean; version: number; status: string; lastSuccessfulRun: string|null;
-    lastSeenAt: string|null; lastCreatedCount: number|null; nextRun: string|null; currentWork: string|null; incrementalBudgetUsd: 0;
+    lastSeenAt: string|null; lastCreatedCount: number|null; nextRun: string|null; currentWork: string|null; incrementalBudgetUsd: number;
     publishingPause: 'not_confirmed'; message: string; generated: number;
     counts: {queued:number;running:number;failed:number;blocked:number;completed:number}};
   templates: typeof founderTemplates;
   capabilities: {drafts: boolean; uploads: boolean; imageGeneration: boolean; videoGeneration: boolean;
-    scheduling: boolean; publishingPause: boolean; rendererReason: string; publisherReason: string};
+    scheduling: boolean; publishingPause: boolean; rendererSetupAvailable?:boolean; renderBudgetMessage?:string; rendererReason: string; publisherReason: string};
   legacyQueue: ContentQueue|null; legacyQueueError: string|null; truncated: boolean;
 };
 

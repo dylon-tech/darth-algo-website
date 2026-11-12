@@ -6,7 +6,8 @@
     "dev": "node scripts/dev.mjs",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "prebuild": "node scripts/founder-renderer/runtime-profile.mjs --check"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",

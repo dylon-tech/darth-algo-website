@@ -12,6 +12,9 @@ from pathlib import Path
 import re
 import subprocess
 import sys
+import time
+from contextvars import ContextVar
+from contextlib import contextmanager
 
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
@@ -27,11 +30,28 @@ HEAD = ROOT / 'public/fonts/darth-social/BarlowCondensed-BlackItalic.ttf'
 FONT = ASSETS / 'InterDisplay-Bold.ttf'
 MEDIUM = ASSETS / 'InterDisplay-Medium.ttf'
 CROPS = {TOP:TOP_CROP, LOWER:LOWER_CROP, TIME:TIME_CROP, INVITE:INVITE_CROP}
+_deadline=ContextVar('darth_render_deadline',default=None)
+
+
+@contextmanager
+def render_deadline(deadline):
+    token=_deadline.set(deadline)
+    try:yield
+    finally:_deadline.reset(token)
+
+
+def check_deadline():
+    deadline=_deadline.get()
+    if deadline is not None and time.monotonic()>=deadline:raise RuntimeError('RENDER_DEADLINE')
+    return deadline
 
 
 def command(args):
     # Never print subprocess stderr: codecs/TTS can include private copy/paths.
-    result = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=600)
+    deadline=check_deadline()
+    timeout=600 if deadline is None else max(0.1,min(600,deadline-time.monotonic()))
+    try:result = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=timeout)
+    except subprocess.TimeoutExpired:raise RuntimeError('RENDER_DEADLINE') from None
     if result.returncode:
         raise RuntimeError('MEDIA_COMMAND_FAILED')
     return result
@@ -218,6 +238,7 @@ def video(recipe, output_dir, progress=lambda *_:None, voice=None):
         audio=[];cues=[];position=0.12
         audio.append(np.zeros(round(sr*position),dtype=np.float32))
         for sentence in sentence_parts(scene['spoken']):
+            check_deadline()
             samples,rate=k.create(sentence,voice='am_michael',speed=1.0,lang='en-us')
             if rate!=sr or not np.isfinite(samples).all() or len(samples)<sr//3:raise ValueError('NARRATION_INVALID')
             seconds=len(samples)/sr
@@ -281,7 +302,7 @@ def render(item, output_dir, progress=lambda *_:None, voice=None):
         report={'fullDecode':True,'creativeReview':False,'sha256':digest(media),'width':1080,'height':1350}
     if media.stat().st_size>32*1024*1024:raise ValueError('FILE_SIZE_LIMIT')
     sources={s['source'] for s in recipe['scenes']}
-    report.update({'rendererVersion':VERSION,'recipe':recipe['id'],'template':expected_template,'sourceHashes':[row for row in manifest['sources'] if row['path'] in sources],'narration':'kokoro-v1.0-am_michael' if kind=='video' else None,'incrementalCostUsd':0})
+    report.update({'rendererVersion':VERSION,'recipe':recipe['id'],'template':expected_template,'sourceHashes':[row for row in manifest['sources'] if row['path'] in sources],'narration':'kokoro-v1.0-am_michael' if kind=='video' else None,'externalGenerationApiCostUsd':0})
     script=' '.join(s['spoken'] for s in recipe['scenes']) if kind=='video' else ''
     caption=item.get('caption') or f"{recipe['summary']} Explore the feature: https://www.darthalgo.com/links"
     result={'media':str(media),'cover':str(cover),'mediaReport':report,'coverReport':{'fullDecode':True,'creativeReview':False,'sha256':digest(cover)},'script':script,'caption':caption}

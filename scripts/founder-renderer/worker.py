@@ -11,7 +11,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from render import VERSION, preflight, render
+VERSION='DA-RENDERER-20261112-1'
 
 ORIGIN='https://www.darthalgo.com'
 ENDPOINT=ORIGIN+'/api/owner/founder-renderer'
@@ -39,15 +39,17 @@ def oidc_token():
         return token
 
 
-def api(payload, path='', body=None, headers=None, token_provider=oidc_token):
+def api(payload, path='', body=None, headers=None, token_provider=oidc_token, deadline=None):
     encoded=body if body is not None else json.dumps(payload,separators=(',',':')).encode()
     for attempt in range(3):
+        remaining=75 if deadline is None else min(75,deadline-time.monotonic())
+        if remaining<=0:raise ApiError('NETWORK_DEADLINE')
         request=urllib.request.Request(ENDPOINT+path,data=encoded,method='PUT' if body is not None else 'POST',headers={
             'Authorization':'Bearer '+token_provider(),
             'Content-Type':'application/octet-stream' if body is not None else 'application/json',
             **(headers or {})})
         try:
-            with urllib.request.urlopen(request,timeout=75) as response:
+            with urllib.request.urlopen(request,timeout=remaining) as response:
                 result=response.read(524289)
                 if len(result)>524288:raise ApiError('RESPONSE_TOO_LARGE')
                 return json.loads(result)
@@ -85,6 +87,7 @@ def upload(path, role, report, lease, call=api):
 
 
 ERRORS={
+ 'CUSTOM_IDEA_SOURCE_REVIEW_REQUIRED':'Your changed idea needs a source-matched scene plan. It was preserved, not replaced by the previous lesson.',
  'SOURCE_MATCH_REQUIRED':'This brief needs a verified source and scene plan. Choose an available suggested lesson or provide source-matched instructions.',
  'CUSTOM_SCRIPT_SOURCE_REVIEW_REQUIRED':'Your saved script needs a source-matched scene plan. It was preserved, not replaced by stock copy.',
  'SOURCE_HASH_MISMATCH':'An approved source changed. Review and update the source manifest before rendering.',
@@ -96,7 +99,8 @@ ERRORS={
 }
 
 
-def work(claim,voice,call=api,heartbeat_call=worker_heartbeat):
+def work(claim,voice,call=api,heartbeat_call=worker_heartbeat,runtime_report=None):
+    from render import render
     lease={'jobId':claim['job']['id'],'leaseToken':claim['job']['leaseToken']}
     stop=threading.Event();lost=threading.Event();state={'stage':'Preparing','progress':1}
     def heartbeat():
@@ -114,6 +118,9 @@ def work(claim,voice,call=api,heartbeat_call=worker_heartbeat):
     try:
         with tempfile.TemporaryDirectory(prefix='darth-render-job-') as folder:
             result=render(claim['item'],folder,progress,voice)
+            if runtime_report:
+                result['mediaReport'].update(runtime_report)
+                result['proofHash']=hashlib.sha256(json.dumps(result['mediaReport'],sort_keys=True).encode()).hexdigest()
             progress('Uploading',90)
             upload(result['media'],'media',result['mediaReport'],lease,call)
             upload(result['cover'],'cover',result['coverReport'],lease,call)
@@ -139,6 +146,7 @@ def main():
     if os.environ.get('GITHUB_REPOSITORY')!='dylon-tech/darth-algo-website' or os.environ.get('GITHUB_REF')!='refs/heads/main' or os.environ.get('RUNNER_ENVIRONMENT')!='github-hosted':
         raise ApiError('WORKER_ENVIRONMENT_REJECTED')
     # No artifacts or private work directories survive this ephemeral run.
+    from render import preflight
     with tempfile.TemporaryDirectory(prefix='darth-render-preflight-') as folder:
         voice=preflight(folder)
     # A push may start this workflow before the matching Vercel deployment is ready.

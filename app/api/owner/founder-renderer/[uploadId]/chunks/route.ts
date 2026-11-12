@@ -6,6 +6,7 @@ export const runtime='nodejs';export const dynamic='force-dynamic';
 const json=(value:unknown,status=200)=>Response.json(value,{status,headers:{...privateHeaders,Vary:'Authorization'}});
 export async function PUT(request:Request,context:{params:Promise<{uploadId:string}>}){
  let identity;try{identity=await authenticateFounderRenderer(request);}catch{return json({error:'Unauthorized'},401);}
+ if(identity.reservationStatus==='reserved')return json({error:'INVOCATION_NOT_STARTED'},409);
  if(request.headers.get('content-type')!=='application/octet-stream')return json({error:'Binary chunk required'},415);
  try{
   const {uploadId}=await context.params,index=new URL(request.url).searchParams.get('index');

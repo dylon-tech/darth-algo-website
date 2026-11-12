@@ -40,6 +40,8 @@ jobs:
           python -m pip install --disable-pip-version-check --no-cache-dir -r scripts/founder-renderer/requirements.txt
           command -v ffmpeg
           command -v ffprobe
+      - name: Check disabled native handler and cooperative deadlines
+        run: python scripts/founder-renderer/prepared-vercel/test_runtime.py
       - name: Verify free local narration weights
         run: python scripts/founder-renderer/setup_models.py
       - name: Validate the software with public approved source fixtures

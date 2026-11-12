@@ -1,0 +1,86 @@
+[
+  {
+    "id": "find-indicator",
+    "title": "Find your indicator",
+    "idea": "Show how to locate an invite-only Darth Algo indicator after access is confirmed. Use the current TradingView interface and genuine product source.",
+    "script": "Your indicator belongs on your chart. First, check which TradingView account you are using. Once your access is confirmed, open Indicators from the chart toolbar. Choose Invite-only. This recorded view shows the Darth Algo script in that list. Select the indicator you have access to, then check its name on your chart. Open the indicator settings to inspect the displayed inputs before your first review. Missing access? Check the exact username supplied at checkout. Find the setup guide at Darth Algo.",
+    "sourceLabel": "INVITE-ONLY INDICATORS"
+  },
+  {
+    "id": "trend-cloud",
+    "title": "Read the trend cloud",
+    "idea": "Explain what the trend cloud adds to chart context using a genuine approved capture. Do not promise a trade outcome.",
+    "script": "A trend cloud adds context. It does not replace the candles underneath it. This is a recorded Darth Algo Swing view. Watch how price sits around the colored cloud. In this settings view, Show Trend Cloud is a separate input you can inspect. Compare rising and falling sections of the same chart. Keep your entry rules separate. Zoom back out before deciding what the feature tells you about this particular example. Save this context check. Explore the Swing feature demo through the Darth Algo links page.",
+    "sourceLabel": "SWING / TREND CLOUD"
+  },
+  {
+    "id": "plan-before-entry",
+    "title": "Build a plan before entry",
+    "idea": "Walk through the entry, stop and target levels visible in an authentic source chart. Describe the displayed plan, not a guaranteed fill.",
+    "script": "A signal catches your attention. The marked levels help you inspect the displayed plan. Start with the wider recorded chart so the surrounding price action stays visible. In this Scalp example, find the entry label before looking at the target labels. The stop is a separate marked level. A line on a chart is not an executed order. Read target one and target two separately. Decide your own management rules before a trade. Review the same steps in replay or paper trading. Explore the full Darth Algo demo next.",
+    "sourceLabel": "SCALP / MARKED LEVELS"
+  },
+  {
+    "id": "scalp-or-swing",
+    "title": "Scalp or Swing?",
+    "idea": "Explain the verified use case of each current indicator with a genuine product view. Verify current plan terms before including any price.",
+    "script": "Scalp and Swing are different Darth Algo tools. Start by checking the name on your chart. This recorded Scalp view shows its signals, marked levels, and dashboard together. This recorded Swing view shows the other tool. Keep the symbol and timeframe in context. Compare the visible features you need to review. A different tool is not a promise of better results. Use the same checklist each time: tool name, chart context, signal, then the displayed levels. Watch both product demos from the Darth Algo links page before choosing your next review.",
+    "sourceLabel": "SCALP + SWING"
+  },
+  {
+    "id": "chart-context",
+    "title": "Check the chart context",
+    "idea": "Teach one chart-context check before acting on an indicator signal. Retain the original symbol and timeframe.",
+    "script": "A close-up can show a signal clearly. The wider chart tells you where that signal sits. In this recorded example, retain the symbol and timeframe when you inspect the setup. Look to both sides of a signal label. Do not judge the feature from one isolated candle. Read the displayed levels as chart information. They are not proof that an order was filled. This menu shows the selected timeframe. Compare your usual view in replay before changing your rules. Save the context check and explore the full product demonstration through the Darth Algo links page.",
+    "sourceLabel": "RECORDED CHART CONTEXT"
+  },
+  {
+    "id": "chart-readable",
+    "title": "Keep the chart readable",
+    "idea": "Show a phone-friendly view of one genuine indicator feature without covering price or signal context.",
+    "script": "If a chart feels crowded, inspect the displayed features before covering it with more annotations. Open the indicator settings. This recorded view shows the inputs for Darth Algo Swing. Show Trend Cloud and Show Cloud Edge Lines are separate controls in this example. The lower inputs include signal visibility and the entry, stop, and target display. Return to the chart and check whether the candles and labels are readable together. Save a view you can review consistently. Find the full setup walkthrough at Darth Algo.",
+    "sourceLabel": "SWING / DISPLAY CONTROLS"
+  },
+  {
+    "id": "signal-start",
+    "title": "A signal is the starting point",
+    "idea": "Explain the difference between a displayed signal and an executed trade. Use the real source labels and no invented result.",
+    "script": "A buy or sell label is displayed chart information. It is not a record of your executed trade. Keep the surrounding candles visible when you review what the signal is showing. Next inspect the marked entry, stop, and targets, where those features are enabled. Your position size, entry rules, and order handling still need their own checks. Review a complete recorded example. Do not turn a selected screenshot into an overall performance claim. See the full feature demonstration through the Darth Algo links page, and build your own checklist.",
+    "sourceLabel": "SIGNAL / CHART CONTEXT"
+  },
+  {
+    "id": "tradingview-view",
+    "title": "Set up your TradingView view",
+    "idea": "Demonstrate one current setup step with the approved video language and authentic interface.",
+    "script": "Before adjusting a chart, check the name of the Darth Algo indicator you have loaded. Open its settings and read the actual input labels in your version. Inspect which signals and marked levels are enabled, then return to the chart. Check the selected timeframe. This recorded example uses fifteen minutes; that is an example, not a recommendation. Keep the view consistent while reviewing your own rules, so you know what you changed. Find the Darth Algo setup guide through the links page and compare the steps with your interface.",
+    "sourceLabel": "TRADINGVIEW / SETUP"
+  },
+  {
+    "id": "levels-together",
+    "title": "Review the levels together",
+    "idea": "Explain how the visible entry, stop and targets relate to the displayed chart. Preserve source context.",
+    "script": "Entry, stop, and targets belong to the same displayed plan. Read them together. First look at the wider recorded Swing chart, so the level labels keep their context. Find the entry and stop labels in this view. Keep your order execution rules separate. Now identify the two target labels. A displayed level is not a guaranteed fill. The settings include a control for showing entry, stop, and targets on the chart. Save the level review, then explore the full Swing demonstration through the Darth Algo links page.",
+    "sourceLabel": "SWING / ENTRY \u00b7 STOP \u00b7 TARGETS"
+  },
+  {
+    "id": "active-tool",
+    "title": "Spot your active tool",
+    "idea": "Show where the current Darth Algo indicator appears on the chart and how the owner can identify its name.",
+    "script": "Before interpreting a feature, check which Darth Algo tool is actually loaded on the chart. This recorded view is Swing. Its name belongs with the chart you are reviewing. This other recorded view is Scalp. Do not mix a screenshot from one tool with instructions for another. The settings title is another place to check the indicator name in your own interface. If you need the other tool, inspect your invite-only list and confirmed access. Match the setup guide to the tool you use. Find both product demos through Darth Algo.",
+    "sourceLabel": "INDICATOR / TOOL NAME"
+  },
+  {
+    "id": "one-feature",
+    "title": "One feature, one clear lesson",
+    "idea": "Choose a verified product feature and teach one action with an uncluttered genuine chart crop.",
+    "script": "To learn a product feature, inspect one control at a time and keep the original chart nearby. This recorded settings view includes Show Cloud Edge Lines underneath the trend cloud control. Compare that setting with the visible cloud on the chart. Keep your other review steps unchanged. Read the actual label in your own version before changing an input. Return to the wider chart so one feature does not become your whole decision process. Explore the Darth Algo feature demo, then keep a short checklist for your next review.",
+    "sourceLabel": "SWING / CLOUD EDGE LINES"
+  },
+  {
+    "id": "access-check",
+    "title": "Check access after purchase",
+    "idea": "Show the current documented setup path and the correct TradingView username check. Avoid implying an unverified customer grant.",
+    "script": "If an indicator is missing, first check which TradingView account you are signed into. Compare the exact username with the one supplied at checkout. A different spelling can point to a different account. Once access is confirmed, open Indicators and inspect the Invite-only section. Select the tool you have access to, then check that its name appears on your chart. Use the setup guide for that tool and compare it with the interface you see. If it is still missing, contact Darth Algo support with your correct username. An example screen does not confirm your individual grant.",
+    "sourceLabel": "TRADINGVIEW / ACCESS CHECK"
+  }
+]
