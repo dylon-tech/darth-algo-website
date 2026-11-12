@@ -13,11 +13,11 @@ const labels:Record<FounderDestination,string>={instagram:'Instagram',tiktok:'Ti
 type EditorState={day:string;type:FounderMediaType;item?:FounderContentItem};
 
 export default function FounderContent({base}:{base:string}){
- const [view,setView]=useState<'Calendar'|'Create'|'Library'|'Agent'>('Calendar'),[mode,setMode]=useState<'Agenda'|'Month'>('Agenda'),[month,setMonth]=useState(localDay().slice(0,7)),[selectedDay,setSelectedDay]=useState(localDay()),[editor,setEditor]=useState<EditorState|null>(null),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[showArchive,setShowArchive]=useState(false);
+ const [view,setView]=useState<'Calendar'|'Create'|'Library'|'Agent'>('Calendar'),[mode,setMode]=useState<'Agenda'|'Month'>('Agenda'),[month,setMonth]=useState(localDay().slice(0,7)),[selectedDay,setSelectedDay]=useState(localDay()),[editor,setEditor]=useState<EditorState|null>(null),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[showArchive,setShowArchive]=useState(false),[viewReady,setViewReady]=useState(false);
  const feed=useFounderFeed<FounderContentSnapshot>(base+'/founder-content?month='+month),media=useFounderFeed<FounderMediaSnapshot>(base+'/founder-media',view==='Library');
  const requestKeys=useRef(new Map<string,string>()),openHandled=useRef('');
- useEffect(()=>{try{const stored=JSON.parse(sessionStorage.getItem('da-founder-calendar-view')||'null');if(stored&&/^20\d\d-\d\d$/.test(stored.month)){setMonth(stored.month);setSelectedDay(stored.day);setMode(stored.mode==='Month'?'Month':'Agenda');}}catch{}},[]);
- useEffect(()=>{try{sessionStorage.setItem('da-founder-calendar-view',JSON.stringify({month,day:selectedDay,mode}));}catch{}},[month,selectedDay,mode]);
+ useEffect(()=>{try{const stored=JSON.parse(sessionStorage.getItem('da-founder-calendar-view')||'null');if(stored&&/^20\d\d-\d\d$/.test(stored.month)){setMonth(stored.month);setSelectedDay(stored.day);setMode(stored.mode==='Month'?'Month':'Agenda');}}catch{}setViewReady(true);},[]);
+ useEffect(()=>{if(!viewReady)return;try{sessionStorage.setItem('da-founder-calendar-view',JSON.stringify({month,day:selectedDay,mode}));}catch{}},[month,selectedDay,mode,viewReady]);
  useEffect(()=>{const id=new URLSearchParams(location.search).get('item');if(!id||id===openHandled.current||!feed.data)return;const item=feed.data.items.find(i=>i.id===id);if(item){openHandled.current=id;setEditor({day:item.day,type:item.type,item});}},[feed.data]);
  const refreshContent=feed.refresh,refreshMedia=media.refresh;
  const closeEditor=useCallback(()=>{setEditor(null);void refreshContent();void refreshMedia();},[refreshContent,refreshMedia]);

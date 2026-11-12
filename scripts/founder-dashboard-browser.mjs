@@ -208,12 +208,12 @@ try{
   await page.getByRole('button',{name:`${dayLabel(targetDay)}, 0 items`,exact:true}).click();
   await page.getByRole('button',{name:`Create image on ${targetDay}`,exact:true}).click();
   const editor=page.getByRole('dialog');await editor.waitFor();
-  assert.equal(await editor.getByLabel('Title',{exact:true}).getAttribute('maxlength'),'160','Title limit matches the server contract');
+  assert.equal(await editor.getByRole('textbox',{name:'Title',exact:true}).getAttribute('maxlength'),'160','Title limit matches the server contract');
   assert.ok(await editor.getByRole('button',{name:'Save to account',exact:true}).isDisabled(),'Empty title cannot submit');
   assert.equal(await editor.getByLabel('Date',{exact:true}).inputValue(),targetDay,'An empty calendar date carries into the editor');
-  await editor.getByLabel('Title',{exact:true}).fill('Synthetic calendar persistence check');
-  await editor.getByLabel('Idea',{exact:true}).fill('A safe fixture idea. No real campaign or generation.');
-  await editor.getByLabel('Caption',{exact:true}).fill('Initial phone caption');
+  await editor.getByRole('textbox',{name:'Title',exact:true}).fill('Synthetic calendar persistence check');
+  await editor.getByRole('textbox',{name:'Idea',exact:true}).fill('A safe fixture idea. No real campaign or generation.');
+  await editor.getByRole('textbox',{name:'Caption',exact:true}).fill('Initial phone caption');
   await editor.getByLabel('Date',{exact:true}).fill(dayOffset(3));
   await editor.getByLabel('Time (Eastern)',{exact:true}).fill('09:00');
   await editor.getByRole('button',{name:'Save to account',exact:true}).click();
@@ -222,20 +222,20 @@ try{
   if(await editor.isVisible())await closeDialog();
   await page.reload();await page.getByRole('heading',{name:'Content',exact:true,level:1}).waitFor();
   await page.getByRole('button',{name:/Synthetic calendar persistence check/}).first().click();
-  await editor.waitFor();assert.equal(await editor.getByLabel('Caption',{exact:true}).inputValue(),'Initial phone caption','Reload reads the persisted account version');
-  await editor.getByLabel('Caption',{exact:true}).fill('Unsaved phone edit must survive conflict');
+  await editor.waitFor();assert.equal(await editor.getByRole('textbox',{name:'Caption',exact:true}).inputValue(),'Initial phone caption','Reload reads the persisted account version');
+  await editor.getByRole('textbox',{name:'Caption',exact:true}).fill('Unsaved phone edit must survive conflict');
   forceConflict=true;await editor.getByRole('button',{name:'Save to account',exact:true}).click();
   await editor.getByText(/changed on another device/).first().waitFor();
-  assert.equal(await editor.getByLabel('Caption',{exact:true}).inputValue(),'Unsaved phone edit must survive conflict','409 preserves the unsaved phone draft');
+  assert.equal(await editor.getByRole('textbox',{name:'Caption',exact:true}).inputValue(),'Unsaved phone edit must survive conflict','409 preserves the unsaved phone draft');
   await noOverflow('Version conflict editor');await page.screenshot({path:'artifacts/founder-content-conflict-synthetic.png',fullPage:true});
   await editor.getByRole('button',{name:'Keep my draft for review',exact:true}).click();
   const writesBeforeOffline=requests.length;
-  await context.setOffline(true);await editor.getByLabel('Idea',{exact:true}).fill('Offline text remains a local draft.');
+  await context.setOffline(true);await editor.getByRole('textbox',{name:'Idea',exact:true}).fill('Offline text remains a local draft.');
   if(await editor.getByRole('button',{name:'Save to account',exact:true}).isEnabled())await editor.getByRole('button',{name:'Save to account',exact:true}).click();
   assert.equal(requests.length,writesBeforeOffline,'Offline save cannot silently dispatch a protected action');
   await context.setOffline(false);
   await editor.getByText('Device draft · ready to save',{exact:true}).waitFor();
-  assert.equal(await editor.getByLabel('Idea',{exact:true}).inputValue(),'Offline text remains a local draft.');
+  assert.equal(await editor.getByRole('textbox',{name:'Idea',exact:true}).inputValue(),'Offline text remains a local draft.');
   assert.equal(requests.length,writesBeforeOffline,'Reconnect does not silently submit the offline draft');
 
   // Increase rendered text by 25% without changing the viewport. Native iOS
@@ -246,7 +246,7 @@ try{
   });
   await page.setViewportSize({width:430,height:852});await noOverflow('125% text size');
   assert.ok(await editor.evaluate(el=>el.scrollWidth<=el.clientWidth+1),'Enlarged editor text reflows inside the dialog');
-  await editor.getByLabel('Caption',{exact:true}).focus();
+  await editor.getByRole('textbox',{name:'Caption',exact:true}).focus();
   const saveBox=await editor.getByRole('button',{name:'Save to account',exact:true}).boundingBox();
   assert.ok(saveBox&&saveBox.height>=32&&saveBox.y>=0&&saveBox.y+saveBox.height<=853,'Editor save action stays visible with enlarged text');
   await page.screenshot({path:'artifacts/founder-editor-enlarged-synthetic.png',fullPage:true});
@@ -254,4 +254,7 @@ try{
   const report={result:'PASS',engine:'Playwright WebKit; not a physical iPhone',widths,data:'Synthetic API responses only',productionWrites:0,
     checks:['real private API 401/no-store','five destinations','unavailable money without fake zeros','Lifetime overlap explanation and unknown provider access','dialog focus containment and restoration','populated Inbox detail and summary coverage','versioned reply save and reload','session-only unfinished reply recovery','Inbox conflict preserves local reply and exposes account version','offline Inbox never sends or auto-saves on reconnect','persisted read state preserves reply','empty-date draft creation','input limits agree with server','saved account version after reload','409 preserves unsaved text','offline/reconnect does not silently send','month and six-date agenda controls','no horizontal overflow','125% rendered text size']};
   await writeFile('artifacts/founder-dashboard-validation.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));
+}catch(error){
+  if(page){await page.screenshot({path:'artifacts/founder-failure-synthetic.png',fullPage:true}).catch(()=>{});await writeFile('artifacts/founder-failure-state.json',JSON.stringify({error:String(error),runtimeErrors:errors,url:page.url(),body:await page.locator('body').innerText().catch(()=>''),dialogs:await page.locator('dialog').evaluateAll(nodes=>nodes.map(node=>({open:node.open,label:node.getAttribute('aria-label'),html:node.outerHTML}))).catch(()=>[])},null,2));}
+  throw error;
 }finally{await context?.close();await browser?.close();server.kill('SIGTERM');}
