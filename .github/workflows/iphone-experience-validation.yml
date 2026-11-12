@@ -41,6 +41,16 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --ignore-scripts
+      - name: Install isolated SQL test runtime
+        run: npm install --no-save --package-lock=false --ignore-scripts @electric-sql/pglite@0.5.8
+      - name: Founder money, calendar, inbox and media safety
+        run: |
+          node tests/founder-finance.test.cjs
+          node tests/founder-content.test.cjs
+          node tests/founder-inbox.test.cjs
+          node tests/founder-media.test.cjs
+        env:
+          OS_TEST_PGLITE_MODULE: "@electric-sql/pglite"
       - name: Presence and queue model regressions
         run: node --experimental-strip-types --test scripts/visual-hq-model.test.mjs scripts/video-studio.test.mjs
       - name: Lifetime refund and payment-order safety
@@ -53,9 +63,11 @@ jobs:
           DATABASE_URL: postgres://postgres:test-only@127.0.0.1:5432/visual_hq_test
       - run: npx tsc --noEmit
       - name: Lint new interface
-        run: npx eslint app/owner/iphone-home.tsx app/owner/iphone-sheet.tsx app/owner/page.tsx app/owner/layout.tsx app/owner/inbox-panel.tsx app/owner/lab-panel.tsx app/owner/use-owner-feed.ts
+        run: npx eslint app/owner/iphone-home.tsx app/owner/iphone-sheet.tsx app/owner/page.tsx app/owner/layout.tsx app/owner/inbox-panel.tsx app/owner/lab-panel.tsx app/owner/use-owner-feed.ts app/owner/founder*.tsx app/lib/business-os/founder*.ts
       - run: npm run build
       - run: npx playwright-core install --with-deps chromium webkit
+      - name: Phone-first founder dashboard journeys
+        run: node scripts/founder-dashboard-browser.mjs
       - name: Existing agent and queue button flows
         run: node scripts/visual-hq-browser.mjs
       - name: Existing video studio flows

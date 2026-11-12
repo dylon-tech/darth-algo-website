@@ -7,7 +7,7 @@ const server=spawn(process.execPath,['node_modules/next/dist/bin/next','start','
 let browser;
 try {
  let running=false;
- for(let i=0;i<90;i++){try{const r=await fetch(origin+'/owner');if(r.ok){running=true;break;}}catch{}await new Promise(r=>setTimeout(r,1000));}
+ for(let i=0;i<90;i++){try{const r=await fetch(origin+'/owner?legacy=1');if(r.ok){running=true;break;}}catch{}await new Promise(r=>setTimeout(r,1000));}
  assert.ok(running,'Test server did not start');
  assert.equal((await fetch(origin+'/api/owner/dashboard')).status,401,'Private dashboard must reject unauthenticated reads');
  assert.equal((await fetch(origin+'/api/owner/command',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({operation:'message',department:'content',message:'test',requestKey:'test-only-request'})})).status,401,'Command endpoint must reject unauthenticated writes');

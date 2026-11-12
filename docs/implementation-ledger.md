@@ -1,5 +1,9 @@
 # Darth Algo implementation ledger
 
+## Founder dashboard rebuild — November 12, 2026
+
+DA-DASHBOARD-20261112-IMPLEMENTATION; Operations 1.2.0. Recovered the existing owner application and implemented the five-tab phone-first workspace, durable versioned calendar/Inbox/media flows and scoped financial/customer evidence. Retained legacy tools, owner authentication and publisher ownership. Initial meaningful backend checks pass; exact release, browser and production evidence remain separate. See `docs/founder-dashboard-20261112.md` for behavior, limits and continuation requirements. No new spending or provider/customer actions are implied.
+
 ## Product-first customer pages — October 11, 2026 UTC
 
 DA-PRODUCT-FIRST-20261011-v1; Darth Algo Operations 1.2.0. Founder asked to replace bland, paragraph-led presentation with compelling indicator-first education across customer pages. Existing acquisition routes now use real chart-led headers, concise captions and feature controls; homepage no longer leads with a scripted winning example. Links brings Pro imagery forward. Support/setup/legal purposes and all products, prices, trial/license terms, checkout/attribution, roles, schedules and historical campaigns are preserved. No new page, paid tool, purchase or marketing send.

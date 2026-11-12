@@ -6,7 +6,7 @@ const port=3235,origin=`http://127.0.0.1:${port}`;
 const server=spawn(process.execPath,['node_modules/next/dist/bin/next','start','-p',String(port)],{stdio:'inherit',env:{...process.env,AI_OS_ENABLED:'false',AI_OS_AI_ENABLED:'false',AI_OS_AUTONOMY_ENABLED:'false'}});
 let browser;
 try{
- let up=false;for(let i=0;i<90;i++){try{if((await fetch(origin+'/owner')).ok){up=true;break;}}catch{}await new Promise(r=>setTimeout(r,1000));}assert.ok(up);
+ let up=false;for(let i=0;i<90;i++){try{if((await fetch(origin+'/owner?legacy=1')).ok){up=true;break;}}catch{}await new Promise(r=>setTimeout(r,1000));}assert.ok(up);
  assert.equal((await fetch(origin+'/api/owner/content-queue')).status,401);
  assert.equal((await fetch(origin+'/api/owner/content-queue',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})).status,401);
  browser=await chromium.launch({headless:true});const context=await browser.newContext({viewport:{width:393,height:852},deviceScaleFactor:1,reducedMotion:'reduce'}),page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));

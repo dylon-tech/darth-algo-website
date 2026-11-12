@@ -6,7 +6,7 @@ const port=3237,origin=`http://127.0.0.1:${port}`;
 const server=spawn(process.execPath,['node_modules/next/dist/bin/next','start','-p',String(port)],{stdio:'inherit',env:{...process.env,AI_OS_ENABLED:'false',AI_OS_AI_ENABLED:'false',AI_OS_AUTONOMY_ENABLED:'false'}});
 let browser;
 try{
- let up=false;for(let i=0;i<90;i++){try{if((await fetch(origin+'/owner')).ok){up=true;break;}}catch{}await new Promise(r=>setTimeout(r,1000));}assert.ok(up);
+ let up=false;for(let i=0;i<90;i++){try{if((await fetch(origin+'/owner?legacy=1')).ok){up=true;break;}}catch{}await new Promise(r=>setTimeout(r,1000));}assert.ok(up);
  browser=await webkit.launch({headless:true});const context=await browser.newContext({viewport:{width:393,height:852},isMobile:true,hasTouch:true,deviceScaleFactor:1,reducedMotion:'reduce'}),page=await context.newPage();const errors=[],writes=[];page.on('pageerror',e=>errors.push(e.message));
  const stamp=()=>new Date().toISOString(),run=(id,status='completed')=>({id,department:id,status,createdAt:stamp(),finishedAt:stamp(),errorCode:null,brief:'A clearer product breakdown is saved for review.',step:'agent_preparing_response'});
  const team=[['ceo','Team Leader'],['content','Content'],['research','Research'],['indicator_builder','Indicator Builder'],['support','Support'],['analytics','Analytics']].map(([id,name])=>({id,name,mandate:'Keep the business moving with verified work.',configured:true,latest:run(id,id==='research'?'running':'completed'),completed:run(id),current:null,next:id==='content'?{id:'job',department:id,status:'queued',message:'Make a new Pro carousel with larger TradingView charts.',createdAt:stamp(),startedAt:null}:null,waiting:id==='content'?1:0,task:null,health:{rating:'Good',reason:'Synthetic verification record.'}}));
@@ -37,7 +37,7 @@ try{
  await page.route('**/api/owner/content-queue',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({checkedAt:stamp(),today:'2026-09-24',items:[{id:'morning',day:'2026-09-24',slot:'morning',theme:'TWO MODES. ONE PRO.',kind:'promotional',text:'Synthetic caption, not a live post.',reviewHash:'a'.repeat(64),images:[{path:image,altText:'Owned artwork in a synthetic queue fixture'}],state:'Scheduled',decision:null,submitted:false,canApprove:false,revision:null}]})}));
  await page.route('**/api/owner/indicators',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({candidates:[{id:'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',name:'Private prototype fixture',purpose:'Synthetic original draft for interface testing.',status:'qa_blocked',source_hash:'a'.repeat(64),capture_id:null,capture_error:'TRADINGVIEW_LOGIN_REQUIRED'}]})}));
  await mkdir('artifacts',{recursive:true});
- await page.goto(origin+'/owner');await page.getByRole('heading',{name:'Headquarters',exact:true}).waitFor();
+ await page.goto(origin+'/owner?legacy=1');await page.getByRole('heading',{name:'Headquarters',exact:true}).waitFor();
  const chart=page.getByRole('region',{name:'Income and customer analytics'});
  await chart.getByRole('button',{name:'7D',exact:true}).click();await chart.getByText('Income · last 7 days',{exact:true}).waitFor();
  await chart.getByRole('button',{name:'Customers',exact:true}).click();assert.equal(await chart.getAttribute('data-metric'),'customers');await chart.getByRole('slider').focus();await page.keyboard.press('ArrowLeft');assert.ok(await chart.getByRole('slider').getAttribute('aria-valuetext'));
