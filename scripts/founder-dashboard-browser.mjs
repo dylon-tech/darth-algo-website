@@ -338,7 +338,9 @@ try{
   await editor.getByRole('textbox',{name:'Idea',exact:true}).fill(imageIdea);
   assert.equal(await editor.getByLabel('Title',{exact:true}).inputValue(),'','The owner need not invent a separate title');
   await editor.getByRole('button',{name:'Generate image',exact:true}).click();
-  await editor.getByText(acceptedMessage('image'),{exact:true}).waitFor();
+  await editor.getByRole('button',{name:'Queued',exact:true}).waitFor();
+  await editor.getByText('Device draft · not saved to account',{exact:true}).waitFor({state:'hidden'});
+  assert.equal(await editor.getByText('Device draft · not saved to account',{exact:true}).count(),0,'A server-accepted saved idea must not remain labeled unsaved');
   const imageWrites=requests.slice(imageWritesBefore),imageItem=items.find(item=>item.idea===imageIdea);
   assert.deepEqual(imageWrites.map(body=>body.operation),['save','generate'],'Generate first saves the idea, then requests a real job contract');
   assert.equal(imageWrites[0].item.title,imageTitle,'The title is derived from the idea before saving');
@@ -367,7 +369,7 @@ try{
   const videoIdea='Synthetic video creation from a saved idea.',videoTitle=videoIdea.slice(0,-1),videoWritesBefore=requests.length;
   await editor.getByRole('textbox',{name:'Idea',exact:true}).fill(videoIdea);
   await editor.getByRole('button',{name:'Generate video',exact:true}).click();
-  await editor.getByText(acceptedMessage('video'),{exact:true}).waitFor();
+  await editor.getByRole('button',{name:'Queued',exact:true}).waitFor();
   const videoWrites=requests.slice(videoWritesBefore),videoItem=items.find(item=>item.idea===videoIdea);
   assert.deepEqual(videoWrites.map(body=>body.operation),['save','generate']);assert.equal(videoWrites[0].item.title,videoTitle);
   assert.equal(videoWrites[1].id,videoItem.id);assert.ok(videoItem.jobId);
