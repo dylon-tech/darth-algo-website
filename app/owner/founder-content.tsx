@@ -87,17 +87,40 @@ function ContentEditor({base,initial,onClose,onSaved}:{base:string;initial:Edito
 }
 
 function UploadControl({base,type,label,onUploaded}:{base:string;type:FounderMediaType;label?:string;onUploaded:(a:FounderMediaAsset)=>void}){
- const [file,setFile]=useState<File|null>(null),[busy,setBusy]=useState(false),[progress,setProgress]=useState(0),[error,setError]=useState(''),[notice,setNotice]=useState('');const abort=useRef<AbortController|null>(null);
+ const [file,setFile]=useState<File|null>(null),[phase,setPhase]=useState<'idle'|'uploading'|'verifying'|'discarding'>('idle'),[progress,setProgress]=useState(0),[error,setError]=useState(''),[notice,setNotice]=useState('');
+ const abort=useRef<AbortController|null>(null),working=useRef(false),input=useRef<HTMLInputElement|null>(null),resume=useRef<{storageKey:string;uploadId:string|null}|null>(null);const busy=phase!=='idle';
  useEffect(()=>()=>abort.current?.abort(),[]);
- async function upload(chosen:File){if(busy)return;setFile(chosen);setError('');setNotice('Uploading original…');setBusy(true);const controller=new AbortController();abort.current=controller;
-  const storageKey='da-founder-upload:'+JSON.stringify([chosen.name,chosen.size,chosen.lastModified]);let requestKey='';try{requestKey=localStorage.getItem(storageKey)||crypto.randomUUID();localStorage.setItem(storageKey,requestKey);}catch{requestKey=crypto.randomUUID();}
+ async function upload(chosen:File){if(working.current)return;working.current=true;setFile(chosen);setError('');setNotice('Uploading original…');setPhase('uploading');const controller=new AbortController();abort.current=controller;
+  const storageKey='da-founder-upload:'+JSON.stringify([chosen.name,chosen.size,chosen.lastModified]);let requestKey='',uploadId:string|null=null;try{requestKey=localStorage.getItem(storageKey)||crypto.randomUUID();localStorage.setItem(storageKey,requestKey);uploadId=localStorage.getItem(storageKey+':id');}catch{requestKey=crypto.randomUUID();}
+  resume.current={storageKey,uploadId};
   try{if(chosen.size>33554432)throw Error('This file exceeds 32 MB. Export a smaller original before uploading.');if(type==='video'&&chosen.type!=='video/mp4')throw Error('Export this video as H.264 MP4 with AAC audio. MOV and HEVC are not supported yet.');if(type==='image'&&!['image/jpeg','image/png','image/webp'].includes(chosen.type))throw Error('Choose JPEG, PNG, or WebP. Export HEIC photos as JPEG first.');
    const sha256=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await chosen.arrayBuffer()))).map(x=>x.toString(16).padStart(2,'0')).join('');
+   if(controller.signal.aborted)throw Error('Upload paused. Retry this same file to continue.');
    const begin=await saveRequest<{upload:FounderMediaUpload}>(base+'/founder-media',{operation:'begin',requestKey,fileName:chosen.name,size:chosen.size,mimeType:chosen.type,sha256});const u=begin.upload;
+   resume.current={storageKey,uploadId:u.id};try{localStorage.setItem(storageKey+':id',u.id);}catch{}
+   if(controller.signal.aborted)throw Error('Upload paused. Retry this same file to continue.');
    if(u.asset){onUploaded(u.asset);setProgress(100);setNotice('Original already saved and verified.');return;}
    for(let index=0;index<u.chunkCount;index++){if(controller.signal.aborted)throw Error('Upload paused. Select this same file and retry to continue.');if(u.received.includes(index))continue;const chunk=chosen.slice(index*u.chunkBytes,Math.min(chosen.size,(index+1)*u.chunkBytes));const r=await fetch(`${base}/founder-media/${u.id}/chunks?index=${index}`,{method:'PUT',credentials:'same-origin',headers:{'Content-Type':'application/octet-stream'},body:chunk,signal:controller.signal});if(r.status===401)window.dispatchEvent(new Event('founder-session-expired'));if(!r.ok){const result=await r.json();throw Error(result.error||'Upload interrupted. Retry the same file to continue.');}setProgress(Math.round((index+1)/u.chunkCount*95));}
-   setNotice('Verifying saved bytes…');const complete=await saveRequest<{asset:FounderMediaAsset}>(base+'/founder-media',{operation:'complete',uploadId:u.id});onUploaded(complete.asset);setProgress(100);setNotice('Original saved and verified. Save this content draft to attach it.');
-  }catch(e){setError(controller.signal.aborted?'Upload paused. Retry this same file to continue.':e instanceof Error?e.message:'Upload was not confirmed. Retry the same file.');setNotice('');}finally{setBusy(false);abort.current=null;}
+   if(controller.signal.aborted)throw Error('Upload paused. Retry this same file to continue.');
+   setPhase('verifying');setNotice('Verifying saved bytes…');const complete=await saveRequest<{asset:FounderMediaAsset}>(base+'/founder-media',{operation:'complete',uploadId:u.id});onUploaded(complete.asset);setProgress(100);setNotice('Original saved and verified. Save this content draft to attach it.');
+  }catch(e){setError(controller.signal.aborted?'Upload paused. Retry this same file to continue.':e instanceof Error?e.message:'Upload was not confirmed. Retry the same file.');setNotice('');}finally{working.current=false;setPhase('idle');abort.current=null;}
  }
- return <div className={s.mediaDrop}><Upload size={24} color='#e48b99'/><strong>{label||'Upload '+(type==='video'?'video':'image')}</strong><small>{type==='video'?'H.264 MP4 + AAC · up to 32 MB':'JPEG, PNG, or WebP · up to 32 MB'}</small><input aria-label={label||'Upload '+type} type='file' accept={type==='video'?'video/mp4':'.jpg,.jpeg,.png,.webp'} disabled={busy} onChange={e=>{const f=e.target.files?.[0];if(f)void upload(f);}}/>{busy&&<><div className={s.progress} role='progressbar' aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}><span style={{width:progress+'%'}}/></div><button className={s.secondary} onClick={()=>abort.current?.abort()}>Pause upload</button></>}{notice&&<small role='status'>{notice}</small>}{error&&<><p role='alert'>{error}</p>{file&&<button className={s.secondary} onClick={()=>void upload(file)}>Retry same file</button>}</>}<small>Keep this app open until upload finishes. Saved chunks can be retried safely.</small></div>;
+ async function startOver(){
+  if(working.current||!resume.current)return;if(!navigator.onLine){setError('Reconnect before discarding an upload. Your retry information is preserved.');return;}
+  working.current=true;setPhase('discarding');setError('');setNotice('Checking unfinished upload…');const current=resume.current,controller=new AbortController();abort.current=controller;const timer=setTimeout(()=>controller.abort(),45000);
+  try{
+   let message='Retry information cleared. Select a file to start again. An unconfirmed server upload, if any, was not deleted and expires after 24 hours.';
+   if(current.uploadId){
+    const r=await fetch(base+'/founder-media',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({operation:'cancel',uploadId:current.uploadId}),signal:controller.signal});const result=await r.json();
+    if(r.status===401)window.dispatchEvent(new Event('founder-session-expired'));
+    if(r.ok&&result.canceled===true)message='Unfinished upload cleared. Select a file to start again.';
+    else if(r.status===409&&result.code==='UPLOAD_ALREADY_COMPLETE')message='This original is already saved and was kept. Select a file to start again.';
+    else throw Error(result.error||'Discard was not confirmed. Your retry information is preserved.');
+   }
+   try{localStorage.removeItem(current.storageKey);localStorage.removeItem(current.storageKey+':id');}catch{}
+   resume.current=null;setFile(null);setProgress(0);if(input.current)input.current.value='';setNotice(message);
+  }catch(e){setNotice('');setError(controller.signal.aborted?'Discard was not confirmed. Retry the same file or try Start over again.':e instanceof Error?e.message:'Discard was not confirmed. Your retry information is preserved.');}
+  finally{clearTimeout(timer);working.current=false;setPhase('idle');abort.current=null;}
+ }
+ return <div className={s.mediaDrop}><Upload size={24} color='#e48b99'/><strong>{label||'Upload '+(type==='video'?'video':'image')}</strong><small>{type==='video'?'H.264 MP4 + AAC · up to 32 MB':'JPEG, PNG, or WebP · up to 32 MB'}</small><input ref={input} aria-label={label||'Upload '+type} type='file' accept={type==='video'?'video/mp4':'.jpg,.jpeg,.png,.webp'} disabled={busy} onChange={e=>{const f=e.target.files?.[0];if(f)void upload(f);}}/>{busy&&phase!=='discarding'&&<div className={s.progress} role='progressbar' aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}><span style={{width:progress+'%'}}/></div>}{phase==='uploading'&&<button className={s.secondary} onClick={()=>abort.current?.abort()}>Pause upload</button>}{notice&&<small role='status'>{notice}</small>}{error&&<><p role='alert'>{error}</p>{file&&<div className={s.actions}><button className={s.secondary} disabled={busy} onClick={()=>void upload(file)}>Retry same file</button><button className={s.secondary} disabled={busy} onClick={()=>void startOver()}>Start over</button></div>}</>}<small>Keep this app open until upload finishes. Saved chunks can be retried safely.</small></div>;
 }

@@ -12,7 +12,7 @@ Daily idea planning is bounded and runs through the existing owner-work cron onl
 
 ## Validation
 
-Focused finance, calendar SQL/concurrency, Inbox SQL/conflict/auth, and media SQL/byte/retry/privacy checks pass locally. TypeScript passed during implementation. Release builds, remote CI, rendered visual checks and exact deployment evidence must be recorded for the final commit. CI has a new WebKit journey test; older owner tests use the retained legacy entry point.
+Focused finance, calendar SQL/concurrency, Inbox SQL/conflict/auth, and media SQL/byte/retry/privacy checks pass locally. TypeScript and a local optimized production build passed after route-export validation was corrected. Actual UI was visually inspected at 320, 390 and 1280 pixels with a local-only, clearly labeled synthetic QA harness; content saves, customer detail and Inbox draft saves were checked. The harness was removed before the production build. Remote CI and exact deployment evidence must be recorded for the final commit. CI has a new WebKit journey test; older owner tests use the retained legacy entry point.
 
 ## Remaining external capabilities
 

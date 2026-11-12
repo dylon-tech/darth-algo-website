@@ -4,7 +4,7 @@ import {founderMediaCapabilities} from '../../../lib/business-os/founder-media-m
 export const runtime='nodejs';export const dynamic='force-dynamic';export const maxDuration=60;
 const headers={...privateHeaders,Vary:'Cookie'};
 const json=(data:unknown,status=200)=>Response.json(data,{status,headers});
-export const mediaErrorMessages:Record<string,string>={
+const mediaErrorMessages:Record<string,string>={
  INVALID_FILE_NAME:'Choose a file with a valid name.',FILE_SIZE_LIMIT:'Choose a file from 32 bytes to 32 MB.',REQUEST_KEY_REQUIRED:'An upload retry key is required.',
  FILE_HASH_REQUIRED:'Verify the file fingerprint before starting this upload.',UPLOAD_FILE_MISMATCH:'The received bytes do not match the selected original. Cancel this upload and select the original file again.',
  UNSUPPORTED_MEDIA_FORMAT:'Use JPEG, PNG, WebP or H.264 MP4 with AAC audio. Export HEIC to JPEG and MOV/HEVC to H.264 MP4 first.',
