@@ -256,7 +256,7 @@ try{
   await updateOpener.waitFor();assert.equal(await page.getByText(/synthetic-inbox-job-only/).count(),0,'Inbox list shows a short result and next step');
   await updateOpener.click();const update=page.getByRole('dialog',{name:'Agent update'});await update.waitFor();
   await update.getByRole('heading',{name:agentUpdate.summary.result,exact:true}).waitFor();
-  await update.getByText(agentUpdate.summary.action,{exact:false}).waitFor();
+  await update.getByText('Next: '+agentUpdate.summary.action,{exact:true}).waitFor();
   const originalUpdate=update.locator('details').filter({hasText:'Original update'});
   assert.equal(await originalUpdate.getAttribute('open'),null,'The original technical update is collapsed by default');
   assert.equal(await update.getByRole('button',{name:'Snooze 24 hours',exact:true}).count(),0,'Secondary Inbox actions stay under optional controls');
