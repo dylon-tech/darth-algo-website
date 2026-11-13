@@ -54,7 +54,7 @@ export async function recordFounderRendererHeartbeat(identity:FounderRendererIde
  if(!founderRendererProductionHostVerified())throw Error('RENDERER_HOST_NOT_VERIFIED');
  if(!['started','completed','failed','unknown'].includes(identity.reservationStatus)||input.runtimeProfile!==nativeRuntimeFingerprint||input.rendererVersion!==founderRendererVersion||input.incrementalCostUsd!==0.05||input.imageReady!==true||input.videoReady!==true||input.fullDecode!==true||input.narration!=='kokoro-v1.0-am_michael'||!['ready','working','stopped'].includes(String(input.status)))throw Error('RENDERER_PREFLIGHT_REQUIRED');
  await ensureFounderRendererSchema();
- const report={fullDecode:true,narration:'kokoro-v1.0-am_michael',attemptReservationUsd:0.05,runtime:'vercel-python-300s-2gb-iad1',runtimeProfile:nativeRuntimeFingerprint,sourceValidation:true};
+ const report={fullDecode:true,narration:'kokoro-v1.0-am_michael',attemptReservationUsd:0.05,runtime:'vercel-python-300s-us',allocation:'provider-managed; actual billed usage pending',runtimeProfile:nativeRuntimeFingerprint,sourceValidation:true};
  await db()`insert into os_founder_renderer_workers(worker_id,run_id,commit_sha,renderer_version,image_ready,video_ready,status,report) values(${identity.workerId},${identity.runId},${identity.sha},${founderRendererVersion},true,true,${String(input.status)},${JSON.stringify(report)}::jsonb) on conflict(worker_id) do update set last_seen_at=now(),status=excluded.status,report=excluded.report`;
  return {accepted:true,checkedAt:new Date().toISOString()};
 }

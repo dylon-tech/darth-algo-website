@@ -1,6 +1,6 @@
 {
   "version": "vercel-native-v1",
-  "fingerprint": "6d8a2d474b5d82382926e8c1523176143a74e0a5c97deb84266f150c6372c3d9",
+  "fingerprint": "8864237d000a843b5ccefdf455754d8d9a1ac9dd3f72fcb58f6c248b9a035294",
   "files": [
     {
       "file": ".python-version",
@@ -8,7 +8,7 @@
     },
     {
       "file": "api/founder-native-render.py",
-      "sha256": "ab70acae9df034604063c2daa192bff771a31970bd5bbdb3252543da51c8cb3c"
+      "sha256": "ad1b71120fa31003fd5dd483c40db6af3e105068309be6701eda9cfda8e25991"
     },
     {
       "file": "app/api/cron/owner-work/route.ts",
@@ -64,7 +64,7 @@
     },
     {
       "file": "app/lib/business-os/founder-renderer.ts",
-      "sha256": "f16b4095897223d121706df91e9d56e0596af69c0b2a8d31219bae8712e97c2d"
+      "sha256": "4ce0a86eab5baa18cef00212069da906bba9e0ab072ecc84339c3bcd33beaa43"
     },
     {
       "file": "package-lock.json",

@@ -40,7 +40,10 @@ class handler(BaseHTTPRequestHandler):
     def do_POST(self):
         started_at=time.monotonic()
         if os.environ.get('AI_OS_MEDIA_RENDERER_ENABLED')!='true' or os.environ.get('AI_OS_MEDIA_RENDERER_MONTHLY_USD')!='5' or os.environ.get('VERCEL_ENV')!='production':return self.reply(503,{'error':'RENDERING_NOT_APPROVED'})
-        if os.environ.get('AWS_LAMBDA_FUNCTION_MEMORY_SIZE')!='2048' or os.environ.get('VERCEL_REGION')!='iad1':return self.reply(503,{'error':'RENDER_RUNTIME_ALLOCATION_NOT_VERIFIED'})
+        # Fluid compute intentionally hides AWS memory variables. Keep the
+        # existing project allocation; never infer it from an absent variable.
+        # Both observed/specified US regions have the reviewed pricing tier.
+        if os.environ.get('VERCEL_REGION') not in ('iad1','cle1'):return self.reply(503,{'error':'RENDER_RUNTIME_REGION_NOT_VERIFIED'})
         try:
             size=int(self.headers.get('Content-Length','0'))
             if not 0<size<=262144 or self.headers.get('Content-Type')!='application/json':return self.reply(413,{'error':'INVALID_BODY'})
