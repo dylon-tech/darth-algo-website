@@ -1,6 +1,6 @@
 {
   "version": "vercel-native-v1",
-  "fingerprint": "28a086ee9e341de0a4f62e881e4f97f32396b19877cabf5314683b2bcaa59f43",
+  "fingerprint": "6d8a2d474b5d82382926e8c1523176143a74e0a5c97deb84266f150c6372c3d9",
   "files": [
     {
       "file": ".python-version",
@@ -88,7 +88,7 @@
     },
     {
       "file": "scripts/founder-renderer/runtime-profile.mjs",
-      "sha256": "163e15d8361304e403986415b7d395b651c865a7e062a841587432bdf6a496cb"
+      "sha256": "6b014d48812e626914e2494b1cf798d853982b6548642c16a554f322fc0ef45f"
     },
     {
       "file": "scripts/founder-renderer/setup_models.py",
@@ -104,7 +104,7 @@
     },
     {
       "file": "vercel.json",
-      "sha256": "ad6caac116a26d3840029abe21cbf2dca8884da651c5ff9aa8b8975b861c8ecd"
+      "sha256": "5203f8b53bc8f786d4e669a14b3ed0f22289a41c66d481308244463f07fe02f3"
     }
   ]
 }
