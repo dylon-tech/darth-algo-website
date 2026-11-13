@@ -19,5 +19,9 @@ const records=files.sort().map(file=>({file,sha256:createHash('sha256').update(f
 const result={version:'vercel-native-v1',fingerprint:createHash('sha256').update(JSON.stringify(records)).digest('hex'),files:records};
 const target='app/lib/business-os/founder-native-runtime.json';
 if(process.argv.includes('--write'))fs.writeFileSync(target,JSON.stringify(result,null,2)+'\n');
-else if(JSON.stringify(JSON.parse(fs.readFileSync(target,'utf8')))!==JSON.stringify(result))throw Error('Renderer runtime changed. Review it and regenerate its readiness profile with --write.');
-else console.log('Reviewed renderer runtime profile matches.');
+else {
+ const expected=JSON.parse(fs.readFileSync(target,'utf8'));
+ const changed=records.filter(row=>expected.files?.find(old=>old.file===row.file)?.sha256!==row.sha256).map(row=>row.file);
+ if(JSON.stringify(expected)!==JSON.stringify(result))throw Error(`Renderer runtime changed: ${changed.join(', ')||'profile metadata'}. Review it and regenerate its readiness profile with --write.`);
+ console.log('Reviewed renderer runtime profile matches.');
+}
