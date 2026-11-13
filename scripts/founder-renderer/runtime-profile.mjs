@@ -15,7 +15,10 @@ const files=[
  'scripts/founder-renderer/sources.json','scripts/founder-renderer/runtime-profile.mjs',
  'scripts/founder-renderer/prepared-vercel/setup_runtime.py',
 ];
-const records=files.sort().map(file=>({file,sha256:createHash('sha256').update(fs.readFileSync(path.resolve(file))).digest('hex')}));
+// The host serializes vercel.json while preparing a build. Preserve semantic
+// configuration checks without treating whitespace or object order as a change.
+const canonical=value=>Array.isArray(value)?value.map(canonical):value&&typeof value==='object'?Object.fromEntries(Object.keys(value).sort().map(key=>[key,canonical(value[key])])):value;
+const records=files.sort().map(file=>{const raw=fs.readFileSync(path.resolve(file));const bytes=file==='vercel.json'?JSON.stringify(canonical(JSON.parse(raw.toString('utf8')))):raw;return {file,sha256:createHash('sha256').update(bytes).digest('hex')};});
 const result={version:'vercel-native-v1',fingerprint:createHash('sha256').update(JSON.stringify(records)).digest('hex'),files:records};
 const target='app/lib/business-os/founder-native-runtime.json';
 if(process.argv.includes('--write'))fs.writeFileSync(target,JSON.stringify(result,null,2)+'\n');
