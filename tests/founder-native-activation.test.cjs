@@ -26,13 +26,20 @@ assert m.verify_invocation(p['token'],p['body'].encode(),p['key'])['workerId']==
 try:m.verify_invocation(p['token'],b'changed',p['key']);raise AssertionError('body changed')
 except ValueError:pass
 assert 'render' not in sys.modules
-os.environ.update(AWS_LAMBDA_FUNCTION_MEMORY_SIZE='2048',VERCEL_REGION='iad1')
+os.environ.pop('AWS_LAMBDA_FUNCTION_MEMORY_SIZE',None)
+os.environ['VERCEL_REGION']='cle1'
 calls=[]
 def api(payload,*args,**kwargs):
  calls.append(payload['operation']);return {'started':False}
 sys.modules['worker']=types.SimpleNamespace(api=api)
 h=m.handler.__new__(m.handler);h.headers={'Content-Length':str(len(p['body'].encode())),'Content-Type':'application/json','Authorization':'Bearer '+p['token']};h.rfile=io.BytesIO(p['body'].encode());replies=[];h.reply=lambda status,value:replies.append(status);h.do_POST()
 assert replies==[409] and calls==['startReservedInvocation'] and 'render' not in sys.modules and 'setup_runtime' not in sys.modules
+for region in ['iad1','cle1']:
+ os.environ['VERCEL_REGION']=region;calls.clear();replies.clear();h.rfile=io.BytesIO(p['body'].encode());h.do_POST();assert replies==[409] and calls==['startReservedInvocation']
+for region in ['sfo1','']:
+ os.environ['VERCEL_REGION']=region;calls.clear();replies.clear();h.rfile=io.BytesIO(p['body'].encode());h.do_POST();assert replies==[503] and calls==[]
+os.environ['VERCEL_REGION']='cle1';calls.clear();replies.clear();h.headers['Authorization']='Bearer unsigned';h.rfile=io.BytesIO(p['body'].encode());h.do_POST();assert replies==[401] and calls==[] and 'render' not in sys.modules
+
 `],{encoding:'utf8',input:JSON.stringify({token:crossToken,body:crossBody,key:process.env.AI_OS_OWNER_KEY,workerId:crossClaim.workerId})});assert.equal(cross.status,0,cross.stderr);
  const image=await require('sharp')({create:{width:1080,height:1350,channels:3,background:'#151515'}}).png().toBuffer(),sha256=createHash('sha256').update(image).digest('hex');
  let invokes=0,lastCompleted,lastClaims,lastToken,networkUnknown=false,mutateAfterClaim=false,preflightGate=null,onInvoke=null;
