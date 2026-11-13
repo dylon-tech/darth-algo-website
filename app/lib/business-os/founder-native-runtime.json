@@ -1,0 +1,110 @@
+{
+  "version": "vercel-native-v1",
+  "fingerprint": "a85cbf43294d1d52036de1a95d9b1c6f6ded8d25563173d8840fbac3ff7949ca",
+  "files": [
+    {
+      "file": ".python-version",
+      "sha256": "7b55f8e67b5623c4bef3fa691288da9437d79d3aba156de48d481db32ac7d16d"
+    },
+    {
+      "file": "api/founder-native-render.py",
+      "sha256": "ab70acae9df034604063c2daa192bff771a31970bd5bbdb3252543da51c8cb3c"
+    },
+    {
+      "file": "app/api/cron/owner-work/route.ts",
+      "sha256": "4881f3e221c71a75b01974cf4907c528aea6ac8cd56293b1da7e4b3028e2f63c"
+    },
+    {
+      "file": "app/api/owner/founder-content/route.ts",
+      "sha256": "e1ccb0ca7d0e1ef18c2f30d86d7af8ce614e18a616674daf3cf9ea8e95bc050b"
+    },
+    {
+      "file": "app/api/owner/founder-renderer/[uploadId]/chunks/route.ts",
+      "sha256": "a06cfb5b0ebca51628cf7366ff5d5dbdfcfbea48119962c3779269cfcbafc947"
+    },
+    {
+      "file": "app/api/owner/founder-renderer/route.ts",
+      "sha256": "f43e32bc7650e10a9703940b15f3406fe6a10ca7009c6fff0bc5eb45667da66f"
+    },
+    {
+      "file": "app/lib/business-os/founder-content.ts",
+      "sha256": "8047e32950d73ac9da77602564d0e72d7df8c03898c5b71a0b5c04bd3c829934"
+    },
+    {
+      "file": "app/lib/business-os/founder-media-model.ts",
+      "sha256": "a137a95b9d9e4ddd129bc5b2551ebce51010407bed6aff7d65f78d77361f4263"
+    },
+    {
+      "file": "app/lib/business-os/founder-media.ts",
+      "sha256": "392f8c8b46543eb9d4a65d5b494835b989706637515bb52338104746b5924271"
+    },
+    {
+      "file": "app/lib/business-os/founder-native-lifetime.ts",
+      "sha256": "ba17ca8fd157d70e16d2590d0ce74695f0e20c54da909163605020a6e99e9573"
+    },
+    {
+      "file": "app/lib/business-os/founder-native-policy.ts",
+      "sha256": "6b088b3c3fcb11c292a4f87e0df28aac1aaa9a33273a76b2e3c5bc5438641c1f"
+    },
+    {
+      "file": "app/lib/business-os/founder-render-catalog.json",
+      "sha256": "05d93f6b179e5e6ec5c76490cc141a1c6129a89dd732112e85f4158cb5e78bda"
+    },
+    {
+      "file": "app/lib/business-os/founder-render-catalog.ts",
+      "sha256": "b8d514b7e6c68769e893a8afa9079cfa0b98f670e5c4726fd40fccce912a3764"
+    },
+    {
+      "file": "app/lib/business-os/founder-renderer-auth.ts",
+      "sha256": "8739adc972b1ef006a2de9b14b9b1335ac906b980bae0befa8b3e30dcbc685ca"
+    },
+    {
+      "file": "app/lib/business-os/founder-renderer-transport.ts",
+      "sha256": "cebb19c06d14c1f99e8c31ca2f3e170a6007a0612bd88aea8a5bdb7dd5e1d964"
+    },
+    {
+      "file": "app/lib/business-os/founder-renderer.ts",
+      "sha256": "f16b4095897223d121706df91e9d56e0596af69c0b2a8d31219bae8712e97c2d"
+    },
+    {
+      "file": "package-lock.json",
+      "sha256": "009816fef18fc1044976ee8e7f6d8120da5155b7778cfef11527ef37bcb8fdce"
+    },
+    {
+      "file": "requirements.txt",
+      "sha256": "ce155d865a1702ae38fab4f929cc0b88dcec5cef67a16ffa037a91311f6e5e1a"
+    },
+    {
+      "file": "scripts/founder-renderer/prepared-vercel/setup_runtime.py",
+      "sha256": "4e930cab1f6efc1c5afa1ecccc9c02435441926f5ef030bd54d58f694d495673"
+    },
+    {
+      "file": "scripts/founder-renderer/recipes.py",
+      "sha256": "d9a0b980f48d7a99a955b712a967b279350ed0680e825c33a1895ce1e5d75b19"
+    },
+    {
+      "file": "scripts/founder-renderer/render.py",
+      "sha256": "188a951d630a3d8afdb806b9a7c6ca2fb870a94b85b4c9e1ccd5222a4e2b7c61"
+    },
+    {
+      "file": "scripts/founder-renderer/runtime-profile.mjs",
+      "sha256": "6fa7046ebdee86c6597957f4b4783f3b026942bd6e8de0eb2e9206cbc63329e8"
+    },
+    {
+      "file": "scripts/founder-renderer/setup_models.py",
+      "sha256": "32c4d46170109028ad375c9aa2f208fc88413d86d1d6c3ef7b1ee17d586920f7"
+    },
+    {
+      "file": "scripts/founder-renderer/sources.json",
+      "sha256": "c625bc9b34b32bfb4223c13277307bd64700af797865dcf34036adaec46fb1f5"
+    },
+    {
+      "file": "scripts/founder-renderer/worker.py",
+      "sha256": "da16142117d876a1539450729436f352874148ecf5f03f8e948b964b5d8cd45c"
+    },
+    {
+      "file": "vercel.json",
+      "sha256": "d50186e94b8707fe9a20af0da83075e8fe46cd7ea6593542fd9819cc48089e11"
+    }
+  ]
+}

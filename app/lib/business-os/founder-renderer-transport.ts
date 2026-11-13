@@ -1,4 +1,5 @@
 import {db} from '../affiliate-db';
+import {assertNativeJobScope} from './founder-native-policy';
 import {mediaUuid} from './founder-media-model';
 import {beginFounderMediaUpload,completeFounderMediaUpload,getFounderMediaUpload,saveFounderMediaChunk} from './founder-media';
 import {ensureFounderRendererSchema} from './founder-renderer';
@@ -16,6 +17,7 @@ export function rendererLease(input:Record<string,unknown>){
  return {jobId:input.jobId,leaseToken:input.leaseToken};
 }
 export async function ownedRendererLease(identity:FounderRendererIdentity,input:Record<string,unknown>){
+ assertNativeJobScope(identity,input);
  const lease=rendererLease(input),{assertFounderRenderLease}=await import('./founder-content');
  const result=await assertFounderRenderLease(lease);
  // Backend binds the private lease to the worker that claimed it.
@@ -23,6 +25,7 @@ export async function ownedRendererLease(identity:FounderRendererIdentity,input:
  return {...lease,...result};
 }
 export async function ownedRendererAttempt(identity:FounderRendererIdentity,input:Record<string,unknown>){
+ assertNativeJobScope(identity,input);
  const lease=rendererLease(input);
  const [job]=await db()`select worker_id from os_founder_render_jobs where id=${lease.jobId} and lease_token=${lease.leaseToken}`;
  if(!job||job.worker_id!==identity.workerId)throw Error('LEASE_LOST');

@@ -138,9 +138,15 @@ RECIPES = [
 
 
 def resolve_recipe(item):
+    import json
+    from pathlib import Path
+    catalog=json.loads((Path(__file__).resolve().parents[2]/'app/lib/business-os/founder-render-catalog.json').read_text())
     recipe = next((r for r in RECIPES if r['title'].casefold() == str(item.get('title', '')).strip().casefold()), None)
     if recipe is None:
         raise ValueError('SOURCE_MATCH_REQUIRED')
+    brief=next(r for r in catalog if r['id']==recipe['id'])
+    if str(item.get('idea','')).strip() not in ['',brief['idea']]:
+        raise ValueError('CUSTOM_IDEA_SOURCE_REVIEW_REQUIRED')
     expected = ' '.join(s['spoken'] for s in recipe['scenes'])
     if str(item.get('script', '')).strip() not in ['', expected]:
         raise ValueError('CUSTOM_SCRIPT_SOURCE_REVIEW_REQUIRED')

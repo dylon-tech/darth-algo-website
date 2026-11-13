@@ -2,7 +2,9 @@ import {createHash,randomUUID} from 'node:crypto';
 import {db} from '../affiliate-db';
 import {readContentQueue} from './daily-content-review';
 import {getFounderMediaAsset} from './founder-media';
-import {founderRendererStatus,wakeFounderRenderer} from './founder-renderer';
+import {founderRendererStatus,wakeFounderRenderer,requestNativeRendererSetup,nativeRuntimeFingerprint} from './founder-renderer';
+import {nativeApproval} from './founder-native-policy';
+import {founderRenderBrief} from './founder-render-catalog';
 import deploymentConfig from '../../../vercel.json';
 import {
   FounderContentError,addCalendarDays,assertFounderVersion,founderClock,founderCoverage,
@@ -86,11 +88,11 @@ function withRenderState(item:FounderContentItem,job:FounderRenderJob|undefined)
 }
 async function rendererAvailability() {
   try{return await founderRendererStatus();}
-  catch{return {ready:false,incrementalCostUsd:null,image:{available:false,reason:rendererReason},video:{available:false,reason:rendererReason},reason:rendererReason,lastSeenAt:null};}
+  catch{return {ready:false,budgetApproved:false,setupAvailable:false,budgetMessage:'No added spending approved.',incrementalCostUsd:null,image:{available:false,reason:rendererReason},video:{available:false,reason:rendererReason},reason:rendererReason,lastSeenAt:null};}
 }
 type RendererAvailability=Awaited<ReturnType<typeof rendererAvailability>>;
 function requireRenderer(status:RendererAvailability,type?:FounderMediaType) {
-  if(status.incrementalCostUsd!==0)throw new FounderContentError(status.reason||'The worker’s free allowance has not been verified.',409,'RENDERER_NOT_CONNECTED');
+  if(status.incrementalCostUsd!==0&&!(status.budgetApproved&&status.incrementalCostUsd===0.05))throw new FounderContentError(status.reason||'The worker’s free allowance has not been verified.',409,'RENDERER_NOT_CONNECTED');
   if(type?!status[type].available:!status.ready)throw new FounderContentError((type?status[type].reason:status.reason)||rendererReason,409,'RENDERER_NOT_CONNECTED');
 }
 
@@ -122,15 +124,15 @@ export async function readFounderContent(month?:string,now=new Date()):Promise<F
   const lastSeen=iso(control.last_seen_at),fresh=Boolean(lastSeen&&now.getTime()-Date.parse(lastSeen)>=0&&now.getTime()-Date.parse(lastSeen)<=15*60000);
   const scheduled=deploymentConfig.crons.some(cron=>cron.path==='/api/cron/owner-work'&&cron.schedule==='*/5 * * * *');
   const nextRun=!control.paused&&control.global_paused===false&&fresh&&scheduled?new Date((Math.floor(now.getTime()/300000)+1)*300000).toISOString():null;
-  const status=control.paused?'Off':control.global_paused===true?'Paused':counts.running?'Creating':counts.queued?'Queued':counts.failed||counts.blocked?'Needs attention':coverage.generated===10?'Up to date':'On';
-  const message=control.paused?(control.last_error||(!renderStatus.ready?renderStatus.reason:'Start to create images and videos for the next five days.')):control.global_paused===true?'The existing worker is paused.':counts.running?'Creating your content.':counts.queued?`${counts.queued} ${counts.queued===1?'file':'files'} queued for the media worker.`:control.last_error||(!renderStatus.ready?renderStatus.reason:coverage.generated===10?'All ten files are saved. Review them before publishing.':'Watching the next five days for missing content.');
+  const status=control.paused?'Off':control.global_paused===true?'Paused':!renderStatus.ready?'Needs attention':counts.running?'Creating':counts.queued?'Queued':counts.failed||counts.blocked?'Needs attention':coverage.generated===10?'Up to date':'On';
+  const message=control.paused?(control.last_error||(!renderStatus.ready?renderStatus.reason:'Start to create images and videos for the next five days.')):control.global_paused===true?'The existing worker is paused.':!renderStatus.ready?renderStatus.reason:counts.running?'Creating your content.':counts.queued?`${counts.queued} ${counts.queued===1?'file':'files'} queued for the media worker.`:control.last_error||(!renderStatus.ready?renderStatus.reason:coverage.generated===10?'All ten files are saved. Review them before publishing.':'Watching the next five days for missing content.');
   const running=jobs.find(job=>job.status==='running'),runningItem=running?items.find(item=>item.id===running.itemId):undefined;
   const currentWork=running?(runningItem?`${running.stage}: ${runningItem.title.slice(0,160)}`:`Creating ${running.type==='image'?'an image':'a video'}`):null;
   return {checkedAt:now.toISOString(),today,timeZone:founderTimeZone,month:selectedMonth,
     items,archivedItems:archiveRows.map(asItem),days:founderDays(items,now),coverage,jobs,
-    agent:{paused:control.paused===true,version:Number(control.version),status,lastSeenAt:lastSeen,lastCreatedCount:control.last_created_count===null?null:Number(control.last_created_count),lastSuccessfulRun:iso(control.last_success_at),nextRun,currentWork,incrementalBudgetUsd:0,
+    agent:{paused:control.paused===true,version:Number(control.version),status,lastSeenAt:lastSeen,lastCreatedCount:control.last_created_count===null?null:Number(control.last_created_count),lastSuccessfulRun:iso(control.last_success_at),nextRun,currentWork,incrementalBudgetUsd:renderStatus.budgetApproved?5:0,
       publishingPause:'not_confirmed',message,generated:coverage.generated,counts},
-    templates:founderTemplates,capabilities:{drafts:true,uploads:true,imageGeneration:renderStatus.image.available&&renderStatus.incrementalCostUsd===0,videoGeneration:renderStatus.video.available&&renderStatus.incrementalCostUsd===0,scheduling:false,publishingPause:false,rendererReason:renderStatus.reason||rendererReason,publisherReason},
+    templates:founderTemplates,capabilities:{drafts:true,uploads:true,imageGeneration:renderStatus.image.available&&(renderStatus.incrementalCostUsd===0||(renderStatus.budgetApproved&&renderStatus.incrementalCostUsd===0.05)),videoGeneration:renderStatus.video.available&&(renderStatus.incrementalCostUsd===0||(renderStatus.budgetApproved&&renderStatus.incrementalCostUsd===0.05)),rendererSetupAvailable:renderStatus.setupAvailable,renderBudgetMessage:renderStatus.budgetMessage,scheduling:false,publishingPause:false,rendererReason:renderStatus.reason||rendererReason,publisherReason},
     legacyQueue:legacyResult.value,legacyQueueError:legacyResult.error,truncated:rows.length>500};
 }
 
@@ -153,8 +155,8 @@ export async function founderContentPlannerTick(now=new Date()) {
     }
     try{requireRenderer(availability);}catch(error){
       const reason=error instanceof FounderContentError?error.message:rendererReason;
-      await tx`update os_founder_content_control set paused=true,version=version+1,last_seen_at=${stamp},last_status='blocked',last_error=${reason},last_created_count=0,global_paused=false where id=1`;
-      return {status:'blocked',created:0,queued:0,scope:'media_generation'};
+      await tx`update os_founder_content_control set last_seen_at=${stamp},last_status='blocked',last_error=${reason},last_created_count=0,global_paused=false where id=1`;
+      return {status:'blocked',created:0,queued:0,needsSetup:availability.setupAvailable,scope:'media_generation'};
     }
     const window=await queueMissingWindow(sql,now);
     const status=window.missing?'needs_input':window.jobs.length?'queued':'checked';
@@ -163,6 +165,7 @@ export async function founderContentPlannerTick(now=new Date()) {
     const [pending]=await tx`select count(*)::int n from os_founder_render_jobs where status='queued' and source='agent'`;
     return {status,created:window.created,queued:Number(pending.n),missing:window.missing,scope:'media_generation'};
   });
+  if('needsSetup' in result&&result.needsSetup){try{await requestNativeRendererSetup('auto-'+nativeRuntimeFingerprint.slice(0,32)+'-'+now.toISOString().slice(0,7));}catch{}}
   if(result.queued>0)await wakeRendererSafely();
   return result;
 }
@@ -334,6 +337,7 @@ async function writeRenderNotice(sql:Sql,jobId:string,item:FounderContentItem,ou
   await sql`insert into os_messages(id,department,role,body,run_id,created_at) values(${jobId},'content','agent',${body},null,${now}) on conflict(id) do update set body=excluded.body,created_at=excluded.created_at where os_messages.department='content' and os_messages.role='agent' and os_messages.body<>excluded.body`;
 }
 async function queueRenderItem(sql:Sql,current:FounderContentItem,source:'agent'|'owner',now:Date) {
+  if(nativeApproval().enabled){const brief=founderRenderBrief(current);if(!brief.supported)throw new FounderContentError(brief.reason,409,'RENDER_SOURCE_REVIEW_REQUIRED');}
   const stamp=now.toISOString(),budgetDay=founderClock(now).day;
   if(current.jobId){
     const [pending]=await sql`select * from os_founder_render_jobs where id=${current.jobId} and status in ('queued','running')`;
@@ -347,7 +351,7 @@ async function queueRenderItem(sql:Sql,current:FounderContentItem,source:'agent'
   if(retry&&(!prior.retryable||Number(prior.attempts)>=renderLimits.attempts))throw new FounderContentError('This attempt cannot be retried. Update the idea or source before generating again.',409,'RENDER_RETRY_LIMIT');
   if(!retry){
     const [daily]=await sql`select count(*)::int n from os_founder_render_jobs where budget_day=${budgetDay}`;
-    if(Number(daily.n)>=renderLimits.newJobsPerDay)throw new FounderContentError('Today’s free creation limit is reached. Try again tomorrow.',409,'CREATION_LIMIT');
+    if(Number(daily.n)>=renderLimits.newJobsPerDay)throw new FounderContentError('Today’s creation limit is reached. Try again tomorrow.',409,'CREATION_LIMIT');
   }
   const id=retry?String(prior.id):randomUUID();
   const item:FounderContentItem={...current,version:current.version+1,status:'generating',jobId:id,lastError:null,
@@ -363,6 +367,7 @@ async function queueMissingWindow(sql:Sql,now:Date) {
   const originals=rows.map(asItem),items:FounderContentItem[]=[],jobs:FounderRenderJob[]=[];
   for(const item of originals){
     if(item.locked||item.mediaAssetId||!['idea','draft'].includes(item.status)||(item.day===clock.day&&item.time<=clock.time))continue;
+    const brief=founderRenderBrief(item);if(nativeApproval().enabled&&!brief.supported){await writeVersion(sql,{...item,version:item.version+1,status:'needs_input',lastError:brief.reason,updatedAt:now.toISOString()},'source_review_required');continue;}
     const queued=await queueRenderItem(sql,item,'agent',now);items.push(queued.item);jobs.push(queued.job);
   }
   const missing=founderDays(originals,now).flatMap(day=>day.slots.filter(slot=>!slot.itemId&&(!day.isToday||slot.remainingToday))).length;
@@ -408,7 +413,7 @@ async function expireRenderLeases(sql:Sql,now:Date) {
 export async function claimFounderRenderJob(input:{workerId:string;now?:Date}):Promise<FounderRenderLease|null> {
   if(typeof input.workerId!=='string'||!/^[-A-Za-z0-9_.:/]{1,120}$/.test(input.workerId))throw new FounderContentError('Invalid worker identifier.');
   const availability=await rendererAvailability();
-  if(availability.incrementalCostUsd!==0)return null;
+  if(availability.incrementalCostUsd!==0&&!(availability.budgetApproved&&availability.incrementalCostUsd===0.05))return null;
   await ensureFounderContentSchema();const now=input.now||new Date(),stamp=now.toISOString();
   return db().begin(async tx=>{
     await tx`select pg_advisory_xact_lock(731013)`;const sql=tx as unknown as Sql;
@@ -422,6 +427,7 @@ export async function claimFounderRenderJob(input:{workerId:string;now?:Date}):P
       if(item&&item.version===Number(outstanding.content_version)&&item.jobId===String(outstanding.id)&&item.status==='generating')return availability[item.type].available?leaseResult(outstanding,item):null;
       await tx`update os_founder_render_jobs set status='obsolete',stage='Replaced',retryable=false,finished_at=${stamp},updated_at=${stamp} where id=${outstanding.id}`;
     }
+    if(nativeApproval().enabled){const [active]=await tx`select id from os_founder_render_jobs where status='running' and worker_id like 'native:%' limit 1`;if(active)return null;}
     const [global]=await tx`select paused from os_control where id=1 for share`;
     if(!global||global.paused)return null;
     const [control]=await tx`select paused from os_founder_content_control where id=1 for share`;

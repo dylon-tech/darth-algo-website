@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
 import {randomUUID} from 'node:crypto';
-import {mkdir,writeFile} from 'node:fs/promises';
+import {mkdir,writeFile,readFile} from 'node:fs/promises';
 import {webkit} from 'playwright-core';
 
 // CI-only fixture transport. Production has no fixture URL, auth override,
 // seeded customer, or alternate source endpoint added for these checks.
+const reviewedLessons=JSON.parse(await readFile(new URL('../app/lib/business-os/founder-render-catalog.json',import.meta.url),'utf8'));
 const port=3241,origin=`http://127.0.0.1:${port}`;
 const server=spawn(process.execPath,['node_modules/next/dist/bin/next','start','-p',String(port)],{
   stdio:'inherit',env:{...process.env,DATABASE_URL:'',AI_OS_ENABLED:'false',AI_OS_AI_ENABLED:'false',AI_OS_AUTONOMY_ENABLED:'false',NEXT_TELEMETRY_DISABLED:'1'},
@@ -334,16 +335,21 @@ try{
   await page.getByRole('heading',{name:'Content',exact:true,level:1}).waitFor();
   await page.setViewportSize({width:390,height:852});await page.getByRole('button',{name:'Agenda',exact:true}).click();
   await page.getByRole('button',{name:`Create image on ${dayOffset(1)}`,exact:true}).click();await editor.waitFor();
-  const imageIdea='Synthetic image creation from a saved idea.',imageTitle=imageIdea.slice(0,-1),imageWritesBefore=requests.length;
-  await editor.getByRole('textbox',{name:'Idea',exact:true}).fill(imageIdea);
-  assert.equal(await editor.getByLabel('Title',{exact:true}).inputValue(),'','The owner need not invent a separate title');
+  const imageLesson=reviewedLessons[0],imageIdea=imageLesson.idea,imageTitle=imageLesson.title,imageWritesBefore=requests.length;
+  await editor.getByLabel('Reviewed lesson',{exact:true}).selectOption(imageLesson.id);
+  assert.equal(await editor.getByLabel('Title',{exact:true}).inputValue(),imageTitle,'A reviewed lesson fills its canonical title');
+  await editor.getByRole('textbox',{name:'Idea',exact:true}).fill(imageIdea+' Synthetic changed owner intent.');
+  assert.ok(await editor.getByRole('button',{name:'Generate image',exact:true}).isDisabled(),'Changing the idea cannot silently render the prior source recipe');
+  await editor.getByText('Your changed idea needs source review. Choose a reviewed lesson to reset its source plan, or save this custom draft.',{exact:true}).waitFor();
+  assert.equal(requests.length,imageWritesBefore,'Unsupported custom intent makes no generation or paid-host request');
+  await editor.getByLabel('Reviewed lesson',{exact:true}).selectOption(imageLesson.id);
   await editor.getByRole('button',{name:'Generate image',exact:true}).click();
   await editor.getByRole('button',{name:'Queued',exact:true}).waitFor();
   await editor.getByText('Device draft · not saved to account',{exact:true}).waitFor({state:'hidden'});
   assert.equal(await editor.getByText('Device draft · not saved to account',{exact:true}).count(),0,'A server-accepted saved idea must not remain labeled unsaved');
   const imageWrites=requests.slice(imageWritesBefore),imageItem=items.find(item=>item.idea===imageIdea);
   assert.deepEqual(imageWrites.map(body=>body.operation),['save','generate'],'Generate first saves the idea, then requests a real job contract');
-  assert.equal(imageWrites[0].item.title,imageTitle,'The title is derived from the idea before saving');
+  assert.equal(imageWrites[0].item.title,imageTitle,'The canonical reviewed title is saved with its source-bound idea');
   assert.equal(imageWrites[1].id,imageItem.id);assert.equal(imageWrites[1].expectedVersion,1);
   assert.ok(imageItem.jobId,'The queued state comes from the accepted server job');
   assert.ok(await editor.getByRole('button',{name:'Queued',exact:true}).isDisabled());
@@ -366,8 +372,8 @@ try{
   await noOverflow('Polled image result');await closeDialog();
 
   await page.getByRole('button',{name:`Create video on ${dayOffset(2)}`,exact:true}).click();await editor.waitFor();
-  const videoIdea='Synthetic video creation from a saved idea.',videoTitle=videoIdea.slice(0,-1),videoWritesBefore=requests.length;
-  await editor.getByRole('textbox',{name:'Idea',exact:true}).fill(videoIdea);
+  const videoLesson=reviewedLessons[1],videoIdea=videoLesson.idea,videoTitle=videoLesson.title,videoWritesBefore=requests.length;
+  await editor.getByLabel('Reviewed lesson',{exact:true}).selectOption(videoLesson.id);
   await editor.getByRole('button',{name:'Generate video',exact:true}).click();
   await editor.getByRole('button',{name:'Queued',exact:true}).waitFor();
   const videoWrites=requests.slice(videoWritesBefore),videoItem=items.find(item=>item.idea===videoIdea);
@@ -424,7 +430,7 @@ try{
   await page.getByRole('button',{name:'Start agent',exact:true}).waitFor();assert.equal(agent.paused,true);
   assert.deepEqual(errors,[],'No browser runtime errors');
   const report={result:'PASS',engine:'Playwright WebKit; not a physical iPhone',widths,data:'Synthetic API responses only',productionWrites:0,
-    checks:['real private API 401/no-store','five destinations','unavailable money without fake zeros','Lifetime overlap explanation and unknown provider access','dialog focus containment and restoration','populated Inbox detail and summary coverage','versioned reply save and reload','session-only unfinished reply recovery','Inbox conflict preserves local reply and exposes account version','offline Inbox never sends or auto-saves on reconnect','persisted read state preserves reply','plain agent result and next step with optional original report','idea and format first; optional caption/title/date','empty-date draft creation','Save draft for ideas without media','input limits agree with server','saved account version after reload','409 preserves unsaved text','offline/reconnect does not silently send','image and video generate save an automatic title before requesting a job','accepted server job response shown','return and reload resume generation polling','renderer failure is visible without automatic retry','unavailable agent start remains Off without queued work','agent start accepts ten synthetic jobs across five future dates','generated files stay separate from creative review and publishing','enabled agent progress polling and explicit pause','month and six-date agenda controls','no horizontal overflow','125% rendered text size']};
+    checks:['real private API 401/no-store','five destinations','unavailable money without fake zeros','Lifetime overlap explanation and unknown provider access','dialog focus containment and restoration','populated Inbox detail and summary coverage','versioned reply save and reload','session-only unfinished reply recovery','Inbox conflict preserves local reply and exposes account version','offline Inbox never sends or auto-saves on reconnect','persisted read state preserves reply','plain agent result and next step with optional original report','idea and format first; optional caption/title/date','empty-date draft creation','Save draft for ideas without media','input limits agree with server','saved account version after reload','409 preserves unsaved text','offline/reconnect does not silently send','reviewed image/video lessons save their canonical source-bound title before requesting a job','custom changed intent blocks generation without a paid request','accepted server job response shown','return and reload resume generation polling','renderer failure is visible without automatic retry','unavailable agent start remains Off without queued work','agent start accepts ten synthetic jobs across five future dates','generated files stay separate from creative review and publishing','enabled agent progress polling and explicit pause','month and six-date agenda controls','no horizontal overflow','125% rendered text size']};
   await writeFile('artifacts/founder-dashboard-validation.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));
 }catch(error){
   if(page){await page.screenshot({path:'artifacts/founder-failure-synthetic.png',fullPage:true}).catch(()=>{});await writeFile('artifacts/founder-failure-state.json',JSON.stringify({error:String(error),runtimeErrors:errors,url:page.url(),body:await page.locator('body').innerText().catch(()=>''),dialogs:await page.locator('dialog').evaluateAll(nodes=>nodes.map(node=>({open:node.open,label:node.getAttribute('aria-label'),html:node.outerHTML}))).catch(()=>[])},null,2));}
