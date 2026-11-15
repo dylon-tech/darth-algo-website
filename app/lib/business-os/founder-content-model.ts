@@ -19,6 +19,7 @@ export type FounderContentItem = {
   lastError: string|null;
   /** Source-preserving visual treatment, independent of publication approval. */
   visualVariant?: number;
+  publication?: {version:number;state:string;approvedAt:string|null};
   renderStatus?: FounderRenderJobStatus|null; renderStage?: string|null; renderProgress?: number;
 };
 export type FounderContentDraft = Pick<FounderContentItem,
@@ -81,6 +82,14 @@ export function founderClock(now=new Date()) {
   const parts=new Intl.DateTimeFormat('en-CA',{timeZone:founderTimeZone,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(now);
   const get=(name:string)=>parts.find(p=>p.type===name)!.value;
   return {day:`${get('year')}-${get('month')}-${get('day')}`,time:`${get('hour')}:${get('minute')}`};
+}
+/** Resolve a displayed Eastern wall-clock time; reject nonexistent DST times. */
+export function founderPostingInstant(day:string,time:string) {
+  if(!isCalendarDay(day)||!/^([01]\d|2[0-3]):[0-5]\d$/.test(time))throw new FounderContentError('Choose a valid Eastern posting time.');
+  const wall=Date.parse(day+'T'+time+':00Z');
+  const candidates=[4,5].map(offset=>new Date(wall+offset*3600000)).filter(date=>{const clock=founderClock(date);return clock.day===day&&clock.time===time;});
+  if(candidates.length!==1)throw new FounderContentError('This time is ambiguous or unavailable at the daylight-saving change. Choose another time.');
+  return candidates[0].toISOString();
 }
 export function addCalendarDays(day:string,count:number) {
   if(!isCalendarDay(day))throw new FounderContentError('Choose a valid calendar date.');
@@ -155,7 +164,7 @@ export function founderCoverage(items:FounderContentItem[],now=new Date()):Found
   const days=founderDays(items,now),future=days.slice(1),ids=new Set(future.flatMap(d=>d.slots.map(s=>s.itemId)).filter(Boolean));
   const originals=items.filter(i=>ids.has(i.id));
   const active=originals.filter(i=>!['skipped','held','archived'].includes(i.status));
-  const produced=active.filter(i=>i.status==='ready'&&Boolean(i.mediaAssetId)&&Boolean(i.mediaVerifiedAt));
+  const produced=active.filter(i=>(i.status==='ready'||Boolean(i.publication?.approvedAt&&i.publication.version===i.version))&&Boolean(i.mediaAssetId)&&Boolean(i.mediaVerifiedAt));
   const allDestinations=(item:FounderContentItem,predicate:typeof deliveryIsAccepted)=>item.destinations.length>0&&item.destinations.every(network=>item.deliveries.some(d=>d.network===network&&predicate(item,d)));
   return {futureDays:5,expectedOriginals:future.reduce((n,day)=>n+day.slots.length,0),planned:active.filter(i=>Boolean(i.idea||i.title)).length,
     generated:active.filter(i=>Boolean(i.mediaAssetId&&i.mediaVerifiedAt&&(i.type==='image'||i.coverAssetId))).length,

@@ -1,6 +1,6 @@
 {
   "version": "vercel-native-v1",
-  "fingerprint": "72598ec6f52064579f94eeefc52d532c037713fd30937efd6c8d33b3e49bcb13",
+  "fingerprint": "0f56f3eb53be073be91a1df404628e02e8cc7f216585c0a46a84150fa10d31f1",
   "files": [
     {
       "file": ".python-version",
@@ -12,7 +12,7 @@
     },
     {
       "file": "app/api/cron/owner-work/route.ts",
-      "sha256": "4881f3e221c71a75b01974cf4907c528aea6ac8cd56293b1da7e4b3028e2f63c"
+      "sha256": "cb562e5018445634a5d2e01c9649cd4258471579dc2c4655b66d14757823446b"
     },
     {
       "file": "app/api/owner/founder-content/route.ts",
@@ -28,7 +28,7 @@
     },
     {
       "file": "app/lib/business-os/founder-content.ts",
-      "sha256": "90607a7cf74b44f4abd5ab02d8bfaf9d58650323cfa4b142cad183fcb4993dfe"
+      "sha256": "d331632488ce86487df9ebdc48ecf42d733438b5193e106103b6e1c531400317"
     },
     {
       "file": "app/lib/business-os/founder-media-model.ts",

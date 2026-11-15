@@ -69,7 +69,7 @@ function finishSyntheticJob(item,error=null){
   const job=jobs.find(job=>job.id===item.jobId);assert.equal(job?.status,'running','Only a running synthetic job can finish');
   Object.assign(job,{status:error?'failed':'completed',stage:error?'Failed':'Saved',progress:error?0:100,retryable:Boolean(error),error,updatedAt:stamp(),finishedAt:stamp()});
   Object.assign(item,{version:item.version+1,status:error?'failed':'checking',lastError:error,updatedAt:stamp(),renderStatus:job.status,renderStage:job.stage,renderProgress:job.progress});
-  if(!error){assert.equal(item.type,'image','Completed fixture uses an existing public chart image');Object.assign(item,{mediaAssetId:randomUUID(),mediaUrl:'/indicators/swing-overview.png',mediaVerifiedAt:stamp()});}
+  if(!error){assert.equal(item.type,'image','Completed fixture uses an existing public chart image');Object.assign(item,{mediaAssetId:randomUUID(),mediaUrl:'/indicators/swing-overview.png',mediaVerifiedAt:stamp(),caption:item.caption||'Synthetic educational caption.'});}
 }
 function content(month=today.slice(0,7)){
   const future=items.filter(item=>item.day>today&&item.day<=dayOffset(5)&&!item.extra&&item.status!=='archived'),active=future.filter(item=>!['held','skipped'].includes(item.status));
@@ -86,6 +86,7 @@ function content(month=today.slice(0,7)){
   };
 }
 const media={checkedAt:stamp(),assets:[],capabilities:{upload:true,accepted:['image/jpeg','image/png','image/webp','video/mp4'],maxFileBytes:33554432,maxStoredBytes:268435456,chunkBytes:1048576,conversion:'Synthetic fixture. JPEG/PNG/WebP and H.264 MP4 accepted.',generation:{available:false,reason:'Synthetic media capability fixture.'},privacy:'Private owner originals; no publication implied.'}};
+const publicationWrites=[],publications=[];
 let browser,context,page;
 const errors=[];
 async function noOverflow(label){assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`${label}: horizontal overflow`);}
@@ -133,6 +134,12 @@ try{
       return reply({status:'saved',state:item.state,message:'Draft saved to your account. No email was sent.',sent:false});
     }
     if(name==='founder-media')return reply(media);
+    if(name==='founder-publication'){
+      if(request.method()==='GET')return reply({enabled:true,items:publications.filter(p=>p.item_id===url.searchParams.get('itemId'))});
+      const body=request.postDataJSON();publicationWrites.push(body);
+      if(body.operation==='prepare'){const item=items.find(i=>i.id===body.itemId);assert.equal(body.expectedVersion,item.version);const payload={itemId:item.id,version:item.version,mediaAssetId:item.mediaAssetId,caption:item.caption,altText:item.title,publishAt:body.publishAt,aiDisclosure:'AI-assisted media; Instagram AI label requested; Threads/X native labels not verified.',destinations:item.destinations.map(network=>({network,name:'Synthetic '+network,channelId:'synthetic-'+network}))};const p={id:randomUUID(),item_id:item.id,content_version:item.version,payload,payload_hash:'a'.repeat(64),state:'needs_review',destinations:[]};publications.push(p);return reply({id:p.id,hash:p.payload_hash,payload,state:p.state});}
+      assert.equal(body.operation,'approve');assert.equal(body.confirmApproved,true);const p=publications.find(p=>p.id===body.id);assert.equal(body.expectedHash,p.payload_hash);p.state='approved';return reply({message:'Synthetic exact-version permission saved. No provider was called.'});
+    }
     if(name==='acquisition')return reply({checkedAt:stamp(),visits:{status:'unavailable',data:null},conversions:{status:'unavailable',data:null}});
     if(name!=='founder-content')return reply({error:'No synthetic route for this operation.'},503);
     if(request.method()==='GET'){
@@ -399,7 +406,14 @@ try{
   assert.ok(contentReads.length>imageReadsBefore,'Returning to a queued job polls its running and saved outcomes');
   await editor.getByRole('button',{name:'Save to account',exact:true}).waitFor();
   await editor.getByText('Posting status',{exact:true}).click();await editor.getByText('Not scheduled or published.',{exact:true}).waitFor();
-  await noOverflow('Polled image result');await closeDialog();
+  const posting=editor.getByRole('region',{name:'Photo publication review'});
+  await posting.getByRole('button',{name:'Prepare posting review',exact:true}).click();
+  const finalApproval=posting.getByRole('button',{name:'Approve photo for this time',exact:true});await finalApproval.waitFor();assert.ok(await finalApproval.isDisabled(),'No final publish permission without explicit checkbox');
+  await posting.getByRole('checkbox').check();await finalApproval.click();
+  await posting.getByText('Synthetic exact-version permission saved. No provider was called.',{exact:true}).waitFor();
+  assert.deepEqual(publicationWrites.map(x=>x.operation),['prepare','approve']);
+  assert.ok(await editor.getByRole('button',{name:'Approve this version',exact:true}).isDisabled(),'Creative review cannot silently invalidate approved posting permission');
+  await noOverflow('Polled image result and exact posting approval');await closeDialog();
 
   await page.getByRole('button',{name:`Add content ${dayOffset(2)}`,exact:true}).click();await editor.waitFor();await editor.getByRole('button',{name:'Video',exact:true}).click();
   const videoLesson=reviewedLessons[1],videoIdea=videoLesson.idea,videoTitle=videoLesson.title,videoWritesBefore=requests.length;
