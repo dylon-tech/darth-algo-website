@@ -289,8 +289,8 @@ try{
   await page.getByRole('button',{name:'Create',exact:true}).click();
   const suggestion=page.getByRole('article').filter({has:page.getByRole('heading',{name:reviewedLessons[0].title,exact:true})});
   await suggestion.getByRole('button',{name:'Make photo',exact:true}).click();
-  await page.getByRole('dialog').getByLabel('Idea',{exact:true}).waitFor();
-  assert.equal(await page.getByRole('dialog').getByLabel('Idea',{exact:true}).inputValue(),reviewedLessons[0].idea);
+  await page.getByRole('dialog').getByRole('textbox',{name:'Idea',exact:true}).waitFor();
+  assert.equal(await page.getByRole('dialog').getByRole('textbox',{name:'Idea',exact:true}).inputValue(),reviewedLessons[0].idea);
   await page.getByRole('dialog').getByText('Caption, date & other options',{exact:true}).click();
   for(const network of ['Instagram','Threads','X'])assert.equal(await page.getByRole('dialog').getByRole('button',{name:network,exact:true}).getAttribute('aria-pressed'),'true','Photo destination is preselected');
   await noOverflow('Suggested photo on phone');await page.screenshot({path:'artifacts/content-studio-suggestion-synthetic.png',fullPage:true});
