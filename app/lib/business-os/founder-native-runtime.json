@@ -1,6 +1,6 @@
 {
   "version": "vercel-native-v1",
-  "fingerprint": "8864237d000a843b5ccefdf455754d8d9a1ac9dd3f72fcb58f6c248b9a035294",
+  "fingerprint": "72598ec6f52064579f94eeefc52d532c037713fd30937efd6c8d33b3e49bcb13",
   "files": [
     {
       "file": ".python-version",
@@ -28,7 +28,7 @@
     },
     {
       "file": "app/lib/business-os/founder-content.ts",
-      "sha256": "8047e32950d73ac9da77602564d0e72d7df8c03898c5b71a0b5c04bd3c829934"
+      "sha256": "90607a7cf74b44f4abd5ab02d8bfaf9d58650323cfa4b142cad183fcb4993dfe"
     },
     {
       "file": "app/lib/business-os/founder-media-model.ts",
@@ -80,11 +80,11 @@
     },
     {
       "file": "scripts/founder-renderer/recipes.py",
-      "sha256": "d9a0b980f48d7a99a955b712a967b279350ed0680e825c33a1895ce1e5d75b19"
+      "sha256": "53a6193680a58182bb1edb56a1847b920d5a58c066abd74c45d91fcfa8d0e4a4"
     },
     {
       "file": "scripts/founder-renderer/render.py",
-      "sha256": "188a951d630a3d8afdb806b9a7c6ca2fb870a94b85b4c9e1ccd5222a4e2b7c61"
+      "sha256": "b5f1a8a648e2303f959d53081ec61f81afb574ba6e2dd2185a283b0552186878"
     },
     {
       "file": "scripts/founder-renderer/runtime-profile.mjs",

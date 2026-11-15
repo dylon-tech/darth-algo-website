@@ -8,12 +8,14 @@ import {webkit} from 'playwright-core';
 // seeded customer, or alternate source endpoint added for these checks.
 const reviewedLessons=JSON.parse(await readFile(new URL('../app/lib/business-os/founder-render-catalog.json',import.meta.url),'utf8'));
 const port=3241,origin=`http://127.0.0.1:${port}`;
-const server=spawn(process.execPath,['node_modules/next/dist/bin/next','start','-p',String(port)],{
+const server=spawn(process.execPath,['node_modules/next/dist/bin/next','start','-H','127.0.0.1','-p',String(port)],{
   stdio:'inherit',env:{...process.env,DATABASE_URL:'',AI_OS_ENABLED:'false',AI_OS_AI_ENABLED:'false',AI_OS_AUTONOMY_ENABLED:'false',NEXT_TELEMETRY_DISABLED:'1'},
 });
 const widths=[320,390,430,768,1280],stamp=()=>new Date().toISOString();
 const today=new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
 const dayOffset=n=>new Date(Date.parse(today+'T12:00:00Z')+n*86400000).toISOString().slice(0,10);
+const scheduledTypes=day=>({1:['image','video'],2:['image'],3:['video'],4:['image'],5:['image','video']}[new Date(day+'T12:00:00Z').getUTCDay()]||[]);
+const expectedSlots=Array.from({length:5},(_,i)=>scheduledTypes(dayOffset(i+1)).length).reduce((a,b)=>a+b,0);
 const dayLabel=day=>new Date(day+'T12:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',weekday:'short',timeZone:'America/New_York'});
 const templates=[
   {id:'DA-PHOTO-20261112-v4-REFINED',name:'Photo v4 · approved design',type:'image',description:'Approved design, synthetic test data.'},
@@ -73,11 +75,11 @@ function content(month=today.slice(0,7)){
   const future=items.filter(item=>item.day>today&&item.day<=dayOffset(5)&&!item.extra&&item.status!=='archived'),active=future.filter(item=>!['held','skipped'].includes(item.status));
   const generated=active.filter(item=>item.mediaAssetId&&item.mediaVerifiedAt&&(item.type==='image'||item.coverAssetId)).length,produced=active.filter(item=>item.status==='ready'&&item.mediaAssetId&&item.mediaVerifiedAt).length;
   return {checkedAt:stamp(),today,timeZone:'America/New_York',month,items,archivedItems:[],templates,jobs,
-    days:Array.from({length:6},(_,n)=>({day:dayOffset(n),isToday:n===0,slots:['image','video'].map(type=>{
+    days:Array.from({length:6},(_,n)=>({day:dayOffset(n),isToday:n===0,slots:scheduledTypes(dayOffset(n)).map(type=>{
       const item=items.find(i=>i.day===dayOffset(n)&&i.type===type&&!i.extra);
       return {type,time:item?.time||(type==='image'?'09:00':'15:00'),itemId:item?.id||null,state:item?.status||'missing',remainingToday:n===0};
     })})),
-    coverage:{futureDays:5,expectedOriginals:10,planned:active.length,generated,produced,scheduled:0,published:0,skipped:future.filter(item=>item.status==='skipped').length,held:future.filter(item=>item.status==='held').length,missing:10-future.length,expectedDeliveries:0,acceptedDeliveries:0,publishedDeliveries:0,todayRemaining:2,definition:'Ten original future slots. Generated files still need review; plans and jobs are not finished media or accepted schedules.'},
+    coverage:{futureDays:5,expectedOriginals:expectedSlots,planned:active.length,generated,produced,scheduled:0,published:0,skipped:future.filter(item=>item.status==='skipped').length,held:future.filter(item=>item.status==='held').length,missing:expectedSlots-future.length,expectedDeliveries:0,acceptedDeliveries:0,publishedDeliveries:0,todayRemaining:2,definition:'Ten original future slots. Generated files still need review; plans and jobs are not finished media or accepted schedules.'},
     agent:{...agent,generated,counts:Object.fromEntries(['queued','running','failed','blocked','completed'].map(status=>[status,jobs.filter(job=>job.status===status).length]))},
     capabilities:{drafts:true,uploads:true,imageGeneration:rendererAvailable,videoGeneration:rendererAvailable,scheduling:false,publishingPause:false,rendererReason:rendererAvailable?'Synthetic renderer transport only.':rendererError,publisherReason:'No calendar scheduling executor is connected.'},
     legacyQueue:{checkedAt:stamp(),today,items:[]},legacyQueueError:null,truncated:false,
@@ -150,11 +152,11 @@ try{
         return accepted({paused:true,version:agent.version,message:agent.message});
       }
       assert.equal(items.length,0,'Five-day agent scenario begins with an isolated empty synthetic calendar');
-      for(let day=1;day<=5;day++)for(const type of ['image','video']){
+      for(let day=1;day<=5;day++)for(const type of scheduledTypes(dayOffset(day))){
         const item={id:randomUUID(),version:1,day:dayOffset(day),time:type==='image'?'09:00':'15:00',type,title:`Synthetic agent ${type} for ${dayOffset(day)}`,idea:'A synthetic educational media idea.',script:'',caption:'',templateId:templates.find(template=>template.type===type).id,destinations:[],mediaAssetId:null,coverAssetId:null,mediaUrl:null,coverUrl:null,mediaVerifiedAt:null,extra:false,locked:false,status:'draft',createdAt:stamp(),updatedAt:stamp(),deliveries:[],jobId:null,lastError:null};
         items.push(item);queueSyntheticJob(item,'agent');
       }
-      Object.assign(agent,{status:'Queued',lastSeenAt:stamp(),lastCreatedCount:10,currentWork:'Ten synthetic media jobs are queued.',message:'Synthetic agent queued ten jobs for the next five days. No provider was called.'});
+      Object.assign(agent,{status:'Queued',lastSeenAt:stamp(),lastCreatedCount:expectedSlots,currentWork:'Synthetic weekday media jobs are queued.',message:'Synthetic agent queued weekday jobs for the next five days. No provider was called.'});
       return accepted({paused:false,version:agent.version,items,jobs,message:agent.message});
     }
     if(body.operation==='generate'){
@@ -178,6 +180,9 @@ try{
   });
   await mkdir('artifacts',{recursive:true});
   await page.goto(origin+'/owner',{waitUntil:'networkidle'});
+  await page.getByRole('heading',{name:'Content',exact:true,level:1}).waitFor();
+  await page.getByText('Every asset waits for your approval. No reply means no publishing.',{exact:true}).waitFor();
+  await nav('Overview');
   await page.getByRole('heading',{name:'Business overview',exact:true,level:1}).waitFor();
   await page.getByText(customer.name,{exact:true}).first().waitFor();
   const sales=page.getByRole('region',{name:'Collected sales',exact:true});
@@ -281,6 +286,17 @@ try{
   await closeDialog();
 
   await nav('Content');
+  await page.getByRole('button',{name:'Create',exact:true}).click();
+  const suggestion=page.getByRole('article').filter({has:page.getByRole('heading',{name:reviewedLessons[0].title,exact:true})});
+  await suggestion.getByRole('button',{name:'Make photo',exact:true}).click();
+  await page.getByRole('dialog').getByLabel('Idea',{exact:true}).waitFor();
+  assert.equal(await page.getByRole('dialog').getByLabel('Idea',{exact:true}).inputValue(),reviewedLessons[0].idea);
+  await page.getByRole('dialog').getByText('Caption, date & other options',{exact:true}).click();
+  for(const network of ['Instagram','Threads','X'])assert.equal(await page.getByRole('dialog').getByRole('button',{name:network,exact:true}).getAttribute('aria-pressed'),'true','Photo destination is preselected');
+  await noOverflow('Suggested photo on phone');await page.screenshot({path:'artifacts/content-studio-suggestion-synthetic.png',fullPage:true});
+  await closeDialog();
+  await page.evaluate(()=>{for(const key of Object.keys(localStorage))if(key.startsWith('da-founder-content-draft:'))localStorage.removeItem(key);});
+  await page.getByRole('button',{name:'Calendar',exact:true}).click();
   await page.getByRole('button',{name:'Month',exact:true}).click();
   await noOverflow('Month calendar');
   await page.getByRole('button',{name:'Agenda',exact:true}).click();
@@ -289,7 +305,7 @@ try{
   const targetDay=dayOffset(3);
   if(targetDay.slice(0,7)!==today.slice(0,7))await page.getByRole('button',{name:'Next month',exact:true}).click();
   await page.getByRole('button',{name:`${dayLabel(targetDay)}, 0 items`,exact:true}).click();
-  await page.getByRole('button',{name:`Create image on ${targetDay}`,exact:true}).click();
+  await page.getByRole('button',{name:`Add content ${targetDay}`,exact:true}).click();
   const editor=page.getByRole('dialog');await editor.waitFor();
   await editor.getByRole('textbox',{name:'Idea',exact:true}).waitFor();
   assert.ok(await editor.getByRole('button',{name:'Image',exact:true}).isVisible());assert.ok(await editor.getByRole('button',{name:'Video',exact:true}).isVisible());
@@ -424,21 +440,21 @@ try{
   items.splice(0);jobs.splice(0);replies.clear();rendererAvailable=true;
   await page.reload();await page.getByRole('heading',{name:'Content',exact:true,level:1}).waitFor();await page.getByRole('button',{name:'Agent',exact:true}).click();
   await page.getByRole('button',{name:'Start agent',exact:true}).click();
-  await page.getByText('Synthetic agent queued ten jobs for the next five days. No provider was called.',{exact:true}).waitFor();
+  await page.getByText('Synthetic agent queued weekday jobs for the next five days. No provider was called.',{exact:true}).waitFor();
   await page.getByRole('button',{name:'Pause creation',exact:true}).waitFor();
-  assert.equal(agent.paused,false);assert.equal(jobs.length,10);assert.equal(items.length,10);
-  for(let day=1;day<=5;day++)assert.deepEqual(items.filter(item=>item.day===dayOffset(day)).map(item=>item.type).sort(),['image','video'],'Each of five complete future dates has both original formats');
+  assert.equal(agent.paused,false);assert.equal(jobs.length,expectedSlots);assert.equal(items.length,expectedSlots);
+  for(let day=1;day<=5;day++)assert.deepEqual(items.filter(item=>item.day===dayOffset(day)).map(item=>item.type).sort(),scheduledTypes(dayOffset(day)),'Each date follows the requested weekday cadence');
   for(const item of items)assert.ok(item.jobId&&jobs.some(job=>job.id===item.jobId&&job.itemId===item.id&&job.status==='queued'),'Every generating slot points to an accepted job');
   assert.equal(content().coverage.generated,0);assert.equal(content().coverage.produced,0,'Queued jobs are not counted as verified or reviewed files');
   const agentProgress=page.locator('[aria-live="polite"]').filter({hasText:'finished for the next five days'});
-  assert.match(await agentProgress.innerText(),/0\s*\/\s*10/,'Accepted jobs do not inflate the visible finished count');
+  assert.match(await agentProgress.innerText(),new RegExp(`0\\s*\\/\\s*${expectedSlots}`),'Accepted jobs do not inflate the visible finished count');
   await noOverflow('Five-day content agent');await page.screenshot({path:'artifacts/founder-agent-queued-synthetic.png',fullPage:true});
   const agentReadsBefore=contentReads.length,agentWritesBefore=requests.length;
   const agentImage=items.find(item=>item.type==='image');startSyntheticJob(agentImage);finishSyntheticJob(agentImage);agent.currentWork='Synthetic image saved for review.';
   await page.getByText(agent.currentWork,{exact:true}).waitFor({timeout:20000});
   assert.ok(contentReads.length>agentReadsBefore,'Agent progress refreshes while creation is enabled');assert.equal(requests.length,agentWritesBefore,'Progress polling does not resubmit the start action');
   assert.equal(content().coverage.generated,1);assert.equal(content().coverage.produced,0,'A saved file is separate from creative review');
-  assert.match(await agentProgress.innerText(),/1\s*\/\s*10/,'Visible progress follows the server count of saved files');
+  assert.match(await agentProgress.innerText(),new RegExp(`1\\s*\\/\\s*${expectedSlots}`),'Visible progress follows the server count of saved files');
   await page.getByRole('button',{name:'Pause creation',exact:true}).click();
   await page.getByText('Synthetic creation paused. Existing schedules were unchanged.',{exact:true}).first().waitFor();
   await page.getByRole('button',{name:'Start agent',exact:true}).waitFor();assert.equal(agent.paused,true);

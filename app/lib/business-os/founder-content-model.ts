@@ -17,6 +17,8 @@ export type FounderContentItem = {
   status: FounderContentStatus; locked: boolean; extra: boolean; createdAt: string;
   updatedAt: string; deliveries: FounderDelivery[]; jobId: string|null;
   lastError: string|null;
+  /** Source-preserving visual treatment, independent of publication approval. */
+  visualVariant?: number;
   renderStatus?: FounderRenderJobStatus|null; renderStage?: string|null; renderProgress?: number;
 };
 export type FounderContentDraft = Pick<FounderContentItem,
@@ -123,11 +125,20 @@ export function safeFounderMediaUrl(value: unknown): string|null {
     return url.toString();
   }catch{return null;}
 }
+/** Approved weekly cadence. Ad-hoc owner drafts remain allowed on any date. */
+export function founderScheduledTypes(day:string):FounderMediaType[] {
+  if(!isCalendarDay(day))return [];
+  const weekday=new Date(day+'T12:00:00Z').getUTCDay();
+  return weekday===1||weekday===5?['image','video']:weekday===2||weekday===4?['image']:weekday===3?['video']:[];
+}
+export function founderDefaultDestinations(type:FounderMediaType):FounderDestination[] {
+  return type==='image'?['instagram','threads','x']:['instagram','tiktok','youtube'];
+}
 export function founderDays(items:FounderContentItem[],now=new Date()):FounderContentDay[] {
   const clock=founderClock(now);
   return Array.from({length:6},(_,i)=>{
     const day=addCalendarDays(clock.day,i);
-    return {day,isToday:i===0,slots:(['image','video'] as const).map(type=>{
+    return {day,isToday:i===0,slots:founderScheduledTypes(day).map(type=>{
       const item=items.find(row=>row.day===day&&row.type===type&&!row.extra&&row.status!=='archived');
       const time=item?.time||(type==='image'?'09:00':'15:00');
       return {type,time,itemId:item?.id||null,state:item?.status||'missing',remainingToday:i===0&&time>clock.time};
@@ -146,7 +157,7 @@ export function founderCoverage(items:FounderContentItem[],now=new Date()):Found
   const active=originals.filter(i=>!['skipped','held','archived'].includes(i.status));
   const produced=active.filter(i=>i.status==='ready'&&Boolean(i.mediaAssetId)&&Boolean(i.mediaVerifiedAt));
   const allDestinations=(item:FounderContentItem,predicate:typeof deliveryIsAccepted)=>item.destinations.length>0&&item.destinations.every(network=>item.deliveries.some(d=>d.network===network&&predicate(item,d)));
-  return {futureDays:5,expectedOriginals:10,planned:active.filter(i=>Boolean(i.idea||i.title)).length,
+  return {futureDays:5,expectedOriginals:future.reduce((n,day)=>n+day.slots.length,0),planned:active.filter(i=>Boolean(i.idea||i.title)).length,
     generated:active.filter(i=>Boolean(i.mediaAssetId&&i.mediaVerifiedAt&&(i.type==='image'||i.coverAssetId))).length,
     produced:produced.length,scheduled:produced.filter(i=>allDestinations(i,deliveryIsAccepted)).length,
     published:produced.filter(i=>allDestinations(i,deliveryIsPublished)).length,
@@ -156,7 +167,7 @@ export function founderCoverage(items:FounderContentItem[],now=new Date()):Found
     acceptedDeliveries:active.reduce((n,i)=>n+i.destinations.filter(network=>i.deliveries.some(d=>d.network===network&&deliveryIsAccepted(i,d))).length,0),
     publishedDeliveries:active.reduce((n,i)=>n+i.destinations.filter(network=>i.deliveries.some(d=>d.network===network&&deliveryIsPublished(i,d))).length,0),
     todayRemaining:days[0].slots.filter(s=>s.remainingToday).length,
-    definition:'Five complete future Eastern dates, ten original slots. Generated means a verified saved file; produced means reviewed. Skips, holds and destination receipts are counted separately.'};
+    definition:'Five complete future Eastern dates, counting only the approved Monday–Friday slots (seven originals per full week). Generated means a verified saved file; produced means reviewed. Skips, holds and destination receipts are counted separately.'};
 }
 export function assertFounderVersion(current:FounderContentItem,expected:unknown) {
   if(!Number.isInteger(expected)||current.version!==expected)throw new FounderContentError('This content changed on another device. Review the current saved version before saving.',409,'VERSION_CONFLICT',current);

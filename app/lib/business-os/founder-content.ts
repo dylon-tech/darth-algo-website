@@ -8,7 +8,7 @@ import {founderRenderBrief} from './founder-render-catalog';
 import deploymentConfig from '../../../vercel.json';
 import {
   FounderContentError,addCalendarDays,assertFounderVersion,founderClock,founderCoverage,
-  founderDays,founderTemplates,founderTimeZone,founderUuid,isCalendarDay,isCalendarMonth,
+  founderDays,founderScheduledTypes,founderDefaultDestinations,founderTemplates,founderTimeZone,founderUuid,isCalendarDay,isCalendarMonth,
   normalizeFounderDraft,safeFounderMediaUrl,type FounderContentItem,type FounderContentDraft,
   type FounderContentSnapshot,type FounderMediaType,type FounderRenderJob,
 } from './founder-content-model';
@@ -124,8 +124,8 @@ export async function readFounderContent(month?:string,now=new Date()):Promise<F
   const lastSeen=iso(control.last_seen_at),fresh=Boolean(lastSeen&&now.getTime()-Date.parse(lastSeen)>=0&&now.getTime()-Date.parse(lastSeen)<=15*60000);
   const scheduled=deploymentConfig.crons.some(cron=>cron.path==='/api/cron/owner-work'&&cron.schedule==='*/5 * * * *');
   const nextRun=!control.paused&&control.global_paused===false&&fresh&&scheduled?new Date((Math.floor(now.getTime()/300000)+1)*300000).toISOString():null;
-  const status=control.paused?'Off':control.global_paused===true?'Paused':!renderStatus.ready?'Needs attention':counts.running?'Creating':counts.queued?'Queued':counts.failed||counts.blocked?'Needs attention':coverage.generated===10?'Up to date':'On';
-  const message=control.paused?(control.last_error||(!renderStatus.ready?renderStatus.reason:'Start to create images and videos for the next five days.')):control.global_paused===true?'The existing worker is paused.':!renderStatus.ready?renderStatus.reason:counts.running?'Creating your content.':counts.queued?`${counts.queued} ${counts.queued===1?'file':'files'} queued for the media worker.`:control.last_error||(!renderStatus.ready?renderStatus.reason:coverage.generated===10?'All ten files are saved. Review them before publishing.':'Watching the next five days for missing content.');
+  const status=control.paused?'Off':control.global_paused===true?'Paused':!renderStatus.ready?'Needs attention':counts.running?'Creating':counts.queued?'Queued':counts.failed||counts.blocked?'Needs attention':coverage.generated===coverage.expectedOriginals?'Up to date':'On';
+  const message=control.paused?(control.last_error||(!renderStatus.ready?renderStatus.reason:'Start creating your Monday–Friday content, with approval before publishing.')):control.global_paused===true?'The existing worker is paused.':!renderStatus.ready?renderStatus.reason:counts.running?'Creating your content.':counts.queued?`${counts.queued} ${counts.queued===1?'file':'files'} queued for the media worker.`:control.last_error||(!renderStatus.ready?renderStatus.reason:coverage.generated===coverage.expectedOriginals?'All planned files in this window are saved. Review each before publishing.':'Watching the next five days for missing content.');
   const running=jobs.find(job=>job.status==='running'),runningItem=running?items.find(item=>item.id===running.itemId):undefined;
   const currentWork=running?(runningItem?`${running.stage}: ${runningItem.title.slice(0,160)}`:`Creating ${running.type==='image'?'an image':'a video'}`):null;
   return {checkedAt:now.toISOString(),today,timeZone:founderTimeZone,month:selectedMonth,
@@ -237,7 +237,7 @@ export async function mutateFounderContent(value:unknown,clockNow=new Date()) {
       await ensureSlotAvailable(sql,draft.day,draft.type,draft.id,draft.extra);
       const item:FounderContentItem={...draft,...media,id:current?.id||randomUUID(),version:(current?.version||0)+1,
         status:media.mediaAssetId?'checking':'draft',locked:true,createdAt:current?.createdAt||now,updatedAt:now,
-        deliveries:current?.deliveries||[],jobId:null,lastError:null};
+        deliveries:current?.deliveries||[],jobId:null,lastError:null,visualVariant:current?.visualVariant??0};
       // expectedVersion is an input guard, never part of saved content.
       delete (item as unknown as Record<string,unknown>).expectedVersion;
       if(current)await cancelItemJobs(sql,current.id,now);
@@ -355,6 +355,7 @@ async function queueRenderItem(sql:Sql,current:FounderContentItem,source:'agent'
   }
   const id=retry?String(prior.id):randomUUID();
   const item:FounderContentItem={...current,version:current.version+1,status:'generating',jobId:id,lastError:null,
+    visualVariant:current.mediaAssetId?((current.visualVariant??0)+1)%8:(current.visualVariant??0),
     mediaAssetId:null,coverAssetId:null,mediaUrl:null,coverUrl:null,mediaVerifiedAt:null,updatedAt:stamp};
   await writeVersion(sql,item,retry?'retry_generation':'queue_generation');
   const [job]=retry?await sql`update os_founder_render_jobs set content_version=${item.version},source=${source},status='queued',stage='Queued',progress=0,retryable=true,error=null,lease_token=null,lease_expires_at=null,worker_id=null,started_at=null,finished_at=null,updated_at=${stamp},budget_day=${budgetDay} where id=${id} returning *`
@@ -366,7 +367,7 @@ async function queueMissingWindow(sql:Sql,now:Date) {
   const rows=await sql`select id,version,data from os_founder_content_items where not archived and not extra and day>=${clock.day} and day<${end} order by day,data->>'time',id`;
   const originals=rows.map(asItem),items:FounderContentItem[]=[],jobs:FounderRenderJob[]=[];
   for(const item of originals){
-    if(item.locked||item.mediaAssetId||!['idea','draft'].includes(item.status)||(item.day===clock.day&&item.time<=clock.time))continue;
+    if(!founderScheduledTypes(item.day).includes(item.type)||item.locked||item.mediaAssetId||!['idea','draft'].includes(item.status)||(item.day===clock.day&&item.time<=clock.time))continue;
     const brief=founderRenderBrief(item);if(nativeApproval().enabled&&!brief.supported){await writeVersion(sql,{...item,version:item.version+1,status:'needs_input',lastError:brief.reason,updatedAt:now.toISOString()},'source_review_required');continue;}
     const queued=await queueRenderItem(sql,item,'agent',now);items.push(queued.item);jobs.push(queued.job);
   }
@@ -436,9 +437,10 @@ export async function claimFounderRenderJob(input:{workerId:string;now?:Date}):P
       const [row]=await tx`select id,version,data from os_founder_content_items where id=${candidate.item_id} for update`;
       const item=row?asItem(row):null;
       const clock=founderClock(now),past=Boolean(item&&candidate.source==='agent'&&(item.day<clock.day||(item.day===clock.day&&item.time<=clock.time)));
-      if(past&&item&&item.jobId===String(candidate.id)&&item.version===Number(candidate.content_version)){
-        const error='The planned time passed. Choose a new date to create this content.';
-        await tx`update os_founder_render_jobs set status='obsolete',stage='Time passed',retryable=false,error=${error},finished_at=${stamp},updated_at=${stamp} where id=${candidate.id}`;
+      const offSchedule=Boolean(item&&candidate.source==='agent'&&!founderScheduledTypes(item.day).includes(item.type));
+      if((past||offSchedule)&&item&&item.jobId===String(candidate.id)&&item.version===Number(candidate.content_version)){
+        const error=offSchedule?'This draft falls outside your current weekly schedule. Choose a new date or generate it manually.':'The planned time passed. Choose a new date to create this content.';
+        await tx`update os_founder_render_jobs set status='obsolete',stage='Schedule review',retryable=false,error=${error},finished_at=${stamp},updated_at=${stamp} where id=${candidate.id}`;
         await writeVersion(sql,{...item,version:item.version+1,status:'needs_input',lastError:error,updatedAt:stamp},'generation_time_passed');continue;
       }
       if(!item||item.version!==Number(candidate.content_version)||item.jobId!==String(candidate.id)||item.status!=='generating'||(candidate.source==='agent'&&item.locked)||externallyInFlight(item)){
@@ -540,20 +542,21 @@ async function planMissingIdeas(sql:Sql,now:string) {
   const clock=founderClock(new Date(now)),end=addCalendarDays(clock.day,6);
   const rows=await sql`select id,version,data from os_founder_content_items where not archived and day>=${clock.day} and day<${end}`;
   const existing=rows.map(asItem);
-  // Keep full retained titles for deduplication. Replenishment never reuses a
-  // title merely because its old date fell outside the visible calendar.
-  const usedRows=await sql`select distinct data->>'title' as title from os_founder_content_items`;
-  const used=new Set(usedRows.map(row=>String(row.title)));
-  const choices=suggestedIdeas.filter(([title])=>!used.has(title));
+  // Reuse reviewed concepts, not identical renders. Least-used concepts rotate
+  // first; each repetition advances a source-preserving visual treatment.
+  const usedRows=await sql`select data->>'title' as title,count(*)::int uses from os_founder_content_items group by data->>'title'`;
+  const usage=new Map(usedRows.map(row=>[String(row.title),Number(row.uses)]));
+  const inWindow=new Set(existing.filter(item=>item.status!=='archived').map(item=>item.title));
+  const choices=suggestedIdeas.filter(([title])=>!inWindow.has(title)).sort((a,b)=>(usage.get(a[0])||0)-(usage.get(b[0])||0));
   const created:FounderContentItem[]=[];
   for(const day of founderDays(existing,new Date(now))){
     for(const slot of day.slots){
       if(slot.itemId||(day.isToday&&!slot.remainingToday))continue;
       const choice=choices.shift();if(!choice)return created;
       const item:FounderContentItem={id:randomUUID(),version:1,day:day.day,time:slot.time,type:slot.type,title:choice[0],idea:choice[1],script:'',caption:'',
-        templateId:slot.type==='image'?founderTemplates[0].id:founderTemplates[1].id,destinations:[],mediaAssetId:null,coverAssetId:null,
+        templateId:slot.type==='image'?founderTemplates[0].id:founderTemplates[1].id,destinations:founderDefaultDestinations(slot.type),mediaAssetId:null,coverAssetId:null,
         mediaUrl:null,coverUrl:null,mediaVerifiedAt:null,status:'idea',locked:false,extra:false,createdAt:now,updatedAt:now,deliveries:[],jobId:null,
-        lastError:null};
+        lastError:null,visualVariant:(usage.get(choice[0])||0)%8};
       await writeVersion(sql,item,'plan_missing');created.push(item);
     }
   }
