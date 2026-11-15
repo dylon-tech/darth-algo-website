@@ -102,6 +102,7 @@ async function nav(name){
   const focusSettled=await heading.evaluate(el=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve(document.activeElement===el)))));
   assert.equal(focusSettled,true,'Navigation finishes its heading-focus transition before editing');
 }
+async function customizeEditor(editor){await editor.waitFor();const button=editor.getByRole('button',{name:'Customize',exact:true});if(await button.isVisible())await button.click();}
 async function closeDialog(){await page.getByRole('dialog').getByRole('button',{name:'Back',exact:true}).click();await page.getByRole('dialog').waitFor({state:'hidden'});}
 
 try{
@@ -325,26 +326,26 @@ try{
   await page.getByRole('button',{name:`${dayLabel(targetDay)}, 0 items`,exact:true}).click();
   await page.getByRole('button',{name:`Add content ${targetDay}`,exact:true}).click();
   const editor=page.getByRole('dialog');await editor.waitFor();
-  if(await editor.getByRole('button',{name:'Customize',exact:true}).isVisible())await editor.getByRole('button',{name:'Customize',exact:true}).click();
+  await customizeEditor(editor);
   await editor.getByRole('textbox',{name:'Idea',exact:true}).waitFor();
   assert.ok(await editor.getByRole('button',{name:'Image',exact:true}).isVisible());assert.ok(await editor.getByRole('button',{name:'Video',exact:true}).isVisible());
-  if(await editor.getByRole('button',{name:'Customize',exact:true}).isVisible())await editor.getByRole('button',{name:'Customize',exact:true}).click();
+  await customizeEditor(editor);
   assert.equal(await editor.getByRole('textbox').count(),1,'A new draft starts with only the idea field');
   for(const label of ['Title','Caption','Date','Time (Eastern)'])assert.equal(await editor.getByLabel(label,{exact:true}).isVisible(),false,`${label} stays under optional controls`);
   assert.ok(await editor.getByRole('button',{name:'Save draft',exact:true}).isDisabled(),'An empty idea and title cannot save');
   assert.ok(await editor.getByRole('button',{name:'Generate image',exact:true}).isDisabled(),'An empty idea and title cannot generate');
   assert.equal(await editor.getByRole('button',{name:'Save to account',exact:true}).count(),0,'An ungenerated idea is clearly saved as a draft');
   await noOverflow('Simple new content editor');await page.screenshot({path:'artifacts/founder-create-simple-synthetic.png',fullPage:true});
-  if(await editor.getByRole('button',{name:'Customize',exact:true}).isVisible())await editor.getByRole('button',{name:'Customize',exact:true}).click();
+  await customizeEditor(editor);
   await editor.getByText('Caption, date & other options',{exact:true}).click();
-  if(await editor.getByRole('button',{name:'Customize',exact:true}).isVisible())await editor.getByRole('button',{name:'Customize',exact:true}).click();
+  await customizeEditor(editor);
   assert.equal(await editor.getByRole('textbox',{name:'Title',exact:true}).getAttribute('maxlength'),'160','Title limit matches the server contract');
   assert.equal(await editor.getByLabel('Date',{exact:true}).inputValue(),targetDay,'An empty calendar date carries into the editor');
-  if(await editor.getByRole('button',{name:'Customize',exact:true}).isVisible())await editor.getByRole('button',{name:'Customize',exact:true}).click();
+  await customizeEditor(editor);
   await editor.getByRole('textbox',{name:'Title',exact:true}).fill('Synthetic calendar persistence check');
-  if(await editor.getByRole('button',{name:'Customize',exact:true}).isVisible())await editor.getByRole('button',{name:'Customize',exact:true}).click();
+  await customizeEditor(editor);
   await editor.getByRole('textbox',{name:'Idea',exact:true}).fill('A safe fixture idea. No real campaign or generation.');
-  if(await editor.getByRole('button',{name:'Customize',exact:true}).isVisible())await editor.getByRole('button',{name:'Customize',exact:true}).click();
+  await customizeEditor(editor);
   await editor.getByRole('textbox',{name:'Caption',exact:true}).fill('Initial phone caption');
   await editor.getByLabel('Date',{exact:true}).fill(dayOffset(3));
   await editor.getByLabel('Time (Eastern)',{exact:true}).fill('09:00');
@@ -354,26 +355,26 @@ try{
   if(await editor.isVisible())await closeDialog();
   await page.reload();await page.getByRole('heading',{name:'Content',exact:true,level:1}).waitFor();
   await page.getByRole('button',{name:/Synthetic calendar persistence check/}).first().click();
-  if(await editor.getByRole('button',{name:'Customize',exact:true}).isVisible())await editor.getByRole('button',{name:'Customize',exact:true}).click();
+  await customizeEditor(editor);
   await editor.waitFor();await editor.getByText('Caption, date & other options',{exact:true}).click();
-  if(await editor.getByRole('button',{name:'Customize',exact:true}).isVisible())await editor.getByRole('button',{name:'Customize',exact:true}).click();
+  await customizeEditor(editor);
   assert.equal(await editor.getByRole('textbox',{name:'Caption',exact:true}).inputValue(),'Initial phone caption','Reload reads the persisted account version');
-  if(await editor.getByRole('button',{name:'Customize',exact:true}).isVisible())await editor.getByRole('button',{name:'Customize',exact:true}).click();
+  await customizeEditor(editor);
   await editor.getByRole('textbox',{name:'Caption',exact:true}).fill('Unsaved phone edit must survive conflict');
   forceConflict=true;await editor.getByRole('button',{name:'Save draft',exact:true}).click();
   await editor.getByText(/changed on another device/).first().waitFor();
-  if(await editor.getByRole('button',{name:'Customize',exact:true}).isVisible())await editor.getByRole('button',{name:'Customize',exact:true}).click();
+  await customizeEditor(editor);
   assert.equal(await editor.getByRole('textbox',{name:'Caption',exact:true}).inputValue(),'Unsaved phone edit must survive conflict','409 preserves the unsaved phone draft');
   await noOverflow('Version conflict editor');await page.screenshot({path:'artifacts/founder-content-conflict-synthetic.png',fullPage:true});
   await editor.getByRole('button',{name:'Keep my draft for review',exact:true}).click();
   const writesBeforeOffline=requests.length;
-  if(await editor.getByRole('button',{name:'Customize',exact:true}).isVisible())await editor.getByRole('button',{name:'Customize',exact:true}).click();
+  await customizeEditor(editor);
   await context.setOffline(true);await editor.getByRole('textbox',{name:'Idea',exact:true}).fill('Offline text remains a local draft.');
   if(await editor.getByRole('button',{name:'Save draft',exact:true}).isEnabled())await editor.getByRole('button',{name:'Save draft',exact:true}).click();
   assert.equal(requests.length,writesBeforeOffline,'Offline save cannot silently dispatch a protected action');
   await context.setOffline(false);
   await editor.getByText('Device draft · ready to save',{exact:true}).waitFor();
-  if(await editor.getByRole('button',{name:'Customize',exact:true}).isVisible())await editor.getByRole('button',{name:'Customize',exact:true}).click();
+  await customizeEditor(editor);
   assert.equal(await editor.getByRole('textbox',{name:'Idea',exact:true}).inputValue(),'Offline text remains a local draft.');
   assert.equal(requests.length,writesBeforeOffline,'Reconnect does not silently submit the offline draft');
 
@@ -385,7 +386,7 @@ try{
   });
   await page.setViewportSize({width:430,height:852});await noOverflow('125% text size');
   assert.ok(await editor.evaluate(el=>el.scrollWidth<=el.clientWidth+1),'Enlarged editor text reflows inside the dialog');
-  if(await editor.getByRole('button',{name:'Customize',exact:true}).isVisible())await editor.getByRole('button',{name:'Customize',exact:true}).click();
+  await customizeEditor(editor);
   await editor.getByRole('textbox',{name:'Caption',exact:true}).focus();
   const saveBox=await editor.getByRole('button',{name:'Save draft',exact:true}).boundingBox();
   assert.ok(saveBox&&saveBox.height>=32&&saveBox.y>=0&&saveBox.y+saveBox.height<=853,'Editor save action stays visible with enlarged text');
@@ -398,15 +399,15 @@ try{
   await page.setViewportSize({width:390,height:852});await page.getByRole('button',{name:'Calendar',exact:true}).click();await page.getByRole('button',{name:'Agenda',exact:true}).click();
   await page.getByRole('button',{name:`Add content ${dayOffset(1)}`,exact:true}).click();await editor.waitFor();
   const imageLesson=reviewedLessons[0],imageIdea=imageLesson.idea,imageTitle=imageLesson.title,imageWritesBefore=requests.length;
-  if(await editor.getByRole('button',{name:'Customize',exact:true}).isVisible())await editor.getByRole('button',{name:'Customize',exact:true}).click();
+  await customizeEditor(editor);
   await editor.getByLabel('Reviewed lesson',{exact:true}).selectOption(imageLesson.id);
   assert.equal(await editor.getByLabel('Title',{exact:true}).inputValue(),imageTitle,'A reviewed lesson fills its canonical title');
-  if(await editor.getByRole('button',{name:'Customize',exact:true}).isVisible())await editor.getByRole('button',{name:'Customize',exact:true}).click();
+  await customizeEditor(editor);
   await editor.getByRole('textbox',{name:'Idea',exact:true}).fill(imageIdea+' Synthetic changed owner intent.');
   assert.ok(await editor.getByRole('button',{name:'Generate image',exact:true}).isDisabled(),'Changing the idea cannot silently render the prior source recipe');
   await editor.getByText('Your changed idea needs source review. Choose a reviewed lesson to reset its source plan, or save this custom draft.',{exact:true}).waitFor();
   assert.equal(requests.length,imageWritesBefore,'Unsupported custom intent makes no generation or paid-host request');
-  if(await editor.getByRole('button',{name:'Customize',exact:true}).isVisible())await editor.getByRole('button',{name:'Customize',exact:true}).click();
+  await customizeEditor(editor);
   await editor.getByLabel('Reviewed lesson',{exact:true}).selectOption(imageLesson.id);
   await editor.getByRole('button',{name:'Generate image',exact:true}).click();
   await editor.getByRole('button',{name:'Queued',exact:true}).waitFor();
@@ -450,7 +451,7 @@ try{
 
   await page.getByRole('button',{name:`Add content ${dayOffset(2)}`,exact:true}).click();await editor.waitFor();await editor.getByRole('button',{name:'Video',exact:true}).click();
   const videoLesson=reviewedLessons[1],videoIdea=videoLesson.idea,videoTitle=videoLesson.title,videoWritesBefore=requests.length;
-  if(await editor.getByRole('button',{name:'Customize',exact:true}).isVisible())await editor.getByRole('button',{name:'Customize',exact:true}).click();
+  await customizeEditor(editor);
   await editor.getByLabel('Reviewed lesson',{exact:true}).selectOption(videoLesson.id);
   await editor.getByRole('button',{name:'Generate video',exact:true}).click();
   await editor.getByRole('button',{name:'Queued',exact:true}).waitFor();
