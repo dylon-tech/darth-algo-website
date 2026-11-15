@@ -195,6 +195,7 @@ try{
   }
   await page.setViewportSize({width:390,height:852});await nav('Customers');
   await page.getByRole('textbox',{name:'Search customers',exact:true}).fill('Synthetic');
+  await page.waitForFunction(()=>JSON.parse(sessionStorage.getItem('da-founder-customer-view')||'null')?.q==='Synthetic');
   const opener=page.getByRole('button',{name:new RegExp(customer.name)});await opener.focus();await opener.click();
   const detail=page.getByRole('dialog',{name:'Customer details'});await detail.waitFor();
   await detail.getByText(/Canceling a monthly subscription does not cancel Lifetime entitlement/).waitFor();
@@ -203,6 +204,19 @@ try{
   await noOverflow('Customer detail');await page.screenshot({path:'artifacts/founder-customer-detail-synthetic.png',fullPage:true});
   await closeDialog();assert.ok(await opener.evaluate(el=>el===document.activeElement),'Back restores customer opener focus');
   assert.equal(await page.getByRole('textbox',{name:'Search customers'}).inputValue(),'Synthetic','Search survives detail navigation');
+  await page.getByRole('button',{name:'Lifetime',exact:true}).click();
+  await nav('Overview');await nav('Customers');
+  await page.waitForFunction(()=>{const input=document.querySelector('input[aria-label="Search customers"]');return input&&!input.disabled;});
+  assert.equal(await page.getByRole('textbox',{name:'Search customers'}).inputValue(),'Synthetic','Search survives leaving and returning to Customers');
+  assert.equal(await page.getByRole('button',{name:'Lifetime',exact:true}).getAttribute('aria-pressed'),'true','Customer filter survives navigation');
+  // Repeat immediately after navigation: restored state must never overwrite a new edit.
+  await nav('Overview');await nav('Customers');
+  await page.getByRole('textbox',{name:'Search customers',exact:true}).fill('Synthetic_chart');
+  await page.waitForFunction(()=>JSON.parse(sessionStorage.getItem('da-founder-customer-view')||'null')?.q==='Synthetic_chart');
+  await opener.click();await detail.waitFor();
+  await page.keyboard.press('Escape');await detail.waitFor({state:'hidden'});
+  assert.equal(await page.getByRole('textbox',{name:'Search customers'}).inputValue(),'Synthetic_chart','Escape preserves the latest customer search');
+
 
   // Inbox uses the real list/detail contract, with only synthetic transport and
   // safe local/account draft writes. No Gmail request or email send is made.
