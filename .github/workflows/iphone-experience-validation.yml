@@ -50,6 +50,7 @@ jobs:
           node tests/founder-publication.test.cjs
           node tests/founder-video-publication.test.cjs
           node tests/founder-video-workflow.test.cjs
+          node tests/founder-video-source-transport.test.cjs
           node tests/founder-video-mcp.test.cjs
           node tests/founder-video-dispatch.test.cjs
           node tests/founder-video-posting.test.cjs

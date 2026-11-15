@@ -1,5 +1,6 @@
 import {createHash,randomBytes,randomUUID,timingSafeEqual} from 'node:crypto';
 import {db} from '../affiliate-db';
+import {founderVideoSourceLimit} from './founder-video-source-transport';
 import {getFounderMediaAsset,getFounderMediaBytes} from './founder-media';
 import {hasFounderPublicationAttempt} from './founder-publication';
 import type {FounderContentItem} from './founder-content-model';
@@ -9,7 +10,7 @@ import {withFounderVideoMcp,type FounderVideoManifest} from './founder-video-mcp
 type Sql=ReturnType<typeof db>;
 type Row=Record<string,unknown>;
 type VideoReceipt={network:string;state:string;providerId:string;url:string|null;checkedAt:string;contentVersion:number};
-type Snapshot={itemId:string;version:number;mediaAssetId:string;mediaSha256:string;coverAssetId:string;coverSha256:string;coverApplied:false;previewSelection:'platform_selected';bytes:number;mimeType:string;caption:string;title:string;publishAt:string;settings:FounderVideoSettings};
+type Snapshot={itemId:string;version:number;mediaAssetId:string;mediaSha256:string;coverAssetId:string;coverSha256:string;coverBytes:number;coverMimeType:string;consentScope:['video','cover'];coverApplied:false;previewSelection:'per_platform';coverAssignment:{youtube:'custom_thumbnail_requested';tiktok:'platform_selected';instagram:'platform_selected'};bytes:number;mimeType:string;caption:string;title:string;publishAt:string;settings:FounderVideoSettings};
 export const videoDispatchSchema=`create table if not exists os_founder_video_publications(
  id uuid primary key,item_id uuid not null,content_version integer not null,snapshot jsonb not null,snapshot_hash text not null,
  manifest jsonb not null,state text not null default 'needs_import',import_consented_at timestamptz,approved_at timestamptz,
@@ -20,7 +21,9 @@ export const videoDispatchSchema=`create table if not exists os_founder_video_pu
  create table if not exists os_founder_video_calls(
  publication_id uuid not null references os_founder_video_publications(id),stage text not null,state text not null,
  attempts integer not null default 0,started_at timestamptz not null,next_check_at timestamptz,updated_at timestamptz not null,
- primary key(publication_id,stage));`;
+ primary key(publication_id,stage));
+ alter table os_founder_video_publications add column if not exists cover_export_token text;
+ alter table os_founder_video_publications add column if not exists cover_image_id text;`;
 let ready:Promise<void>|undefined;
 export const founderVideoPublishingEnabled=()=>process.env.VERCEL_ENV==='production'&&process.env.FOUNDER_VIDEO_PUBLISHING_ENABLED==='true';
 export function ensureVideoDispatchSchema(){return ready??=db().begin(async tx=>{await tx`select pg_advisory_xact_lock(73111512)`;await tx.unsafe(videoDispatchSchema);}).then(()=>{}).catch(e=>{ready=undefined;throw e;});}
@@ -52,9 +55,9 @@ export async function prepareFounderVideoPublication(input:{itemId:string;expect
  enabled();const settings=validateFounderVideoSettings(input.settings),at=Date.parse(input.publishAt);if(!Number.isFinite(at)||at<now.getTime()||at>now.getTime()+7*86400000)throw Error('VIDEO_TIME_INVALID');
  const [r]=await db()`select id,version,data from os_founder_content_items where id=${input.itemId}`;if(!r)throw Error('VIDEO_NOT_FOUND');const i=item(r),a=i.mediaAssetId?await getFounderMediaAsset(i.mediaAssetId):null;
  if(i.version!==input.expectedVersion||!a||a.type!=='video'||!a.validation.fullDecode||!a.durationSeconds||a.durationSeconds<3||a.durationSeconds>900)throw Error('VIDEO_MEDIA_NOT_READY');
- const cover=i.coverAssetId?await getFounderMediaAsset(i.coverAssetId):null;if(!cover||cover.type!=='image'||!cover.validation.fullDecode)throw Error('VIDEO_COVER_NOT_VERIFIED');
- if(a.bytes>4_000_000)throw Error('VIDEO_LARGE_SOURCE_UNVERIFIED');
- const snapshot:Snapshot={itemId:i.id,version:i.version,mediaAssetId:a.id,mediaSha256:a.sha256,coverAssetId:cover.id,coverSha256:cover.sha256,coverApplied:false,previewSelection:'platform_selected',bytes:a.bytes,mimeType:a.mimeType,caption:i.caption,title:i.title,publishAt:new Date(at).toISOString(),settings};
+ const cover=i.coverAssetId?await getFounderMediaAsset(i.coverAssetId):null;if(!cover||cover.type!=='image'||!cover.validation.fullDecode||!['image/png','image/jpeg'].includes(cover.mimeType)||cover.bytes>4_000_000)throw Error('VIDEO_COVER_NOT_VERIFIED');
+ if(a.bytes>founderVideoSourceLimit())throw Error('VIDEO_LARGE_SOURCE_UNVERIFIED');
+ const snapshot:Snapshot={itemId:i.id,version:i.version,mediaAssetId:a.id,mediaSha256:a.sha256,coverAssetId:cover.id,coverSha256:cover.sha256,coverBytes:cover.bytes,coverMimeType:cover.mimeType,consentScope:['video','cover'],coverApplied:false,previewSelection:'per_platform',coverAssignment:{youtube:'custom_thumbnail_requested',tiktok:'platform_selected',instagram:'platform_selected'},bytes:a.bytes,mimeType:a.mimeType,caption:i.caption,title:i.title,publishAt:new Date(at).toISOString(),settings};
  if(!matches(i,snapshot)||!i.caption.trim()||i.caption.length>2200)throw Error('VIDEO_VERSION_NOT_READY');
  const manifest=await withFounderVideoMcp(async m=>{await m.verifyAccounts(settings);return m.manifest();});
  const hash=snapshotHash(snapshot);await ensureVideoDispatchSchema();return db().begin(async transaction=>{const tx=transaction as unknown as Sql;
@@ -62,15 +65,24 @@ export async function prepareFounderVideoPublication(input:{itemId:string;expect
  const [existing]=await tx`select * from os_founder_video_publications where item_id=${i.id} and content_version=${i.version} and snapshot_hash=${hash}`;if(existing)return view(existing);
  if(await hasFounderVideoAttempt(i.id,tx)||await hasFounderPublicationAttempt(i.id,tx))throw Error('VIDEO_EXISTING_ATTEMPT');
  await tx`update os_founder_video_publications set state='superseded' where item_id=${i.id} and import_consented_at is null`;
- const id=randomUUID();const [p]=await tx`insert into os_founder_video_publications(id,item_id,content_version,snapshot,snapshot_hash,manifest,export_token,export_expires_at) values(${id},${i.id},${i.version},${tx.json(snapshot)},${hash},${tx.json(manifest)},${randomBytes(32).toString('base64url')},${new Date(now.getTime()+3600000).toISOString()}) returning *`;return view(p);});
+ const id=randomUUID();const [p]=await tx`insert into os_founder_video_publications(id,item_id,content_version,snapshot,snapshot_hash,manifest,export_token,cover_export_token,export_expires_at) values(${id},${i.id},${i.version},${tx.json(snapshot)},${hash},${tx.json(manifest)},${randomBytes(32).toString('base64url')},${randomBytes(32).toString('base64url')},${new Date(now.getTime()+3600000).toISOString()}) returning *`;return view(p);});
 }
 export async function readFounderVideoSource(id:string,token:string,now=new Date()){
  if(!founderVideoPublishingEnabled()||!validId(id)||!/^[\w-]{43}$/.test(token))return null;
  try{const p=await load(id),s=p.snapshot as Snapshot;if(!p.import_consented_at||!['import_started','import_processing','import_ready','draft_started','needs_review','approved','publishing','complete'].includes(String(p.state))||Date.parse(String(p.export_expires_at))<=now.getTime()||!timingSafeEqual(Buffer.from(sha(token),'hex'),Buffer.from(sha(String(p.export_token)),'hex')))return null;
  const [r]=await db()`select id,version,data from os_founder_content_items where id=${s.itemId}`;if(!r||!matches(item(r),s)||snapshotHash(s)!==p.snapshot_hash)return null;
- const media=await getFounderMediaBytes(s.mediaAssetId);if(!media||media.bytes.length!==s.bytes||s.bytes>4_000_000||sha(media.bytes)!==s.mediaSha256||media.asset.mimeType!==s.mimeType)return null;return media;
+ const media=await getFounderMediaBytes(s.mediaAssetId);if(!media||media.bytes.length!==s.bytes||s.bytes>founderVideoSourceLimit()||sha(media.bytes)!==s.mediaSha256||media.asset.mimeType!==s.mimeType)return null;return media;
  }catch{return null;}
 }
+export async function readFounderVideoCover(id:string,token:string,now=new Date()){
+ if(!founderVideoPublishingEnabled()||!validId(id)||!/^[\w-]{43}$/.test(token))return null;
+ try{const p=await load(id),s=p.snapshot as Snapshot;
+  if(!p.import_consented_at||!p.cover_export_token||JSON.stringify(s.consentScope)!==JSON.stringify(['video','cover'])||!['cover_import_started','import_ready','draft_started','needs_review','approved','publishing','complete'].includes(String(p.state))||Date.parse(String(p.export_expires_at))<=now.getTime()||!timingSafeEqual(Buffer.from(sha(token),'hex'),Buffer.from(sha(String(p.cover_export_token)),'hex')))return null;
+  const [r]=await db()`select id,version,data from os_founder_content_items where id=${s.itemId}`;if(!r||!matches(item(r),s)||snapshotHash(s)!==p.snapshot_hash)return null;
+  const cover=await getFounderMediaBytes(s.coverAssetId);if(!cover||cover.bytes.length!==s.coverBytes||s.coverBytes>4_000_000||sha(cover.bytes)!==s.coverSha256||cover.asset.mimeType!==s.coverMimeType||!['image/png','image/jpeg'].includes(s.coverMimeType))return null;return cover;
+ }catch{return null;}
+}
+
 async function notice(p:Row,message:string,now:Date){const [t]=await db()`select to_regclass('public.os_messages') is not null as present`;if(!t?.present)return;const body=`Result: Video posting update.\nNext: ${message}\nSource: /owner?tab=content&item=${p.item_id}\nVersion: ${p.content_version}`;await db()`insert into os_messages(id,department,role,body,run_id,created_at) values(${String(p.id)},'content','agent',${body},null,${now.toISOString()}) on conflict(id) do update set body=excluded.body,created_at=excluded.created_at where os_messages.body<>excluded.body`;}
 async function fail(p:Row,code:string,now:Date){await db()`update os_founder_video_publications set state='attention',error_code=${code},updated_at=${now.toISOString()} where id=${String(p.id)}`;await notice(p,'An action needs review. No automatic replacement or retry will be made.',now);}
 // Claims are durable before network. A timeout after claim NEVER authorizes a replay.
@@ -94,7 +106,7 @@ async function importResult(p:Row,result:Row,now:Date){
 }
 export async function consentFounderVideoImport(input:{id:string;expectedHash:string;confirmImport:boolean},now=new Date()){
  enabled();if(input.confirmImport!==true)throw Error('VIDEO_IMPORT_CONSENT_REQUIRED');const p=await load(input.id);if(p.snapshot_hash!==input.expectedHash)throw Error('VIDEO_REVIEW_CHANGED');
- if(p.state!=='needs_import')return view(p);const s=p.snapshot as Snapshot;
+ if(p.state!=='needs_import')return view(p);const s=p.snapshot as Snapshot;if(JSON.stringify(s.consentScope)!==JSON.stringify(['video','cover']))throw Error('VIDEO_COVER_CONSENT_REQUIRED');
  return withFounderVideoMcp(async m=>{await m.verifyAccounts(s.settings);m.assertWriteReady();
  // Consent, byte check and claim precede exposing the capability or importing.
  const media=await getFounderMediaBytes(s.mediaAssetId);if(!media||media.bytes.length!==s.bytes||sha(media.bytes)!==s.mediaSha256)throw Error('VIDEO_MEDIA_CHANGED');
@@ -104,13 +116,25 @@ export async function consentFounderVideoImport(input:{id:string;expectedHash:st
  },{expectedManifest:p.manifest as FounderVideoManifest});
 }
 export async function advanceFounderVideoPreparation(id:string,now=new Date()){
- enabled();const p=await load(id),s=p.snapshot as Snapshot;
+ enabled();let p=await load(id);const s=p.snapshot as Snapshot;
  return withFounderVideoMcp(async m=>{await m.verifyAccounts(s.settings);m.assertWriteReady();
  if(p.state==='import_processing'&&providerId(p.upload_id)&&await claim(p,'import_check','import_processing','import_processing',now,true)){
   try{await importResult(p,await m.uploadStatus(String(p.upload_id)),now);await finished(p,'import_check',now);}catch{await finished(p,'import_check',now);}return view(await load(id));
  }
  if(p.state==='import_ready'){
-  const request=videoDraftRequest({caption:s.caption,settings:s.settings},String(p.upload_id));
+  if(JSON.stringify(s.consentScope)!==JSON.stringify(['video','cover']))throw Error('VIDEO_COVER_CONSENT_REQUIRED');
+  if(!p.cover_image_id){
+   if(!providerId(p.cover_export_token)||Date.parse(String(p.export_expires_at))<=now.getTime())throw Error('VIDEO_COVER_SOURCE_EXPIRED');
+   const cover=await getFounderMediaBytes(s.coverAssetId);
+   if(!cover||cover.bytes.length!==s.coverBytes||sha(cover.bytes)!==s.coverSha256||cover.asset.mimeType!==s.coverMimeType)throw Error('VIDEO_COVER_CHANGED');
+   if(!await claim(p,'cover_import','import_ready','cover_import_started',now))return view(await load(id));
+   try{
+    const imported=await m.importCover(`https://www.darthalgo.com/api/founder-video-cover/${String(p.id)}/${p.cover_export_token}`,`darth-cover-${String(p.id)}.${s.coverMimeType==='image/png'?'png':'jpg'}`);
+    if(!providerId(imported.imageId)||imported.sizeBytes!==s.coverBytes||imported.mimeType!==s.coverMimeType)throw Error('VIDEO_COVER_IMPORT_UNVERIFIED');
+    await db()`update os_founder_video_publications set cover_image_id=${imported.imageId},state='import_ready',updated_at=${now.toISOString()} where id=${id}`;await finished(p,'cover_import',now);p=await load(id);
+   }catch{await fail(p,'VIDEO_COVER_IMPORT_OUTCOME_UNKNOWN',now);return view(await load(id));}
+  }
+  const request=videoDraftRequest({caption:s.caption,settings:s.settings},String(p.upload_id),String(p.cover_image_id));
   if(!await claim(p,'draft','import_ready','draft_started',now))return view(await load(id));
   await db()`update os_founder_video_publications set draft_request=${db().json(request)} where id=${id}`;
   try{const evidence=verifyVideoDraft(await m.createDraft(request),request);await db()`update os_founder_video_publications set draft_evidence=${db().json(evidence)},state='needs_review',updated_at=${now.toISOString()} where id=${id}`;await finished(p,'draft',now);await notice(p,'Review the imported video, exact platform settings and provider draft before approving publication.',now);}catch{await fail(p,'VIDEO_DRAFT_OUTCOME_UNKNOWN',now);}
@@ -243,7 +267,7 @@ export async function executeFounderVideoPublication(id:string,now=new Date()){
 export async function executeDueFounderVideoPublications(now=new Date()){
  if(!founderVideoPublishingEnabled())return {enabled:false,checked:0};await ensureVideoDispatchSchema();
  // Interrupted mutation calls retain IDs and stop; never recreate on a later tick.
- await db()`update os_founder_video_publications set state='attention',error_code='VIDEO_INTERRUPTED_ACTION' where state in ('import_started','draft_started') and updated_at<${new Date(now.getTime()-300000).toISOString()}`;
+ await db()`update os_founder_video_publications set state='attention',error_code='VIDEO_INTERRUPTED_ACTION' where state in ('import_started','cover_import_started','draft_started') and updated_at<${new Date(now.getTime()-300000).toISOString()}`;
  await db()`update os_founder_video_publications set state='attention',ig_state='outcome_unknown',error_code='VIDEO_INSTAGRAM_OUTCOME_UNKNOWN' where ig_state='started' and updated_at<${new Date(now.getTime()-300000).toISOString()}`;
  const rows=await db()`select id from os_founder_video_publications where approved_at is not null and state in ('approved','publishing','attention') and (snapshot->>'publishAt')::timestamptz<=${now.toISOString()} and not exists(select 1 from os_founder_video_calls c where c.publication_id=os_founder_video_publications.id and c.stage='session' and c.next_check_at>${now.toISOString()}) and ((state in ('approved','publishing') and (social_state='waiting' or ig_state='waiting')) or (social_state in ('started','submitted','outcome_unknown') and not exists(select 1 from os_founder_video_calls c where c.publication_id=os_founder_video_publications.id and c.stage='social_check' and c.next_check_at>${now.toISOString()})) or (state='publishing' and ig_state='processing' and not exists(select 1 from os_founder_video_calls c where c.publication_id=os_founder_video_publications.id and c.stage='ig_continue' and c.next_check_at>${now.toISOString()}))) order by updated_at limit 2`;
  let checked=0;for(const r of rows){try{await executeFounderVideoPublication(String(r.id),now);}catch{/* Fail closed: no unchecked provider writes or unbounded retries. */}checked++;}return {enabled:true,checked};

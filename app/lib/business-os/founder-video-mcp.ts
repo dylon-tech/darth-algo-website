@@ -14,11 +14,11 @@ type ObjectValue=Record<string,unknown>;
 type Tool={name:string;inputSchema:ObjectValue;description?:string;annotations?:{readOnlyHint?:boolean}};
 export type FounderVideoAccount={platform:'YOUTUBE'|'TIKTOK'|'INSTAGRAM';platformAccountId:string;displayName:string;canPublish:true;publishingAvailable:boolean|null};
 export type FounderInstagramArgs={platformAccountId:string;videoUrl:string;caption:string;isAiGenerated:boolean;trialParams?:{graduationStrategy:'MANUAL'|'SS_PERFORMANCE'}}|{platformAccountId:string;containerId:string}|{platformAccountId:string;mcpJobId:string};
-const names=['social_account_list','video_upload','social_post_draft_create','social_post_draft_get','social_post_publish','social_post_status','instagram_publish_reel','job_poll'] as const;
+const names=['social_account_list','video_upload','upload_image','social_post_draft_create','social_post_draft_get','social_post_publish','social_post_status','instagram_publish_reel','job_poll'] as const;
 type ToolName=typeof names[number];
-const required:Record<ToolName,string[]>={social_account_list:[],video_upload:[],social_post_draft_create:['destinations'],social_post_draft_get:['postId'],social_post_publish:['postId','revision'],social_post_status:['postId'],instagram_publish_reel:['platformAccountId'],job_poll:['mcpJobId']};
+const required:Record<ToolName,string[]>={social_account_list:[],video_upload:[],upload_image:[],social_post_draft_create:['destinations'],social_post_draft_get:['postId'],social_post_publish:['postId','revision'],social_post_status:['postId'],instagram_publish_reel:['platformAccountId'],job_poll:['mcpJobId']};
 const properties:Record<ToolName,Record<string,string>>={
- social_account_list:{canPublishOnly:'boolean',platform:'string'},video_upload:{url:'string',uploadId:'string',title:'string'},
+ social_account_list:{canPublishOnly:'boolean',platform:'string'},video_upload:{url:'string',uploadId:'string',title:'string'},upload_image:{image:'string',fileName:'string'},
  social_post_draft_create:{text:'string',media:'array',destinations:'array'},social_post_draft_get:{postId:'string'},social_post_publish:{postId:'string',revision:'string',publicationIds:'array'},social_post_status:{postId:'string'},
  instagram_publish_reel:{platformAccountId:'string',videoUrl:'string',caption:'string',isAiGenerated:'boolean',trialParams:'object',containerId:'string',mcpJobId:'string'},job_poll:{mcpJobId:'string'}
 };
@@ -51,6 +51,7 @@ export type FounderVideoMcp={
  assertWriteReady():void;
  verifyAccounts(settings:FounderVideoSettings):Promise<FounderVideoAccount[]>;
  importVideo(url:string,title:string):Promise<ObjectValue>;
+ importCover(url:string,fileName:string):Promise<ObjectValue>;
  uploadStatus(uploadId:string):Promise<ObjectValue>;
  createDraft(request:ReturnType<typeof videoDraftRequest>):Promise<ObjectValue>;
  getDraft(postId:string):Promise<ObjectValue>;
@@ -122,10 +123,18 @@ export async function withFounderVideoMcp<T>(callback:(adapter:FounderVideoMcp)=
     if(!/^https:\/\/www\.darthalgo\.com\/api\/founder-video-source\/[a-f0-9-]{36}\/[A-Za-z0-9_-]{43}$/.test(url)||typeof title!=='string'||!title.trim()||title.length>160)error('IMPORT_SOURCE_INVALID');
     return call('video_upload',{url,title},true);
    },
+   async importCover(url,fileName){
+    if(!/^https:\/\/www\.darthalgo\.com\/api\/founder-video-cover\/[a-f0-9-]{36}\/[A-Za-z0-9_-]{43}$/.test(url)||typeof fileName!=='string'||!fileName.trim()||fileName.length>160||/[\/\\\x00-\x1f\x7f]/.test(fileName))error('COVER_SOURCE_INVALID');
+    const result=await call('upload_image',{image:url,fileName},true);
+    if(!identifier(result.imageId)||!['image/png','image/jpeg','image/webp','image/gif'].includes(String(result.mimeType))||!Number.isSafeInteger(result.sizeBytes)||Number(result.sizeBytes)<1||Number(result.sizeBytes)>4_000_000)error('COVER_RESPONSE_UNVERIFIED');
+    return result;
+   },
    async uploadStatus(uploadId){checkId(uploadId);return call('video_upload',{uploadId});},
    async createDraft(request){
-    if(!settings||!Array.isArray(request.media)||request.media.length!==1||request.media[0].type!=='video')error('DRAFT_INVALID');
-    const canonical=videoDraftRequest({caption:request.text,settings},request.media[0].id);
+    if(!settings||!Array.isArray(request.destinations)||!Array.isArray(request.media)||request.media.length!==1||request.media[0].type!=='video')error('DRAFT_INVALID');
+    const thumbnail=(request.destinations.find(d=>d.platform==='YOUTUBE') as {thumbnailImageId?:unknown}|undefined)?.thumbnailImageId;
+    if(thumbnail!==undefined&&!identifier(thumbnail))error('DRAFT_INVALID');
+    const canonical=videoDraftRequest({caption:request.text,settings},request.media[0].id,thumbnail as string|undefined);
     if(JSON.stringify(stable(request))!==JSON.stringify(stable(canonical)))error('DRAFT_INVALID');
     return call('social_post_draft_create',canonical,true);
    },
