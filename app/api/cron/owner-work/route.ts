@@ -21,6 +21,9 @@ async function handleOwnerWork(request:Request) {
     // The separate media worker only claims these jobs; it never publishes.
     try {console.info(JSON.stringify({event:"founder_content_generation",...await (await import("../../../lib/business-os/founder-content")).founderContentPlannerTick(requestStartedAt)}));await (await import("../../../lib/business-os/founder-renderer")).wakePendingOwnerRenders();}
     catch {console.warn(JSON.stringify({event:"founder_content_generation",status:"unavailable"}));}
+    // Explicit per-version founder approvals only; isolated from legacy media policies.
+    try {const result=await (await import('../../../lib/business-os/founder-publication')).executeDueFounderPhotoPublications();console.info(JSON.stringify({event:'founder_photo_publication',...result}));}
+    catch {console.warn(JSON.stringify({event:'founder_photo_publication',status:'needs_check'}));}
     const {heartbeat}=await import("../../../lib/business-os/coordination");
     await heartbeat("vercel-cron","checking");
     const {processOwnerUpdates}=await import("../../../lib/business-os/telegram-command");

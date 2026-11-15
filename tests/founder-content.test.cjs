@@ -7,8 +7,10 @@ const {randomUUID}=require('node:crypto');
 const cache=new Map();let sql;
 const assets=new Map();
 let rendererReady=false,rendererCost=0,wakes=0;
+let publicationGuard=async()=>false;
 const renderStatus=()=>({ready:rendererReady,incrementalCostUsd:rendererReady?rendererCost:null,image:{available:rendererReady,reason:'Free worker setup is required.'},video:{available:rendererReady,reason:'Free worker setup is required.'},reason:'Free worker setup is required.',lastSeenAt:rendererReady?'2026-11-12T07:00:00.000Z':null});
 const mocks={
+  'app/lib/business-os/founder-publication.ts':{hasFounderPublicationAttempt:(...args)=>publicationGuard(...args),founderPublicationSummaries:async()=>[]},
   'app/lib/affiliate-db.ts':{db:()=>sql},
   'app/lib/business-os/founder-renderer.ts':{withNativeRequestLifetime:(_start,fn)=>fn(),founderRendererStatus:async()=>renderStatus(),wakeFounderRenderer:async()=>{wakes++;return {accepted:false,reason:'Waiting for worker check.'};}},
   'app/lib/business-os/founder-media.ts':{getFounderMediaAsset:async id=>assets.get(id)||null},
@@ -26,6 +28,10 @@ const model=load('app/lib/business-os/founder-content-model.ts');
 const now=new Date('2026-11-12T07:00:00Z');
 const blank={id:randomUUID(),version:1,day:'2026-11-13',time:'09:00',type:'image',title:'Verified feature',idea:'One genuine chart lesson',script:'',caption:'',templateId:model.founderTemplates[0].id,destinations:['instagram','threads'],mediaAssetId:null,coverAssetId:null,mediaUrl:null,coverUrl:null,mediaVerifiedAt:null,status:'draft',locked:true,extra:false,createdAt:now.toISOString(),updatedAt:now.toISOString(),deliveries:[],jobId:null,lastError:null};
 assert.equal(model.isCalendarDay('2026-02-29'),false);
+assert.equal(model.founderPostingInstant('2026-11-16','09:00'),'2026-11-16T14:00:00.000Z');
+assert.equal(model.founderPostingInstant('2026-07-16','09:00'),'2026-07-16T13:00:00.000Z');
+assert.throws(()=>model.founderPostingInstant('2026-03-08','02:30'));
+assert.throws(()=>model.founderPostingInstant('2026-11-01','01:30'));
 assert.equal(model.isCalendarDay('2028-02-29'),true);
 assert.deepEqual(model.founderClock(now),{day:'2026-11-12',time:'02:00'});
 assert.deepEqual(model.founderDays([],now).map(d=>d.day),['2026-11-12','2026-11-13','2026-11-14','2026-11-15','2026-11-16','2026-11-17']);
@@ -260,6 +266,29 @@ for(const [field,limit] of [['idea',3000],['script',18000],['caption',10000]]){
     assert.equal(regenerated.item.status,'generating','Regeneration invalidates prior creative approval');
     assert.equal(regenerated.item.mediaAssetId,null);
     assert.equal(regenerated.item.visualVariant,1,'Regeneration advances the saved visual treatment');
+    // Integration proof: use the real publication guard against the same database,
+    // not the earlier isolated renderer fixture's always-false dependency.
+    delete mocks['app/lib/business-os/founder-publication.ts'];
+    mocks['app/lib/business-os/buffer.ts']={};
+    mocks['app/lib/business-os/buffer-social.ts']={};
+    mocks['app/lib/business-os/daily-social-policy.ts']={};
+    const publications=load('app/lib/business-os/founder-publication.ts');
+    publicationGuard=publications.hasFounderPublicationAttempt;
+    await publications.ensureFounderPublicationSchema();
+    const guarded=await newManual('publication-guarded');
+    const publicationId=randomUUID();
+    await sql`insert into os_founder_publications(id,item_id,content_version,payload,payload_hash,export_token,export_expires_at) values(${publicationId},${guarded.id},${guarded.version},'{}','fixture-hash','fixture-token','2026-12-01')`;
+    await sql`insert into os_founder_publication_destinations(publication_id,network,state) values(${publicationId},'instagram','waiting')`;
+    assert.equal(await publicationGuard(guarded.id),false,'Unsent review does not prevent editing or withdrawing approval');
+    for(const state of ['started','submitted','published','outcome_unknown','provider_failed','content_mismatch','needs_reconciliation']){
+      await sql`update os_founder_publication_destinations set state=${state} where publication_id=${publicationId}`;
+      assert.equal(await publicationGuard(guarded.id),true);
+      await assert.rejects(mutate({operation:'save',requestKey:'fixture-publication-save-'+state,item:{...guarded,expectedVersion:guarded.version,title:'Attempted edit'}}),e=>e.code==='PROVIDER_RECONCILIATION_REQUIRED',state+' blocks editing');
+      for(const operation of ['generate','review','hold','skip','archive','restore','unlock']){
+        await assert.rejects(mutate({operation,requestKey:'fixture-publication-'+operation+'-'+state,id:guarded.id,expectedVersion:guarded.version,confirmReviewed:true}),e=>e.code==='PROVIDER_RECONCILIATION_REQUIRED',state+' blocks '+operation);
+      }
+      assert.equal((await content.readFounderContentHistory(guarded.id)).item.version,guarded.version,'Rejected mutations never change the exact dispatched version');
+    }
     rendererReady=false;
     assert.equal(await content.claimFounderRenderJob({workerId:'unverified-host',now}),null,'An unverified production host cannot claim work');
     assert.equal((await content.founderContentPlannerTick(now)).status,'blocked');
