@@ -44,6 +44,8 @@ jobs:
         run: node scripts/founder-renderer/runtime-profile.test.mjs
       - name: Check disabled native handler and cooperative deadlines
         run: python scripts/founder-renderer/prepared-vercel/test_runtime.py
+      - name: Verify source-preserving creative variations
+        run: python tests/founder-visual-variants.test.py
       - name: Verify free local narration weights
         run: python scripts/founder-renderer/setup_models.py
       - name: Validate the software with public approved source fixtures

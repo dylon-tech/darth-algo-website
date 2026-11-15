@@ -24,7 +24,7 @@ from setup_models import MODELS, digest
 
 ROOT = Path(__file__).resolve().parents[2]
 ASSETS = Path(__file__).resolve().parent / 'assets'
-VERSION = 'DA-RENDERER-20261112-1'
+VERSION = 'DA-RENDERER-20261115-2'
 WHITE, RED, MUTED = '#f4f6fb', '#ff263f', '#aeb7c8'
 HEAD = ROOT / 'public/fonts/darth-social/BarlowCondensed-BlackItalic.ttf'
 FONT = ASSETS / 'InterDisplay-Bold.ttf'
@@ -141,13 +141,14 @@ def evidence(im, source, box, crop=None, radius=30):
 
 def photo(recipe, output, cover=False):
     height=1920 if cover else 1350
-    variant=next(i for i,r in enumerate(RECIPES) if r['id']==recipe['id'])%5
+    variant=recipe.get('visualVariant',0)
     im=background(height,variant);brand(im,74 if cover else 46)
-    headline(im,recipe['headline'],top=240 if cover else 172,size=145 if cover else 136)
+    headline(im,recipe['headline'],top=240 if cover else 172,size=(145 if cover else 136)-(8 if variant&4 else 0))
     source=recipe['sources'][0]
     chart_top=640 if cover else 470
     chart_h=760 if cover else 560
-    evidence(im,source,(46,chart_top,988,chart_h),CROPS.get(source))
+    inset=18 if variant&2 else 0
+    evidence(im,source,(46+inset,chart_top,988-2*inset,chart_h),CROPS.get(source))
     d=ImageDraw.Draw(im)
     d.text((72,chart_top+chart_h+18),'RECORDED PRODUCT VIEW',font=font(24,medium=True),fill=MUTED)
     y=chart_top+chart_h+66
@@ -163,12 +164,15 @@ def photo(recipe, output, cover=False):
 
 
 def scene_image(recipe, scene, index, output):
-    im=background(1920,index);brand(im,87,video=True)
+    variant=recipe.get('visualVariant',0)
+    im=background(1920,index+(variant&1));brand(im,87,video=True)
     d=ImageDraw.Draw(im)
     d.text((72,220),recipe['feature'],font=font(25,medium=True),fill=MUTED)
-    title_lines=wrap(scene['label'],930,font(76))
-    for n,line in enumerate(title_lines):d.text((70,278+n*88),line,font=font(76),fill=WHITE if n==0 else RED)
-    evidence(im,scene['source'],(42,540,996,670),scene.get('crop'))
+    title_size=72 if variant&2 else 76
+    title_lines=wrap(scene['label'],930,font(title_size))
+    for n,line in enumerate(title_lines):d.text((70,278+n*88),line,font=font(title_size),fill=WHITE if n==0 else RED)
+    inset=18 if variant&4 else 0
+    evidence(im,scene['source'],(42+inset,540,996-2*inset,670),scene.get('crop'))
     d.text((73,1235),'RECORDED PRODUCT VIEW',font=font(25,medium=True),fill=MUTED)
     d.line((72,1680,1008,1680),fill='#343947',width=2)
     d.text((73,1720),'DARTHALGO.COM/LINKS',font=font(31),fill=WHITE)
@@ -229,6 +233,11 @@ def loudness(path):
     return float(data['input_i']),float(data['input_tp'])
 
 
+def camera_zoom(variant, frames):
+    # At most 2.2%; the generous safe margins retain every source label.
+    return f"1.022-0.022*on/{frames}" if variant&1 else f"1+0.022*on/{frames}"
+
+
 def video(recipe, output_dir, progress=lambda *_:None, voice=None):
     import soundfile as sf
     k=voice or kokoro();parts=[];audio_parts=[];scene_data=[];sr=24000;elapsed=0
@@ -251,8 +260,9 @@ def video(recipe, output_dir, progress=lambda *_:None, voice=None):
         png=output_dir/f'scene-{i}.png';scene_image(recipe,scene,i,png)
         ass=output_dir/f'scene-{i}.ass';captions(cues,ass)
         part=output_dir/f'scene-{i}.mp4'
-        # A slow centered push preserves the genuine chart and avoids camera hunting.
-        vf=f"scale=2160:3840,zoompan=z='1+0.022*on/{frames}':x='iw/2-iw/zoom/2':y='ih/2-ih/zoom/2':d={frames}:s=1080x1920:fps=60,ass=filename='{ass}':fontsdir='{ASSETS}',format=yuv420p"
+        # Alternate a restrained centered push/pull; source pixels and labels stay unchanged.
+        zoom=camera_zoom(recipe.get('visualVariant',0),frames)
+        vf=f"scale=2160:3840,zoompan=z='{zoom}':x='iw/2-iw/zoom/2':y='ih/2-ih/zoom/2':d={frames}:s=1080x1920:fps=60,ass=filename='{ass}':fontsdir='{ASSETS}',format=yuv420p"
         command(['ffmpeg','-y','-hide_banner','-loglevel','error','-i',str(png),'-vf',vf,'-frames:v',str(frames),'-an','-c:v','libx264','-threads','2','-preset','veryfast','-crf','21','-maxrate','3M','-bufsize','6M','-r','60',str(part)])
         parts.append(part);scene_data.append({'source':scene['source'],'start':elapsed,'end':elapsed+duration,'captions':len(cues)})
         elapsed+=duration
@@ -302,7 +312,7 @@ def render(item, output_dir, progress=lambda *_:None, voice=None):
         report={'fullDecode':True,'creativeReview':False,'sha256':digest(media),'width':1080,'height':1350}
     if media.stat().st_size>32*1024*1024:raise ValueError('FILE_SIZE_LIMIT')
     sources={s['source'] for s in recipe['scenes']}
-    report.update({'rendererVersion':VERSION,'recipe':recipe['id'],'template':expected_template,'sourceHashes':[row for row in manifest['sources'] if row['path'] in sources],'narration':'kokoro-v1.0-am_michael' if kind=='video' else None,'externalGenerationApiCostUsd':0})
+    report.update({'rendererVersion':VERSION,'recipe':recipe['id'],'visualVariant':recipe.get('visualVariant',0),'template':expected_template,'sourceHashes':[row for row in manifest['sources'] if row['path'] in sources],'narration':'kokoro-v1.0-am_michael' if kind=='video' else None,'externalGenerationApiCostUsd':0})
     script=' '.join(s['spoken'] for s in recipe['scenes']) if kind=='video' else ''
     caption=item.get('caption') or f"{recipe['summary']} Explore the feature: https://www.darthalgo.com/links"
     result={'media':str(media),'cover':str(cover),'mediaReport':report,'coverReport':{'fullDecode':True,'creativeReview':False,'sha256':digest(cover)},'script':script,'caption':caption}

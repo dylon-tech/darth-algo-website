@@ -150,4 +150,8 @@ def resolve_recipe(item):
     expected = ' '.join(s['spoken'] for s in recipe['scenes'])
     if str(item.get('script', '')).strip() not in ['', expected]:
         raise ValueError('CUSTOM_SCRIPT_SOURCE_REVIEW_REQUIRED')
-    return recipe
+    # Copy the recipe: runtime styling never mutates approved facts or scenes.
+    variant=item.get('visualVariant', 0)
+    if not isinstance(variant, int) or isinstance(variant, bool) or not 0 <= variant < 8:
+        raise ValueError('VISUAL_VARIANT_INVALID')
+    return {**recipe, 'visualVariant':variant}
