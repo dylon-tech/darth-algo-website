@@ -364,7 +364,7 @@ try{
   await closeDialog();rendererAvailable=true;await page.reload();
   await page.getByRole('heading',{name:'Content',exact:true,level:1}).waitFor();
   await page.setViewportSize({width:390,height:852});await page.getByRole('button',{name:'Agenda',exact:true}).click();
-  await page.getByRole('button',{name:`Create image on ${dayOffset(1)}`,exact:true}).click();await editor.waitFor();
+  await page.getByRole('button',{name:`Add content ${dayOffset(1)}`,exact:true}).click();await editor.waitFor();
   const imageLesson=reviewedLessons[0],imageIdea=imageLesson.idea,imageTitle=imageLesson.title,imageWritesBefore=requests.length;
   await editor.getByLabel('Reviewed lesson',{exact:true}).selectOption(imageLesson.id);
   assert.equal(await editor.getByLabel('Title',{exact:true}).inputValue(),imageTitle,'A reviewed lesson fills its canonical title');
@@ -401,7 +401,7 @@ try{
   await editor.getByText('Posting status',{exact:true}).click();await editor.getByText('Not scheduled or published.',{exact:true}).waitFor();
   await noOverflow('Polled image result');await closeDialog();
 
-  await page.getByRole('button',{name:`Create video on ${dayOffset(2)}`,exact:true}).click();await editor.waitFor();
+  await page.getByRole('button',{name:`Add content ${dayOffset(2)}`,exact:true}).click();await editor.waitFor();await editor.getByRole('button',{name:'Video',exact:true}).click();
   const videoLesson=reviewedLessons[1],videoIdea=videoLesson.idea,videoTitle=videoLesson.title,videoWritesBefore=requests.length;
   await editor.getByLabel('Reviewed lesson',{exact:true}).selectOption(videoLesson.id);
   await editor.getByRole('button',{name:'Generate video',exact:true}).click();
