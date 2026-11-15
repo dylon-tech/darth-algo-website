@@ -21,7 +21,8 @@ export function videoDraftRequest(value:VideoBrief,uploadId:string){
  return {text:b.caption,media:[{id:uploadId,type:'video' as const}],destinations:[{platform:'YOUTUBE' as const,platformAccountId:y.platformAccountId,title:y.title,privacyStatus:y.privacyStatus},{platform:'TIKTOK' as const,platformAccountId:t.platformAccountId,privacyLevel:t.privacyLevel,allowComment:t.allowComment,autoAddMusic:t.autoAddMusic,musicUsageConfirmed:t.musicUsageConfirmed,isAiGenerated:t.isAiGenerated}]};
 }
 export type VideoDraftEvidence={postId:string;revision:string;publicationIds:[string,string];requestSha256:string};
-export function videoRequestHash(request:ReturnType<typeof videoDraftRequest>){return createHash('sha256').update(JSON.stringify(request)).digest('hex');}
+function canonical(v:unknown):unknown{return Array.isArray(v)?v.map(canonical):obj(v)?Object.fromEntries(Object.keys(v).sort().map(k=>[k,canonical(v[k])])):v;}
+export function videoRequestHash(request:ReturnType<typeof videoDraftRequest>){return createHash('sha256').update(JSON.stringify(canonical(request))).digest('hex');}
 export function verifyVideoDraft(value:unknown,request:ReturnType<typeof videoDraftRequest>):VideoDraftEvidence{
  if(!obj(value)||!id(value.postId)||!id(value.revision)||value.ready!==true||value.credits!==0||value.text!==request.text||!obj(value.media)||value.media.videos!==1||value.media.images!==0||!Array.isArray(value.destinations)||value.destinations.length!==2)throw Error('VIDEO_DRAFT_NOT_VERIFIED');
  const ids=request.destinations.map(expected=>{
@@ -36,7 +37,7 @@ export function verifyVideoDraft(value:unknown,request:ReturnType<typeof videoDr
  return {postId:value.postId,revision:value.revision,publicationIds:ids as [string,string],requestSha256:videoRequestHash(request)};
 }
 export function videoPublishRequest(approved:VideoDraftEvidence,current:VideoDraftEvidence){
- if(JSON.stringify(approved)!==JSON.stringify(current))throw Error('VIDEO_DRAFT_REAPPROVAL_REQUIRED');
+ if(JSON.stringify(canonical(approved))!==JSON.stringify(canonical(current)))throw Error('VIDEO_DRAFT_REAPPROVAL_REQUIRED');
  if(!id(approved.postId)||!id(approved.revision)||approved.publicationIds.length!==2||approved.publicationIds.some(v=>!id(v))||!/^[a-f0-9]{64}$/.test(approved.requestSha256))throw Error('VIDEO_APPROVAL_INVALID');
  return {postId:approved.postId,revision:approved.revision,publicationIds:[...approved.publicationIds]};
 }

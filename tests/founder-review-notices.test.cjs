@@ -34,6 +34,24 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
  assert.equal((await notices.readFounderReviewNotices(sql)).length,1,'Same asset linked to older jobs still has one latest notification');
  await sql`delete from os_messages where id=${video.job}`;
  assert.equal((await notices.readFounderReviewNotices(sql))[0].id,video.job+':3','Durable render completion recovers a missing optional message row');
+ // Optional video ledger was absent throughout the earlier recovery checks.
+ assert.equal((await notices.readFounderReviewNotices(sql)).length,1,'Missing optional video table preserves generic creative review');
+ await pg.exec('create table os_founder_video_publications(id uuid primary key,item_id uuid,content_version integer,state text,import_consented_at timestamptz,approved_at timestamptz);');
+ const videoPublication=randomUUID();await sql`insert into os_founder_video_publications values(${videoPublication},${video.item.id},3,'needs_import',null,null)`;
+ assert.equal((await notices.readFounderReviewNotices(sql)).length,1,'Unconsented local plan does not hide creative review');
+ for(const state of ['import_started','import_processing','import_ready','draft_started','needs_review','approved','publishing','attention','complete']){
+  await sql`update os_founder_video_publications set state=${state},import_consented_at=${now} where id=${videoPublication}`;
+  assert.equal((await notices.readFounderReviewNotices(sql)).length,0,state+' suppresses locked regenerate prompt');
+  assert.equal(await inbox.founderInboxDetail('review:'+video.job+':3'),null,'No stale deep-link bypass for '+state);
+ }
+ await sql`update os_founder_video_publications set content_version=2 where id=${videoPublication}`;
+ assert.equal((await notices.readFounderReviewNotices(sql)).length,1,'Different version does not suppress current review');
+ await sql`update os_founder_video_publications set content_version=3,state='discarded' where id=${videoPublication}`;
+ assert.equal((await notices.readFounderReviewNotices(sql)).length,1,'Safe discard restores current creative review');
+ await sql`update os_founder_video_publications set state='approved',import_consented_at=null,approved_at=${now} where id=${videoPublication}`;
+ assert.equal((await notices.readFounderReviewNotices(sql)).length,0,'Explicit approved evidence also suppresses generic review');
+ await sql`update os_founder_video_publications set item_id=${randomUUID()} where id=${videoPublication}`;
+ assert.equal((await notices.readFounderReviewNotices(sql)).length,1,'Other item approval does not suppress this video');
  assert.equal(inbox.validInboxId('review:'+video.job+':0'),false);assert.equal(inbox.validInboxId('review:'+video.job+':3:extra'),false);
  queries.length=0;await inbox.founderInbox();assert.ok(queries.every(q=>q.trim().startsWith('select ')),'All authenticated Inbox source reads remain read-only');
  console.log('PASS: durable versioned review notices; completion replay dedupe; photo/video and regeneration; stale/archived/approved filtering; current-version details; no inherited resolution or publication side effects; read-only inbox.');
