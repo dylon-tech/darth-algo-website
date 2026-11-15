@@ -41,8 +41,27 @@ export async function discoverFounderVideoCapabilities():Promise<FounderVideoCap
    }
   }
   if(list&&Array.isArray(list.inputSchema.required)&&list.inputSchema.required.length)status.blockers.push('Account-list input requirements changed. The read-only adapter needs verification before use.');
+  // Official source evidence (checked 2026-11-15):
+  // https://github.com/vid-io/vidiq-mcp/blob/d4b0e3780f1b976241b0e9766e6ca140a75abc67/skills/vidiq-publishing/references/platforms-and-media.md
+  // https://support.vidiq.com/en/articles/15082430-vidiq-mcp
+  // A cached older official README listed this legacy read-only tool, but it is absent
+  // from some current surfaces. Never assume its presence, price or identity map.
+  const legacy=listed.tools.find(t=>t.name==='vidiq_instagram_connected_accounts'||t.name==='instagram_connected_accounts');
+  if(legacy){
+   status.tools.push({name:legacy.name,schemaSha256:sha(legacy.inputSchema)});
+   const noRequiredArgs=!Array.isArray(legacy.inputSchema.required)||legacy.inputSchema.required.length===0;
+   const free=/\bcost:\s*0\s+credit(?:\(s\)|s)?(?:\s|[.;]|$)/i.test(legacy.description||'');
+   if(noRequiredArgs&&legacy.annotations?.readOnlyHint===true&&free){
+    try{const result=accountsResult(await client.callTool({name:legacy.name,arguments:{}},undefined,{timeout:12000}));
+     if(result){for(const account of status.accounts.filter(a=>a.platform==='INSTAGRAM')){
+      const matches=(result.accounts as unknown[]).filter((v):v is Record<string,unknown>=>Boolean(v)&&typeof v==='object'&&(v as Record<string,unknown>).platformAccountId===account.platformAccountId&&typeof (v as Record<string,unknown>).publishingAvailable==='boolean');
+      if(matches.length===1){const value=matches[0].publishingAvailable as boolean;if(account.publishingAvailable===null)account.publishingAvailable=value;else if(account.publishingAvailable!==value){account.publishingAvailable=false;status.blockers.push('Instagram capability results disagree for the same account. Recheck before publishing.');}}
+     }}else status.blockers.push('The optional Instagram capability check did not return a recognized account list.');
+    }catch{status.blockers.push('The optional Instagram capability check did not finish. No media was sent.');}
+   }else status.blockers.push('The optional Instagram capability tool is not verified as zero-cost, read-only, and callable without extra inputs. It was not called.');
+  }
   if(!status.accounts.some(a=>a.platform==='INSTAGRAM'&&a.canPublish&&a.publishingAvailable===true))status.blockers.push('Instagram AI-labelled Reel publishing requires publishingAvailable=true; canPublish alone does not verify that capability.');
-  status.blockers.push('The website video-import result to provider-library media ID mapping has not been verified. No video is uploaded by this check.','The website draft-approval gate and YouTube verification handoff have not been verified. No publishing executor is enabled.');
+  status.blockers.push('Official documentation maps a ready video uploadId to draft media, and Instagram AI-labelled Reels use videoUrl. The website import and draft flow has not been runtime-verified; this check uploads nothing.','The website draft-approval gate and YouTube verification handoff have not been verified. No publishing executor is enabled.');
   const eligible=platforms.every(platform=>status.accounts.some(a=>a.platform===platform&&a.canPublish));
   status.ownerAction=status.blockers.some(b=>b.includes('incomplete'))?'Retry the read-only capability check before choosing accounts; an incomplete lookup does not prove an account is missing.':eligible?'Choose the exact account on each platform, TikTok privacy/comments/music, YouTube privacy, and Instagram regular/Trial plus AI label. Those choices will be reviewed with the final draft after the website publishing workflow is verified.':'Connect the missing publishing accounts through the website connection, then check again. Existing ChatGPT-connected accounts do not prove the website connection has the same access.';
  }catch(error){

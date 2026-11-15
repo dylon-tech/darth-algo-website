@@ -280,7 +280,7 @@ for(const [field,limit] of [['idea',3000],['script',18000],['caption',10000]]){
     await sql`insert into os_founder_publications(id,item_id,content_version,payload,payload_hash,export_token,export_expires_at) values(${publicationId},${guarded.id},${guarded.version},'{}','fixture-hash','fixture-token','2026-12-01')`;
     await sql`insert into os_founder_publication_destinations(publication_id,network,state) values(${publicationId},'instagram','waiting')`;
     assert.equal(await publicationGuard(guarded.id),false,'Unsent review does not prevent editing or withdrawing approval');
-    for(const state of ['started','submitted','published','outcome_unknown','provider_failed','content_mismatch']){
+    for(const state of ['started','submitted','published','outcome_unknown','provider_failed','content_mismatch','needs_reconciliation']){
       await sql`update os_founder_publication_destinations set state=${state} where publication_id=${publicationId}`;
       assert.equal(await publicationGuard(guarded.id),true);
       await assert.rejects(mutate({operation:'save',requestKey:'fixture-publication-save-'+state,item:{...guarded,expectedVersion:guarded.version,title:'Attempted edit'}}),e=>e.code==='PROVIDER_RECONCILIATION_REQUIRED',state+' blocks editing');

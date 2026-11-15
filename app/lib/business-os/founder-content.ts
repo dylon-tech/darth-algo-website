@@ -120,7 +120,7 @@ export async function readFounderContent(month?:string,now=new Date()):Promise<F
   const jobs=jobRows.map(asJob),byJob=new Map(jobs.map(job=>[job.id,job]));
   const items=[...merged.values()].map(item=>withRenderState(item,item.jobId?byJob.get(item.jobId):undefined)).sort((a,b)=>a.day.localeCompare(b.day)||a.time.localeCompare(b.time)||a.id.localeCompare(b.id)),control=controlResult[0];
   const publications=await founderPublicationSummaries(items.map(i=>i.id));
-  for(const item of items){const p=publications.find(p=>p.itemId===item.id&&p.version===item.version);if(p)item.publication={version:p.version,state:p.state,approvedAt:p.approvedAt};}
+  for(const item of items){const p=publications.find(p=>p.itemId===item.id&&p.version===item.version);if(p){item.publication={version:p.version,state:p.state,approvedAt:p.approvedAt};item.deliveries=[...item.deliveries,...p.deliveries];}}
   const coverage=founderCoverage(items,now);
   const counts={queued:0,running:0,failed:0,blocked:0,completed:0};
   for(const row of jobCounts)if(String(row.status) in counts)counts[row.status as keyof typeof counts]=Number(row.n);

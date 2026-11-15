@@ -93,7 +93,14 @@ async function noOverflow(label){assert.ok(await page.evaluate(()=>document.docu
 async function nav(name){
   const navigation=page.locator('nav[aria-label="Main navigation"]:visible,nav[aria-label="Desktop navigation"]:visible');
   await navigation.getByRole('button',{name,exact:true}).click();
-  await page.getByRole('heading',{name:name==='Overview'?'Business overview':name,exact:true,level:1}).waitFor();
+  const heading=page.getByRole('heading',{name:name==='Overview'?'Business overview':name,exact:true,level:1});
+  await heading.waitFor();
+  // Navigation commits the new heading before its requestAnimationFrame moves
+  // focus there. Wait for that transition to finish before fill()/insertText;
+  // otherwise WebKit can lose input focus between selection and text insertion.
+  // This does not relax customer persistence assertions or wait on a timer.
+  const focusSettled=await heading.evaluate(el=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve(document.activeElement===el)))));
+  assert.equal(focusSettled,true,'Navigation finishes its heading-focus transition before editing');
 }
 async function closeDialog(){await page.getByRole('dialog').getByRole('button',{name:'Back',exact:true}).click();await page.getByRole('dialog').waitFor({state:'hidden'});}
 
