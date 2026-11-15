@@ -25,7 +25,7 @@ export default function FounderInbox({base,feed}:{base:string;feed:Feed}){
  const [filter,setFilter]=useState<Filter>('all'),[query,setQuery]=useState(''),[selected,setSelected]=useState<string|null>(null),[limit,setLimit]=useState(40),[viewReady,setViewReady]=useState(false);
  useEffect(()=>{
   try{const saved=JSON.parse(sessionStorage.getItem(viewKey)||'null');if(filters.some(f=>f.id===saved?.filter))setFilter(saved.filter);if(typeof saved?.query==='string')setQuery(saved.query.slice(0,150));}catch{}
-  const id=new URLSearchParams(location.search).get('item');if(id&&/^(support|loop|message|approval):[a-f0-9-]{36}$/.test(id))setSelected(id);
+  const id=new URLSearchParams(location.search).get('item');if(id&&/^(?:(support|loop|message|approval):[a-f0-9-]{36}|review:[a-f0-9-]{36}:[1-9][0-9]*)$/.test(id))setSelected(id);
   setViewReady(true);
  },[]);
  useEffect(()=>{if(viewReady)try{sessionStorage.setItem(viewKey,JSON.stringify({filter,query}));}catch{}},[filter,query,viewReady]);
@@ -121,7 +121,7 @@ function InboxThread({id,base,onClose,onState}:{id:string;base:string;onClose:()
    {item.category==='customer'&&item.contentCoverage==='summary_only'&&<Notice>This is a saved summary, not the complete original thread.</Notice>}
    {detail.data?.stateAvailable===false&&<Notice error>Couldn’t load saved changes. Refresh before editing.</Notice>}
    {summary?<>
-    <div className={s.card} style={{marginTop:20}}><h3>{summary.result}</h3>{summary.action&&<p style={{color:'#d5d8df'}}><strong>{summary.actionLabel}:</strong> {summary.action}</p>}{item.sourceHref&&<ExternalLink href={item.sourceHref}>{item.kind==='decision'?'Review decision':item.kind==='content_update'?'Open content':item.category==='agent'?'Open team':'Review action'}</ExternalLink>}</div>
+    <div className={s.card} style={{marginTop:20}}><h3>{summary.result}</h3>{summary.action&&<p style={{color:'#d5d8df'}}><strong>{summary.actionLabel}:</strong> {summary.action}</p>}{item.sourceHref&&<ExternalLink href={item.sourceHref}>{item.kind==='decision'?'Review decision':item.kind==='content_review'?'Review or regenerate':item.kind==='content_update'?'Open content':item.category==='agent'?'Open team':'Review action'}</ExternalLink>}</div>
     <details className={s.source}><summary style={{minHeight:44}}>Original update</summary><h3>{item.title}</h3><OriginalMessages messages={detail.data?.messages||[]} sender={item.sender}/></details>
    </>:<OriginalMessages messages={detail.data?.messages||[]} sender={item.sender}/>}
    {notice&&<Notice>{notice}</Notice>}{error&&<Notice error>{error}</Notice>}

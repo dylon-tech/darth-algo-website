@@ -49,6 +49,9 @@ jobs:
           node tests/founder-content.test.cjs
           node tests/founder-publication.test.cjs
           node tests/founder-video-publication.test.cjs
+          node tests/founder-video-workflow.test.cjs
+          node tests/founder-review-notices.test.cjs
+          node tests/founder-research.test.cjs
           node tests/founder-inbox.test.cjs
           node tests/founder-inbox-summary.test.cjs
           node tests/owner-report-style.test.cjs
