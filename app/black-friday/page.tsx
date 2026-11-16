@@ -1,3 +1,4 @@
+import LifetimeAccessNote from "../components/lifetime-access-note";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -128,6 +129,7 @@ export default function BlackFridayPage() {
               <p className="mt-5 text-sm leading-7 text-zinc-300">Lifetime includes Darth Algo Pro access plus an archived private copy of the Pro Pine Script and a <Link href="/lifetime-setup" className="text-rose-300 underline">10-step visual setup guide</Link>. Support delivers the source after verified purchase. Keep the code private.</p>
               <div className="mt-6 flex items-end gap-4"><span className="text-5xl font-black text-white">{promoActive ? "$89.00" : "$134.99"}</span>{promoActive && <span className="pb-2 text-lg text-zinc-500 line-through">$134.99</span>}</div>
               {promoActive && <p className="mt-5 inline-block rounded-lg border border-[#fa506b]/30 bg-[#661b2a]/30 px-5 py-3 text-sm font-black">Code <span className="select-all text-rose-200">BLACKFRIDAY89</span> should appear at checkout. If not, enter it</p>}
+        <LifetimeAccessNote />
               <p className="mt-5 max-w-xl text-sm leading-7 text-zinc-400">Already subscribed monthly? Buying Lifetime does not automatically cancel your existing monthly subscription. Contact support to arrange the transition and avoid additional monthly charges.</p>
               <a href={promoActive ? "https://buy.stripe.com/6oUcN62KX0WoeuW1k86kg04?prefilled_promo_code=BLACKFRIDAY89" : "https://buy.stripe.com/6oUcN62KX0WoeuW1k86kg04"} target="_blank" rel="noopener noreferrer" className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-lg bg-[#cc1d39] px-6 py-3 text-sm font-bold hover:bg-[#ed3651]">Get Lifetime through Stripe <ArrowRight className="h-4 w-4"/></a>
             </div>

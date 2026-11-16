@@ -1,4 +1,5 @@
 "use client";
+import LifetimeAccessNote from "./components/lifetime-access-note";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -966,6 +967,7 @@ export default function Home() {
       <section id="pricing" className="relative z-10 py-24 sm:py-32">
         <div className="section-shell">
           <SectionHeading centered eyebrow="Simple Pricing" title="Choose the tool that fits your trading." copy="Choose Scalper, Swing, Pro, or Lifetime. Enter your TradingView username at checkout so access can be processed after payment confirmation." />
+        <LifetimeAccessNote />
           <p className="mx-auto mt-5 max-w-2xl text-center text-sm leading-7 text-zinc-300">Monthly plans renew until canceled. Lifetime is a separate one-time purchase. Already subscribed and switching plans? <Link href="/support" className="font-bold text-white underline underline-offset-4">Contact support before purchasing</Link> so we can help with the transition.</p>
           <div className="pricing-command mx-auto mt-10 max-w-6xl overflow-hidden rounded-md border border-white/10 bg-black/70">
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 px-5 py-4">
