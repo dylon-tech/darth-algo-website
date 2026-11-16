@@ -181,7 +181,7 @@ for(const [field,limit] of [['idea',3000],['script',18000],['caption',10000]]){
     const completionNotices=await sql`select body from os_messages where id=${claimed.job.id}`;
     assert.equal(completionNotices.length,1,'Completion replay has one persisted Inbox result');
     assert.ok(completionNotices[0].body.includes('Source: /owner?tab=content&item='+first.item.id));
-    assert.match(completionNotices[0].body,/Next: Review the file and caption/);
+    assert.match(completionNotices[0].body,/Next: Does this photo and its caption look good/);
     assert.equal((await sql`select proof_sha256 from os_founder_render_jobs where id=${claimed.job.id}`)[0].proof_sha256,'a'.repeat(64));
     snapshot=await content.readFounderContent('2026-11',now);
     assert.equal(snapshot.agent.lastSuccessfulRun,now.toISOString());assert.ok(snapshot.coverage.generated>snapshot.coverage.produced,'Saved media and creative review are distinct');

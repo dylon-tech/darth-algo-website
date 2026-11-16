@@ -1,3 +1,4 @@
+import {readFounderReviewNotices,completedFounderReviewIds} from './founder-review-notices';
 import {db} from '../affiliate-db';
 import {summarizeAgentMessage,summarizeBusinessAlert,type FounderInboxSummary} from './founder-inbox-summary';
 
@@ -25,7 +26,7 @@ const date = (value: unknown): string | null => {
   return candidate && Number.isFinite(candidate.getTime()) ? candidate.toISOString() : null;
 };
 const uuid = '[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}';
-export function validInboxId(id: unknown): id is string {return typeof id === 'string' && new RegExp(`^(support|loop|message|approval):${uuid}$`).test(id);}
+export function validInboxId(id: unknown): id is string {return typeof id === 'string' && (new RegExp(`^(support|loop|message|approval):${uuid}$`).test(id)||new RegExp(`^review:${uuid}:[1-9][0-9]{0,9}$`).test(id));}
 export const emptyInboxState = (): FounderInboxState => ({version: 0, readAt: null, snoozedUntil: null, resolvedAt: null, draft: '', updatedAt: null});
 export function inboxState(record?: Row): FounderInboxState {
   if (!record) return emptyInboxState();
@@ -87,13 +88,14 @@ export function mapInboxSource(source: string, value: Row): FounderInboxItem {
     item.sourceStatus = text(value.status, 100); item.severity = 'warning';
     item.summary = summarizeBusinessAlert({result: text(payload.summary) || 'A saved decision needs review.', ownerAction: 'Review the proposal and choose a decision.'});
   } else {
-    item = base(`message:${value.id}`, 'agent', 'Persisted agent messages', value.created_at);
+    item = base(`${source==='reviews'?'review':'message'}:${value.id}`, 'agent', 'Persisted agent messages', value.created_at);
     item.kind = 'agent_update'; item.sender = `${text(value.department, 100).replaceAll('_', ' ')} agent`;
     item.body = text(value.body); item.title = item.body.split('\n').find(line => line.trim())?.slice(0, 120) || 'Agent update';
     item.runId = text(value.run_id, 100) || null; item.jobId = text(value.job_id, 100) || null;
     item.sourceHref = '/owner/team'; item.contentCoverage = typeof value.body === 'string' && value.body.length > 20000 ? 'summary_only' : 'full_message';
     const contentSource = contentMessageSource(value.department, item.body);
     if (contentSource) {item.kind = 'content_update';item.sourceHref = contentSource.href;item.jobId = contentSource.jobId;}
+    if(source==='reviews'){item.kind='content_review';item.source='Current-version content review';item.sourceStatus='awaiting_review';}
     item.summary = summarizeAgentMessage(item.body);
   }
   item.preview = item.summary ? [item.summary.result, item.summary.action ? `${item.summary.actionLabel}: ${item.summary.action}` : ''].filter(Boolean).join(' ') : item.body.replace(/\s+/g, ' ').slice(0, 220);
@@ -139,9 +141,12 @@ export async function founderInbox() {
   const sources = await Promise.all([
     readSource('support', () => sql`select id,provider,provider_thread_id,customer_key,category,status,subject,last_message_at,summary,requires_founder from os_support_conversations order by last_message_at desc,id limit 80`),
     readSource('loops', () => sql`select id,category,title,why,service,founder_action,resume_action,severity,status,source_type,source_id,first_seen_at,last_seen_at,details from os_open_loops where status='open' order by last_seen_at desc,id limit 80`),
+    readSource('reviews', () => readFounderReviewNotices(sql)),
     readSource('agents', () => sql`select id,department,body,run_id,created_at from os_messages where role='agent' order by created_at desc,id limit 80`),
     readSource('approvals', () => sql`select id,payload,status,created_at from os_approvals where status='pending' and expires_at>now() order by created_at desc,id limit 80`),
   ]);
+  const agentSource=sources.find(source=>source.id==='agents');
+  if(agentSource)try{const completed=await completedFounderReviewIds(agentSource.rows.map(value=>String(value.id)),sql);agentSource.rows=agentSource.rows.filter(value=>!completed.has(String(value.id)));}catch{const reviewSource=sources.find(source=>source.id==='reviews');if(reviewSource)reviewSource.status='unavailable';}
   let statePersistence: 'ready' | 'not_initialized' | 'unavailable' = 'unavailable';
   const states = new Map<string, FounderInboxState>();
   try {
@@ -172,7 +177,9 @@ export async function founderInbox() {
 }
 
 async function sourceItem(id: string): Promise<FounderInboxItem | null> {
-  const [kind, key] = id.split(':'); const sql = db(); let values: Row[];
+  const [kind, key, revision] = id.split(':'); const sql = db(); let values: Row[];
+  if(kind==='review'){const values=await readFounderReviewNotices(sql,key,Number(revision));return values[0]?mapInboxSource('reviews',values[0]):null;}
+  if(kind==='message'&&(await completedFounderReviewIds([key],sql)).has(key))return null;
   if (kind === 'support') values = await sql`select * from os_support_conversations where id=${key}`;
   else if (kind === 'loop') values = await sql`select * from os_open_loops where id=${key}`;
   else if (kind === 'approval') values = await sql`select id,payload,status,created_at from os_approvals where id=${key}`;

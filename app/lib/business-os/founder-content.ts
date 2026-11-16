@@ -1,3 +1,4 @@
+import {writeFounderReviewNotice} from './founder-review-notices';
 import {hasFounderPublicationAttempt,founderPublicationSummaries} from './founder-publication';
 import {createHash,randomUUID} from 'node:crypto';
 import {db} from '../affiliate-db';
@@ -326,14 +327,15 @@ async function cancelItemJobs(sql:Sql,id:string,now:string) {
   await sql`update os_founder_render_jobs set status='canceled',stage='Canceled',retryable=false,error='Replaced by a newer owner edit.',finished_at=${now},updated_at=${now} where item_id=${id} and status in ('queued','running')`;
 }
 async function writeRenderNotice(sql:Sql,jobId:string,item:FounderContentItem,outcome:'completed'|'failed'|'blocked',retryable:boolean,now:string) {
+  if(outcome==='completed')return writeFounderReviewNotice(sql,jobId,item,now);
   // Reuse the native Inbox ledger without creating an outbound notification.
   // A calendar-only installation can still save the file when that ledger is
   // unavailable; its source is reported separately by the Inbox read path.
   const [table]=await sql`select to_regclass('public.os_messages') is not null as present`;
   if(!table?.present)return;
   const title=item.title.replace(/\s+/g,' ').slice(0,100),kind=item.type==='image'?'Image':'Video';
-  const result=outcome==='completed'?`${kind} saved: ${title}.`:`${kind} creation needs attention: ${title}.`;
-  const next=outcome==='completed'?'Review the file and caption in Content.':outcome==='blocked'?'Open Content to check the last attempt.':retryable?'Retry in Content.':'Open Content to review the idea or source.';
+  const result=`${kind} creation needs attention: ${title}.`;
+  const next=outcome==='blocked'?'Open Content to check the last attempt.':retryable?'Retry in Content.':'Open Content to review the idea or source.';
   const body=`Result: ${result}\nNext: ${next}\nSource: /owner?tab=content&item=${item.id}\nJob: ${jobId}`;
   // One message per durable render job, including retries. A repeated terminal
   // callback neither duplicates it nor marks the same result unread again.
