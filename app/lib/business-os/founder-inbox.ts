@@ -26,7 +26,7 @@ const date = (value: unknown): string | null => {
   return candidate && Number.isFinite(candidate.getTime()) ? candidate.toISOString() : null;
 };
 const uuid = '[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}';
-export function validInboxId(id: unknown): id is string {return typeof id === 'string' && (new RegExp(`^(support|loop|message|approval):${uuid}$`).test(id)||new RegExp(`^review:${uuid}:[1-9][0-9]{0,9}$`).test(id));}
+export function validInboxId(id: unknown): id is string {return typeof id === 'string' && (new RegExp(`^(support|loop|message|approval|access):${uuid}$`).test(id)||new RegExp(`^review:${uuid}:[1-9][0-9]{0,9}$`).test(id));}
 export const emptyInboxState = (): FounderInboxState => ({version: 0, readAt: null, snoozedUntil: null, resolvedAt: null, draft: '', updatedAt: null});
 export function inboxState(record?: Row): FounderInboxState {
   if (!record) return emptyInboxState();
@@ -68,6 +68,14 @@ export function mapInboxSource(source: string, value: Row): FounderInboxItem {
     item.sender = text(value.provider, 100) || 'Customer'; item.customerId = text(value.customer_key, 200) || null;
     item.sourceHref = gmailHref(value.provider, value.provider_thread_id); item.sourceStatus = text(value.status, 100);
     item.severity = value.requires_founder === true ? 'warning' : 'info'; item.contentCoverage = 'summary_only';
+  } else if (source === 'access') {
+    item=base(`access:${value.id}`,'alert','Customer access request ledger',value.updated_at);
+    item.kind='access_request';item.customerId=text(value.customer_id,200);item.sender=text(value.customer_label,200)||'Customer';
+    item.title=`${text(value.action,40).replaceAll('_',' ')} request`;
+    item.sourceStatus=text(value.state,100);item.sourceHref='/owner?tab=customers';
+    const canceled=value.state==='request_canceled';
+    item.body=[`Request: ${item.title}`,`Customer: ${item.sender}`,`Recorded username: ${text(value.recorded_username,64)||'Not verified'}`,`Requested username: ${text(value.requested_username,64)||'Unchanged'}`,text(value.target_plan)?`Plan: ${text(value.target_plan,200)}`:'',text(value.requested_expiry_day)?`Requested end date: ${text(value.requested_expiry_day,10)} (Eastern)`:'',text(value.reason,500),canceled?'Request withdrawn. No provider action was taken.':'Provider confirmation pending. No access change has been executed.'].filter(Boolean).join('\n');
+    item.summary=summarizeBusinessAlert({result:canceled?`Access request withdrawn for ${item.sender}.`:`Access change requested for ${item.sender}.`,nextStep:canceled?'Open the customer to review saved requests.':'Review the saved request. Provider confirmation is pending.'});
   } else if (source === 'loops') {
     // Re-observing the same unresolved issue must not make it unread on every
     // watchdog pass. The creation timestamp identifies the alert occurrence.
@@ -142,6 +150,7 @@ export async function founderInbox() {
     readSource('support', () => sql`select id,provider,provider_thread_id,customer_key,category,status,subject,last_message_at,summary,requires_founder from os_support_conversations order by last_message_at desc,id limit 80`),
     readSource('loops', () => sql`select id,category,title,why,service,founder_action,resume_action,severity,status,source_type,source_id,first_seen_at,last_seen_at,details from os_open_loops where status='open' order by last_seen_at desc,id limit 80`),
     readSource('reviews', () => readFounderReviewNotices(sql)),
+    readSource('access', async () => {const [table]=await sql`select to_regclass('public.os_founder_access_requests') is not null as present`;return table?.present?sql`select id,customer_id,customer_label,action,target_plan,recorded_username,requested_username,requested_expiry_day,reason,state,updated_at from os_founder_access_requests order by updated_at desc,id limit 80`:[];}),
     readSource('agents', () => sql`select id,department,body,run_id,created_at from os_messages where role='agent' order by created_at desc,id limit 80`),
     readSource('approvals', () => sql`select id,payload,status,created_at from os_approvals where status='pending' and expires_at>now() order by created_at desc,id limit 80`),
   ]);
@@ -183,6 +192,7 @@ async function sourceItem(id: string): Promise<FounderInboxItem | null> {
   if (kind === 'support') values = await sql`select * from os_support_conversations where id=${key}`;
   else if (kind === 'loop') values = await sql`select * from os_open_loops where id=${key}`;
   else if (kind === 'approval') values = await sql`select id,payload,status,created_at from os_approvals where id=${key}`;
+  else if (kind === 'access') values = await sql`select * from os_founder_access_requests where id=${key}`;
   else values = await sql`select * from os_messages where id=${key} and role='agent'`;
   return values[0] ? mapInboxSource(kind === 'loop' ? 'loops' : kind === 'approval' ? 'approvals' : kind, values[0]) : null;
 }

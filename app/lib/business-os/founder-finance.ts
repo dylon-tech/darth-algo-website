@@ -231,7 +231,7 @@ async function collect<T extends {id?:string}>(fetchPage:(after?:string)=>Promis
  try{for(let page=0;page<20&&Date.now()<deadline;page++){const result=await fetchPage(after);rows.push(...result.data);if(!result.has_more)return {rows,complete:true};const next=result.data.at(-1)?.id;if(!next||next===after)break;after=next;}}catch{/* Partial coverage is explicit. */}
  return {rows,complete:false};
 }
-async function readEvidence(period:FinancePeriod):Promise<FinanceEvidence>{
+async function readEvidence(period:FinancePeriod,accessOnly=false):Promise<FinanceEvidence>{
  const client=stripe(),options={timeout:4500,maxNetworkRetries:0},now=Math.floor(Date.now()/1000),deadline=Date.now()+43000;
  const balance=await client.balance.retrieve({},options);if(!balance.livemode)throw Error('LIVE_STRIPE_REQUIRED');
  const [subscriptions,invoices,sessions,charges,refunds,balances,accessRecords]=await Promise.all([
@@ -240,16 +240,22 @@ async function readEvidence(period:FinancePeriod):Promise<FinanceEvidence>{
   collect(after=>client.checkout.sessions.list({status:'complete',limit:100,expand:['data.line_items'],...(after?{starting_after:after}:{})},options),deadline),
   collect(after=>client.charges.list({limit:100,...(after?{starting_after:after}:{})},options),deadline),
   collect(after=>client.refunds.list({limit:100,...(after?{starting_after:after}:{})},options),deadline),
-  collect(after=>client.balanceTransactions.list({limit:100,created:{...(period==='all'?{}:{gte:now-(period==='90d'?90:30)*DAY}),lt:now},expand:['data.source'],...(after?{starting_after:after}:{})},options),deadline),
+  accessOnly?Promise.resolve({rows:[] as Stripe.BalanceTransaction[],complete:false}):collect(after=>client.balanceTransactions.list({limit:100,created:{...(period==='all'?{}:{gte:now-(period==='90d'?90:30)*DAY}),lt:now},expand:['data.source'],...(after?{starting_after:after}:{})},options),deadline),
   (async()=>{try{const rows=await db()`select subscription_id,tradingview_username,status,access_verified_at from os_subscription_activation order by created_at desc limit 2000`;return rows.map(row=>({...row,access_verified_at:row.access_verified_at?new Date(row.access_verified_at).toISOString():null})) as AccessRecord[];}catch{return [];}})(),
  ]);
  const previews:Record<string,Preview|null>={};
- const candidates=subscriptions.rows.filter(s=>s.livemode&&['active','past_due'].includes(s.status)&&!s.cancel_at_period_end&&s.items.data.some(i=>knownProduct(idOf(i.price.product))));
+ const candidates=accessOnly?[]:subscriptions.rows.filter(s=>s.livemode&&['active','past_due'].includes(s.status)&&!s.cancel_at_period_end&&s.items.data.some(i=>knownProduct(idOf(i.price.product))));
  let cursor=0;
  await Promise.all(Array.from({length:Math.min(4,candidates.length)},async()=>{while(cursor<candidates.length&&Date.now()<deadline){const s=candidates[cursor++];try{const preview=await client.invoices.createPreview({subscription:s.id},options);previews[s.id]={amountDue:preview.amount_due,currency:preview.currency,endingBalance:preview.ending_balance,taxCents:(preview.total_taxes||[]).reduce((n,t)=>n+t.amount,0),checkedAt:new Date().toISOString()};}catch{previews[s.id]=null;}}}));
  return {subscriptions:subscriptions.rows,invoices:invoices.rows,sessions:sessions.rows,charges:charges.rows,refunds:refunds.rows,balances:balances.rows,coverage:{subscriptions:subscriptions.complete,invoices:invoices.complete,sessions:sessions.complete,charges:charges.complete,refunds:refunds.complete,balances:balances.complete},accessRecords,previews,now,period};
 }
 const flights=new Map<FinancePeriod,Promise<FounderFinance>>();
+/** Fresh, read-only billing evidence for an owner access request. Never use the
+ * five-minute dashboard cache to authorize even a pending access change. */
+export async function freshFounderCustomerBilling(customerId:string){
+ const snapshot=buildFounderFinance(await readEvidence('all',true));
+ return {checkedAt:snapshot.checkedAt,coverage:snapshot.coverage,customer:snapshot.customers.find(customer=>customer.id===customerId)||null};
+}
 export async function founderFinanceSnapshot(period:FinancePeriod='30d'):Promise<FounderFinance>{
  const existing=flights.get(period);if(existing)return existing;
  const run=(async()=>{

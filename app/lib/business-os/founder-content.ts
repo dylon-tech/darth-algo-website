@@ -1,4 +1,5 @@
 import {hasFounderVideoAttempt} from './founder-video-dispatch';
+import {founderVideoReceiptSummaries,withFounderVideoReceipts} from './founder-video-receipts';
 import {writeFounderReviewNotice} from './founder-review-notices';
 import {hasFounderPublicationAttempt,founderPublicationSummaries} from './founder-publication';
 import {createHash,randomUUID} from 'node:crypto';
@@ -8,6 +9,7 @@ import {getFounderMediaAsset} from './founder-media';
 import {founderRendererStatus,wakeFounderRenderer,requestNativeRendererSetup,nativeRuntimeFingerprint} from './founder-renderer';
 import {nativeApproval} from './founder-native-policy';
 import {founderRenderBrief} from './founder-render-catalog';
+import {founderBriefSchema,founderBriefConfigurationEnabled,queueFounderBrief,assertFounderBriefSnapshot,founderBriefAvailability} from './founder-briefs';
 import deploymentConfig from '../../../vercel.json';
 import {
   FounderContentError,addCalendarDays,assertFounderVersion,founderClock,founderCoverage,
@@ -65,6 +67,7 @@ create table if not exists os_founder_render_jobs (
 create index if not exists os_founder_render_jobs_pending on os_founder_render_jobs(status,created_at);
 create unique index if not exists os_founder_render_worker_lease on os_founder_render_jobs(worker_id) where status='running' and worker_id is not null;
 alter table os_founder_render_jobs add column if not exists proof_sha256 text;
+${founderBriefSchema}
 `;
 export function ensureFounderContentSchema() {
   return schemaReady??=db().begin(async tx=>{
@@ -111,6 +114,7 @@ export async function readFounderContent(month?:string,now=new Date()):Promise<F
   const {day:today}=founderClock(now),selectedMonth=month||today.slice(0,7);
   if(!isCalendarMonth(selectedMonth))throw new FounderContentError('Choose a valid month.');
   await ensureFounderContentSchema();const sql=db();
+  const writing=await founderBriefAvailability();
   const start=selectedMonth+'-01',end=new Date(Date.UTC(Number(selectedMonth.slice(0,4)),Number(selectedMonth.slice(5,7)),1)).toISOString().slice(0,10);
   const futureEnd=addCalendarDays(today,6);
   const [rows,futureRows,archiveRows,controlResult,jobRows,jobCounts,renderStatus,legacyResult]=await Promise.all([
@@ -129,24 +133,26 @@ export async function readFounderContent(month?:string,now=new Date()):Promise<F
   const merged=new Map([...rows.slice(0,500),...futureRows].map(row=>[String(row.id),asItem(row)]));
   const jobs=jobRows.map(asJob),byJob=new Map(jobs.map(job=>[job.id,job]));
   const items=[...merged.values()].map(item=>withRenderState(item,item.jobId?byJob.get(item.jobId):undefined)).sort((a,b)=>a.day.localeCompare(b.day)||a.time.localeCompare(b.time)||a.id.localeCompare(b.id)),control=controlResult[0];
-  const publications=await founderPublicationSummaries(items.map(i=>i.id));
-  for(const item of items){const p=publications.find(p=>p.itemId===item.id&&p.version===item.version);if(p){item.publication={version:p.version,state:p.state,approvedAt:p.approvedAt};item.deliveries=[...item.deliveries,...p.deliveries];}}
+  const [publications,videoReceipts]=await Promise.all([founderPublicationSummaries(items.map(i=>i.id)),founderVideoReceiptSummaries(items,now)]);
+  for(const [index,item] of items.entries()){const p=publications.find(p=>p.itemId===item.id&&p.version===item.version);if(p){item.publication={version:p.version,state:p.state,approvedAt:p.approvedAt};item.deliveries=[...item.deliveries,...p.deliveries];}items[index]=withFounderVideoReceipts(item,videoReceipts.find(p=>p.itemId===item.id&&p.version===item.version));}
   const coverage=founderCoverage(items,now);
   const counts={queued:0,running:0,failed:0,blocked:0,completed:0};
   for(const row of jobCounts)if(String(row.status) in counts)counts[row.status as keyof typeof counts]=Number(row.n);
   const lastSeen=iso(control.last_seen_at),fresh=Boolean(lastSeen&&now.getTime()-Date.parse(lastSeen)>=0&&now.getTime()-Date.parse(lastSeen)<=15*60000);
   const scheduled=deploymentConfig.crons.some(cron=>cron.path==='/api/cron/owner-work'&&cron.schedule==='*/5 * * * *');
   const nextRun=!control.paused&&control.global_paused===false&&fresh&&scheduled?new Date((Math.floor(now.getTime()/300000)+1)*300000).toISOString():null;
+  const writingBlocked=jobs.some(job=>job.status==='queued'&&['Writing lesson','Writing source plan'].includes(job.stage))&&!writing.ready;
+  const writingActive=jobs.find(job=>job.status==='queued'&&job.stage==='Writing source plan');
   const needsSourceReview=items.find(item=>!item.extra&&item.day>=today&&item.day<futureEnd&&item.status==='needs_input'&&!item.mediaAssetId);
-  const status=control.paused?'Off':control.global_paused===true?'Paused':!renderStatus.ready||control.last_status==='needs_input'||needsSourceReview?'Needs attention':counts.running?'Creating':counts.queued?'Queued':counts.failed||counts.blocked?'Needs attention':coverage.generated===coverage.expectedOriginals?'Up to date':'On';
-  const message=control.paused?(control.last_error||(!renderStatus.ready?renderStatus.reason:'Create one image and one video per day for the next five days, with approval before publishing.')):control.global_paused===true?'The existing worker is paused.':!renderStatus.ready?renderStatus.reason:control.last_status==='needs_input'||needsSourceReview?(control.last_error||needsSourceReview?.lastError||sourceCapacityReason):counts.running?'Creating your content.':counts.queued?`${counts.queued} ${counts.queued===1?'file':'files'} queued for the media worker.`:control.last_error||(!renderStatus.ready?renderStatus.reason:coverage.generated===coverage.expectedOriginals?'All planned files in this window are saved. Review each before publishing.':'Watching the next five days for missing content.');
-  const running=jobs.find(job=>job.status==='running'),runningItem=running?items.find(item=>item.id===running.itemId):undefined;
+  const status=control.paused?'Off':control.global_paused===true?'Paused':!renderStatus.ready||writingBlocked||control.last_status==='needs_input'||needsSourceReview?'Needs attention':counts.running||writingActive?'Creating':counts.queued?'Queued':counts.failed||counts.blocked?'Needs attention':coverage.generated===coverage.expectedOriginals?'Up to date':'On';
+  const message=control.paused?(control.last_error||(!renderStatus.ready?renderStatus.reason:'Create one image and one video per day for the next five days, with approval before publishing.')):control.global_paused===true?'The existing worker is paused.':!renderStatus.ready?renderStatus.reason:writingBlocked?writing.reason:control.last_status==='needs_input'||needsSourceReview?(control.last_error||needsSourceReview?.lastError||sourceCapacityReason):writingActive?'Writing a source-matched lesson.':counts.running?'Creating your content.':counts.queued?`${counts.queued} ${counts.queued===1?'file':'files'} queued for the media worker.`:control.last_error||(!renderStatus.ready?renderStatus.reason:coverage.generated===coverage.expectedOriginals?'All planned files in this window are saved. Review each before publishing.':'Watching the next five days for missing content.');
+  const running=jobs.find(job=>job.status==='running')||writingActive,runningItem=running?items.find(item=>item.id===running.itemId):undefined;
   const currentWork=running?(runningItem?`${running.stage}: ${runningItem.title.slice(0,160)}`:`Creating ${running.type==='image'?'an image':'a video'}`):null;
   return {checkedAt:now.toISOString(),today,timeZone:founderTimeZone,month:selectedMonth,
     items,archivedItems:archiveRows.map(asItem),days:founderDays(items,now),coverage,jobs,
     agent:{paused:control.paused===true,version:Number(control.version),status,lastSeenAt:lastSeen,lastCreatedCount:control.last_created_count===null?null:Number(control.last_created_count),lastSuccessfulRun:iso(control.last_success_at),nextRun,currentWork,incrementalBudgetUsd:renderStatus.budgetApproved?5:0,
       publishingPause:'not_confirmed',message,generated:coverage.generated,counts},
-    templates:founderTemplates,capabilities:{drafts:true,uploads:true,imageGeneration:renderStatus.image.available&&(renderStatus.incrementalCostUsd===0||(renderStatus.budgetApproved&&renderStatus.incrementalCostUsd===0.05)),videoGeneration:renderStatus.video.available&&(renderStatus.incrementalCostUsd===0||(renderStatus.budgetApproved&&renderStatus.incrementalCostUsd===0.05)),rendererSetupAvailable:renderStatus.setupAvailable,renderBudgetMessage:renderStatus.budgetMessage,scheduling:false,publishingPause:false,rendererReason:renderStatus.reason||rendererReason,publisherReason},
+    templates:founderTemplates,capabilities:{drafts:true,uploads:true,customGeneration:writing.ready,customGenerationReason:writing.reason,imageGeneration:renderStatus.image.available&&(renderStatus.incrementalCostUsd===0||(renderStatus.budgetApproved&&renderStatus.incrementalCostUsd===0.05)),videoGeneration:renderStatus.video.available&&(renderStatus.incrementalCostUsd===0||(renderStatus.budgetApproved&&renderStatus.incrementalCostUsd===0.05)),rendererSetupAvailable:renderStatus.setupAvailable,renderBudgetMessage:renderStatus.budgetMessage,scheduling:false,publishingPause:false,rendererReason:renderStatus.reason||rendererReason,publisherReason},
     legacyQueue:legacyResult.value,legacyQueueError:legacyResult.error,truncated:rows.length>500};
 }
 
@@ -206,7 +212,7 @@ async function verifiedMedia(draft:FounderContentDraft) {
 function externallyInFlight(item:FounderContentItem) {
   return item.deliveries.some(d=>['scheduled','publishing','published','outcome_unknown'].includes(d.state));
 }
-async function writeVersion(sql:Sql,item:FounderContentItem,operation:string) {
+export async function writeVersion(sql:Sql,item:FounderContentItem,operation:string) {
   const {renderStatus:_status,renderStage:_stage,renderProgress:_progress,...stored}=item;
   await sql`insert into os_founder_content_items(id,version,day,media_type,extra,archived,data) values(${item.id},${item.version},${item.day},${item.type},${item.extra},${item.status==='archived'},${sql.json(stored)})
     on conflict(id) do update set version=excluded.version,day=excluded.day,media_type=excluded.media_type,extra=excluded.extra,archived=excluded.archived,data=excluded.data,updated_at=now()`;
@@ -352,7 +358,9 @@ async function writeRenderNotice(sql:Sql,jobId:string,item:FounderContentItem,ou
   await sql`insert into os_messages(id,department,role,body,run_id,created_at) values(${jobId},'content','agent',${body},null,${now}) on conflict(id) do update set body=excluded.body,created_at=excluded.created_at where os_messages.department='content' and os_messages.role='agent' and os_messages.body<>excluded.body`;
 }
 async function queueRenderItem(sql:Sql,current:FounderContentItem,source:'agent'|'owner',now:Date) {
-  if(nativeApproval().enabled){const brief=founderRenderBrief(current);if(!brief.supported)throw new FounderContentError(brief.reason,409,'RENDER_SOURCE_REVIEW_REQUIRED');}
+  const needsWriting=nativeApproval().enabled&&!founderRenderBrief(current).supported;
+  if(needsWriting&&!founderBriefConfigurationEnabled())throw new FounderContentError('Custom creation needs the existing approved AI writing connection. Your idea is saved.',409,'RENDER_SOURCE_REVIEW_REQUIRED');
+  if(current.renderBrief)assertFounderBriefSnapshot(current);
   const stamp=now.toISOString(),budgetDay=founderClock(now).day;
   if(current.jobId){
     const [pending]=await sql`select * from os_founder_render_jobs where id=${current.jobId} and status in ('queued','running')`;
@@ -375,6 +383,7 @@ async function queueRenderItem(sql:Sql,current:FounderContentItem,source:'agent'
   await writeVersion(sql,item,retry?'retry_generation':'queue_generation');
   const [job]=retry?await sql`update os_founder_render_jobs set content_version=${item.version},source=${source},status='queued',stage='Queued',progress=0,retryable=true,error=null,lease_token=null,lease_expires_at=null,worker_id=null,started_at=null,finished_at=null,updated_at=${stamp},budget_day=${budgetDay} where id=${id} returning *`
     :await sql`insert into os_founder_render_jobs(id,item_id,content_version,media_type,source,status,budget_day,created_at,updated_at) values(${id},${item.id},${item.version},${item.type},${source},'queued',${budgetDay},${stamp},${stamp}) returning *`;
+  if(needsWriting){await queueFounderBrief(sql,item,stamp);job.stage='Writing lesson';}
   return {item:withRenderState(item,asJob(job)),job:asJob(job)};
 }
 async function queueMissingWindow(sql:Sql,now:Date) {
@@ -390,7 +399,7 @@ async function queueMissingWindow(sql:Sql,now:Date) {
   let sourceBlock=needsReview?(needsReview.lastError||'A planned lesson needs source review before creation can continue.'):null;
   for(const item of originals){
     if(!founderScheduledTypes(item.day).includes(item.type)||item.locked||item.mediaAssetId||!['idea','draft'].includes(item.status)||(item.day===clock.day&&item.time<=clock.time))continue;
-    const brief=founderRenderBrief(item);if(nativeApproval().enabled&&!brief.supported){await writeVersion(sql,{...item,version:item.version+1,status:'needs_input',lastError:brief.reason,updatedAt:now.toISOString()},'source_review_required');sourceBlock??=brief.reason;continue;}
+    const brief=founderRenderBrief(item);if(nativeApproval().enabled&&!brief.supported&&!founderBriefConfigurationEnabled()){await writeVersion(sql,{...item,version:item.version+1,status:'needs_input',lastError:brief.reason,updatedAt:now.toISOString()},'source_review_required');sourceBlock??=brief.reason;continue;}
     const queued=await queueRenderItem(sql,item,'agent',now);items.push(queued.item);jobs.push(queued.job);
   }
   const missing=founderDays(originals,now).flatMap(day=>day.slots.filter(slot=>!slot.itemId&&(!day.isToday||slot.remainingToday))).length;
@@ -411,6 +420,12 @@ async function expireUnstartedAgentJobs(sql:Sql,now:Date) {
   }
 }
 async function originalAlreadyCompletedOrUncertain(sql:Sql,item:FounderContentItem) {
+  if(item.renderBrief){
+    const fingerprint=item.renderBrief.fingerprint;
+    const rows=await sql`select item_id::text from os_founder_content_versions where operation='generation_completed' and data->'renderBrief'->>'fingerprint'=${fingerprint}
+      union select j.item_id::text from os_founder_render_jobs j join os_founder_content_versions v on v.item_id=j.item_id and v.version=j.content_version where j.id<>${item.jobId} and j.status in ('queued','completed','running','blocked') and v.data->'renderBrief'->>'fingerprint'=${fingerprint} limit 1`;
+    return rows.length>0;
+  }
   const title=item.title.trim().toLowerCase();
   const rows=await sql`select id::text from os_founder_content_items where lower(btrim(data->>'title'))=${title} and media_type=${item.type} and data->>'mediaAssetId' is not null and data->>'mediaVerifiedAt' is not null
     union select item_id::text from os_founder_content_versions where operation='generation_completed' and lower(btrim(data->>'title'))=${title} and data->>'type'=${item.type} and data->>'mediaAssetId' is not null and data->>'mediaVerifiedAt' is not null
@@ -499,6 +514,8 @@ export async function claimFounderRenderJob(input:{workerId:string;now?:Date}):P
         continue;
       }
       if(!availability[item.type].available)continue;
+      if(nativeApproval().enabled&&!founderRenderBrief(item).supported)continue;
+      if(item.renderBrief)assertFounderBriefSnapshot(item);
       const token=randomUUID(),expires=new Date(now.getTime()+renderLimits.leaseMinutes*60000).toISOString();
       const [job]=await tx`update os_founder_render_jobs set status='running',stage='Preparing',progress=1,attempts=attempts+1,lease_token=${token},lease_expires_at=${expires},worker_id=${input.workerId},started_at=${stamp},finished_at=null,updated_at=${stamp} where id=${candidate.id} and attempts<${renderLimits.attempts} returning *`;
       if(job)return leaseResult(job,item);
@@ -632,7 +649,7 @@ async function planMissingIdeas(sql:Sql,now:string) {
   const chosenBySlot=new Map([...assigned].map(([choiceIndex,slotIndex])=>[slotIndex,choices[choiceIndex]]));
   const created:FounderContentItem[]=[];
   for(const [slotIndex,slot] of slots.entries()){
-      const choice=chosenBySlot.get(slotIndex);if(!choice)continue;
+      const choice=chosenBySlot.get(slotIndex)||(nativeApproval().enabled&&founderBriefConfigurationEnabled()?[`New ${slot.type} lesson · ${slot.day}`,`Create one fresh, useful educational lesson from the reviewed Darth Algo product views. Choose a distinct teaching objective and original wording after checking prior content. For ${slot.day}, teach a practical setup, chart-context or feature-review step; no prices, offers, trading results or live-market claims.`]:null);if(!choice)continue;
       const item:FounderContentItem={id:randomUUID(),version:1,day:slot.day,time:slot.time,type:slot.type,title:choice[0],idea:choice[1],script:'',caption:'',
         templateId:slot.type==='image'?founderTemplates[0].id:founderTemplates[1].id,destinations:founderDefaultDestinations(slot.type),mediaAssetId:null,coverAssetId:null,
         mediaUrl:null,coverUrl:null,mediaVerifiedAt:null,status:'idea',locked:false,extra:false,createdAt:now,updatedAt:now,deliveries:[],jobId:null,

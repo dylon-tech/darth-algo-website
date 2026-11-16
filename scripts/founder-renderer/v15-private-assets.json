@@ -1,0 +1,21 @@
+{
+  "version": "DA-V15-EDITING-20261116-1",
+  "sourcePackage": "Darth_Algo_Video_Template.zip",
+  "sourcePackageSha256": "e9d5e6e3abbadfab333f3910ca7765504018e52be799024891723a412daad979",
+  "scope": "Existing approved assets only. This manifest is neither a public asset URL nor permission to obtain new credits, generate music, change the voice, or publish.",
+  "music": {
+    "assetId": "20504a68-fc12-45ad-9dd9-4e9fbf0e2cc8",
+    "sourceMember": "sound_revision/assets/hiphop.wav",
+    "privateFilename": "v15-approved-hiphop.audio",
+    "bytes": 1443406,
+    "sha256": "c78b372dff212b97c9815c103c98b9c9b0d6939113a77100c6c18b1f4478e976",
+    "storage": "Owner-controlled private directory outside the repository; never a public path. Original bytes are MP3 despite the historical .wav filename."
+  },
+  "adaptedOriginalLogic": [
+    {"member": "source/camera.py", "sha256": "de33cec13014dd5d7ca13f47651416ecd06cbf1095b499207c631f7a7a199d68"},
+    {"member": "source/caption_style.py", "sha256": "ab7421f9353d7e00586cb303308bcdd7f87e8bbb9748146ae7abf8f5d482abb0"},
+    {"member": "sound_revision/revise.py", "sha256": "a874b2b6a5641dc72d365ab457441c0a8e09d1d511de6a977dbae0a170ab5cc3"},
+    {"member": "readability_revision/revise.py", "sha256": "fdfa4e4a3d996224f5990cee5ef6017205088d0d208d271b7abca8a3b1a89629"},
+    {"member": "normal_volume/adjust_volume.py", "sha256": "5d3ac072cc44845c8930d05390003eb649b6ac5755e8d1bfe7151682da7fc3f0"}
+  ]
+}

@@ -77,7 +77,10 @@ export async function dispatchNativeFounderJob(deadlineMs=nativeRequestDeadline(
  const status=await founderRendererStatus();if(!status.ready)return {status:'unavailable'};
  const {claimFounderRenderJob,failFounderRenderJob}=await import('./founder-content');
  if(!nativeHasDispatchWindow(deadlineMs))return {status:'deferred'};
- const id=nativeRequestId(),claim=await claimFounderRenderJob({workerId:`native:${id}`});if(!claim)return {status:'idle'};
+ const id=nativeRequestId(),claim=await claimFounderRenderJob({workerId:`native:${id}`});
+ // Writing uses its own durable lease and allowance. Render on a later fresh
+ // request so both stages retain their full server deadline.
+ if(!claim)return (await import('./founder-briefs')).workFounderBrief();
  let reservation:NativeReservation|undefined;
  try{
   const brief=founderRenderBrief(claim.item);if(!brief.supported){await failFounderRenderJob({jobId:claim.job.id,leaseToken:claim.job.leaseToken,error:brief.reason,retryable:false});return {status:'source_review_required'};}

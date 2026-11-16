@@ -1,6 +1,6 @@
 {
   "version": "vercel-native-v1",
-  "fingerprint": "31d4c1e8636973a875d3016b40ce1df2886f0366c7eeaf1924e21e7ea431879b",
+  "fingerprint": "a0419da39de8e16d03c25f97f1cfc16ac911bc161edda86ae0603da5671c1532",
   "files": [
     {
       "file": ".python-version",
@@ -27,8 +27,20 @@
       "sha256": "f43e32bc7650e10a9703940b15f3406fe6a10ca7009c6fff0bc5eb45667da66f"
     },
     {
+      "file": "app/lib/business-os/founder-brief-policy.ts",
+      "sha256": "c88dda9cd2737403571cbec6d2022baf8532bbde031b3fbd0dd48848e7fbea39"
+    },
+    {
+      "file": "app/lib/business-os/founder-brief-sources.json",
+      "sha256": "c43b41d31a8c3a4f4e8a1bc3337cedcbdbbe2114b2c8dfc72f34c466b3925ba5"
+    },
+    {
+      "file": "app/lib/business-os/founder-briefs.ts",
+      "sha256": "c7097c66464ac0414a5a075715acf2e8203cb3b11d2475cd564b24e802b6fadf"
+    },
+    {
       "file": "app/lib/business-os/founder-content.ts",
-      "sha256": "a1beab7ee14134b4e6f70d3c2a336953a22dfaa2fb76120b69da0fa028d0faa1"
+      "sha256": "139c4ad34285fffb00b6767ce0b806c9e5f4a9466c2a7476c62bbdab5aa3a4cf"
     },
     {
       "file": "app/lib/business-os/founder-media-model.ts",
@@ -52,7 +64,7 @@
     },
     {
       "file": "app/lib/business-os/founder-render-catalog.ts",
-      "sha256": "b8d514b7e6c68769e893a8afa9079cfa0b98f670e5c4726fd40fccce912a3764"
+      "sha256": "6daa543ddfd3030508f77c9f61c63fefe8a1c0c3c2dc8e16aac2f0bb76adb504"
     },
     {
       "file": "app/lib/business-os/founder-renderer-auth.ts",
@@ -64,7 +76,7 @@
     },
     {
       "file": "app/lib/business-os/founder-renderer.ts",
-      "sha256": "4ce0a86eab5baa18cef00212069da906bba9e0ab072ecc84339c3bcd33beaa43"
+      "sha256": "0919abc2150c442264abc6e27f8033e2dcb6ba10baebb07b5211d96c9086423b"
     },
     {
       "file": "package-lock.json",
@@ -75,20 +87,24 @@
       "sha256": "ce155d865a1702ae38fab4f929cc0b88dcec5cef67a16ffa037a91311f6e5e1a"
     },
     {
+      "file": "scripts/founder-renderer/dynamic_brief.py",
+      "sha256": "66f0940bd9c464a98a4a6deeae7bf662b0c8103079294e223276d2af0515c369"
+    },
+    {
       "file": "scripts/founder-renderer/prepared-vercel/setup_runtime.py",
       "sha256": "4e930cab1f6efc1c5afa1ecccc9c02435441926f5ef030bd54d58f694d495673"
     },
     {
       "file": "scripts/founder-renderer/recipes.py",
-      "sha256": "53a6193680a58182bb1edb56a1847b920d5a58c066abd74c45d91fcfa8d0e4a4"
+      "sha256": "d946967b1d59442057c9d50d29ddc9b17f567be69fe1d04ffce152457bf2937b"
     },
     {
       "file": "scripts/founder-renderer/render.py",
-      "sha256": "b5f1a8a648e2303f959d53081ec61f81afb574ba6e2dd2185a283b0552186878"
+      "sha256": "de29cbc1d158dfc4d33ad4f4b2ef51ff06fc91f2e031a3469bc4de1911dada33"
     },
     {
       "file": "scripts/founder-renderer/runtime-profile.mjs",
-      "sha256": "6b014d48812e626914e2494b1cf798d853982b6548642c16a554f322fc0ef45f"
+      "sha256": "13b4109cb3db7b743bad35f17ee33dcc2932c4cb59f78a12525e745c154cd4cf"
     },
     {
       "file": "scripts/founder-renderer/setup_models.py",
@@ -99,12 +115,20 @@
       "sha256": "c625bc9b34b32bfb4223c13277307bd64700af797865dcf34036adaec46fb1f5"
     },
     {
+      "file": "scripts/founder-renderer/v15-private-assets.json",
+      "sha256": "14e64551759f2f6705154cc2514faa826b43e3d9647aba67efc840718e2fd701"
+    },
+    {
+      "file": "scripts/founder-renderer/v15_editing.py",
+      "sha256": "69777c44ae805c6112d29936376fe2b98413bd7fbfa704a08a288a933505c9ac"
+    },
+    {
       "file": "scripts/founder-renderer/worker.py",
-      "sha256": "da16142117d876a1539450729436f352874148ecf5f03f8e948b964b5d8cd45c"
+      "sha256": "ec3a685ef8750cbf9d277691cded83766a98ebbe3b7c6b5926b00764305201b2"
     },
     {
       "file": "vercel.json",
-      "sha256": "5203f8b53bc8f786d4e669a14b3ed0f22289a41c66d481308244463f07fe02f3"
+      "sha256": "ce2100a7dcac372c1c691ce5def8e494d7667a57be1dc107f718b802b756d300"
     }
   ]
 }

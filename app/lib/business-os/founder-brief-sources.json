@@ -1,0 +1,139 @@
+{
+  "version": "DA-OWNED-CLAIMS-20261116-v1",
+  "basis": "Semantic statements and fixed crops extracted from the existing reviewed v15/v4 recipe catalog. Recorded product evidence only; new narration still requires creative and factual review before publication. No live trades, current prices, offers or results.",
+  "sources": [
+    {
+      "id": "invite",
+      "path": "scripts/founder-renderer/assets/da_v8_invite_full.png",
+      "crop": [
+        250,
+        140,
+        1110,
+        485
+      ],
+      "claims": {
+        "account": "Use the exact TradingView account supplied for confirmed indicator access.",
+        "invite-list": "The recorded Indicators menu includes an Invite-only list for scripts the account can access."
+      },
+      "summary": "Check the exact account and its confirmed invite-only indicator access."
+    },
+    {
+      "id": "settings",
+      "path": "scripts/founder-renderer/assets/da_v8_settings_top.png",
+      "crop": [
+        480,
+        12,
+        890,
+        380
+      ],
+      "claims": {
+        "inputs": "The recorded settings show separate display inputs. Inspect one control at a time.",
+        "cloud-toggle": "Show Trend Cloud is a visible display input in this recorded view.",
+        "edge-lines": "Cloud edge lines have their own visible control in the recorded settings."
+      },
+      "summary": "Inspect the recorded display controls one at a time."
+    },
+    {
+      "id": "timeframe",
+      "path": "scripts/founder-renderer/assets/da_v8_timeframe_full.png",
+      "crop": [
+        225,
+        430,
+        440,
+        745
+      ],
+      "claims": {
+        "selected-timeframe": "Read the selected chart timeframe before interpreting a recorded example. A timeframe alone is not an entry rule."
+      },
+      "summary": "Read the selected timeframe before interpreting a recorded chart."
+    },
+    {
+      "id": "scalp",
+      "path": "public/indicators/scalper-overview.png",
+      "crop": null,
+      "claims": {
+        "scalp-name": "Scalp and Swing are distinct Darth Algo tools. Check the loaded tool name before interpreting its view.",
+        "scalp-context": "This owned image is a recorded Darth Algo Scalp product view, not a new trade or an executed order."
+      },
+      "summary": "Check the Scalp tool name and surrounding recorded chart context."
+    },
+    {
+      "id": "swing",
+      "path": "public/indicators/swing-overview.png",
+      "crop": null,
+      "claims": {
+        "swing-name": "This owned image is a recorded Darth Algo Swing product view. Read its name and surrounding price context.",
+        "wider-chart": "Keep the surrounding candles visible when reviewing one displayed feature."
+      },
+      "summary": "Keep the Swing tool name and surrounding candles in view."
+    },
+    {
+      "id": "cloud",
+      "path": "public/indicators/swing-trend-cloud.png",
+      "crop": null,
+      "claims": {
+        "cloud-context": "The recorded Swing view shows candles around a colored trend cloud. The cloud provides visual context; entry rules require separate checks.",
+        "cloud-review": "Compare different sections of the same recorded chart without inferring trading performance."
+      },
+      "summary": "Review the colored cloud alongside the candles in this recorded Swing view."
+    },
+    {
+      "id": "scalp-plan",
+      "path": "public/indicators/scalper-risk-plan.png",
+      "crop": null,
+      "claims": {
+        "scalp-levels": "The recorded Scalp plan has separate entry, stop and target labels. These are displayed levels, not proof that orders executed.",
+        "own-rules": "Position size, entry rules and order handling need their own checks outside a displayed chart plan."
+      },
+      "summary": "Displayed entry, stop and target levels are different from executed orders."
+    },
+    {
+      "id": "swing-plan",
+      "path": "public/indicators/swing-risk-plan.png",
+      "crop": null,
+      "claims": {
+        "swing-levels": "The recorded Swing plan shows entry, stop and target levels in one chart context. A marked target is not an achieved result."
+      },
+      "summary": "Read the displayed Swing plan together without treating a target as an achieved result."
+    },
+    {
+      "id": "signal",
+      "path": "public/indicators/signal-context.png",
+      "crop": null,
+      "claims": {
+        "signal-context": "A displayed signal is a starting point for examining chart context, not a complete trade or overall performance record.",
+        "example-limits": "A selected recorded screenshot cannot establish overall trading performance."
+      },
+      "summary": "A displayed signal starts a context review; it is not a complete trading record."
+    }
+  ],
+  "headlines": [
+    "START WITH CONTEXT",
+    "READ THE WHOLE VIEW",
+    "CHECK YOUR CHART",
+    "ONE FEATURE AT A TIME",
+    "REVIEW THE DISPLAYED PLAN",
+    "KNOW YOUR LOADED TOOL",
+    "MAKE YOUR REVIEW CLEAR",
+    "SET UP YOUR VIEW"
+  ],
+  "labels": [
+    "CHECK THE ACCOUNT",
+    "READ THE TOOL NAME",
+    "KEEP THE CONTEXT",
+    "INSPECT THE DISPLAY",
+    "LOOK AT THE CANDLES",
+    "REVIEW THE LEVELS",
+    "CHECK YOUR OWN RULES",
+    "REVIEW THE EXAMPLE",
+    "READ THE TIMEFRAME",
+    "OPEN THE SETTINGS"
+  ],
+  "features": [
+    "RECORDED PRODUCT VIEW",
+    "CHART REVIEW",
+    "DISPLAY CONTROLS",
+    "SETUP CHECKLIST"
+  ],
+  "captionSuffix": " Recorded Darth Algo product views. Save this lesson for your next chart review."
+}

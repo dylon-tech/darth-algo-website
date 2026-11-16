@@ -1,5 +1,15 @@
 # Darth Algo implementation ledger
 
+## Owner integrations and generation — November 16, 2026
+
+Adds durable source-bound writing jobs before native rendering; exact reviewed factual copy, immutable source hashes, existing AI budget reservations, manual-edit/version protection and unknown-outcome holds are retained. Custom ideas outside reviewed evidence require source review. Source combinations are finite; this does not establish an unlimited research engine or a live five-day media buffer.
+
+Adds private, free-source social analytics with account/scope checks and explicit missing metrics; exact-version video receipt projection into the calendar; and protected customer access requests with fresh billing checks, Lifetime safeguards and withdrawal history. An access request is never reported as a confirmed TradingView action. No customer message, grant, refund or publication is sent by this release.
+
+Native edits add measured borderless phrase captions, settled source-preserving camera movement, reading holds, original transition sounds, exact-cover outro and optional hash-verified private music. Local narration is Kokoro; this does not claim the approved ElevenLabs voice or exact creative approval. ONNX telemetry is disabled before inference. No private music, voice or customer data is committed.
+
+Combined SQL, budget, tamper-parity, receipt, analytics, TypeScript and renderer checks passed locally. Browser CI, production deployment and authenticated owner acceptance are distinct release gates; live media generation and account-level integration remain unverified until owner login and current ledger/preflight checks succeed. Existing publishing history must not be retried without provider receipt reconciliation.
+
 ## Founder dashboard rebuild — November 12, 2026
 
 DA-DASHBOARD-20261112-IMPLEMENTATION; Operations 1.2.0. Recovered the existing owner application and implemented the five-tab phone-first workspace, durable versioned calendar/Inbox/media flows and scoped financial/customer evidence. Retained legacy tools, owner authentication and publisher ownership. Initial meaningful backend checks pass; exact release, browser and production evidence remain separate. See `docs/founder-dashboard-20261112.md` for behavior, limits and continuation requirements. No new spending or provider/customer actions are implied.
