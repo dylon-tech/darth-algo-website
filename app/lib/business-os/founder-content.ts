@@ -77,8 +77,9 @@ function asItem(row:Record<string,unknown>):FounderContentItem {
   const {renderStatus:_status,renderStage:_stage,renderProgress:_progress,...stored}=data;
   return {...stored,id:String(row.id),version:Number(row.version),deliveries:Array.isArray(data.deliveries)?data.deliveries:[]};
 }
-const rendererReason='Automatic creation needs a connected render server. No added spending approved.';
+const rendererReason='Automatic creation needs a verified render connection. Check Agent setup.';
 const publisherReason='Existing publishing records are retained below. Calendar drafts are not connected to an independently verified schedule/update executor yet; no new publisher or schedule is activated.';
+const sourceCapacityReason='The reviewed lesson library has no unused topics for the remaining dates. New lessons need source review; earlier finished lessons will not be repeated automatically.';
 const iso=(value:unknown)=>value?new Date(String(value)).toISOString():null;
 function asJob(row:Record<string,unknown>):FounderRenderJob {
   return {id:String(row.id),itemId:String(row.item_id),contentVersion:Number(row.content_version),type:row.media_type as FounderMediaType,
@@ -91,7 +92,14 @@ function withRenderState(item:FounderContentItem,job:FounderRenderJob|undefined)
 }
 async function rendererAvailability() {
   try{return await founderRendererStatus();}
-  catch{return {ready:false,budgetApproved:false,setupAvailable:false,budgetMessage:'No added spending approved.',incrementalCostUsd:null,image:{available:false,reason:rendererReason},video:{available:false,reason:rendererReason},reason:rendererReason,lastSeenAt:null};}
+  catch{
+    // A failed ledger/runtime read cannot revoke existing consent or establish
+    // remaining capacity. Preserve only the known configuration; fail closed.
+    const budgetApproved=nativeApproval().enabled;
+    const reason='The render connection and allowance usage could not be verified. Refresh before creating media.';
+    const budgetMessage=budgetApproved?'The $5 monthly rendering allowance remains approved. Usage could not be verified; creation is paused.':'The rendering allowance could not be verified. No new attempt was authorized.';
+    return {ready:false,budgetApproved,setupAvailable:false,budgetMessage,incrementalCostUsd:null,image:{available:false,reason},video:{available:false,reason},reason,lastSeenAt:null};
+  }
 }
 type RendererAvailability=Awaited<ReturnType<typeof rendererAvailability>>;
 function requireRenderer(status:RendererAvailability,type?:FounderMediaType) {
@@ -129,8 +137,9 @@ export async function readFounderContent(month?:string,now=new Date()):Promise<F
   const lastSeen=iso(control.last_seen_at),fresh=Boolean(lastSeen&&now.getTime()-Date.parse(lastSeen)>=0&&now.getTime()-Date.parse(lastSeen)<=15*60000);
   const scheduled=deploymentConfig.crons.some(cron=>cron.path==='/api/cron/owner-work'&&cron.schedule==='*/5 * * * *');
   const nextRun=!control.paused&&control.global_paused===false&&fresh&&scheduled?new Date((Math.floor(now.getTime()/300000)+1)*300000).toISOString():null;
-  const status=control.paused?'Off':control.global_paused===true?'Paused':!renderStatus.ready?'Needs attention':counts.running?'Creating':counts.queued?'Queued':counts.failed||counts.blocked?'Needs attention':coverage.generated===coverage.expectedOriginals?'Up to date':'On';
-  const message=control.paused?(control.last_error||(!renderStatus.ready?renderStatus.reason:'Start creating your Monday–Friday content, with approval before publishing.')):control.global_paused===true?'The existing worker is paused.':!renderStatus.ready?renderStatus.reason:counts.running?'Creating your content.':counts.queued?`${counts.queued} ${counts.queued===1?'file':'files'} queued for the media worker.`:control.last_error||(!renderStatus.ready?renderStatus.reason:coverage.generated===coverage.expectedOriginals?'All planned files in this window are saved. Review each before publishing.':'Watching the next five days for missing content.');
+  const needsSourceReview=items.find(item=>!item.extra&&item.day>=today&&item.day<futureEnd&&item.status==='needs_input'&&!item.mediaAssetId);
+  const status=control.paused?'Off':control.global_paused===true?'Paused':!renderStatus.ready||control.last_status==='needs_input'||needsSourceReview?'Needs attention':counts.running?'Creating':counts.queued?'Queued':counts.failed||counts.blocked?'Needs attention':coverage.generated===coverage.expectedOriginals?'Up to date':'On';
+  const message=control.paused?(control.last_error||(!renderStatus.ready?renderStatus.reason:'Create one image and one video per day for the next five days, with approval before publishing.')):control.global_paused===true?'The existing worker is paused.':!renderStatus.ready?renderStatus.reason:control.last_status==='needs_input'||needsSourceReview?(control.last_error||needsSourceReview?.lastError||sourceCapacityReason):counts.running?'Creating your content.':counts.queued?`${counts.queued} ${counts.queued===1?'file':'files'} queued for the media worker.`:control.last_error||(!renderStatus.ready?renderStatus.reason:coverage.generated===coverage.expectedOriginals?'All planned files in this window are saved. Review each before publishing.':'Watching the next five days for missing content.');
   const running=jobs.find(job=>job.status==='running'),runningItem=running?items.find(item=>item.id===running.itemId):undefined;
   const currentWork=running?(runningItem?`${running.stage}: ${runningItem.title.slice(0,160)}`:`Creating ${running.type==='image'?'an image':'a video'}`):null;
   return {checkedAt:now.toISOString(),today,timeZone:founderTimeZone,month:selectedMonth,
@@ -164,8 +173,8 @@ export async function founderContentPlannerTick(now=new Date()) {
       return {status:'blocked',created:0,queued:0,needsSetup:availability.setupAvailable,scope:'media_generation'};
     }
     const window=await queueMissingWindow(sql,now);
-    const status=window.missing?'needs_input':window.jobs.length?'queued':'checked';
-    const reason=window.missing?'Fresh source ideas are needed for the remaining slots.':null;
+    const status=window.sourceBlock?'needs_input':window.jobs.length?'queued':'checked';
+    const reason=window.sourceBlock;
     await tx`update os_founder_content_control set last_seen_at=${stamp},last_status=${status},last_error=${reason},last_created_count=${window.created},global_paused=false where id=1`;
     const [pending]=await tx`select count(*)::int n from os_founder_render_jobs where status='queued' and source='agent'`;
     return {status,created:window.created,queued:Number(pending.n),missing:window.missing,scope:'media_generation'};
@@ -264,8 +273,8 @@ export async function mutateFounderContent(value:unknown,clockNow=new Date()) {
       }else{
         requireRenderer(availability!);await requireUnpausedWorker(sql);
         const window=await queueMissingWindow(sql,clockNow);
-        await tx`update os_founder_content_control set paused=false,version=version+1,last_error=null,last_status='queued',last_created_count=${window.created},global_paused=false,updated_at=now() where id=1`;
-        result={paused:false,version:Number(control.version)+1,items:window.items,jobs:window.jobs,message:window.jobs.length?`${window.jobs.length} files queued. The worker will create and save each one.`:window.missing?'Fresh source ideas are needed for the remaining slots.':'Agent started. Existing saved files and protected slots are preserved.'};
+        await tx`update os_founder_content_control set paused=false,version=version+1,last_error=${window.sourceBlock},last_status=${window.sourceBlock?'needs_input':'queued'},last_created_count=${window.created},global_paused=false,updated_at=now() where id=1`;
+        result={paused:false,version:Number(control.version)+1,items:window.items,jobs:window.jobs,message:window.sourceBlock?`${window.jobs.length} files queued. ${window.sourceBlock}`:window.jobs.length?`${window.jobs.length} files queued. The worker will create and save each one.`:'Agent started. Existing saved files and protected slots are preserved.'};
       }
     }else if(input.operation==='plan_missing'){
       const [control]=await tx`select paused from os_founder_content_control where id=1 for update`;
@@ -369,16 +378,44 @@ async function queueRenderItem(sql:Sql,current:FounderContentItem,source:'agent'
   return {item:withRenderState(item,asJob(job)),job:asJob(job)};
 }
 async function queueMissingWindow(sql:Sql,now:Date) {
+  // A stopped worker can leave yesterday's unstarted jobs in the queue. Free
+  // only those obsolete automatic slots before enforcing the queue limit;
+  // otherwise replenishment can fail before dispatch gets a chance to inspect
+  // them. Running/unknown attempts and manually requested work are preserved.
+  await expireUnstartedAgentJobs(sql,now);
   const planned=await planMissingIdeas(sql,now.toISOString()),clock=founderClock(now),end=addCalendarDays(clock.day,6);
   const rows=await sql`select id,version,data from os_founder_content_items where not archived and not extra and day>=${clock.day} and day<${end} order by day,data->>'time',id`;
   const originals=rows.map(asItem),items:FounderContentItem[]=[],jobs:FounderRenderJob[]=[];
+  const needsReview=originals.find(item=>item.status==='needs_input'&&!item.mediaAssetId&&(item.day>clock.day||item.time>clock.time));
+  let sourceBlock=needsReview?(needsReview.lastError||'A planned lesson needs source review before creation can continue.'):null;
   for(const item of originals){
     if(!founderScheduledTypes(item.day).includes(item.type)||item.locked||item.mediaAssetId||!['idea','draft'].includes(item.status)||(item.day===clock.day&&item.time<=clock.time))continue;
-    const brief=founderRenderBrief(item);if(nativeApproval().enabled&&!brief.supported){await writeVersion(sql,{...item,version:item.version+1,status:'needs_input',lastError:brief.reason,updatedAt:now.toISOString()},'source_review_required');continue;}
+    const brief=founderRenderBrief(item);if(nativeApproval().enabled&&!brief.supported){await writeVersion(sql,{...item,version:item.version+1,status:'needs_input',lastError:brief.reason,updatedAt:now.toISOString()},'source_review_required');sourceBlock??=brief.reason;continue;}
     const queued=await queueRenderItem(sql,item,'agent',now);items.push(queued.item);jobs.push(queued.job);
   }
   const missing=founderDays(originals,now).flatMap(day=>day.slots.filter(slot=>!slot.itemId&&(!day.isToday||slot.remainingToday))).length;
-  return {created:planned.length,items,jobs,missing};
+  return {created:planned.length,items,jobs,missing,sourceBlock:missing?sourceCapacityReason:sourceBlock};
+}
+async function expireUnstartedAgentJobs(sql:Sql,now:Date) {
+  const clock=founderClock(now),stamp=now.toISOString();
+  const rows=await sql`select j.* from os_founder_render_jobs j join os_founder_content_items i on i.id=j.item_id where j.source='agent' and j.status='queued' and (i.day<${clock.day} or (i.day=${clock.day} and i.data->>'time'<=${clock.time})) for update of j`;
+  for(const job of rows){
+    const error='The planned time passed. Choose a new date to create this content.';
+    await sql`update os_founder_render_jobs set status='obsolete',stage='Schedule review',retryable=false,error=${error},finished_at=${stamp},updated_at=${stamp} where id=${job.id}`;
+    const [row]=await sql`select id,version,data from os_founder_content_items where id=${job.item_id} for update`;
+    if(!row||Number(row.version)!==Number(job.content_version))continue;
+    const item=asItem(row);
+    if(item.jobId===String(job.id)&&item.status==='generating'&&!item.locked){
+      await writeVersion(sql,{...item,version:item.version+1,status:'needs_input',lastError:error,updatedAt:stamp},'generation_time_passed');
+    }
+  }
+}
+async function originalAlreadyCompletedOrUncertain(sql:Sql,item:FounderContentItem) {
+  const title=item.title.trim().toLowerCase();
+  const rows=await sql`select id::text from os_founder_content_items where lower(btrim(data->>'title'))=${title} and media_type=${item.type} and data->>'mediaAssetId' is not null and data->>'mediaVerifiedAt' is not null
+    union select item_id::text from os_founder_content_versions where operation='generation_completed' and lower(btrim(data->>'title'))=${title} and data->>'type'=${item.type} and data->>'mediaAssetId' is not null and data->>'mediaVerifiedAt' is not null
+    union select j.item_id::text from os_founder_render_jobs j join os_founder_content_versions v on v.item_id=j.item_id and v.version=j.content_version where j.id<>${item.jobId} and j.status in ('completed','running','blocked') and j.media_type=${item.type} and lower(btrim(v.data->>'title'))=${title} limit 1`;
+  return rows.length>0;
 }
 
 type RenderLeaseKey={jobId:string;leaseToken:string};
@@ -445,12 +482,21 @@ export async function claimFounderRenderJob(input:{workerId:string;now?:Date}):P
       const clock=founderClock(now),past=Boolean(item&&candidate.source==='agent'&&(item.day<clock.day||(item.day===clock.day&&item.time<=clock.time)));
       const offSchedule=Boolean(item&&candidate.source==='agent'&&!founderScheduledTypes(item.day).includes(item.type));
       if((past||offSchedule)&&item&&item.jobId===String(candidate.id)&&item.version===Number(candidate.content_version)){
-        const error=offSchedule?'This draft falls outside your current weekly schedule. Choose a new date or generate it manually.':'The planned time passed. Choose a new date to create this content.';
+        const error=offSchedule?'This draft falls outside your current content schedule. Choose a new date or generate it manually.':'The planned time passed. Choose a new date to create this content.';
         await tx`update os_founder_render_jobs set status='obsolete',stage='Schedule review',retryable=false,error=${error},finished_at=${stamp},updated_at=${stamp} where id=${candidate.id}`;
         await writeVersion(sql,{...item,version:item.version+1,status:'needs_input',lastError:error,updatedAt:stamp},'generation_time_passed');continue;
       }
       if(!item||item.version!==Number(candidate.content_version)||item.jobId!==String(candidate.id)||item.status!=='generating'||(candidate.source==='agent'&&item.locked)||externallyInFlight(item)){
         await tx`update os_founder_render_jobs set status='obsolete',stage='Replaced',retryable=false,finished_at=${stamp},updated_at=${stamp} where id=${candidate.id}`;continue;
+      }
+      // Recheck at dispatch as old queued drafts may predate the planner's
+      // duplicate guard or another job may have completed in the meantime.
+      if(candidate.source==='agent'&&await originalAlreadyCompletedOrUncertain(sql,item)){
+        const error='This lesson was already created in this format or has an unresolved attempt. Check its history before choosing a new lesson or explicitly re-creating it.';
+        await tx`update os_founder_render_jobs set status='obsolete',stage='Duplicate lesson',retryable=false,error=${error},finished_at=${stamp},updated_at=${stamp} where id=${candidate.id}`;
+        await writeVersion(sql,{...item,version:item.version+1,status:'needs_input',lastError:error,updatedAt:stamp},'duplicate_original_held');
+        await tx`update os_founder_content_control set last_status='needs_input',last_error=${error} where id=1`;
+        continue;
       }
       if(!availability[item.type].available)continue;
       const token=randomUUID(),expires=new Date(now.getTime()+renderLimits.leaseMinutes*60000).toISOString();
@@ -548,23 +594,50 @@ async function planMissingIdeas(sql:Sql,now:string) {
   const clock=founderClock(new Date(now)),end=addCalendarDays(clock.day,6);
   const rows=await sql`select id,version,data from os_founder_content_items where not archived and day>=${clock.day} and day<${end}`;
   const existing=rows.map(asItem);
-  // Reuse reviewed concepts, not identical renders. Least-used concepts rotate
-  // first; each repetition advances a source-preserving visual treatment.
+  // A different visual treatment is not a new original. Completed history is
+  // retained even after archive or manual regeneration clears current media.
+  // Pending and uncertain attempts also reserve their recipe/format, so an
+  // unknown result is never retried implicitly on a different calendar date.
+  const originalRows=await sql`select data->>'title' as title,media_type from os_founder_content_items where data->>'mediaAssetId' is not null and data->>'mediaVerifiedAt' is not null
+    union select data->>'title' as title,data->>'type' as media_type from os_founder_content_versions where operation='generation_completed' and data->>'mediaAssetId' is not null and data->>'mediaVerifiedAt' is not null
+    union select v.data->>'title' as title,j.media_type from os_founder_render_jobs j join os_founder_content_versions v on v.item_id=j.item_id and v.version=j.content_version where j.status in ('queued','running','blocked','completed')`;
+  const originalKey=(type:string,title:string)=>type+':'+title.trim().toLowerCase();
+  const usedOriginals=new Set(originalRows.map(row=>originalKey(String(row.media_type),String(row.title))));
+  // Least-used unproduced lessons come first. Known failed or expired unstarted
+  // attempts may be planned again; owner-requested regeneration is separate.
   const usedRows=await sql`select data->>'title' as title,count(*)::int uses from os_founder_content_items group by data->>'title'`;
   const usage=new Map(usedRows.map(row=>[String(row.title),Number(row.uses)]));
   const inWindow=new Set(existing.filter(item=>item.status!=='archived').map(item=>item.title));
   const choices=suggestedIdeas.filter(([title])=>!inWindow.has(title)).sort((a,b)=>(usage.get(a[0])||0)-(usage.get(b[0])||0));
+  const slots=founderDays(existing,new Date(now)).flatMap(day=>day.slots.filter(slot=>!slot.itemId&&(!day.isToday||slot.remainingToday)).map(slot=>({day:day.day,...slot})));
+  const eligible=slots.map(slot=>choices.flatMap(([title],index)=>usedOriginals.has(originalKey(slot.type,title))?[]:[index]));
+  // Match the whole window before saving. A flexible image choice must not
+  // consume the last lesson a video can use. Constrained slots go first;
+  // candidate order is stable least-used/catalog order. Augmenting paths retain
+  // a complete assignment whenever one exists, without repeating any topic.
+  const assigned=new Map<number,number>();
+  function assign(slotIndex:number,seen:Set<number>):boolean {
+    for(const choiceIndex of eligible[slotIndex]){
+      if(seen.has(choiceIndex)||assigned.has(choiceIndex))continue;
+      seen.add(choiceIndex);assigned.set(choiceIndex,slotIndex);return true;
+    }
+    for(const choiceIndex of eligible[slotIndex]){
+      if(seen.has(choiceIndex))continue;
+      seen.add(choiceIndex);
+      if(assign(assigned.get(choiceIndex)!,seen)){assigned.set(choiceIndex,slotIndex);return true;}
+    }
+    return false;
+  }
+  for(const slotIndex of slots.map((_,index)=>index).sort((a,b)=>eligible[a].length-eligible[b].length||a-b))assign(slotIndex,new Set());
+  const chosenBySlot=new Map([...assigned].map(([choiceIndex,slotIndex])=>[slotIndex,choices[choiceIndex]]));
   const created:FounderContentItem[]=[];
-  for(const day of founderDays(existing,new Date(now))){
-    for(const slot of day.slots){
-      if(slot.itemId||(day.isToday&&!slot.remainingToday))continue;
-      const choice=choices.shift();if(!choice)return created;
-      const item:FounderContentItem={id:randomUUID(),version:1,day:day.day,time:slot.time,type:slot.type,title:choice[0],idea:choice[1],script:'',caption:'',
+  for(const [slotIndex,slot] of slots.entries()){
+      const choice=chosenBySlot.get(slotIndex);if(!choice)continue;
+      const item:FounderContentItem={id:randomUUID(),version:1,day:slot.day,time:slot.time,type:slot.type,title:choice[0],idea:choice[1],script:'',caption:'',
         templateId:slot.type==='image'?founderTemplates[0].id:founderTemplates[1].id,destinations:founderDefaultDestinations(slot.type),mediaAssetId:null,coverAssetId:null,
         mediaUrl:null,coverUrl:null,mediaVerifiedAt:null,status:'idea',locked:false,extra:false,createdAt:now,updatedAt:now,deliveries:[],jobId:null,
         lastError:null,visualVariant:(usage.get(choice[0])||0)%8};
       await writeVersion(sql,item,'plan_missing');created.push(item);
-    }
   }
   return created;
 }

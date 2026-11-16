@@ -4,7 +4,7 @@ const vm = require('node:vm');
 const ts = require('typescript');
 const exportsObject = {};
 vm.runInNewContext(ts.transpileModule(fs.readFileSync('app/lib/business-os/founder-inbox-summary.ts', 'utf8'), {compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText, {exports:exportsObject});
-const {summarizeAgentMessage,summarizeBusinessAlert,inboxSummaryFor} = exportsObject;
+const {summarizeAgentMessage,summarizeBusinessAlert,inboxSummaryFor,inboxRecordStatus} = exportsObject;
 
 let summary = summarizeAgentMessage('# Summary\nResult: Draft saved.\nVideo rendering is not connected.\nNext action: Connect the existing renderer.\nRun ID: private-technical-id');
 assert.equal(summary.result, 'Draft saved. Video rendering is not connected.');
@@ -43,4 +43,9 @@ summary = summarizeAgentMessage('Outcome unknown.\nNext: Retry now.\nAction need
 assert.equal(summary.action,'Open the full update before taking action.','Conflicting next actions require reviewing the original');
 assert.equal(inboxSummaryFor({category:'customer',body:'My original words are a question, not a request to cancel.',summary:{result:'Wrong rewrite',action:null}}),null,'Customer text never uses an agent-generated summary');
 assert.equal(inboxSummaryFor({category:'agent',body:'Saved report.'}).result,'Saved report.');
+assert.equal(inboxRecordStatus({category:'alert',sourceStatus:'open'}),'Needs attention');
+assert.equal(inboxRecordStatus({category:'agent',sourceStatus:'awaiting_review'}),'Needs review');
+assert.equal(inboxRecordStatus({category:'agent',sourceStatus:'recorded',body:'The post published.'}),'Saved update','A message is not a publication receipt');
+assert.equal(inboxRecordStatus({category:'agent',sourceStatus:'unknown'}),'Unverified','Unknown results stay unverified');
+assert.equal(inboxRecordStatus({category:'agent',sourceStatus:'unexpected_provider_value'}),'Saved update','Unrecognized state cannot become a completion claim');
 console.log('PASS concise Inbox summaries: literal source results/actions, qualifier preservation, technical-detail exclusion, safe long-text fallback, and unchanged customer wording.');

@@ -134,14 +134,15 @@ export function safeFounderMediaUrl(value: unknown): string|null {
     return url.toString();
   }catch{return null;}
 }
-/** Approved weekly cadence. Ad-hoc owner drafts remain allowed on any date. */
+/** November 16 owner cadence: one image and one video every Eastern day. */
 export function founderScheduledTypes(day:string):FounderMediaType[] {
   if(!isCalendarDay(day))return [];
-  const weekday=new Date(day+'T12:00:00Z').getUTCDay();
-  return weekday===1||weekday===5?['image','video']:weekday===2||weekday===4?['image']:weekday===3?['video']:[];
+  return ['image','video'];
 }
 export function founderDefaultDestinations(type:FounderMediaType):FounderDestination[] {
-  return type==='image'?['instagram','threads','x']:['instagram','tiktok','youtube'];
+  // X remains an optional owner selection until the website's own account and
+  // publishing capability are verified. Existing saved choices are preserved.
+  return type==='image'?['instagram','threads']:['instagram','tiktok','youtube'];
 }
 export function founderDays(items:FounderContentItem[],now=new Date()):FounderContentDay[] {
   const clock=founderClock(now);
@@ -164,19 +165,21 @@ export function founderCoverage(items:FounderContentItem[],now=new Date()):Found
   const days=founderDays(items,now),future=days.slice(1),ids=new Set(future.flatMap(d=>d.slots.map(s=>s.itemId)).filter(Boolean));
   const originals=items.filter(i=>ids.has(i.id));
   const active=originals.filter(i=>!['skipped','held','archived'].includes(i.status));
-  const produced=active.filter(i=>(i.status==='ready'||Boolean(i.publication?.approvedAt&&i.publication.version===i.version))&&Boolean(i.mediaAssetId)&&Boolean(i.mediaVerifiedAt));
+  const generated=active.filter(i=>i.mediaAssetId&&i.mediaVerifiedAt&&(i.type!=='video'||i.coverAssetId));
+  const uniqueAssets=(records:FounderContentItem[])=>new Set(records.map(item=>item.mediaAssetId)).size;
+  const produced=generated.filter(i=>i.status==='ready'||Boolean(i.publication?.approvedAt&&i.publication.version===i.version));
   const allDestinations=(item:FounderContentItem,predicate:typeof deliveryIsAccepted)=>item.destinations.length>0&&item.destinations.every(network=>item.deliveries.some(d=>d.network===network&&predicate(item,d)));
   return {futureDays:5,expectedOriginals:future.reduce((n,day)=>n+day.slots.length,0),planned:active.filter(i=>Boolean(i.idea||i.title)).length,
-    generated:active.filter(i=>Boolean(i.mediaAssetId&&i.mediaVerifiedAt&&(i.type==='image'||i.coverAssetId))).length,
-    produced:produced.length,scheduled:produced.filter(i=>allDestinations(i,deliveryIsAccepted)).length,
-    published:produced.filter(i=>allDestinations(i,deliveryIsPublished)).length,
+    generated:uniqueAssets(generated),
+    produced:uniqueAssets(produced),scheduled:uniqueAssets(produced.filter(i=>allDestinations(i,deliveryIsAccepted))),
+    published:uniqueAssets(produced.filter(i=>allDestinations(i,deliveryIsPublished))),
     skipped:originals.filter(i=>i.status==='skipped').length,held:originals.filter(i=>i.status==='held').length,
     missing:future.flatMap(d=>d.slots).filter(s=>s.state==='missing').length,
     expectedDeliveries:active.reduce((n,i)=>n+i.destinations.length,0),
     acceptedDeliveries:active.reduce((n,i)=>n+i.destinations.filter(network=>i.deliveries.some(d=>d.network===network&&deliveryIsAccepted(i,d))).length,0),
     publishedDeliveries:active.reduce((n,i)=>n+i.destinations.filter(network=>i.deliveries.some(d=>d.network===network&&deliveryIsPublished(i,d))).length,0),
     todayRemaining:days[0].slots.filter(s=>s.remainingToday).length,
-    definition:'Five complete future Eastern dates, counting only the approved Monday–Friday slots (seven originals per full week). Generated means a verified saved file; produced means reviewed. Skips, holds and destination receipts are counted separately.'};
+    definition:'Ten original slots across the next five complete future Eastern dates: one image and one video per day. Today is counted separately. Generated means a verified saved file; produced means reviewed. Skips, holds and destination receipts are counted separately.'};
 }
 export function assertFounderVersion(current:FounderContentItem,expected:unknown) {
   if(!Number.isInteger(expected)||current.version!==expected)throw new FounderContentError('This content changed on another device. Review the current saved version before saving.',409,'VERSION_CONFLICT',current);

@@ -2,7 +2,7 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {Archive,Bell,Check,ChevronRight,Clock,Copy,Mail,MessageSquare,RotateCcw,Search} from 'lucide-react';
 import type {founderInbox,FounderInboxItem,FounderInboxPatch,FounderInboxState} from '../lib/business-os/founder-inbox';
-import {inboxSummaryFor} from '../lib/business-os/founder-inbox-summary';
+import {inboxRecordStatus,inboxSummaryFor} from '../lib/business-os/founder-inbox-summary';
 import {Detail,Empty,ExternalLink,Notice,SaveError,SourceNote,Status,saveRequest,timestamp,useFounderFeed,words} from './founder-shared';
 import s from './founder.module.css';
 
@@ -58,8 +58,8 @@ export default function FounderInbox({base,feed}:{base:string;feed:Feed}){
    <div className={s.summaryRow}><span>{items.length} {items.length===1?'message':'messages'}</span><span>{filter==='hidden'?'Restore any time':filter==='snoozed'?'Returns after snooze':'Newest first'}</span></div>
    <div className={s.group}>{items.slice(0,limit).map(item=>{
     const Icon=item.category==='customer'?Mail:item.category==='agent'?MessageSquare:Bell,summary=inboxSummaryFor(item);
-    return <button key={item.id} className={s.row} onClick={()=>open(item.id)} aria-label={`${item.unread?'Unread. ':''}${summary?.result||item.title}${summary?.action?` Next: ${summary.action}`:''}`}>
-     <span className={s.avatar}><Icon size={20}/></span><div><strong className={s.inboxPreview}>{summary?.result||item.title}</strong><small className={s.inboxPreview} style={{color:'#c4c7ce'}}>{summary?(summary.action?`${summary.actionLabel}: ${summary.action}`:'Open the full update'):item.preview}</small><small>{item.sender||words(item.category)}</small>{filter==='snoozed'&&<small>Until {timestamp(item.state.snoozedUntil)}</small>}</div>
+    return <button key={item.id} className={s.row} onClick={()=>open(item.id)} aria-label={`${item.unread?'Unread. ':''}${summary?.result||item.title}${summary?.action?` Action: ${summary.action}`:''}${summary?` Status: ${inboxRecordStatus(item)}`:''}`}>
+     <span className={s.avatar}><Icon size={20}/></span><div><strong className={s.inboxPreview}>{summary?`${item.category==='alert'?'Problem':'Update'}: ${summary.result}`:item.title}</strong><small className={s.inboxPreview} style={{color:'#c4c7ce'}}>{summary?`Action: ${summary.action||'Open the full update.'}`:item.preview}</small>{summary&&<small>Status: {inboxRecordStatus(item)}</small>}<small>{item.sender||words(item.category)}</small>{filter==='snoozed'&&<small>Until {timestamp(item.state.snoozedUntil)}</small>}</div>
      <span className={s.rowTime}>{item.at?new Date(item.at).toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'America/New_York'}):'Date unknown'}{item.unread&&<span className={s.unread} style={{display:'block',margin:'8px 0 0 auto'}} aria-hidden='true'/>}</span><ChevronRight size={16}/>
     </button>;
    })}</div>{items.length>limit&&<button className={s.secondary} style={{marginTop:16}} onClick={()=>setLimit(value=>value+40)}>Show more</button>}
@@ -121,7 +121,7 @@ function InboxThread({id,base,onClose,onState}:{id:string;base:string;onClose:()
    {item.category==='customer'&&item.contentCoverage==='summary_only'&&<Notice>This is a saved summary, not the complete original thread.</Notice>}
    {detail.data?.stateAvailable===false&&<Notice error>Couldn’t load saved changes. Refresh before editing.</Notice>}
    {summary?<>
-    <div className={s.card} style={{marginTop:20}}><h3>{summary.result}</h3>{summary.action&&<p style={{color:'#d5d8df'}}><strong>{summary.actionLabel}:</strong> {summary.action}</p>}{item.sourceHref&&<ExternalLink href={item.sourceHref}>{item.kind==='decision'?'Review decision':item.kind==='content_review'?'Review or regenerate':item.kind==='content_update'?'Open content':item.category==='agent'?'Open team':'Review action'}</ExternalLink>}</div>
+    <div className={s.card} style={{marginTop:20}}><h3>{item.category==='alert'?'Problem':'Update'}: {summary.result}</h3><p style={{color:'#d5d8df'}}><strong>Action:</strong> {summary.action||'Open the full update.'}</p><p><strong>Status:</strong> {inboxRecordStatus(item)}</p>{item.sourceHref&&<ExternalLink href={item.sourceHref}>{item.kind==='decision'?'Review decision':item.kind==='content_review'?'Review or regenerate':item.kind==='content_update'?'Open content':item.category==='agent'?'Open team':'Review action'}</ExternalLink>}</div>
     <details className={s.source}><summary style={{minHeight:44}}>Original update</summary><h3>{item.title}</h3><OriginalMessages messages={detail.data?.messages||[]} sender={item.sender}/></details>
    </>:<OriginalMessages messages={detail.data?.messages||[]} sender={item.sender}/>}
    {notice&&<Notice>{notice}</Notice>}{error&&<Notice error>{error}</Notice>}

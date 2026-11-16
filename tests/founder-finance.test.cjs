@@ -30,6 +30,44 @@ const jan31=Date.parse('2027-01-31T12:00:00Z')/1000;assert.equal(new Date(financ
 // Trials are not paid customers or MRR, and are never assumed to convert.
 result=finance.buildFounderFinance(evidence({subscriptions:[sub('sub_1',{status:'trialing',trial_end:now+DAY})],invoices:[],charges:[],balances:[]}));
 assert.equal(result.metrics.mrrCents,0);assert.equal(result.metrics.payingCustomers,0);assert.equal(result.metrics.trialCustomers,1);assert.equal(result.forecast[2].amountCents,0);
+// Completed subscription checkouts preserve usernames independently of payment.
+const signupSubscription=sub('sub_1');signupSubscription.items.data[0].price.id='price_1TeSwbLAuZzjYekvgGYRpqjo';
+const signupSession=(id='cs_signup',extra={})=>({id,livemode:true,mode:'subscription',status:'complete',payment_status:'no_payment_required',amount_total:0,subscription:'sub_1',customer:'cus_1',customer_details:{email:'fixture@example.invalid'},custom_fields:[{key:'tradingviewusername',type:'text',text:{value:'trial_owner'}}],line_items:{has_more:false,data:[{quantity:1,price:{id:'price_1TeSwbLAuZzjYekvgGYRpqjo',product:products.pro}}]},...extra});
+const paidSignup=finance.buildFounderFinance(evidence({subscriptions:[signupSubscription],sessions:[signupSession('cs_paid',{payment_status:'paid',amount_total:2900})]}));
+assert.equal(paidSignup.customers[0].tradingViewUsername,'trial_owner');assert.equal(paidSignup.customers[0].usernameStatus,'recorded');assert.equal(paidSignup.metrics.grossPaymentsCents,2900);assert.equal(paidSignup.customers[0].access.confirmed,'unknown');
+const convertedSignup=finance.buildFounderFinance(evidence({subscriptions:[signupSubscription],sessions:[signupSession()]}));
+assert.equal(convertedSignup.customers[0].tradingViewUsername,'trial_owner');assert.equal(convertedSignup.metrics.payingCustomers,1);assert.equal(convertedSignup.customers[0].payments.length,1);
+const freeTrial={...signupSubscription,status:'trialing',trial_end:now+DAY};
+result=finance.buildFounderFinance(evidence({subscriptions:[freeTrial],sessions:[signupSession()],invoices:[],charges:[],balances:[]}));
+assert.equal(result.customers[0].tradingViewUsername,'trial_owner');assert.equal(result.metrics.grossPaymentsCents,0);assert.equal(result.metrics.payingCustomers,0);assert.equal(result.metrics.mrrCents,0);assert.equal(result.customers[0].payments.length,0);assert.equal(result.customers[0].access.expected[0].kind,'trial');assert.equal(result.customers[0].access.confirmed,'unknown');
+// Never join by email, accept incomplete identities/items, or trust unknown prices.
+for(const change of [
+ {customer:'cus_other'}, {customer:null}, {subscription:'sub_other'}, {subscription:'sub_1/other'},
+ {mode:'setup'}, {status:'open'}, {status:'expired'}, {livemode:false}, {payment_status:'unpaid'},
+ {line_items:null}, {line_items:{has_more:true,data:signupSession().line_items.data}},
+ {line_items:{has_more:false,data:[{quantity:1,price:{id:'price_unknown',product:products.pro}}]}},
+ {line_items:{has_more:false,data:[{quantity:1,price:{id:'price_1TeSwbLAuZzjYekvgGYRpqjo',product:products.swing}}]}},
+ {line_items:{has_more:false,data:[...signupSession().line_items.data,{quantity:1,price:{id:'price_unrelated',product:'prod_unrelated'}}]}},
+ {custom_fields:[{key:'tradingviewusername',type:'text',text:{value:'<script>unsafe</script>'}}]},
+ {custom_fields:[...signupSession().custom_fields,...signupSession().custom_fields]},
+]){
+ result=finance.buildFounderFinance(evidence({subscriptions:[signupSubscription],sessions:[signupSession('cs_invalid',change)]}));
+ assert.equal(result.customers.length,1);assert.equal(result.customers[0].tradingViewUsername,null,JSON.stringify(change));assert.equal(result.customers[0].access.confirmed,'unknown');assert.equal(result.metrics.grossPaymentsCents,2900);
+}
+for(const changedSubscription of [
+ {...signupSubscription,customer:{id:'cus_other',email:'fixture@example.invalid'}},
+ {...signupSubscription,items:{...signupSubscription.items,has_more:true}},
+ {...signupSubscription,items:{has_more:false,data:[{...signupSubscription.items.data[0],price:{...signupSubscription.items.data[0].price,id:'price_1TyfRJLAuZzjYekvDZhVu7GD',product:products.swing}}]}},
+]){
+ result=finance.buildFounderFinance(evidence({subscriptions:[changedSubscription],sessions:[signupSession()]}));
+ assert.ok(result.customers.every(c=>c.tradingViewUsername===null));
+}
+// Conflicts stay visible across a third matching record and never reveal one choice.
+const alternative=signupSession('cs_other',{custom_fields:[{key:'tradingviewusername',type:'text',text:{value:'other_owner'}}]});
+for(const signupRows of [[signupSession(),alternative,signupSession('cs_repeat')],[alternative,signupSession(),signupSession('cs_repeat')]]){
+ result=finance.buildFounderFinance(evidence({subscriptions:[signupSubscription],sessions:signupRows,accessRecords:[{subscription_id:'sub_1',tradingview_username:'trial_owner',status:'access_verified',access_verified_at:new Date(now*1000).toISOString()}]}));
+ assert.equal(result.customers[0].usernameStatus,'conflict');assert.equal(result.customers[0].tradingViewUsername,null);assert.equal(result.customers[0].access.confirmed,'unknown');assert.match(result.customers[0].access.note,/owner resolution/);
+}
 // Current recurring discounts are applied; expired/one-time coupons don't become permanent MRR.
 const discounted=sub('sub_1',{discounts:[{start:now-DAY,end:null,coupon:{duration:'forever',percent_off:50}},{start:now-DAY,end:null,coupon:{duration:'once',amount_off:1000,currency:'usd'}}]});
 assert.equal(finance.recurringAmount(discounted,now).mrrCents,1450);
