@@ -11,6 +11,7 @@ const files=[
  'app/lib/business-os/founder-media-model.ts',
  'app/api/owner/founder-content/route.ts','app/api/cron/owner-work/route.ts','app/api/owner/founder-renderer/route.ts','app/api/owner/founder-renderer/[uploadId]/chunks/route.ts',
  'scripts/founder-renderer/render.py','scripts/founder-renderer/recipes.py',
+ 'scripts/founder-renderer/v15_editing.py','scripts/founder-renderer/v15-private-assets.json',
  'scripts/founder-renderer/worker.py','scripts/founder-renderer/setup_models.py',
  'scripts/founder-renderer/sources.json','scripts/founder-renderer/runtime-profile.mjs',
  'scripts/founder-renderer/prepared-vercel/setup_runtime.py',

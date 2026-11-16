@@ -1,6 +1,6 @@
 {
   "version": "vercel-native-v1",
-  "fingerprint": "31d4c1e8636973a875d3016b40ce1df2886f0366c7eeaf1924e21e7ea431879b",
+  "fingerprint": "6980a5ab5b9380f5ee6dccece6886f73eb9211f163228adeee3c1e733192424f",
   "files": [
     {
       "file": ".python-version",
@@ -84,11 +84,11 @@
     },
     {
       "file": "scripts/founder-renderer/render.py",
-      "sha256": "b5f1a8a648e2303f959d53081ec61f81afb574ba6e2dd2185a283b0552186878"
+      "sha256": "29650accbe23838f0c285187013f916c0bb5da59f4c21aebe97773bb0a3b6bee"
     },
     {
       "file": "scripts/founder-renderer/runtime-profile.mjs",
-      "sha256": "6b014d48812e626914e2494b1cf798d853982b6548642c16a554f322fc0ef45f"
+      "sha256": "6792c643ad9a840c16e588743cb08f65ad1753d392619677d5d13ccf85c522e8"
     },
     {
       "file": "scripts/founder-renderer/setup_models.py",
@@ -99,8 +99,16 @@
       "sha256": "c625bc9b34b32bfb4223c13277307bd64700af797865dcf34036adaec46fb1f5"
     },
     {
+      "file": "scripts/founder-renderer/v15-private-assets.json",
+      "sha256": "14e64551759f2f6705154cc2514faa826b43e3d9647aba67efc840718e2fd701"
+    },
+    {
+      "file": "scripts/founder-renderer/v15_editing.py",
+      "sha256": "69777c44ae805c6112d29936376fe2b98413bd7fbfa704a08a288a933505c9ac"
+    },
+    {
       "file": "scripts/founder-renderer/worker.py",
-      "sha256": "da16142117d876a1539450729436f352874148ecf5f03f8e948b964b5d8cd45c"
+      "sha256": "ec3a685ef8750cbf9d277691cded83766a98ebbe3b7c6b5926b00764305201b2"
     },
     {
       "file": "vercel.json",
