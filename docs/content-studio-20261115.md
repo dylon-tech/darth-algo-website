@@ -1,16 +1,22 @@
-# Content-first owner studio
+# Owner content studio
+
+## November 16 owner mission — current requirements
+
+The November 16 mission supersedes the weekly cadence below: one image at 9 AM and one video at 3 PM America/New_York every day, with ten original assets across the next five complete future dates. Today's remaining slots are separate. The five main tabs are Overview, Customers, Inbox, Content, Analytics. Existing manual edits, holds, skips and receipts remain protected.
+
+The native renderer still accepts a finite reviewed lesson library, uses a substitute local voice, and creates review drafts derived from the approved templates. This does not establish exact v15 creative reproduction, arbitrary-idea generation, ongoing competitor research, or an indefinitely replenished original-media buffer. Previously finished or uncertain recipes must not be recycled automatically as new originals. Live owner authentication, allowance/readiness checks, actual saved playable media and website publishing connections remain launch gates.
 
 ## Owner request
 Use the existing approved Darth Algo photo v4 and video v15 templates. Make creation simple, offer concepts, and require approval or regeneration for every asset. Videos target Instagram, TikTok, and YouTube; photos target Instagram, Threads, and X.
 
-## Weekly plan
-Monday: photo + video. Tuesday: photo. Wednesday: video. Thursday: photo. Friday: photo + video. Weekends have no automatic slots. Existing custom dates and extra posts remain available, and existing records are preserved. The rolling five-future-date buffer counts only applicable slots, rather than claiming ten originals.
+## Daily plan — November 16 owner revision
+One image at 9 AM and one video at 3 PM Eastern on every date, including weekends. The buffer contains ten original slots across the next five complete future dates; today is handled separately. Existing manual edits, holds, skips and custom dates are preserved. Images default to Instagram/Threads; X remains optional until the website connection and capability are verified. Videos default to Instagram/TikTok/YouTube; this does not add an unsupported Threads video executor.
 
 ## Interface
-The existing authenticated owner app opens on Content. Business tools remain accessible. Suggestions start a source-reviewed photo or video with the correct brand template and destinations. Approval and regeneration are exposed in the editor. Editing, a newer server version, and regeneration invalidate the review checkbox; server version guards remain authoritative. Approval does not itself publish.
+The authenticated owner app opens on Overview with five primary tabs in order: Overview, Customers, Inbox, Content, Analytics. Content retains its focused Review workspace. Suggestions start a source-reviewed photo or video with the correct brand template and destinations. Approval and regeneration are exposed in the editor. Editing, a newer server version, and regeneration invalidate the review checkbox; server version guards remain authoritative. Approval does not itself publish.
 
 ## Creative variation
-Reviewed concepts rotate by least-used, without repeating a concept in the active window. Eight deterministic treatments vary background placement, chart frame geometry, and restrained camera push/pull while keeping genuine source pixels, labels, and narration. Regeneration advances the treatment and clears approval. Python checks render eight distinct photos/scene layouts and every reviewed photo/cover recipe. A complete narrated MP4 was not rendered locally.
+The automatic planner avoids repeating a recipe/format already completed, including archived and historical media. Pending or uncertain attempts also reserve that recipe/format; exhausted source capacity shows Needs attention instead of recycling a finished lesson. The finite catalog has 12 reviewed lessons and cannot supply indefinitely new originals without further source review. Eight deterministic treatments vary background placement, chart frame geometry, and restrained camera push/pull while keeping genuine source pixels, labels, and narration. Owner-requested regeneration advances the treatment and clears approval. Python checks render eight distinct photos/scene layouts and every reviewed photo/cover recipe. A complete narrated MP4 was not rendered locally.
 
 ## Activation limits
 This change does not enable the paused generation agent, raise any budget, change authentication, schedule external posts, or publish content. Native runtime profile changes require a fresh readiness check before generation is available. A feature-gated photo publication bridge now supports exact-version owner approval and Buffer delivery to Instagram, Threads, and X. It remains OFF until runtime connection and capability verification. Videos have no activated publication executor. Existing owner sign-in still depends on its current connection flow. Push notifications are not connected. Do not describe the recurring publishing workflow as live until these paths have been verified end to end.
@@ -23,7 +29,7 @@ The prepared posting review binds the saved photo hash/version, caption, exact a
 
 Local checks cover actual owner-route authentication/CSRF, expired exports, feature OFF, late posting, interrupted-worker returned IDs, and all protected content mutations using real SQL. Browser tests use synthetic publication transport and never contact a social provider. Activation requires explicit verification of real connected accounts and an owner-approved test asset.
 
-## Capacity checkpoint (2026-11-15)
+## Historical capacity checkpoint (2026-11-15; cadence superseded above)
 The requested cadence is seven original assets and 21 network publications per week: four photos × three destinations and three videos × three destinations. Metricool's reported exhausted Free allowance cannot support this cadence. Buffer Free supports three channels and ten concurrently queued posts per channel, refilling after publication; this is not a monthly posting allowance. Its current API limit is 1,000 requests per connected channel, capped at 3,000 per 30 days, with additional short-window limits. References: https://buffer.com/pricing and https://developers.buffer.com/guides/api-limits.html. Existing account plan, channel locks, other API consumers and remaining allowance still need authenticated verification. Do not infer that theoretical capacity is available.
 
 The connected vidIQ publishing tool contract currently prices non-X publication at zero credits; this is not evidence of unlimited account capacity or website credential parity. The photo route deliberately does not use vidIQ's paid X publication. No plan upgrades, credits, or new subscriptions have been purchased. Website readiness must include real connection/quota checks and bounded receipt polling, not just successful synthetic tests.

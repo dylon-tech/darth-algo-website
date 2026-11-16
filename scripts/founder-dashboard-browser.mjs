@@ -14,7 +14,7 @@ const server=spawn(process.execPath,['node_modules/next/dist/bin/next','start','
 const widths=[320,390,430,768,1280],stamp=()=>new Date().toISOString();
 const today=new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
 const dayOffset=n=>new Date(Date.parse(today+'T12:00:00Z')+n*86400000).toISOString().slice(0,10);
-const scheduledTypes=day=>({1:['image','video'],2:['image'],3:['video'],4:['image'],5:['image','video']}[new Date(day+'T12:00:00Z').getUTCDay()]||[]);
+const scheduledTypes=()=>['image','video'];
 const expectedSlots=Array.from({length:5},(_,i)=>scheduledTypes(dayOffset(i+1)).length).reduce((a,b)=>a+b,0);
 const dayLabel=day=>new Date(day+'T12:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',weekday:'short',timeZone:'America/New_York'});
 const templates=[
@@ -171,7 +171,7 @@ try{
         const item={id:randomUUID(),version:1,day:dayOffset(day),time:type==='image'?'09:00':'15:00',type,title:`Synthetic agent ${type} for ${dayOffset(day)}`,idea:'A synthetic educational media idea.',script:'',caption:'',templateId:templates.find(template=>template.type===type).id,destinations:[],mediaAssetId:null,coverAssetId:null,mediaUrl:null,coverUrl:null,mediaVerifiedAt:null,extra:false,locked:false,status:'draft',createdAt:stamp(),updatedAt:stamp(),deliveries:[],jobId:null,lastError:null};
         items.push(item);queueSyntheticJob(item,'agent');
       }
-      Object.assign(agent,{status:'Queued',lastSeenAt:stamp(),lastCreatedCount:expectedSlots,currentWork:'Synthetic weekday media jobs are queued.',message:'Synthetic agent queued weekday jobs for the next five days. No provider was called.'});
+      Object.assign(agent,{status:'Queued',lastSeenAt:stamp(),lastCreatedCount:expectedSlots,currentWork:'Synthetic daily media jobs are queued.',message:'Synthetic agent queued daily jobs for the next five days. No provider was called.'});
       return accepted({paused:false,version:agent.version,items,jobs,message:agent.message});
     }
     if(body.operation==='generate'){
@@ -196,7 +196,10 @@ try{
   });
   await mkdir('artifacts',{recursive:true});
   await page.goto(origin+'/owner',{waitUntil:'networkidle'});
-  await page.getByRole('heading',{name:'Content',exact:true,level:1}).waitFor();
+  await page.getByRole('heading',{name:'Business overview',exact:true,level:1}).waitFor();
+  const primaryNavigation=page.getByRole('navigation',{name:'Main navigation'});
+  assert.deepEqual(await primaryNavigation.getByRole('button').allTextContents(),['Overview','Customers','Inbox','Content','Analytics'],'Five primary tabs retain the requested order');
+  await nav('Content');
   await page.getByText('Every asset waits for your approval. No reply means no publishing.',{exact:true}).waitFor();
   await nav('Overview');
   await page.getByRole('heading',{name:'Business overview',exact:true,level:1}).waitFor();
@@ -291,8 +294,9 @@ try{
   const updateOpener=page.getByRole('button',{name:/Synthetic agent saved two drafts\. Rendering is not connected\./});
   await updateOpener.waitFor();assert.equal(await page.getByText(/synthetic-inbox-job-only/).count(),0,'Inbox list shows a short result and next step');
   await updateOpener.click();const update=page.getByRole('dialog',{name:'Agent update'});await update.waitFor();
-  await update.getByRole('heading',{name:agentUpdate.summary.result,exact:true}).waitFor();
-  await update.getByText('Next: '+agentUpdate.summary.action,{exact:true}).waitFor();
+  await update.getByRole('heading',{name:'Update: '+agentUpdate.summary.result,exact:true}).waitFor();
+  await update.getByText('Action: '+agentUpdate.summary.action,{exact:true}).waitFor();
+  await update.getByText('Status: Saved update',{exact:true}).waitFor();
   const originalUpdate=update.locator('details').filter({hasText:'Original update'});
   assert.equal(await originalUpdate.getAttribute('open'),null,'The original technical update is collapsed by default');
   assert.equal(await update.getByRole('button',{name:'Snooze 24 hours',exact:true}).count(),0,'Secondary Inbox actions stay under optional controls');
@@ -483,11 +487,11 @@ try{
   rendererAvailable=false;await page.reload();await page.getByRole('heading',{name:'Content',exact:true,level:1}).waitFor();
   await page.getByRole('button',{name:'Agent',exact:true}).click();
   const jobsBeforeBlockedStart=jobs.length,itemsBeforeBlockedStart=items.length;
-  await page.getByRole('button',{name:'Start agent',exact:true}).click();
+  await page.getByRole('switch',{name:'Content agent',checked:false,exact:true}).click();
   await page.getByText(rendererError,{exact:true}).first().waitFor();
-  assert.ok(await page.getByRole('button',{name:'Start agent',exact:true}).isEnabled());
+  assert.ok(await page.getByRole('switch',{name:'Content agent',checked:false,exact:true}).isEnabled());
   await page.getByText('Off',{exact:true}).waitFor();
-  assert.equal(await page.getByRole('button',{name:'Pause creation',exact:true}).count(),0,'Unavailable renderer cannot look enabled');
+  assert.equal(await page.getByRole('switch',{name:'Content agent',checked:true,exact:true}).count(),0,'Unavailable renderer cannot look enabled');
   assert.equal(agent.paused,true);assert.equal(agent.version,1);assert.equal(jobs.length,jobsBeforeBlockedStart);assert.equal(items.length,itemsBeforeBlockedStart,'A blocked start does not substitute idea rows for production');
   await noOverflow('Blocked content agent');await page.screenshot({path:'artifacts/founder-agent-blocked-synthetic.png',fullPage:true});
   await page.reload();await page.getByRole('heading',{name:'Content',exact:true,level:1}).waitFor();await page.getByRole('button',{name:'Agent',exact:true}).click();
@@ -497,11 +501,11 @@ try{
   // ten slots must have accepted synthetic jobs; empty ideas do not count.
   items.splice(0);jobs.splice(0);replies.clear();rendererAvailable=true;
   await page.reload();await page.getByRole('heading',{name:'Content',exact:true,level:1}).waitFor();await page.getByRole('button',{name:'Agent',exact:true}).click();
-  await page.getByRole('button',{name:'Start agent',exact:true}).click();
-  await page.getByText('Synthetic agent queued weekday jobs for the next five days. No provider was called.',{exact:true}).waitFor();
-  await page.getByRole('button',{name:'Pause creation',exact:true}).waitFor();
+  await page.getByRole('switch',{name:'Content agent',checked:false,exact:true}).click();
+  await page.getByText('Synthetic agent queued daily jobs for the next five days. No provider was called.',{exact:true}).waitFor();
+  await page.getByRole('switch',{name:'Content agent',checked:true,exact:true}).waitFor();
   assert.equal(agent.paused,false);assert.equal(jobs.length,expectedSlots);assert.equal(items.length,expectedSlots);
-  for(let day=1;day<=5;day++)assert.deepEqual(items.filter(item=>item.day===dayOffset(day)).map(item=>item.type).sort(),scheduledTypes(dayOffset(day)),'Each date follows the requested weekday cadence');
+  for(let day=1;day<=5;day++)assert.deepEqual(items.filter(item=>item.day===dayOffset(day)).map(item=>item.type).sort(),scheduledTypes(dayOffset(day)),'Each date follows the requested daily cadence');
   for(const item of items)assert.ok(item.jobId&&jobs.some(job=>job.id===item.jobId&&job.itemId===item.id&&job.status==='queued'),'Every generating slot points to an accepted job');
   assert.equal(content().coverage.generated,0);assert.equal(content().coverage.produced,0,'Queued jobs are not counted as verified or reviewed files');
   const agentProgress=page.locator('[aria-live="polite"]').filter({hasText:'finished for the next five days'});
@@ -513,9 +517,9 @@ try{
   assert.ok(contentReads.length>agentReadsBefore,'Agent progress refreshes while creation is enabled');assert.equal(requests.length,agentWritesBefore,'Progress polling does not resubmit the start action');
   assert.equal(content().coverage.generated,1);assert.equal(content().coverage.produced,0,'A saved file is separate from creative review');
   assert.match(await agentProgress.innerText(),new RegExp(`1\\s*\\/\\s*${expectedSlots}`),'Visible progress follows the server count of saved files');
-  await page.getByRole('button',{name:'Pause creation',exact:true}).click();
+  await page.getByRole('switch',{name:'Content agent',checked:true,exact:true}).click();
   await page.getByText('Synthetic creation paused. Existing schedules were unchanged.',{exact:true}).first().waitFor();
-  await page.getByRole('button',{name:'Start agent',exact:true}).waitFor();assert.equal(agent.paused,true);
+  await page.getByRole('switch',{name:'Content agent',checked:false,exact:true}).waitFor();assert.equal(agent.paused,true);
   assert.deepEqual(errors,[],'No browser runtime errors');
   const report={result:'PASS',engine:'Playwright WebKit; not a physical iPhone',widths,data:'Synthetic API responses only',productionWrites:0,
     checks:['real private API 401/no-store','five destinations','unavailable money without fake zeros','Lifetime overlap explanation and unknown provider access','dialog focus containment and restoration','populated Inbox detail and summary coverage','versioned reply save and reload','session-only unfinished reply recovery','Inbox conflict preserves local reply and exposes account version','offline Inbox never sends or auto-saves on reconnect','persisted read state preserves reply','plain agent result and next step with optional original report','idea and format first; optional caption/title/date','empty-date draft creation','Save draft for ideas without media','input limits agree with server','saved account version after reload','409 preserves unsaved text','offline/reconnect does not silently send','reviewed image/video lessons save their canonical source-bound title before requesting a job','custom changed intent blocks generation without a paid request','accepted server job response shown','return and reload resume generation polling','renderer failure is visible without automatic retry','unavailable agent start remains Off without queued work','agent start accepts ten synthetic jobs across five future dates','generated files stay separate from creative review and publishing','enabled agent progress polling and explicit pause','month and six-date agenda controls','no horizontal overflow','125% rendered text size']};

@@ -1,9 +1,9 @@
 import type Stripe from 'stripe';
 import {db} from '../affiliate-db';
 import {stripe} from '../stripe';
-import {monthlyPlans,checkoutTradingViewUsername} from '../subscription-activation-policy';
+import {monthlyPlans,paidMonthlyPlan,checkoutTradingViewUsername} from '../subscription-activation-policy';
 
-export const founderFinanceVersion='DA-FINANCE-20261112-v1';
+export const founderFinanceVersion='DA-FINANCE-20261116-v2';
 const DAY=86400;
 const productPlans:Record<string,string>=Object.fromEntries(Object.values(monthlyPlans).map(p=>[p.product,p.name]));
 productPlans.prod_UdkjbCFI5VHOxQ='Lifetime';
@@ -89,6 +89,11 @@ export function forecastSubscription(sub:Stripe.Subscription,preview:Preview|nul
  return {amountCents:amount,atRiskCents:sub.status==='past_due'?amount:0,complete:true,reason:null};
 }
 function easternDay(at:number){return new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(at*1000));}
+function recordUsername(customer:FounderCustomer,username:string|null){
+ if(!username||customer.usernameStatus==='conflict')return;
+ if(customer.tradingViewUsername&&customer.tradingViewUsername!==username){customer.tradingViewUsername=null;customer.usernameStatus='conflict';}
+ else {customer.tradingViewUsername=username;customer.usernameStatus='recorded';}
+}
 export function buildFounderFinance(input:FinanceEvidence){
  const {now,period,coverage}=input,start=period==='all'?0:now-(period==='90d'?90:30)*DAY;
  const checkedAt=new Date(now*1000).toISOString(),issues:string[]=[];
@@ -130,7 +135,7 @@ export function buildFounderFinance(input:FinanceEvidence){
   const source=byPayment.get(idOf(charge.payment_intent))||byPayment.get(charge.id);if(!source){if(charge.created>=start&&charge.created<now)unknownCharges++;continue;}
   const c=getCustomer(source.customerId,charge.billing_details.name,charge.billing_details.email);knownCharges.add(charge.id);currencies.add(charge.currency);paidIdentities.add(c.id);
   const payment={id:charge.id,at:iso(charge.created)!,amountCents:charge.amount_captured,refundedCents:charge.amount_refunded,currency:charge.currency,plan:source.plan,sourceUrl:`https://dashboard.stripe.com/payments/${encodeURIComponent(idOf(charge.payment_intent)||charge.id)}`};c.payments.push(payment);c.plans.push(source.plan);
-  if(source.username){if(c.tradingViewUsername&&c.tradingViewUsername!==source.username)c.usernameStatus='conflict';else{c.tradingViewUsername=source.username;c.usernameStatus='recorded';}}
+  recordUsername(c,source.username);
   if(source.subId&&source.paidThrough&&charge.amount_refunded<charge.amount_captured){paidThrough.set(source.subId,Math.max(paidThrough.get(source.subId)||0,source.paidThrough));if(charge.amount_refunded>0)refundReview.add(source.subId);}
   if(source.lifetime&&charge.amount_refunded<charge.amount_captured){
    c.access.expected.push({plan:'Pro Lifetime',sourceId:source.source,expiresAt:null,kind:charge.amount_refunded?'review':'lifetime'});
@@ -175,9 +180,23 @@ export function buildFounderFinance(input:FinanceEvidence){
    horizon.amountCents!+=estimate.amountCents;horizon.atRiskCents!+=estimate.atRiskCents;
   }
  }
+ // A completed trial checkout records a username even when it collected no cash.
+ // Link only the exact live subscription/customer and reviewed price/product pair;
+ // email or metadata is never an identity join, payment, or provider-access proof.
+ const subscriptionsById=new Map(subscriptions.map(sub=>[sub.id,sub]));
+ for(const session of sessions){
+  if(!session.livemode||session.mode!=='subscription'||session.status!=='complete'||!['paid','no_payment_required'].includes(session.payment_status))continue;
+  const sid=idOf(session.subscription),cid=idOf(session.customer);
+  if(!/^sub_[a-zA-Z0-9]+$/.test(sid)||!/^cus_[a-zA-Z0-9]+$/.test(cid))continue;
+  const sub=subscriptionsById.get(sid),customer=customers.get(cid);
+  if(!sub||!customer||idOf(sub.customer)!==cid||sub.items.has_more||!session.line_items||session.line_items.has_more)continue;
+  const checkoutPlan=paidMonthlyPlan(session.line_items.data),currentPlan=paidMonthlyPlan(sub.items.data);
+  if(!checkoutPlan||!currentPlan||checkoutPlan.priceId!==currentPlan.priceId||checkoutPlan.productId!==currentPlan.productId)continue;
+  recordUsername(customer,checkoutTradingViewUsername(session.custom_fields));
+ }
  for(const record of input.accessRecords){
   const c=[...customers.values()].find(x=>x.subscriptions.some(s=>s.id===record.subscription_id));if(!c)continue;
-  if(record.tradingview_username){if(c.tradingViewUsername&&c.tradingViewUsername!==record.tradingview_username)c.usernameStatus='conflict';else{c.tradingViewUsername=record.tradingview_username;c.usernameStatus='recorded';}}
+  recordUsername(c,record.tradingview_username);
   if(record.access_verified_at&&(!c.access.lastVerifiedAt||record.access_verified_at>c.access.lastVerifiedAt))c.access.lastVerifiedAt=record.access_verified_at;
  }
  for(const c of customers.values()){

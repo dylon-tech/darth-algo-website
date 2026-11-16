@@ -17,6 +17,33 @@ function load(file){file=path.resolve(root,file);if(stubs[file])return stubs[fil
  await assert.rejects(setup(randomUUID()),/NOT_APPROVED/);assert.equal(afters.length,0);
  Object.assign(process.env,{AI_OS_ENABLED:'true',AI_OS_OWNER_KEY:'synthetic-local-native-test-key-never-used-in-production',AI_OS_MEDIA_RENDERER_ENABLED:'true',AI_OS_MEDIA_RENDERER_MONTHLY_USD:'5',AI_OS_MEDIA_RENDERER_APPROVAL_ID:randomUUID(),VERCEL_ENV:'production',VERCEL_GIT_COMMIT_SHA:'a'.repeat(40)});
  await content.ensureFounderContentSchema();
+ // A failed readiness/ledger lookup is unavailable evidence, not revoked
+ // consent. It must block both owner activation and automatic paid rechecks.
+ const originalStatus=renderer.founderRendererStatus;
+ renderer.founderRendererStatus=async()=>{throw Error('synthetic private connection details');};
+ try{
+  let unavailable=await content.readFounderContent();
+  assert.equal(unavailable.agent.incrementalBudgetUsd,5,'Known approved scope survives a readiness lookup failure');
+  assert.match(unavailable.capabilities.renderBudgetMessage,/remains approved/);
+  assert.match(unavailable.capabilities.rendererReason,/could not be verified/);
+  assert.equal(unavailable.capabilities.imageGeneration,false);assert.equal(unavailable.capabilities.videoGeneration,false);assert.equal(unavailable.capabilities.rendererSetupAvailable,false);
+  assert.equal(JSON.stringify(unavailable).includes('synthetic private connection details'),false);
+  await assert.rejects(content.mutateFounderContent({operation:'agent',requestKey:randomUUID(),paused:false,expectedVersion:unavailable.agent.version}),error=>error.code==='RENDERER_NOT_CONNECTED');
+  await sql`update os_founder_content_control set paused=false where id=1`;
+  assert.equal((await planner(new Date())).status,'blocked');
+  assert.equal((await sql`select paused from os_founder_content_control where id=1`)[0].paused,false,'Existing On intent is preserved');
+  assert.equal(afters.length,0,'Unknown budget usage never queues a paid connection check');
+  assert.equal((await policy.nativeBudget()).reservedCents,0);
+  delete process.env.AI_OS_MEDIA_RENDERER_ENABLED;
+  unavailable=await content.readFounderContent();
+  assert.equal(unavailable.agent.incrementalBudgetUsd,0,'Unavailable or disabled configuration does not invent approval');
+  assert.equal(unavailable.capabilities.rendererSetupAvailable,false);
+  assert.match(unavailable.capabilities.renderBudgetMessage,/could not be verified/);
+ }finally{
+  renderer.founderRendererStatus=originalStatus;
+  process.env.AI_OS_MEDIA_RENDERER_ENABLED='true';
+  await sql`update os_founder_content_control set paused=true,last_error=null where id=1`;
+ }
  const crossId=randomUUID(),crossBody=JSON.stringify({claim:{job:{id:randomUUID(),leaseToken:randomUUID(),workerId:'native:'+crossId}},mode:'preflight',callbackToken:'synthetic-callback'}),crossClaim=JSON.parse(crossBody).claim.job;
  const crossToken=policy.signNativeToken({scope:'invoke',aud:policy.nativeAudience,mode:'preflight',invocationId:crossId,jobId:crossClaim.id,leaseToken:crossClaim.leaseToken,workerId:crossClaim.workerId,sha:process.env.VERCEL_GIT_COMMIT_SHA,bodySha256:policy.nativeBodyHash(crossBody)});
  const cross=require('node:child_process').spawnSync('python3',['-c',`import importlib.util,json,sys,os,io,types

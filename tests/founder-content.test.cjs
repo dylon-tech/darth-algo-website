@@ -37,19 +37,29 @@ assert.deepEqual(model.founderClock(now),{day:'2026-11-12',time:'02:00'});
 assert.deepEqual(model.founderDays([],now).map(d=>d.day),['2026-11-12','2026-11-13','2026-11-14','2026-11-15','2026-11-16','2026-11-17']);
 assert.deepEqual(model.founderDays([],new Date('2026-03-08T06:00:00Z')).map(d=>d.day),['2026-03-08','2026-03-09','2026-03-10','2026-03-11','2026-03-12','2026-03-13']);
 assert.equal(model.founderDays([],new Date('2026-11-12T21:00:00Z'))[0].slots.some(s=>s.remainingToday),false,'Past slots do not queue catch-up work');
-assert.deepEqual(Array.from({length:7},(_,i)=>model.founderScheduledTypes(model.addCalendarDays('2026-11-16',i))),[['image','video'],['image'],['video'],['image'],['image','video'],[],[]]);
-assert.deepEqual(model.founderDefaultDestinations('image'),['instagram','threads','x']);
+assert.deepEqual(Array.from({length:7},(_,i)=>model.founderScheduledTypes(model.addCalendarDays('2026-11-16',i))),Array.from({length:7},()=>['image','video']));
+assert.deepEqual(model.founderDefaultDestinations('image'),['instagram','threads']);
 assert.deepEqual(model.founderDefaultDestinations('video'),['instagram','tiktok','youtube']);
-assert.equal(model.founderDays([],now).filter(d=>['2026-11-14','2026-11-15'].includes(d.day)).flatMap(d=>d.slots).length,0,'Weekends have no automatic slots');
-assert.equal(model.founderCoverage([],new Date('2026-11-15T07:00:00Z')).expectedOriginals,7,'Full working week has seven original assets');
+assert.equal(model.founderDays([],now).filter(d=>['2026-11-14','2026-11-15'].includes(d.day)).flatMap(d=>d.slots).length,4,'Weekend dates retain both daily originals');
+assert.equal(model.founderCoverage([],new Date('2026-11-15T07:00:00Z')).expectedOriginals,10,'Five complete future dates always have ten original slots');
+for(const date of ['2026-03-08T06:00:00Z','2026-11-01T05:00:00Z','2026-11-30T23:00:00Z','2026-12-31T23:00:00Z']){
+  const at=new Date(date),days=model.founderDays([],at),coverage=model.founderCoverage([],at);
+  assert.equal(coverage.expectedOriginals,10,'DST, month and year changes retain ten future slots');
+  assert.equal(days.length,6);assert.equal(new Set(days.map(d=>d.day)).size,6);
+  assert.ok(days.slice(1).every(d=>d.slots.length===2&&!d.isToday));
+}
 const ready={...blank,status:'ready',mediaAssetId:randomUUID(),mediaVerifiedAt:now.toISOString(),deliveries:[{network:'instagram',state:'published',providerId:'post-1',url:'https://www.instagram.com/p/example/',contentVersion:1,checkedAt:now.toISOString(),scheduledAt:null}]};
 let coverage=model.founderCoverage([ready],now);
 assert.equal(coverage.produced,1);assert.equal(coverage.scheduled,0);assert.equal(coverage.expectedDeliveries,2);assert.equal(coverage.acceptedDeliveries,1);
 assert.equal(model.founderCoverage([{...ready,version:2}],now).acceptedDeliveries,0,'Older delivery version never verifies edited content');
 assert.equal(model.founderCoverage([{...ready,mediaAssetId:null}],now).produced,0);
-assert.equal(model.founderCoverage([{...ready,status:'skipped'}],now).expectedOriginals,5);
+assert.equal(model.founderCoverage([{...ready,status:'skipped'}],now).expectedOriginals,10);
 assert.equal(model.founderCoverage([{...ready,status:'skipped'}],now).skipped,1);
 assert.equal(model.founderCoverage([{...ready,extra:true}],now).planned,0,'Extra content does not replace an original slot');
+assert.equal(model.founderCoverage([ready,{...ready,id:randomUUID(),day:'2026-11-14'}],now).generated,1,'The same finished file reused on two dates counts as one original');
+assert.equal(model.founderCoverage([ready,{...ready,id:randomUUID(),day:'2026-11-14'}],now).produced,1,'Duplicate assets do not inflate reviewed-original coverage');
+const reusedPublication=model.founderCoverage([{...ready,status:'checking'},{...ready,id:randomUUID(),day:'2026-11-14',destinations:['instagram']}],now);
+assert.equal(reusedPublication.generated,1);assert.equal(reusedPublication.produced,1);assert.equal(reusedPublication.scheduled,1);assert.equal(reusedPublication.published,1,'An earlier checking copy cannot hide the confirmed state of the same asset');
 assert.equal(model.safeFounderMediaUrl('javascript:alert(1)'),null);
 assert.equal(model.safeFounderMediaUrl('https://name:pass@example.com/file.mp4'),null);
 assert.equal(model.safeFounderMediaUrl('//attacker.example/media'),null);
@@ -86,13 +96,55 @@ for(const [field,limit] of [['idea',3000],['script',18000],['caption',10000]]){
     const content=load('app/lib/business-os/founder-content.ts');
     const mutate=input=>content.mutateFounderContent(input,now);
     let snapshot=await content.readFounderContent('2026-11',now);
-    assert.equal(snapshot.days.length,6);assert.equal(snapshot.coverage.expectedOriginals,5);assert.equal(snapshot.coverage.missing,5);
+    assert.equal(snapshot.days.length,6);assert.equal(snapshot.coverage.expectedOriginals,10);assert.equal(snapshot.coverage.missing,10);
     assert.equal(snapshot.legacyQueue,null);assert.match(snapshot.legacyQueueError,/unavailable/);
     assert.equal(snapshot.agent.paused,true);assert.equal(snapshot.capabilities.videoGeneration,false);
     assert.equal((await content.founderContentPlannerTick(now)).status,'global_paused');
     await sql`update os_control set paused=false where id=1`;
     assert.equal((await content.founderContentPlannerTick(now)).status,'paused');
     assert.equal((await sql`select count(*)::int n from os_founder_content_items`)[0].n,0,'Both pause controls fail closed before new planning');
+    const allocationLessons=load('app/lib/business-os/founder-render-catalog.json');
+    async function resetAllocationFixture(){
+      await database.exec('truncate os_founder_content_items cascade; truncate os_founder_content_requests; update os_founder_content_control set paused=true,version=1,last_seen_at=null,last_created_count=null,last_error=null,last_status=null,last_success_at=null,global_paused=null');
+    }
+    let firstAllocation;
+    for(const priorFormat of ['video','image','video']){
+      rendererReady=true;await sql`update os_founder_content_control set paused=false where id=1`;
+      for(const lesson of allocationLessons.slice(6)){
+        const id=randomUUID(),finished={...blank,id,type:priorFormat,day:'2026-11-01',title:lesson.title,idea:lesson.idea,mediaAssetId:randomUUID(),mediaVerifiedAt:now.toISOString(),extra:true};
+        const archived={...finished,status:'archived',mediaAssetId:null,mediaVerifiedAt:null,version:2};
+        await sql`insert into os_founder_content_items(id,version,day,media_type,extra,archived,data) values(${id},2,'2026-11-01',${priorFormat},true,true,${sql.json(archived)})`;
+        await sql`insert into os_founder_content_versions(item_id,version,data,operation) values(${id},1,${sql.json(finished)},'generation_completed')`;
+      }
+      const afterSlots=new Date('2026-11-12T21:00:00Z'),filled=await content.founderContentPlannerTick(afterSlots);
+      assert.equal(filled.created,10,'Whole-window matching preserves scarce format-eligible lessons instead of reporting a false shortfall');
+      const allocated=await content.readFounderContent('2026-11',afterSlots);
+      assert.equal(allocated.coverage.missing,0);
+      const originals=allocated.items.filter(item=>!item.extra&&item.day>'2026-11-12');
+      assert.equal(new Set(originals.map(item=>item.title)).size,10,'Every assigned topic remains unique in the active window');
+      assert.equal(originals.filter(item=>item.type===priorFormat).length,5);
+      assert.ok(originals.filter(item=>item.type===priorFormat).every(item=>allocationLessons.slice(0,6).some(lesson=>lesson.title===item.title)),'The constrained format receives only still-unused originals');
+      const assignment=originals.map(item=>[item.day,item.type,item.title]);
+      if(priorFormat==='video'){if(firstAllocation)assert.deepEqual(assignment,firstAllocation,'Least-used allocation is deterministic');else firstAllocation=assignment;}
+      await resetAllocationFixture();
+    }
+    // Existing queued work also respects unknown historical outcomes, not only
+    // completed originals or newly planned dates.
+    await sql`update os_founder_content_control set paused=false where id=1`;
+    const afterSlots=new Date('2026-11-12T21:00:00Z'),lesson=allocationLessons[0];
+    const unknownDraft=await content.mutateFounderContent({operation:'save',requestKey:'fixture-unknown-history',item:{...blank,id:undefined,day:'2026-11-01',extra:true,title:lesson.title,idea:lesson.idea}},afterSlots);
+    const unknownJob=await content.mutateFounderContent({operation:'generate',requestKey:'fixture-unknown-job',id:unknownDraft.item.id,expectedVersion:unknownDraft.item.version},afterSlots);
+    await sql`update os_founder_render_jobs set status='blocked',error='Unknown historical outcome' where id=${unknownJob.job.id}`;
+    const futureDraft=await content.mutateFounderContent({operation:'save',requestKey:'fixture-legacy-duplicate',item:{...blank,id:undefined,title:lesson.title,idea:lesson.idea}},afterSlots);
+    const futureJob=await content.mutateFounderContent({operation:'generate',requestKey:'fixture-legacy-job',id:futureDraft.item.id,expectedVersion:futureDraft.item.version},afterSlots);
+    await sql`update os_founder_render_jobs set source='agent' where id=${futureJob.job.id}`;
+    await sql`update os_founder_content_items set data=jsonb_set(data,'{locked}','false'::jsonb) where id=${futureDraft.item.id}`;
+    assert.equal(await content.claimFounderRenderJob({workerId:'fixture-unknown-history-guard',now:afterSlots}),null,'Unknown history prevents a legacy automatic retry on another date');
+    assert.equal((await sql`select attempts from os_founder_render_jobs where id=${futureJob.job.id}`)[0].attempts,0);
+    assert.equal((await content.founderContentPlannerTick(afterSlots)).status,'needs_input','An occupied source-blocked slot remains actionable on later checks');
+    const unknownReadback=await content.readFounderContent('2026-11',afterSlots);
+    assert.equal(unknownReadback.agent.status,'Needs attention');assert.match(unknownReadback.agent.message,/unresolved attempt/);
+    await resetAllocationFixture();rendererReady=false;
     const draft={...blank};delete draft.id;delete draft.version;
     const firstRequest={operation:'save',requestKey:'fixture-initial-01',item:{...draft,status:'ready',locked:false}};
     const first=await mutate(firstRequest);
@@ -144,6 +196,10 @@ for(const [field,limit] of [['idea',3000],['script',18000],['caption',10000]]){
     await assert.rejects(mutate({operation:'agent',requestKey:'fixture-stale-control',paused:true,expectedVersion:1}),e=>e.code==='VERSION_CONFLICT');
     snapshot=await content.readFounderContent('2026-11',now);
     assert.equal(snapshot.agent.status,'Queued');assert.equal(snapshot.agent.counts.running,0);assert.equal(snapshot.agent.lastSuccessfulRun,null,'Queued ideas are not completed generation');
+    assert.equal(snapshot.coverage.expectedOriginals,10);assert.equal(snapshot.coverage.missing,0);
+    assert.equal(snapshot.items.find(i=>i.id===first.item.id).version,4,'Starting keeps the owner-edited draft unchanged');
+    assert.equal(snapshot.items.find(i=>i.id===skipped.item.id).status,'skipped','Starting respects intentional skips');
+    assert.ok(snapshot.days.slice(1).every(d=>d.slots.length===2&&d.slots.every(s=>s.itemId)),'Each future date has both slots, including weekends');
     assert.equal(snapshot.items.find(i=>i.jobId).renderStatus,'queued');
     const tick=await content.founderContentPlannerTick(now);assert.equal(tick.created,0);assert.equal(tick.scope,'media_generation');
     assert.equal((await content.readFounderContent('2026-11',now)).agent.lastSeenAt,now.toISOString());
@@ -242,6 +298,12 @@ for(const [field,limit] of [['idea',3000],['script',18000],['caption',10000]]){
     const obsoleteToday=await sql`select j.status,i.data from os_founder_render_jobs j join os_founder_content_items i on i.id=j.item_id where j.source='agent' and i.day='2026-11-12'`;
     assert.ok(obsoleteToday.every(job=>job.status==='obsolete'&&job.data.status==='needs_input'),'Past agent ideas are preserved with a clear blocker');
     await content.failFounderRenderJob({jobId:currentLease.job.id,leaseToken:currentLease.job.leaseToken,error:'Fixture stops before actual rendering.',retryable:true},afterToday);
+    const rollover=await content.founderContentPlannerTick(afterToday);
+    assert.equal(rollover.created,2,'The next Eastern date adds only one image and one video on the new fifth future date');
+    const rolled=await content.readFounderContent('2026-11',afterToday);
+    assert.equal(rolled.coverage.expectedOriginals,10);assert.equal(rolled.coverage.missing,0);
+    assert.equal(rolled.items.filter(i=>i.day==='2026-11-18'&&!i.extra).length,2);
+    assert.equal((await content.founderContentPlannerTick(afterToday)).created,0,'Repeated rollover does not duplicate slots');
     snapshot=await content.readFounderContent('2026-11',now);
     const dense={...blank,day:'2026-10-10',extra:true};
     await sql`insert into os_founder_content_items(id,version,day,media_type,extra,archived,data) select gen_random_uuid(),1,'2026-10-10','image',true,false,${sql.json(dense)}::jsonb from generate_series(1,501)`;
@@ -249,18 +311,20 @@ for(const [field,limit] of [['idea',3000],['script',18000],['caption',10000]]){
     assert.equal(historical.truncated,true);
     assert.equal(historical.items.find(i=>i.id===skipped.item.id).status,'skipped','Dense historical month cannot hide intentional future skips');
     assert.deepEqual(historical.coverage,snapshot.coverage,'Future coverage is independent of selected-month truncation');
-    // Exhausted titles rotate again in a later week with a different visual
-    // treatment; generation must never graduate to approved/published itself.
+    // Unproduced lessons can be replanned after expired unstarted work.
+    // A queued job must never graduate to approved/published by itself.
     const laterWeek=new Date('2026-12-07T07:00:00Z');
     const rotation=await content.founderContentPlannerTick(laterWeek);
-    assert.ok(rotation.created>0,'Previously used concepts can replenish later weeks');
+    assert.ok(rotation.created>0,'Expired unstarted concepts can replenish later dates');
+    const expiredQueue=await sql`select count(*)::int n from os_founder_render_jobs j join os_founder_content_items i on i.id=j.item_id where j.source='agent' and j.status='queued' and i.day<'2026-12-07'`;
+    assert.equal(expiredQueue[0].n,0,'Expired unstarted agent jobs cannot block recovery at the queue cap');
     const laterItems=(await content.readFounderContent('2026-12',laterWeek)).items.filter(i=>i.day>='2026-12-07');
     assert.ok(laterItems.every(i=>model.founderScheduledTypes(i.day).includes(i.type)));
     assert.ok(laterItems.every(i=>i.status!=='ready'&&i.deliveries.length===0),'Rotated concepts still require approval');
     const thirdWeek=new Date('2026-12-14T07:00:00Z');
     await content.founderContentPlannerTick(thirdWeek);
     const rotatedItems=(await content.readFounderContent('2026-12',thirdWeek)).items.filter(i=>i.day>='2026-12-14');
-    assert.ok(rotatedItems.some(i=>(i.visualVariant||0)>0),'Repeated concept advances its visual treatment');
+    assert.ok(rotatedItems.some(i=>(i.visualVariant||0)>0),'A retry of unproduced concepts can change treatment');
     const readyAgain=await mutate({operation:'review',requestKey:'fixture-review-before-regenerate',id:first.item.id,expectedVersion:completed.item.version,confirmReviewed:true});
     const regenerated=await mutate({operation:'generate',requestKey:'fixture-regenerate-ready',id:first.item.id,expectedVersion:readyAgain.item.version});
     assert.equal(regenerated.item.status,'generating','Regeneration invalidates prior creative approval');
@@ -305,6 +369,40 @@ for(const [field,limit] of [['idea',3000],['script',18000],['caption',10000]]){
     }
     await sql`update os_founder_video_publications set state='discarded' where id=${videoPublicationId}`;
     assert.equal(await videoPublications.hasFounderVideoAttempt(guarded.id),false,'Explicit safe discard releases the local source lock, not a provider deletion');
+    const exhaustedDate=new Date('2027-01-11T07:00:00Z');
+    const reviewedLessons=load('app/lib/business-os/founder-render-catalog.json');
+    for(const [index,lesson] of reviewedLessons.entries())await content.mutateFounderContent({operation:'save',requestKey:'fixture-source-library-'+index,item:{...draft,id:undefined,extra:true,day:'2027-01-11',title:lesson.title,idea:lesson.idea}},exhaustedDate);
+    const exhausted=await content.founderContentPlannerTick(exhaustedDate);
+    assert.equal(exhausted.status,'needs_input');assert.equal(exhausted.created,0,'Active-window topics are not repeated to fill a shortfall');
+    const shortfall=await content.readFounderContent('2027-01',exhaustedDate);
+    assert.equal(shortfall.agent.status,'Needs attention');assert.match(shortfall.agent.message,/reviewed lesson library/);
+    assert.equal(shortfall.coverage.missing,10);assert.equal(shortfall.coverage.generated,0,'Owner extras cannot disguise a missing original buffer');
+    // Completed original history survives archive and a later manual edit that
+    // clears the current media. A new visual variant must not evade this guard.
+    for(const lesson of reviewedLessons)for(const type of ['image','video']){
+      const priorId=randomUUID(),finished={...blank,id:priorId,day:'2027-01-05',type,title:lesson.title,idea:lesson.idea,mediaAssetId:randomUUID(),mediaVerifiedAt:now.toISOString(),status:'checking',extra:true};
+      const archived={...finished,version:2,status:'archived',mediaAssetId:null,mediaVerifiedAt:null,visualVariant:7};
+      await sql`insert into os_founder_content_items(id,version,day,media_type,extra,archived,data) values(${priorId},2,'2027-01-05',${type},true,true,${sql.json(archived)})`;
+      await sql`insert into os_founder_content_versions(item_id,version,data,operation) values(${priorId},1,${sql.json(finished)},'generation_completed')`;
+    }
+    const afterCatalog=new Date('2027-01-18T07:00:00Z');
+    const noRepeats=await content.founderContentPlannerTick(afterCatalog);
+    assert.equal(noRepeats.created,0,'Archived completed recipe/format history prevents automatic re-creation');
+    assert.equal(noRepeats.status,'needs_input');
+    const exhaustedOriginals=await content.readFounderContent('2027-01',afterCatalog);
+    assert.equal(exhaustedOriginals.coverage.generated,0);assert.equal(exhaustedOriginals.coverage.missing,10);
+    assert.match(exhaustedOriginals.agent.message,/will not be repeated automatically/);
+    await sql`update os_founder_render_jobs set status='canceled' where status='queued'`;
+    const oldDuplicate=await content.mutateFounderContent({operation:'save',requestKey:'fixture-existing-duplicate',item:{...draft,id:undefined,day:'2027-01-20',title:reviewedLessons[0].title,idea:reviewedLessons[0].idea}},afterCatalog);
+    const oldQueued=await content.mutateFounderContent({operation:'generate',requestKey:'fixture-existing-duplicate-job',id:oldDuplicate.item.id,expectedVersion:oldDuplicate.item.version},afterCatalog);
+    await sql`update os_founder_render_jobs set source='agent' where id=${oldQueued.job.id}`;
+    await sql`update os_founder_content_items set data=jsonb_set(data,'{locked}','false'::jsonb) where id=${oldDuplicate.item.id}`;
+    assert.equal(await content.claimFounderRenderJob({workerId:'fixture-duplicate-check',now:afterCatalog}),null,'A previously queued automatic duplicate is checked again before dispatch');
+    const heldDuplicate=(await content.readFounderContentHistory(oldDuplicate.item.id)).item;
+    assert.equal(heldDuplicate.status,'needs_input');assert.match(heldDuplicate.lastError,/already created/);
+    assert.equal((await sql`select attempts from os_founder_render_jobs where id=${oldQueued.job.id}`)[0].attempts,0,'Duplicate rejection consumes no rendering attempt');
+    const deliberateRecreate=await content.mutateFounderContent({operation:'generate',requestKey:'fixture-deliberate-recreate',id:heldDuplicate.id,expectedVersion:heldDuplicate.version},afterCatalog);
+    assert.equal(deliberateRecreate.job.source,'owner','The owner can deliberately regenerate a previous lesson');
     rendererReady=false;
     assert.equal(await content.claimFounderRenderJob({workerId:'unverified-host',now}),null,'An unverified production host cannot claim work');
     assert.equal((await content.founderContentPlannerTick(now)).status,'blocked');

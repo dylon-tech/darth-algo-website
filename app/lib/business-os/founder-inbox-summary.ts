@@ -74,3 +74,16 @@ export function inboxSummaryFor(item: {category: string; body: string; summary?:
   if (item.category === 'customer') return null;
   return item.summary || summarizeAgentMessage(item.body);
 }
+
+/** Record state only: a saved message never proves an external action succeeded. */
+export function inboxRecordStatus(item: {category: string; sourceStatus: string}) {
+  const status = item.sourceStatus.toLowerCase();
+  if (status === 'awaiting_review') return 'Needs review';
+  if (status === 'pending') return item.category === 'alert' ? 'Needs attention' : 'Pending';
+  if (status === 'open') return 'Needs attention';
+  if (status === 'blocked') return 'Blocked';
+  if (status === 'failed') return 'Failed';
+  if (status === 'unknown' || status === 'unverified') return 'Unverified';
+  if (status === 'closed' || status === 'resolved') return 'Closed in source';
+  return 'Saved update';
+}

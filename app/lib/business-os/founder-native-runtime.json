@@ -1,6 +1,6 @@
 {
   "version": "vercel-native-v1",
-  "fingerprint": "6fb30a855313686b557bb55d75e66fb5c7d2281fd5f842bb3ec8dd9832640a70",
+  "fingerprint": "31d4c1e8636973a875d3016b40ce1df2886f0366c7eeaf1924e21e7ea431879b",
   "files": [
     {
       "file": ".python-version",
@@ -28,7 +28,7 @@
     },
     {
       "file": "app/lib/business-os/founder-content.ts",
-      "sha256": "78574fef5fa79a265e48f5be74864c7b387dd27be56babe801ed30ca31be4424"
+      "sha256": "a1beab7ee14134b4e6f70d3c2a336953a22dfaa2fb76120b69da0fa028d0faa1"
     },
     {
       "file": "app/lib/business-os/founder-media-model.ts",
