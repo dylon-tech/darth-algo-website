@@ -289,6 +289,22 @@ for(const [field,limit] of [['idea',3000],['script',18000],['caption',10000]]){
       }
       assert.equal((await content.readFounderContentHistory(guarded.id)).item.version,guarded.version,'Rejected mutations never change the exact dispatched version');
     }
+    // Video imports bind the source version before publication and unknown writes
+    // cannot be bypassed through the general Content editor.
+    await sql`update os_founder_publication_destinations set state='waiting' where publication_id=${publicationId}`;
+    const videoPublications=load('app/lib/business-os/founder-video-dispatch.ts');
+    await videoPublications.ensureVideoDispatchSchema();
+    const videoPublicationId=randomUUID();
+    await sql`insert into os_founder_video_publications(id,item_id,content_version,snapshot,snapshot_hash,manifest,export_token,export_expires_at,import_consented_at) values(${videoPublicationId},${guarded.id},${guarded.version},'{}','fixture','{}','fixture','2026-12-01','2026-11-01')`;
+    for(const state of ['import_started','import_processing','import_ready','draft_started','needs_review','approved','publishing','complete','attention']){
+      await sql`update os_founder_video_publications set state=${state} where id=${videoPublicationId}`;
+      assert.equal(await videoPublications.hasFounderVideoAttempt(guarded.id),true);
+      await assert.rejects(mutate({operation:'save',requestKey:'fixture-video-save-'+state,item:{...guarded,expectedVersion:guarded.version,title:'Attempted edit'}}),e=>e.code==='PROVIDER_RECONCILIATION_REQUIRED');
+      for(const operation of ['generate','review','hold','skip','archive','restore','unlock'])await assert.rejects(mutate({operation,requestKey:'fixture-video-'+operation+'-'+state,id:guarded.id,expectedVersion:guarded.version,confirmReviewed:true}),e=>e.code==='PROVIDER_RECONCILIATION_REQUIRED',state+' blocks '+operation);
+      assert.equal((await content.readFounderContentHistory(guarded.id)).item.version,guarded.version);
+    }
+    await sql`update os_founder_video_publications set state='discarded' where id=${videoPublicationId}`;
+    assert.equal(await videoPublications.hasFounderVideoAttempt(guarded.id),false,'Explicit safe discard releases the local source lock, not a provider deletion');
     rendererReady=false;
     assert.equal(await content.claimFounderRenderJob({workerId:'unverified-host',now}),null,'An unverified production host cannot claim work');
     assert.equal((await content.founderContentPlannerTick(now)).status,'blocked');

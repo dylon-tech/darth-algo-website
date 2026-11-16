@@ -1,3 +1,4 @@
+import {hasFounderVideoAttempt} from './founder-video-dispatch';
 import {writeFounderReviewNotice} from './founder-review-notices';
 import {hasFounderPublicationAttempt,founderPublicationSummaries} from './founder-publication';
 import {createHash,randomUUID} from 'node:crypto';
@@ -237,7 +238,7 @@ export async function mutateFounderContent(value:unknown,clockNow=new Date()) {
     if(input.operation==='save'&&draft&&media){
       const current=draft.id?await currentItem(sql,draft.id,draft.expectedVersion):null;
       if(current?.status==='archived')throw new FounderContentError('Restore this draft before editing.',409,'ARCHIVED');
-      if(current&&(externallyInFlight(current)||await hasFounderPublicationAttempt(current.id,sql)))throw new FounderContentError('This version already has a provider outcome. Reconcile or replace its external schedule before editing; no provider post was changed.',409,'PROVIDER_RECONCILIATION_REQUIRED');
+      if(current&&(externallyInFlight(current)||await hasFounderPublicationAttempt(current.id,sql)||await hasFounderVideoAttempt(current.id,sql)))throw new FounderContentError('This version already has a provider outcome. Reconcile or replace its external schedule before editing; no provider post was changed.',409,'PROVIDER_RECONCILIATION_REQUIRED');
       await ensureSlotAvailable(sql,draft.day,draft.type,draft.id,draft.extra);
       const item:FounderContentItem={...draft,...media,id:current?.id||randomUUID(),version:(current?.version||0)+1,
         status:media.mediaAssetId?'checking':'draft',locked:true,createdAt:current?.createdAt||now,updatedAt:now,
@@ -275,14 +276,14 @@ export async function mutateFounderContent(value:unknown,clockNow=new Date()) {
     }else if(input.operation==='generate'){
       const current=await currentItem(sql,input.id,input.expectedVersion);
       requireRenderer(availability!,current.type);await requireUnpausedWorker(sql);
-      if(externallyInFlight(current)||await hasFounderPublicationAttempt(current.id,sql))throw new FounderContentError('Reconcile this content’s existing provider outcome before replacing its media.',409,'PROVIDER_RECONCILIATION_REQUIRED');
+      if(externallyInFlight(current)||await hasFounderPublicationAttempt(current.id,sql)||await hasFounderVideoAttempt(current.id,sql))throw new FounderContentError('Reconcile this content’s existing provider outcome before replacing its media.',409,'PROVIDER_RECONCILIATION_REQUIRED');
       if(['skipped','held','archived'].includes(current.status))throw new FounderContentError('Restore this content before generating.',409,'CONTENT_HELD');
       if(!current.idea.trim())throw new FounderContentError('Add an idea before generating.',409,'IDEA_REQUIRED');
       const queued=await queueRenderItem(sql,current,'owner',clockNow);
       result={...queued,message:'Queued. The worker will create and save your file.'};
     }else{
       const current=await currentItem(sql,input.id,input.expectedVersion);
-      if(externallyInFlight(current)||await hasFounderPublicationAttempt(current.id,sql))throw new FounderContentError('Provider activity exists for this content. Reconcile it before changing its state; no external schedule was canceled.',409,'PROVIDER_RECONCILIATION_REQUIRED');
+      if(externallyInFlight(current)||await hasFounderPublicationAttempt(current.id,sql)||await hasFounderVideoAttempt(current.id,sql))throw new FounderContentError('Provider activity exists for this content. Reconcile it before changing its state; no external schedule was canceled.',409,'PROVIDER_RECONCILIATION_REQUIRED');
       const item={...current,version:current.version+1,updatedAt:now};
       if(current.status==='generating'){item.status='draft';item.jobId=null;item.lastError=null;}
       if(input.operation==='review'){

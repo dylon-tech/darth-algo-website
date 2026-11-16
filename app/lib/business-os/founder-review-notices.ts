@@ -24,7 +24,13 @@ export async function readFounderReviewNotices(sql:Sql=db(),jobId?:string,versio
  :await sql`select j.id as job_id,i.id as item_id,i.version,i.data,i.updated_at from os_founder_render_jobs j join os_founder_content_items i on i.id=j.item_id where j.status='completed' and j.content_version=(select max(prior.content_version) from os_founder_render_jobs prior where prior.item_id=j.item_id and prior.media_asset_id=j.media_asset_id and prior.status='completed') and not i.archived and i.data->>'status'='checking' and i.data->>'mediaAssetId'=j.media_asset_id::text and i.data->>'mediaVerifiedAt' is not null and (i.media_type='image' or i.data->>'coverAssetId' is not null) order by i.updated_at desc,j.id limit 80`;
  const [publications]=await sql`select to_regclass('public.os_founder_publications') is not null as present`;
  const approved=publications?.present&&rows.length?await sql`select item_id,content_version from os_founder_publications where item_id=any(${rows.map(r=>String(r.item_id))}::uuid[]) and state='approved' and approved_at is not null`:[];
- return rows.filter(r=>!approved.some(p=>String(p.item_id)===String(r.item_id)&&Number(p.content_version)===Number(r.version))).map(r=>{const item={...r.data as FounderContentItem,id:String(r.item_id),version:Number(r.version)};return {id:`${r.job_id}:${item.version}`,department:'content',body:founderReviewBody(item,String(r.job_id)),job_id:String(r.job_id),created_at:r.updated_at,content_version:item.version};});
+ // Imported versions are locked to a provider workflow. A generic “regenerate”
+ // prompt is no longer actionable; the video ledger emits its own posting-review
+ // or reconciliation message. Optional absence must not hide ordinary reviews.
+ const [videoTable]=await sql`select to_regclass('public.os_founder_video_publications') is not null as present`;
+ const videoLocked=videoTable?.present&&rows.length?await sql`select item_id,content_version from os_founder_video_publications where item_id=any(${rows.map(r=>String(r.item_id))}::uuid[]) and state<>'discarded' and (import_consented_at is not null or approved_at is not null)`:[];
+ const blocked=[...approved,...videoLocked];
+ return rows.filter(r=>!blocked.some(p=>String(p.item_id)===String(r.item_id)&&Number(p.content_version)===Number(r.version))).map(r=>{const item={...r.data as FounderContentItem,id:String(r.item_id),version:Number(r.version)};return {id:`${r.job_id}:${item.version}`,department:'content',body:founderReviewBody(item,String(r.job_id)),job_id:String(r.job_id),created_at:r.updated_at,content_version:item.version};});
 }
 /** Hide old completion messages once their structured source is available;
  * failures and unrelated agent messages remain visible. */
