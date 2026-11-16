@@ -315,7 +315,8 @@ try{
   await page.getByRole('dialog').getByRole('textbox',{name:'Idea',exact:true}).waitFor();
   assert.equal(await page.getByRole('dialog').getByRole('textbox',{name:'Idea',exact:true}).inputValue(),reviewedLessons[0].idea);
   await page.getByRole('dialog').getByText('Caption, date & other options',{exact:true}).click();
-  for(const network of ['Instagram','Threads','X'])assert.equal(await page.getByRole('dialog').getByRole('button',{name:network,exact:true}).getAttribute('aria-pressed'),'true','Photo destination is preselected');
+  for(const network of ['Instagram','Threads'])assert.equal(await page.getByRole('dialog').getByRole('button',{name:network,exact:true}).getAttribute('aria-pressed'),'true','Default photo destination is preselected');
+  assert.equal(await page.getByRole('dialog').getByRole('button',{name:'X',exact:true}).getAttribute('aria-pressed'),'false','X needs an explicit verified destination choice');
   await noOverflow('Suggested photo on phone');await page.screenshot({path:'artifacts/content-studio-suggestion-synthetic.png',fullPage:true});
   await closeDialog();
   await page.evaluate(()=>{for(const key of Object.keys(localStorage))if(key.startsWith('da-founder-content-draft:'))localStorage.removeItem(key);});
