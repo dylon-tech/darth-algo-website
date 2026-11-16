@@ -15,5 +15,5 @@ export default function InstallApp(){
   },[]);
   if(installed)return null;
   async function install(){if(!prompt){setExpanded(!expanded);return;}await prompt.prompt();await prompt.userChoice;setPrompt(null);}
-  return <section className={styles.install}><div><Smartphone size={21}/><div><b>Put Darth Command on your Home Screen</b><p>Open it like an app. This device stays connected.</p></div></div><button onClick={install}><Download size={16}/>{prompt?"Install app":"Add to Home Screen"}</button>{expanded && <p className={styles.installSteps}>On iPhone, open this page in Safari → Share → Add to Home Screen → keep Open as Web App on → Add. On Android, use your browser’s menu → Install app or Add to Home Screen. Connect this device before adding it.</p>}</section>;
+  return <section className={styles.install}><div><Smartphone size={21}/><div><b>Put Darth Algo on your Home Screen</b><p>Open it like an app. Sign in once on each device.</p></div></div><button onClick={install}><Download size={16}/>{prompt?"Install app":"Add to Home Screen"}</button>{expanded && <p className={styles.installSteps}>On iPhone, open this page in Safari → Share → Add to Home Screen → keep Open as Web App on → Add. On Android, use your browser’s menu → Install app or Add to Home Screen. If the Home Screen app asks you to sign in again, use your owner email.</p>}</section>;
 }

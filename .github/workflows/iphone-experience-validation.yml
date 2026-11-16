@@ -43,6 +43,8 @@ jobs:
       - run: npm ci --ignore-scripts
       - name: Install isolated SQL test runtime
         run: npm install --no-save --package-lock=false --ignore-scripts @electric-sql/pglite@0.5.8
+      - name: Owner website email login safety
+        run: node tests/owner-email-login.test.cjs
       - name: Founder money, calendar, inbox and media safety
         run: |
           node tests/founder-finance.test.cjs
