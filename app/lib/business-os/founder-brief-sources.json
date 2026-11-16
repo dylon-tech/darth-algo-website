@@ -1,6 +1,6 @@
 {
-  "version": "DA-OWNED-CLAIMS-20261116-v1",
-  "basis": "Semantic statements and fixed crops extracted from the existing reviewed v15/v4 recipe catalog. Recorded product evidence only; new narration still requires creative and factual review before publication. No live trades, current prices, offers or results.",
+  "version": "DA-OWNED-CLAIMS-20261116-v2",
+  "basis": "Audience-facing narration adapted from the same reviewed v15/v4 facts and fixed source crops. Provenance stays here and in the on-screen RECORDED PRODUCT VIEW tag rather than being repeated in speech. These are owned recorded product examples, not live trades. No current prices, offers, new capabilities or results are asserted. Finished media still requires creative and factual review before publication.",
   "sources": [
     {
       "id": "invite",
@@ -12,10 +12,10 @@
         485
       ],
       "claims": {
-        "account": "Use the exact TradingView account supplied for confirmed indicator access.",
-        "invite-list": "The recorded Indicators menu includes an Invite-only list for scripts the account can access."
+        "account": "Can't find your indicator? Start with the TradingView username you used for access. Make sure you're signed into that account.",
+        "invite-list": "Once access is confirmed, open Indicators and choose Invite-only. Look for the Darth Algo tool your account can use."
       },
-      "summary": "Check the exact account and its confirmed invite-only indicator access."
+      "summary": "Find your indicator with the right account and the Invite-only menu."
     },
     {
       "id": "settings",
@@ -27,11 +27,11 @@
         380
       ],
       "claims": {
-        "inputs": "The recorded settings show separate display inputs. Inspect one control at a time.",
-        "cloud-toggle": "Show Trend Cloud is a visible display input in this recorded view.",
-        "edge-lines": "Cloud edge lines have their own visible control in the recorded settings."
+        "inputs": "A crowded chart? Start in the settings. Change one display control at a time so you can see what changed.",
+        "cloud-toggle": "Looking for the cloud? Open the settings and find Show Trend Cloud. That control is separate from the other display inputs.",
+        "edge-lines": "The cloud and its edge lines have separate controls. Check the edge line setting when you review how the feature is displayed."
       },
-      "summary": "Inspect the recorded display controls one at a time."
+      "summary": "Use one display control at a time to keep each change clear."
     },
     {
       "id": "timeframe",
@@ -43,27 +43,27 @@
         745
       ],
       "claims": {
-        "selected-timeframe": "Read the selected chart timeframe before interpreting a recorded example. A timeframe alone is not an entry rule."
+        "selected-timeframe": "Before you compare charts, check the selected timeframe. Read that setting first, then keep your own entry rules separate."
       },
-      "summary": "Read the selected timeframe before interpreting a recorded chart."
+      "summary": "Check the selected timeframe before you compare chart views."
     },
     {
       "id": "scalp",
       "path": "public/indicators/scalper-overview.png",
       "crop": null,
       "claims": {
-        "scalp-name": "Scalp and Swing are distinct Darth Algo tools. Check the loaded tool name before interpreting its view.",
-        "scalp-context": "This owned image is a recorded Darth Algo Scalp product view, not a new trade or an executed order."
+        "scalp-name": "Scalp or Swing? Check the name on your chart first. They're different Darth Algo tools, so begin with the tool you've actually loaded.",
+        "scalp-context": "A chart label is easy to spot. The surrounding candles matter too. Keep the full Scalp view in sight while you review a feature."
       },
-      "summary": "Check the Scalp tool name and surrounding recorded chart context."
+      "summary": "Check the Scalp tool name and keep the surrounding chart in view."
     },
     {
       "id": "swing",
       "path": "public/indicators/swing-overview.png",
       "crop": null,
       "claims": {
-        "swing-name": "This owned image is a recorded Darth Algo Swing product view. Read its name and surrounding price context.",
-        "wider-chart": "Keep the surrounding candles visible when reviewing one displayed feature."
+        "swing-name": "Start by checking the name: this is Darth Algo Swing. Keep the candles around the feature visible so you can follow the same chart context.",
+        "wider-chart": "Zooming in on one feature? Keep enough of the surrounding candles on screen to follow the context. Then return to the wider view."
       },
       "summary": "Keep the Swing tool name and surrounding candles in view."
     },
@@ -72,39 +72,39 @@
       "path": "public/indicators/swing-trend-cloud.png",
       "crop": null,
       "claims": {
-        "cloud-context": "The recorded Swing view shows candles around a colored trend cloud. The cloud provides visual context; entry rules require separate checks.",
-        "cloud-review": "Compare different sections of the same recorded chart without inferring trading performance."
+        "cloud-context": "Don't read the cloud on its own. Look at the candles around it, then check the wider chart. Your entry rules still need their own review.",
+        "cloud-review": "Follow the cloud across different parts of the same chart. Compare what you can see, and avoid treating one example as a performance record."
       },
-      "summary": "Review the colored cloud alongside the candles in this recorded Swing view."
+      "summary": "Read the cloud alongside the candles and the wider chart."
     },
     {
       "id": "scalp-plan",
       "path": "public/indicators/scalper-risk-plan.png",
       "crop": null,
       "claims": {
-        "scalp-levels": "The recorded Scalp plan has separate entry, stop and target labels. These are displayed levels, not proof that orders executed.",
-        "own-rules": "Position size, entry rules and order handling need their own checks outside a displayed chart plan."
+        "scalp-levels": "Before you focus on a target, find the entry and stop labels. They are separate parts of the displayed Scalp plan, so read them together.",
+        "own-rules": "Keep your own rules beside the chart. Position size, entry rules and order handling are separate checks from the labels displayed here."
       },
-      "summary": "Displayed entry, stop and target levels are different from executed orders."
+      "summary": "Read the entry, stop and targets together in the displayed Scalp plan."
     },
     {
       "id": "swing-plan",
       "path": "public/indicators/swing-risk-plan.png",
       "crop": null,
       "claims": {
-        "swing-levels": "The recorded Swing plan shows entry, stop and target levels in one chart context. A marked target is not an achieved result."
+        "swing-levels": "Look at the Swing plan as a whole: entry, stop and targets. A target label shows part of the plan; it doesn't mean that target was reached."
       },
-      "summary": "Read the displayed Swing plan together without treating a target as an achieved result."
+      "summary": "Read the whole Swing plan without treating a target label as an achieved result."
     },
     {
       "id": "signal",
       "path": "public/indicators/signal-context.png",
       "crop": null,
       "claims": {
-        "signal-context": "A displayed signal is a starting point for examining chart context, not a complete trade or overall performance record.",
-        "example-limits": "A selected recorded screenshot cannot establish overall trading performance."
+        "signal-context": "A signal caught your eye. Now look around it. The surrounding chart gives you context to review before you apply your own rules.",
+        "example-limits": "One chart example can't tell the whole story. Use it to study a feature, and keep any overall performance judgment separate from that single view."
       },
-      "summary": "A displayed signal starts a context review; it is not a complete trading record."
+      "summary": "Start with the signal, then review the surrounding chart context."
     }
   ],
   "headlines": [
@@ -115,7 +115,16 @@
     "REVIEW THE DISPLAYED PLAN",
     "KNOW YOUR LOADED TOOL",
     "MAKE YOUR REVIEW CLEAR",
-    "SET UP YOUR VIEW"
+    "SET UP YOUR VIEW",
+    "CAN'T FIND YOUR INDICATOR?",
+    "FIRST, CHECK THE ACCOUNT",
+    "ONE SIGNAL. THEN WHAT?",
+    "READ THE CLOUD WITH PRICE",
+    "DON'T SKIP THE CONTEXT",
+    "KNOW WHAT'S ON YOUR CHART",
+    "READ MORE THAN THE TARGET",
+    "CHECK THE VIEW FIRST",
+    "ONE CHANGE. CLEARER VIEW."
   ],
   "labels": [
     "CHECK THE ACCOUNT",
@@ -135,5 +144,5 @@
     "DISPLAY CONTROLS",
     "SETUP CHECKLIST"
   ],
-  "captionSuffix": " Recorded Darth Algo product views. Save this lesson for your next chart review."
+  "captionSuffix": " Save this lesson for your next chart review."
 }

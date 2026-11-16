@@ -48,7 +48,7 @@ const inbox={checkedAt:stamp(),status:'ready',items:inboxItems,unreadCount:2,sta
   email:{status:'disconnected',source:'Gmail',lastSuccessfulSyncAt:null,reason:'Email synchronization has not been connected.',href:'https://mail.google.com/'},
   capabilities:{readNativeMessages:true,saveDraft:true,markRead:true,snooze:true,resolveInboxItem:true,emailSync:false,aiDraft:false,sendEmail:false},
 };
-const items=[],requests=[],contentReads=[],jobs=[],replies=new Map();let forceConflict=false,rendererAvailable=false,writingAvailable=false;
+const items=[],requests=[],contentReads=[],jobs=[],replies=new Map(),receiptProjections=new Map();let forceConflict=false,rendererAvailable=false,writingAvailable=false;
 const itemId='74957c09-02d2-4bad-b079-4aa7be183404';
 const rendererError='Synthetic renderer unavailable. Connect a verified renderer before starting creation.';
 const agent={paused:true,version:1,status:'Off',lastSeenAt:null,lastCreatedCount:null,lastSuccessfulRun:null,nextRun:null,currentWork:null,incrementalBudgetUsd:0,publishingPause:'not_confirmed',message:'Synthetic creation is off. No provider was called.'};
@@ -74,7 +74,7 @@ function finishSyntheticJob(item,error=null){
 function content(month=today.slice(0,7)){
   const future=items.filter(item=>item.day>today&&item.day<=dayOffset(5)&&!item.extra&&item.status!=='archived'),active=future.filter(item=>!['held','skipped'].includes(item.status));
   const generated=active.filter(item=>item.mediaAssetId&&item.mediaVerifiedAt&&(item.type==='image'||item.coverAssetId)).length,produced=active.filter(item=>item.status==='ready'&&item.mediaAssetId&&item.mediaVerifiedAt).length;
-  return {checkedAt:stamp(),today,timeZone:'America/New_York',month,items,archivedItems:[],templates,jobs,
+  return {checkedAt:stamp(),today,timeZone:'America/New_York',month,items:items.map(item=>receiptProjections.get(item.id)?.publication.version===item.version?{...item,...receiptProjections.get(item.id)}:item),archivedItems:[],templates,jobs,
     days:Array.from({length:6},(_,n)=>({day:dayOffset(n),isToday:n===0,slots:scheduledTypes(dayOffset(n)).map(type=>{
       const item=items.find(i=>i.day===dayOffset(n)&&i.type===type&&!i.extra);
       return {type,time:item?.time||(type==='image'?'09:00':'15:00'),itemId:item?.id||null,state:item?.status||'missing',remainingToday:n===0};
@@ -451,6 +451,23 @@ try{
   await posting.getByText('Synthetic exact-version permission saved. No provider was called.',{exact:true}).waitFor();
   assert.deepEqual(publicationWrites.map(x=>x.operation),['prepare','approve']);
   assert.ok(await editor.getByRole('button',{name:'Approve',exact:true}).isDisabled(),'Creative review cannot silently invalidate approved posting permission');
+  // Receipts live in the calendar projection; the history endpoint remains raw.
+  // A same-version refresh must update an open editor without erasing a draft.
+  await customizeEditor(editor);
+  const receiptOptions=editor.locator('details').filter({has:page.locator('summary').filter({hasText:/^Caption, date & other options$/})});
+  if(await receiptOptions.getAttribute('open')===null)await receiptOptions.locator('summary').click();
+  const unsavedReceiptCaption='Keep this unsaved caption while delivery changes';await editor.getByRole('textbox',{name:'Caption',exact:true}).fill(unsavedReceiptCaption);
+  const receiptVersion=imageItem.version,receiptWrites=requests.length,receiptPublishes=publicationWrites.length;
+  const receipt={network:'instagram',state:'publishing',providerId:'synthetic-status-only',url:null,checkedAt:stamp(),contentVersion:receiptVersion,scheduledAt:null};
+  receiptProjections.set(imageItem.id,{publication:{version:receiptVersion,state:'approved',approvedAt:stamp()},deliveries:[receipt]});
+  const postingStatus=editor.locator('details').filter({has:page.locator('summary').filter({hasText:/^Posting status$/})});
+  await page.evaluate(()=>window.dispatchEvent(new Event('online')));await postingStatus.getByText('Publishing',{exact:true}).waitFor();
+  assert.equal(await editor.getByRole('textbox',{name:'Caption',exact:true}).inputValue(),unsavedReceiptCaption);
+  receiptProjections.set(imageItem.id,{publication:{version:receiptVersion,state:'published',approvedAt:stamp()},deliveries:[{...receipt,state:'published',url:'https://www.instagram.com/p/synthetic/',checkedAt:stamp()}]});
+  await page.evaluate(()=>window.dispatchEvent(new Event('online')));await postingStatus.getByText('Published',{exact:true}).waitFor();
+  assert.equal(await postingStatus.getByRole('link',{name:'View receipt'}).getAttribute('href'),'https://www.instagram.com/p/synthetic/');
+  assert.equal(await editor.getByRole('textbox',{name:'Caption',exact:true}).inputValue(),unsavedReceiptCaption,'Provider readback preserves manual input');
+  assert.equal(imageItem.version,receiptVersion);assert.equal(requests.length,receiptWrites);assert.equal(publicationWrites.length,receiptPublishes,'Receipt refresh performs no save, retry or publication');
   await noOverflow('Polled image result and exact posting approval');await closeDialog();
   await page.getByRole('button',{name:'Calendar',exact:true}).click();await page.getByRole('button',{name:'Agenda',exact:true}).click();
 

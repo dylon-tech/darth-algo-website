@@ -177,7 +177,10 @@ def scene_image(recipe, scene, index, output):
     d.text((73,1235),'RECORDED PRODUCT VIEW',font=font(25,medium=True),fill=MUTED)
     d.line((72,1680,1008,1680),fill='#343947',width=2)
     d.text((73,1720),'DARTHALGO.COM/LINKS',font=font(31),fill=WHITE)
-    for n in range(6):d.rounded_rectangle((73+n*157,1820,73+n*157+142,1825),radius=2,fill=RED if n<=index else '#343947')
+    count=len(recipe['scenes']);gap=15;step=(935-gap*(count-1))/count
+    for n in range(count):
+        left=round(73+n*(step+gap))
+        d.rounded_rectangle((left,1820,round(left+step),1825),radius=2,fill=RED if n<=index else '#343947')
     im.save(output)
 
 

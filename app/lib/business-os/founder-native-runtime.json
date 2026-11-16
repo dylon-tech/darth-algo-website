@@ -1,6 +1,6 @@
 {
   "version": "vercel-native-v1",
-  "fingerprint": "a0419da39de8e16d03c25f97f1cfc16ac911bc161edda86ae0603da5671c1532",
+  "fingerprint": "eb14b1cb4b968ba58762b7250977bd4532b5d0d35c4fe19409ae3434e06ec07b",
   "files": [
     {
       "file": ".python-version",
@@ -32,7 +32,7 @@
     },
     {
       "file": "app/lib/business-os/founder-brief-sources.json",
-      "sha256": "c43b41d31a8c3a4f4e8a1bc3337cedcbdbbe2114b2c8dfc72f34c466b3925ba5"
+      "sha256": "ce264671cee9c124f0f7b6a6ebb723ac6af92eba950477cda6d72f300839b930"
     },
     {
       "file": "app/lib/business-os/founder-briefs.ts",
@@ -100,7 +100,7 @@
     },
     {
       "file": "scripts/founder-renderer/render.py",
-      "sha256": "de29cbc1d158dfc4d33ad4f4b2ef51ff06fc91f2e031a3469bc4de1911dada33"
+      "sha256": "4f851feaa8939566aaf70eaf9dd0f666c286cc8bd7b4fcc292cb05e0d75e4ab6"
     },
     {
       "file": "scripts/founder-renderer/runtime-profile.mjs",

@@ -18,6 +18,17 @@ from render import font, wrap, validate_sources
 
 
 class EditingTest(unittest.TestCase):
+    def test_short_compositions_finish_the_visible_progress(self):
+        from recipes import RECIPES
+        from render import scene_image
+        with tempfile.TemporaryDirectory() as directory:
+            for count in (3,6):
+                recipe={**RECIPES[0], 'scenes': RECIPES[0]['scenes'][:count]}
+                output=Path(directory)/f'final-scene-{count}.png'
+                scene_image(recipe,recipe['scenes'][-1],count-1,output)
+                with Image.open(output) as frame:
+                    self.assertEqual(frame.getpixel((995,1822)),(255,38,63), 'The last scene completes its progress marks')
+
     def test_native_voice_disables_telemetry_before_inference(self):
         import render
         calls = []

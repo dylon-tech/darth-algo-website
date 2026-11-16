@@ -48,6 +48,7 @@ jobs:
           node tests/founder-finance.test.cjs
           node tests/founder-access.test.cjs
           node tests/founder-content.test.cjs
+          node tests/founder-editor-refresh.test.cjs
           node tests/founder-dynamic-brief.test.cjs
           node tests/founder-publication.test.cjs
           node tests/founder-video-publication.test.cjs
