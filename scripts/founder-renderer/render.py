@@ -21,10 +21,11 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 from recipes import RECIPES, resolve_recipe, TOP, LOWER, TIME, INVITE, TOP_CROP, LOWER_CROP, TIME_CROP, INVITE_CROP
 from setup_models import MODELS, digest
+from v15_editing import VERSION as EDITING_VERSION, settled_zoom, scene_timing, spoken_chunks, ass_caption_events, outro_timing, private_music, mix_audio
 
 ROOT = Path(__file__).resolve().parents[2]
 ASSETS = Path(__file__).resolve().parent / 'assets'
-VERSION = 'DA-RENDERER-20261115-2'
+VERSION = 'DA-RENDERER-20261116-3'
 WHITE, RED, MUTED = '#f4f6fb', '#ff263f', '#aeb7c8'
 HEAD = ROOT / 'public/fonts/darth-social/BarlowCondensed-BlackItalic.ttf'
 FONT = ASSETS / 'InterDisplay-Bold.ttf'
@@ -176,12 +177,18 @@ def scene_image(recipe, scene, index, output):
     d.text((73,1235),'RECORDED PRODUCT VIEW',font=font(25,medium=True),fill=MUTED)
     d.line((72,1680,1008,1680),fill='#343947',width=2)
     d.text((73,1720),'DARTHALGO.COM/LINKS',font=font(31),fill=WHITE)
-    for n in range(6):d.rounded_rectangle((73+n*157,1820,73+n*157+142,1825),radius=2,fill=RED if n<=index else '#343947')
+    count=len(recipe['scenes']);gap=15;step=(935-gap*(count-1))/count
+    for n in range(count):
+        left=round(73+n*(step+gap))
+        d.rounded_rectangle((left,1820,round(left+step),1825),radius=2,fill=RED if n<=index else '#343947')
     im.save(output)
 
 
 def kokoro():
     import onnxruntime as ort
+    # Local narration does not authorize exporting device or usage telemetry.
+    # Disable it before constructing any inference session, including preflight.
+    ort.disable_telemetry_events()
     from kokoro_onnx import Kokoro
     root=Path(os.environ['DARTH_RENDER_MODEL_DIR'])
     for name,(sha,size) in MODELS.items():
@@ -212,17 +219,11 @@ PlayResY: 1920
 WrapStyle: 2
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default,Inter Display,57,&H00FBF6F4,&H005B46FF,&H00110C0A,&H00110C0A,-1,0,0,0,100,100,0,0,1,2,1,5,72,72,0,1
+Style: Default,Inter Display,76,&H00FBF6F4,&H005B46FF,&H00110C0A,&H00110C0A,-1,0,0,0,100,100,0,0,1,0,0,5,72,72,0,1
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 '''
-    lines=[]
-    for start,end,text in cues:
-        wrapped=wrap(text,900,font(57))
-        if len(wrapped)>4:raise ValueError('CAPTION_LAYOUT_OVERFLOW')
-        safe='\\N'.join(wrapped).replace('{','').replace('}','')
-        lines.append(f'Dialogue: 0,{ass_time(start)},{ass_time(end)},Default,,0,0,0,,{{\\pos(540,1450)\\fad(70,40)}}{safe}')
-    output.write_text(header+'\n'.join(lines)+'\n')
+    output.write_text(header+ass_caption_events(cues,wrap,font))
 
 
 def loudness(path):
@@ -234,49 +235,51 @@ def loudness(path):
 
 
 def camera_zoom(variant, frames):
-    # At most 2.2%; the generous safe margins retain every source label.
-    return f"1.022-0.022*on/{frames}" if variant&1 else f"1+0.022*on/{frames}"
+    return settled_zoom(frames,variant)['expression']
 
 
 def video(recipe, output_dir, progress=lambda *_:None, voice=None):
     import soundfile as sf
     k=voice or kokoro();parts=[];audio_parts=[];scene_data=[];sr=24000;elapsed=0
+    deadline=check_deadline()
+    music,music_report=private_music(os.environ.get('DARTH_RENDER_PRIVATE_ASSET_DIR'),sr,20 if deadline is None else max(.1,deadline-time.monotonic()))
+    effects=[]
     for i,scene in enumerate(recipe['scenes']):
         progress('Rendering',8+i*10)
-        # Sentence boundaries are actual audio boundaries, not guessed word timings.
+        # Phrase boundaries are actual audio boundaries, not guessed word timings.
         audio=[];cues=[];position=0.12
         audio.append(np.zeros(round(sr*position),dtype=np.float32))
-        for sentence in sentence_parts(scene['spoken']):
+        for sentence in spoken_chunks(scene['spoken']):
             check_deadline()
             samples,rate=k.create(sentence,voice='am_michael',speed=1.0,lang='en-us')
             if rate!=sr or not np.isfinite(samples).all() or len(samples)<sr//3:raise ValueError('NARRATION_INVALID')
             seconds=len(samples)/sr
             cues.append((position,position+seconds,sentence))
-            audio.extend([samples,np.zeros(round(sr*0.16),dtype=np.float32)])
-            position+=seconds+0.16
-        frames=math.ceil(position*60);duration=frames/60
+            pause=.16 if sentence.endswith(('.', '!', '?')) else .08
+            audio.extend([samples,np.zeros(round(sr*pause),dtype=np.float32)])
+            position+=seconds+pause
+        timing=scene_timing(position);frames=timing['frames'];duration=timing['duration']
         joined=np.concatenate(audio);joined=np.pad(joined,(0,max(0,round(duration*sr)-len(joined))))
         audio_parts.append(joined)
         png=output_dir/f'scene-{i}.png';scene_image(recipe,scene,i,png)
         ass=output_dir/f'scene-{i}.ass';captions(cues,ass)
         part=output_dir/f'scene-{i}.mp4'
-        # Alternate a restrained centered push/pull; source pixels and labels stay unchanged.
+        # Centered context-to-detail move settles before the reading hold.
         zoom=camera_zoom(recipe.get('visualVariant',0),frames)
         vf=f"scale=2160:3840,zoompan=z='{zoom}':x='iw/2-iw/zoom/2':y='ih/2-ih/zoom/2':d={frames}:s=1080x1920:fps=60,ass=filename='{ass}':fontsdir='{ASSETS}',format=yuv420p"
         command(['ffmpeg','-y','-hide_banner','-loglevel','error','-i',str(png),'-vf',vf,'-frames:v',str(frames),'-an','-c:v','libx264','-threads','2','-preset','veryfast','-crf','21','-maxrate','3M','-bufsize','6M','-r','60',str(part)])
-        parts.append(part);scene_data.append({'source':scene['source'],'start':elapsed,'end':elapsed+duration,'captions':len(cues)})
+        parts.append(part);scene_data.append({'source':scene['source'],'start':elapsed,'end':elapsed+duration,'captions':len(cues),'captionTiming':'measured_phrase_takes','readingHoldSeconds':timing['holdFrames']/60,'cameraSettledAt':elapsed+settled_zoom(frames)['settledFrame']/60})
+        if i:effects.append((elapsed,'whoosh'))
         elapsed+=duration
     progress('Rendering',73)
     cover=output_dir/'cover.jpg';photo(recipe,cover,cover=True)
     cover_part=output_dir/'cover.mp4'
-    command(['ffmpeg','-y','-hide_banner','-loglevel','error','-loop','1','-framerate','60','-i',str(cover),'-frames:v','15','-an','-c:v','libx264','-threads','2','-preset','veryfast','-crf','21','-maxrate','3M','-bufsize','6M','-pix_fmt','yuv420p','-r','60',str(cover_part)])
+    close=outro_timing()
+    command(['ffmpeg','-y','-hide_banner','-loglevel','error','-loop','1','-framerate','60','-i',str(cover),'-vf','fade=t=in:st=0:d=0.3','-frames:v',str(close['frames']),'-an','-c:v','libx264','-threads','2','-preset','veryfast','-crf','21','-maxrate','3M','-bufsize','6M','-pix_fmt','yuv420p','-r','60',str(cover_part)])
     parts.append(cover_part)
-    joined=np.concatenate(audio_parts+[np.zeros(sr//4,dtype=np.float32)])
-    # Original quiet tonal bed. No sampled track or third-party music license.
-    t=np.arange(len(joined),dtype=np.float64)/sr
-    bed=(np.sin(t*2*np.pi*55)+0.35*np.sin(t*2*np.pi*82.4069))*0.0025
-    envelope=np.minimum(1,t/1.5)*np.minimum(1,np.maximum(0,(len(joined)/sr-t)/1.5))
-    mixed=joined+bed*envelope
+    joined=np.concatenate(audio_parts+[np.zeros(round(sr*close['duration']),dtype=np.float32)])
+    effects.append((elapsed,'whoosh'))
+    mixed,mix_report=mix_audio(joined,music,effects,sr)
     audio=output_dir/'narration.wav';sf.write(audio,mixed,sr,subtype='PCM_16')
     listing=output_dir/'parts.txt';listing.write_text(''.join("file '"+str(p)+"'\n" for p in parts))
     result=output_dir/'media.mp4'
@@ -295,7 +298,7 @@ def video(recipe, output_dir, progress=lambda *_:None, voice=None):
     actual=np.asarray(Image.open(last).convert('RGB'),dtype=float)
     expected=np.asarray(Image.open(cover).convert('RGB'),dtype=float)
     if np.mean(np.abs(actual-expected))>8:raise ValueError('FINAL_COVER_MISMATCH')
-    report={'fullDecode':True,'creativeReview':False,'sha256':digest(result),'width':1080,'height':1920,'frameRate':60,'hasNarration':True,'coverSeconds':0.25,'integratedLufs':integrated,'truePeakDb':peak,'durationSeconds':float(data['format']['duration']),'scenes':scene_data}
+    report={'fullDecode':True,'creativeReview':False,'sha256':digest(result),'width':1080,'height':1920,'frameRate':60,'hasNarration':True,'coverSeconds':0.25,'integratedLufs':integrated,'truePeakDb':peak,'durationSeconds':float(data['format']['duration']),'scenes':scene_data,'editingVersion':EDITING_VERSION,'music':music_report,'mix':mix_report,'outroSeconds':close['duration'],'coverFrameSeconds':elapsed+close['coverFrameOffset']/60}
     return result,cover,report
 
 
@@ -313,6 +316,7 @@ def render(item, output_dir, progress=lambda *_:None, voice=None):
     if media.stat().st_size>32*1024*1024:raise ValueError('FILE_SIZE_LIMIT')
     sources={s['source'] for s in recipe['scenes']}
     report.update({'rendererVersion':VERSION,'recipe':recipe['id'],'visualVariant':recipe.get('visualVariant',0),'template':expected_template,'sourceHashes':[row for row in manifest['sources'] if row['path'] in sources],'narration':'kokoro-v1.0-am_michael' if kind=='video' else None,'externalGenerationApiCostUsd':0})
+    if item.get('renderBrief'):report.update({'sourcePlanHash':item['renderBrief']['hash'],'sourceManifestVersion':item['renderBrief']['plan']['sourceVersion'],'writingUsageLedger':'os_ai_budget_reservations','creativeReview':False})
     script=' '.join(s['spoken'] for s in recipe['scenes']) if kind=='video' else ''
     caption=item.get('caption') or f"{recipe['summary']} Explore the feature: https://www.darthalgo.com/links"
     result={'media':str(media),'cover':str(cover),'mediaReport':report,'coverReport':{'fullDecode':True,'creativeReview':False,'sha256':digest(cover)},'script':script,'caption':caption}

@@ -138,6 +138,9 @@ RECIPES = [
 
 
 def resolve_recipe(item):
+    if item.get("renderBrief") is not None:
+        from dynamic_brief import resolve_dynamic_brief
+        return resolve_dynamic_brief(item)
     import json
     from pathlib import Path
     catalog=json.loads((Path(__file__).resolve().parents[2]/'app/lib/business-os/founder-render-catalog.json').read_text())

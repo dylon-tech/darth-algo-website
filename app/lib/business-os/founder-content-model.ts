@@ -1,4 +1,5 @@
 import type {ContentQueue} from './daily-content-model';
+import type {FounderBriefSnapshot} from './founder-brief-policy';
 
 export const founderTimeZone = 'America/New_York' as const;
 export const founderDestinations = ['instagram','tiktok','youtube','threads','x','telegram'] as const;
@@ -19,6 +20,8 @@ export type FounderContentItem = {
   lastError: string|null;
   /** Source-preserving visual treatment, independent of publication approval. */
   visualVariant?: number;
+  /** Server-created immutable source plan. Never accepted from an owner edit. */
+  renderBrief?:FounderBriefSnapshot;
   publication?: {version:number;state:string;approvedAt:string|null};
   renderStatus?: FounderRenderJobStatus|null; renderStage?: string|null; renderProgress?: number;
 };
@@ -53,7 +56,7 @@ export type FounderContentSnapshot = {
     counts: {queued:number;running:number;failed:number;blocked:number;completed:number}};
   templates: typeof founderTemplates;
   capabilities: {drafts: boolean; uploads: boolean; imageGeneration: boolean; videoGeneration: boolean;
-    scheduling: boolean; publishingPause: boolean; rendererSetupAvailable?:boolean; renderBudgetMessage?:string; rendererReason: string; publisherReason: string};
+    scheduling: boolean; publishingPause: boolean; rendererSetupAvailable?:boolean; renderBudgetMessage?:string; rendererReason: string; publisherReason: string;customGeneration?:boolean;customGenerationReason?:string};
   legacyQueue: ContentQueue|null; legacyQueueError: string|null; truncated: boolean;
 };
 

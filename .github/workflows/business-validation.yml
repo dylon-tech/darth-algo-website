@@ -47,5 +47,8 @@ jobs:
       - run: node tests/social-editorial-policy.test.cjs
       - run: node tests/competitor-parser.test.mjs
       - run: node tests/model-context.test.cjs
+      - run: node tests/creative-direction.test.cjs
+      - run: node tests/founder-social-analytics.test.cjs
+      - run: node tests/founder-social-analytics-ui.test.cjs
       - run: npx tsc --noEmit
       - run: npm run build

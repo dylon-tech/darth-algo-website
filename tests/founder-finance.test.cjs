@@ -85,5 +85,17 @@ result=finance.buildFounderFinance(evidence({charges:[charge('ch_1','pi_1',2900,
 // Test-mode objects cannot leak into revenue or customer access.
 result=finance.buildFounderFinance(evidence({subscriptions:[sub('sub_1',{livemode:false})],charges:[charge('ch_1','pi_1',2900,now-DAY,{livemode:false})]}));assert.equal(result.metrics.grossPaymentsCents,0);assert.equal(result.metrics.mrrCents,0);
 // Protected GET rejects unauthorized requests before touching Stripe.
+// Access requests use uncached GET evidence, without creating invoice previews
+// or reading unrelated processor balances. A subsequent refund changes rights.
+(async()=>{
+ let calls=0,refunded=false;
+ const list=data=>async()=>{calls++;return {data:typeof data==='function'?data():data,has_more:false};};
+ const accessInvoice=invoice('in_access','pi_access');accessInvoice.lines.data[0].period.end=Math.floor(Date.now()/1000)+10*DAY;
+ const client={balance:{retrieve:async()=>({livemode:true})},subscriptions:{list:list([signupSubscription])},invoices:{list:list([accessInvoice])},checkout:{sessions:{list:list([signupSession()])}},charges:{list:list(()=>[charge('ch_access','pi_access',2900,now-DAY,{amount_refunded:refunded?2900:0})])},refunds:{list:list(()=>refunded?[{id:'re_access',charge:'ch_access',status:'succeeded',amount:2900,currency:'usd',created:now}]:[])},balanceTransactions:{list:()=>{throw Error('Access read must not read processor balances');}}};
+ client.invoices.createPreview=()=>{throw Error('Access read must not create invoice previews');};
+ const fresh=load('app/lib/business-os/founder-finance.ts',{'../affiliate-db':{db:()=>async parts=>{assert.match(parts.join(''),/^select subscription_id/);return[];}},'../stripe':{stripe:()=>client},'../subscription-activation-policy':policy});
+ const first=await fresh.freshFounderCustomerBilling('cus_1');assert.equal(first.coverage.allTimeAvailable,true);assert(first.customer.access.expected.some(access=>access.kind==='paid'));
+ const initialCalls=calls;refunded=true;const next=await fresh.freshFounderCustomerBilling('cus_1');assert.equal(calls,initialCalls*2,'Every access check reloads provider evidence instead of using the dashboard cache');assert.equal(next.customer.access.expected.some(access=>access.kind==='paid'),false,'Fresh confirmed refund removes a prior paid-through inference');
+})().catch(error=>{console.error(error);process.exitCode=1;});
 const route=load('app/api/owner/founder-finance/route.ts',{'../../../lib/business-os/owner-session':{ownerSessionFromRequest:r=>r.headers.get('x-test')==='owner',privateHeaders:{'Cache-Control':'no-store'}},'../../../lib/business-os/founder-finance':{founderFinanceSnapshot:async()=>({ok:true})}});
 (async()=>{let r=await route.GET(new Request('https://example.invalid/api/owner/founder-finance'));assert.equal(r.status,401);r=await route.GET(new Request('https://example.invalid/api/owner/founder-finance?period=bad',{headers:{'x-test':'owner'}}));assert.equal(r.status,400);r=await route.GET(new Request('https://example.invalid/api/owner/founder-finance?period=90d',{headers:{'x-test':'owner'}}));assert.equal(r.status,200);assert.match(r.headers.get('cache-control'),/private, no-store/);const unavailable=await finance.founderFinanceSnapshot();assert.equal(unavailable.metrics.grossPaymentsCents,null);console.log('PASS founder finance: cash deduplication, tax/fees/refunds, Lifetime overlap, annual forecasts, trials, discounts, at-risk MRR, source coverage, currency separation and owner authorization.');})().catch(e=>{console.error(e);process.exitCode=1;});

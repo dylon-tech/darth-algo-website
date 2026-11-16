@@ -16,5 +16,9 @@ try {
  config.functions['api/founder-native-render.py'].maxDuration=301;
  fs.writeFileSync(configPath,JSON.stringify(config));
  const changed=run();assert.notEqual(changed.status,0,'A real runtime setting change must fail');assert.match(changed.stderr,/runtime changed: vercel\.json/);
+ fs.copyFileSync('vercel.json',configPath);
+ const mediaPath=path.join(root,'scripts/founder-renderer/v15-private-assets.json'),media=JSON.parse(fs.readFileSync(mediaPath,'utf8'));
+ media.music.sha256='0'.repeat(64);fs.writeFileSync(mediaPath,JSON.stringify(media));
+ const changedAsset=run();assert.notEqual(changedAsset.status,0,'Changing the trusted private audio pin requires a new reviewed runtime');assert.match(changedAsset.stderr,/v15-private-assets\.json/);
  console.log('Runtime profile accepts formatting changes and rejects changed function settings.');
 } finally {fs.rmSync(root,{recursive:true,force:true});}

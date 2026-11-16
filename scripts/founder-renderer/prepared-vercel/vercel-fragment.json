@@ -5,7 +5,7 @@
       "regions": [
         "iad1"
       ],
-      "includeFiles": "{scripts/founder-renderer/**,app/lib/business-os/founder-render-catalog.json,app/lib/business-os/founder-native-runtime.json,public/indicators/**,public/fonts/darth-social/**}",
+      "includeFiles": "{scripts/founder-renderer/**,app/lib/business-os/founder-render-catalog.json,app/lib/business-os/founder-brief-sources.json,app/lib/business-os/founder-native-runtime.json,public/indicators/**,public/fonts/darth-social/**}",
       "excludeFiles": "{node_modules/**,.next/**,.git/**,docs/**,tests/**,artifacts/**,public/growth-sprint/**,public/daily-social/**}"
     }
   }

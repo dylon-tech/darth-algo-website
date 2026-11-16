@@ -46,13 +46,17 @@ jobs:
       - name: Founder money, calendar, inbox and media safety
         run: |
           node tests/founder-finance.test.cjs
+          node tests/founder-access.test.cjs
           node tests/founder-content.test.cjs
+          node tests/founder-editor-refresh.test.cjs
+          node tests/founder-dynamic-brief.test.cjs
           node tests/founder-publication.test.cjs
           node tests/founder-video-publication.test.cjs
           node tests/founder-video-workflow.test.cjs
           node tests/founder-video-source-transport.test.cjs
           node tests/founder-video-mcp.test.cjs
           node tests/founder-video-dispatch.test.cjs
+          node tests/founder-video-receipts.test.cjs
           node tests/founder-video-posting.test.cjs
           node tests/founder-review-notices.test.cjs
           node tests/founder-research.test.cjs
@@ -80,6 +84,8 @@ jobs:
       - run: npx playwright-core install --with-deps chromium webkit
       - name: Phone-first founder dashboard journeys
         run: node scripts/founder-dashboard-browser.mjs
+      - name: Customer access request phone controls
+        run: node scripts/founder-access-browser.mjs
       - name: Existing agent and queue button flows
         run: node scripts/visual-hq-browser.mjs
       - name: Existing video studio flows

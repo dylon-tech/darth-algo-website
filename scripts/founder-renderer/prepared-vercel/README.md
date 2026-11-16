@@ -1,4 +1,10 @@
-# Native renderer activation — prepared and disabled
+# Native renderer — implementation and activation history
+
+November 16 update: the existing $5/UTC-month, $0.05/attempt and 100-attempt authorization is preserved; verify its actual configuration and usage before a hosted attempt. The original preparation record below is historical, not withdrawal of that approval.
+
+The reusable native editor now uses a settled centered camera, larger borderless captions at measured phrase-audio boundaries, reading holds, a readable outro and an unchanged final quarter-second cover. Original procedural transition accents are included. Optional existing hip-hop music is read only from `DARTH_RENDER_PRIVATE_ASSET_DIR` outside the repository, after exact size/SHA256 verification against `v15-private-assets.json`; no URL fetch or public media bundle is added. The approved ZIP's `sound_revision/assets/hiphop.wav` must be provided privately as `v15-approved-hiphop.audio`. Missing music is reported explicitly. No hosted private asset upload is implemented by this change.
+
+Narration remains Kokoro am_michael, with ONNX telemetry disabled before session creation. These are derived drafts, not full v15 fidelity or approved ElevenLabs narration. Measured phrase takes are not word alignment. Current captures remain still images, not a stabilized moving chart recording. Results remain Checking and require creative review. The local smoke command accepts the exact approved template ZIP and writes a changed review clip outside the repository, without API calls, upload, or publication.
 
 This patch is complete code for the existing Vercel project, prepared against main `1d9d5a19359bbbea718549d0a72d0db6661d1d68` (tree `2edd2da974ec6154443bf98822cb39fff32b568a`). It must remain on its separate preparation branch until explicit additional-rendering approval. No hosted preflight, owner job, external send, or publish operation was run while preparing it.
 

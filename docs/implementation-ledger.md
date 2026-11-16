@@ -1,5 +1,15 @@
 # Darth Algo implementation ledger
 
+## Owner integrations and generation — November 16, 2026
+
+Adds durable source-bound writing jobs before native rendering; exact reviewed factual copy, immutable source hashes, existing AI budget reservations, manual-edit/version protection and unknown-outcome holds are retained. Custom ideas outside reviewed evidence require source review. Source combinations are finite; this does not establish an unlimited research engine or a live five-day media buffer.
+
+Adds private, free-source social analytics with account/scope checks and explicit missing metrics; exact-version video receipt projection into the calendar; and protected customer access requests with fresh billing checks, Lifetime safeguards and withdrawal history. An access request is never reported as a confirmed TradingView action. No customer message, grant, refund or publication is sent by this release.
+
+Native edits add measured borderless phrase captions, settled source-preserving camera movement, reading holds, original transition sounds, exact-cover outro and optional hash-verified private music. Local narration is Kokoro; this does not claim the approved ElevenLabs voice or exact creative approval. ONNX telemetry is disabled before inference. No private music, voice or customer data is committed.
+
+Combined SQL, budget, tamper-parity, receipt, analytics, TypeScript and renderer checks passed locally. Browser CI, production deployment and authenticated owner acceptance are distinct release gates; live media generation and account-level integration remain unverified until owner login and current ledger/preflight checks succeed. Existing publishing history must not be retried without provider receipt reconciliation.
+
 ## Founder dashboard rebuild — November 12, 2026
 
 DA-DASHBOARD-20261112-IMPLEMENTATION; Operations 1.2.0. Recovered the existing owner application and implemented the five-tab phone-first workspace, durable versioned calendar/Inbox/media flows and scoped financial/customer evidence. Retained legacy tools, owner authentication and publisher ownership. Initial meaningful backend checks pass; exact release, browser and production evidence remain separate. See `docs/founder-dashboard-20261112.md` for behavior, limits and continuation requirements. No new spending or provider/customer actions are implied.
@@ -339,3 +349,11 @@ Remove the tour render and Explore in 3D link from the homepage and shared Scalp
 Validation before publication: production build/type checks, focused lint, campaign-attribution regression and generated-page checks pass. Build has only three existing owner-indicator image warnings. The local browser check was blocked by a sandbox socket restriction; escalation failed before execution. No automated desktop/mobile pass is claimed. Exact remote commit and deployed-page verification are recorded separately after publication.
 
 Lesson: remove the unwanted visual and its scroll footprint rather than changing its default mode. New founder direction supersedes the former restoration note. No social queue, measurement implementation, credentials, spend, prices or customer records changed.
+
+## Founder dashboard execution — November 16, 2026
+
+PR155 merged at `5aac085428bc421df3534b1764c2c7f78584bb32`; production deployment `dpl_BhXdQmt631TXwiG3F2yJ1JsLoqLr` is READY on that revision and serves the production domains. The current mission supersedes the weekly cadence: one image at 9 AM and one video at 3 PM Eastern for each of five complete future dates; today remains separate. Daily allocation, unknown-attempt protection, expired unstarted job cleanup, unique-file coverage, short Inbox labels, checkout username provenance and approved-render-allowance fallback are deployed.
+
+Validation: Business, HQ World and iPhone workflows passed on PR head `3aaf43854b3d26c9aeee77bf53d3ea4ffaac176c`. WebKit tested 320, 390, 430, 768 and 1280 pixels with synthetic API fixtures. This is not physical-iPhone or authenticated-production acceptance. Production owner route returns 200; private finance/content/inbox/media endpoints reject anonymous requests; `/__qa` returns 404.
+
+Remaining live gate: secure owner device login, actual usage-ledger/preflight readback, hosted image/video generation and private preview/return-after-close tests. Do not activate or call a buffer complete from drafts or simulated jobs. Current source catalog, v15 editing fidelity, website Gmail, provider-confirmed access and social execution still require work or verification. Preserve both November publication records and never retry an unknown provider outcome blindly. Existing rendering and recurring AI spending limits remain unchanged.

@@ -79,6 +79,8 @@ export function inboxSummaryFor(item: {category: string; body: string; summary?:
 export function inboxRecordStatus(item: {category: string; sourceStatus: string}) {
   const status = item.sourceStatus.toLowerCase();
   if (status === 'awaiting_review') return 'Needs review';
+  if (status === 'pending_provider_confirmation') return 'Provider confirmation pending';
+  if (status === 'request_canceled') return 'Request withdrawn';
   if (status === 'pending') return item.category === 'alert' ? 'Needs attention' : 'Pending';
   if (status === 'open') return 'Needs attention';
   if (status === 'blocked') return 'Blocked';

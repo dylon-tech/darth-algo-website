@@ -95,6 +95,12 @@ ERRORS={
  'AUDIO_LEVEL_REVIEW_REQUIRED':'The new narration failed its listening-level check. Review the audio before retrying.',
  'TEXT_LAYOUT_OVERFLOW':'The text did not fit its approved layout. Shorten the scene copy before retrying.',
  'CAPTION_LAYOUT_OVERFLOW':'The caption did not fit the phone layout. Shorten the narration before retrying.',
+ 'CAPTION_TIMING_INVALID':'The caption timing did not match measured audio. Review the source plan before retrying.',
+ 'CAPTION_TEXT_INVALID':'The caption contains unsupported formatting. Review the saved copy before retrying.',
+ 'PRIVATE_AUDIO_HASH_MISMATCH':'The private music file did not match the approved asset. Restore the exact approved file before retrying.',
+ 'PRIVATE_AUDIO_LOCATION_INVALID':'The approved music needs private storage outside the website source files.',
+ 'PRIVATE_AUDIO_DECODE_FAILED':'The approved private music could not be decoded. Check the existing file before retrying.',
+ 'PRIVATE_AUDIO_INVALID':'The private music failed its audio checks. Review the existing file before retrying.',
  'MEDIA_STORAGE_LIMIT':'The private media allowance is full. No additional storage was purchased.',
 }
 

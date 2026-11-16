@@ -1,0 +1,148 @@
+{
+  "version": "DA-OWNED-CLAIMS-20261116-v2",
+  "basis": "Audience-facing narration adapted from the same reviewed v15/v4 facts and fixed source crops. Provenance stays here and in the on-screen RECORDED PRODUCT VIEW tag rather than being repeated in speech. These are owned recorded product examples, not live trades. No current prices, offers, new capabilities or results are asserted. Finished media still requires creative and factual review before publication.",
+  "sources": [
+    {
+      "id": "invite",
+      "path": "scripts/founder-renderer/assets/da_v8_invite_full.png",
+      "crop": [
+        250,
+        140,
+        1110,
+        485
+      ],
+      "claims": {
+        "account": "Can't find your indicator? Start with the TradingView username you used for access. Make sure you're signed into that account.",
+        "invite-list": "Once access is confirmed, open Indicators and choose Invite-only. Look for the Darth Algo tool your account can use."
+      },
+      "summary": "Find your indicator with the right account and the Invite-only menu."
+    },
+    {
+      "id": "settings",
+      "path": "scripts/founder-renderer/assets/da_v8_settings_top.png",
+      "crop": [
+        480,
+        12,
+        890,
+        380
+      ],
+      "claims": {
+        "inputs": "A crowded chart? Start in the settings. Change one display control at a time so you can see what changed.",
+        "cloud-toggle": "Looking for the cloud? Open the settings and find Show Trend Cloud. That control is separate from the other display inputs.",
+        "edge-lines": "The cloud and its edge lines have separate controls. Check the edge line setting when you review how the feature is displayed."
+      },
+      "summary": "Use one display control at a time to keep each change clear."
+    },
+    {
+      "id": "timeframe",
+      "path": "scripts/founder-renderer/assets/da_v8_timeframe_full.png",
+      "crop": [
+        225,
+        430,
+        440,
+        745
+      ],
+      "claims": {
+        "selected-timeframe": "Before you compare charts, check the selected timeframe. Read that setting first, then keep your own entry rules separate."
+      },
+      "summary": "Check the selected timeframe before you compare chart views."
+    },
+    {
+      "id": "scalp",
+      "path": "public/indicators/scalper-overview.png",
+      "crop": null,
+      "claims": {
+        "scalp-name": "Scalp or Swing? Check the name on your chart first. They're different Darth Algo tools, so begin with the tool you've actually loaded.",
+        "scalp-context": "A chart label is easy to spot. The surrounding candles matter too. Keep the full Scalp view in sight while you review a feature."
+      },
+      "summary": "Check the Scalp tool name and keep the surrounding chart in view."
+    },
+    {
+      "id": "swing",
+      "path": "public/indicators/swing-overview.png",
+      "crop": null,
+      "claims": {
+        "swing-name": "Start by checking the name: this is Darth Algo Swing. Keep the candles around the feature visible so you can follow the same chart context.",
+        "wider-chart": "Zooming in on one feature? Keep enough of the surrounding candles on screen to follow the context. Then return to the wider view."
+      },
+      "summary": "Keep the Swing tool name and surrounding candles in view."
+    },
+    {
+      "id": "cloud",
+      "path": "public/indicators/swing-trend-cloud.png",
+      "crop": null,
+      "claims": {
+        "cloud-context": "Don't read the cloud on its own. Look at the candles around it, then check the wider chart. Your entry rules still need their own review.",
+        "cloud-review": "Follow the cloud across different parts of the same chart. Compare what you can see, and avoid treating one example as a performance record."
+      },
+      "summary": "Read the cloud alongside the candles and the wider chart."
+    },
+    {
+      "id": "scalp-plan",
+      "path": "public/indicators/scalper-risk-plan.png",
+      "crop": null,
+      "claims": {
+        "scalp-levels": "Before you focus on a target, find the entry and stop labels. They are separate parts of the displayed Scalp plan, so read them together.",
+        "own-rules": "Keep your own rules beside the chart. Position size, entry rules and order handling are separate checks from the labels displayed here."
+      },
+      "summary": "Read the entry, stop and targets together in the displayed Scalp plan."
+    },
+    {
+      "id": "swing-plan",
+      "path": "public/indicators/swing-risk-plan.png",
+      "crop": null,
+      "claims": {
+        "swing-levels": "Look at the Swing plan as a whole: entry, stop and targets. A target label shows part of the plan; it doesn't mean that target was reached."
+      },
+      "summary": "Read the whole Swing plan without treating a target label as an achieved result."
+    },
+    {
+      "id": "signal",
+      "path": "public/indicators/signal-context.png",
+      "crop": null,
+      "claims": {
+        "signal-context": "A signal caught your eye. Now look around it. The surrounding chart gives you context to review before you apply your own rules.",
+        "example-limits": "One chart example can't tell the whole story. Use it to study a feature, and keep any overall performance judgment separate from that single view."
+      },
+      "summary": "Start with the signal, then review the surrounding chart context."
+    }
+  ],
+  "headlines": [
+    "START WITH CONTEXT",
+    "READ THE WHOLE VIEW",
+    "CHECK YOUR CHART",
+    "ONE FEATURE AT A TIME",
+    "REVIEW THE DISPLAYED PLAN",
+    "KNOW YOUR LOADED TOOL",
+    "MAKE YOUR REVIEW CLEAR",
+    "SET UP YOUR VIEW",
+    "CAN'T FIND YOUR INDICATOR?",
+    "FIRST, CHECK THE ACCOUNT",
+    "ONE SIGNAL. THEN WHAT?",
+    "READ THE CLOUD WITH PRICE",
+    "DON'T SKIP THE CONTEXT",
+    "KNOW WHAT'S ON YOUR CHART",
+    "READ MORE THAN THE TARGET",
+    "CHECK THE VIEW FIRST",
+    "ONE CHANGE. CLEARER VIEW."
+  ],
+  "labels": [
+    "CHECK THE ACCOUNT",
+    "READ THE TOOL NAME",
+    "KEEP THE CONTEXT",
+    "INSPECT THE DISPLAY",
+    "LOOK AT THE CANDLES",
+    "REVIEW THE LEVELS",
+    "CHECK YOUR OWN RULES",
+    "REVIEW THE EXAMPLE",
+    "READ THE TIMEFRAME",
+    "OPEN THE SETTINGS"
+  ],
+  "features": [
+    "RECORDED PRODUCT VIEW",
+    "CHART REVIEW",
+    "DISPLAY CONTROLS",
+    "SETUP CHECKLIST"
+  ],
+  "captionSuffix": " Save this lesson for your next chart review."
+}

@@ -46,6 +46,8 @@ jobs:
         run: python scripts/founder-renderer/prepared-vercel/test_runtime.py
       - name: Verify source-preserving creative variations
         run: python tests/founder-visual-variants.test.py
+      - name: Verify measured v15 edits and private audio boundaries
+        run: python tests/founder-v15-editing.test.py
       - name: Verify free local narration weights
         run: python scripts/founder-renderer/setup_models.py
       - name: Validate the software with public approved source fixtures

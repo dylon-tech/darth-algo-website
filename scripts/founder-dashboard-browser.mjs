@@ -48,7 +48,7 @@ const inbox={checkedAt:stamp(),status:'ready',items:inboxItems,unreadCount:2,sta
   email:{status:'disconnected',source:'Gmail',lastSuccessfulSyncAt:null,reason:'Email synchronization has not been connected.',href:'https://mail.google.com/'},
   capabilities:{readNativeMessages:true,saveDraft:true,markRead:true,snooze:true,resolveInboxItem:true,emailSync:false,aiDraft:false,sendEmail:false},
 };
-const items=[],requests=[],contentReads=[],jobs=[],replies=new Map();let forceConflict=false,rendererAvailable=false;
+const items=[],requests=[],contentReads=[],jobs=[],replies=new Map(),receiptProjections=new Map();let forceConflict=false,rendererAvailable=false,writingAvailable=false;
 const itemId='74957c09-02d2-4bad-b079-4aa7be183404';
 const rendererError='Synthetic renderer unavailable. Connect a verified renderer before starting creation.';
 const agent={paused:true,version:1,status:'Off',lastSeenAt:null,lastCreatedCount:null,lastSuccessfulRun:null,nextRun:null,currentWork:null,incrementalBudgetUsd:0,publishingPause:'not_confirmed',message:'Synthetic creation is off. No provider was called.'};
@@ -74,14 +74,14 @@ function finishSyntheticJob(item,error=null){
 function content(month=today.slice(0,7)){
   const future=items.filter(item=>item.day>today&&item.day<=dayOffset(5)&&!item.extra&&item.status!=='archived'),active=future.filter(item=>!['held','skipped'].includes(item.status));
   const generated=active.filter(item=>item.mediaAssetId&&item.mediaVerifiedAt&&(item.type==='image'||item.coverAssetId)).length,produced=active.filter(item=>item.status==='ready'&&item.mediaAssetId&&item.mediaVerifiedAt).length;
-  return {checkedAt:stamp(),today,timeZone:'America/New_York',month,items,archivedItems:[],templates,jobs,
+  return {checkedAt:stamp(),today,timeZone:'America/New_York',month,items:items.map(item=>receiptProjections.get(item.id)?.publication.version===item.version?{...item,...receiptProjections.get(item.id)}:item),archivedItems:[],templates,jobs,
     days:Array.from({length:6},(_,n)=>({day:dayOffset(n),isToday:n===0,slots:scheduledTypes(dayOffset(n)).map(type=>{
       const item=items.find(i=>i.day===dayOffset(n)&&i.type===type&&!i.extra);
       return {type,time:item?.time||(type==='image'?'09:00':'15:00'),itemId:item?.id||null,state:item?.status||'missing',remainingToday:n===0};
     })})),
     coverage:{futureDays:5,expectedOriginals:expectedSlots,planned:active.length,generated,produced,scheduled:0,published:0,skipped:future.filter(item=>item.status==='skipped').length,held:future.filter(item=>item.status==='held').length,missing:expectedSlots-future.length,expectedDeliveries:0,acceptedDeliveries:0,publishedDeliveries:0,todayRemaining:2,definition:'Ten original future slots. Generated files still need review; plans and jobs are not finished media or accepted schedules.'},
     agent:{...agent,generated,counts:Object.fromEntries(['queued','running','failed','blocked','completed'].map(status=>[status,jobs.filter(job=>job.status===status).length]))},
-    capabilities:{drafts:true,uploads:true,imageGeneration:rendererAvailable,videoGeneration:rendererAvailable,scheduling:false,publishingPause:false,rendererReason:rendererAvailable?'Synthetic renderer transport only.':rendererError,publisherReason:'No calendar scheduling executor is connected.'},
+    capabilities:{drafts:true,uploads:true,customGeneration:writingAvailable,customGenerationReason:writingAvailable?'Synthetic approved writing allowance. No provider was called.':undefined,imageGeneration:rendererAvailable,videoGeneration:rendererAvailable,scheduling:false,publishingPause:false,rendererReason:rendererAvailable?'Synthetic renderer transport only.':rendererError,publisherReason:'No calendar scheduling executor is connected.'},
     legacyQueue:{checkedAt:stamp(),today,items:[]},legacyQueueError:null,truncated:false,
   };
 }
@@ -178,7 +178,7 @@ try{
       const current=items.find(item=>item.id===body.id);assert.ok(current,'Generation uses a saved account item');
       assert.equal(body.expectedVersion,current.version,'Generation uses the confirmed saved version');
       if(!rendererAvailable)return reply({error:rendererError,code:'RENDERER_NOT_CONNECTED'},409);
-      const job=queueSyntheticJob(current,'owner');return accepted({item:current,job,message:acceptedMessage(current.type),duplicate:false});
+      const job=queueSyntheticJob(current,'owner');if(writingAvailable&&!reviewedLessons.some(lesson=>lesson.title===current.title&&lesson.idea===current.idea)){job.stage='Writing source plan';current.renderStage=job.stage;}return accepted({item:current,job,message:acceptedMessage(current.type),duplicate:false});
     }
     if(body.operation==='review'){const current=items.find(item=>item.id===body.id);assert.equal(body.expectedVersion,current.version);assert.equal(body.confirmReviewed,true);assert.ok(current.mediaAssetId);current.version++;current.status='ready';return accepted({item:current,message:'Creative review saved. Nothing published.'});}
     assert.equal(body.operation,'save','Browser requests only the draft or explicitly chosen generation/agent action');
@@ -214,7 +214,7 @@ try{
       await nav(tab);await noOverflow(`${tab} at ${width}`);
       const navigation=page.locator('nav[aria-label="Main navigation"]:visible,nav[aria-label="Desktop navigation"]:visible');
       assert.equal(await navigation.getByRole('button').count(),5,'Five stable destinations');
-      if(width===390||width===1280)await page.screenshot({path:`artifacts/founder-${tab.toLowerCase()}-${width}-synthetic.png`,fullPage:true});
+      await page.screenshot({path:`artifacts/founder-${tab.toLowerCase()}-${width}-synthetic.png`,fullPage:true});
     }
   }
   await page.setViewportSize({width:390,height:852});await nav('Customers');
@@ -451,6 +451,23 @@ try{
   await posting.getByText('Synthetic exact-version permission saved. No provider was called.',{exact:true}).waitFor();
   assert.deepEqual(publicationWrites.map(x=>x.operation),['prepare','approve']);
   assert.ok(await editor.getByRole('button',{name:'Approve',exact:true}).isDisabled(),'Creative review cannot silently invalidate approved posting permission');
+  // Receipts live in the calendar projection; the history endpoint remains raw.
+  // A same-version refresh must update an open editor without erasing a draft.
+  await customizeEditor(editor);
+  const receiptOptions=editor.locator('details').filter({has:page.locator('summary').filter({hasText:/^Caption, date & other options$/})});
+  if(await receiptOptions.getAttribute('open')===null)await receiptOptions.locator('summary').click();
+  const unsavedReceiptCaption='Keep this unsaved caption while delivery changes';await editor.getByRole('textbox',{name:'Caption',exact:true}).fill(unsavedReceiptCaption);
+  const receiptVersion=imageItem.version,receiptWrites=requests.length,receiptPublishes=publicationWrites.length;
+  const receipt={network:'instagram',state:'publishing',providerId:'synthetic-status-only',url:null,checkedAt:stamp(),contentVersion:receiptVersion,scheduledAt:null};
+  receiptProjections.set(imageItem.id,{publication:{version:receiptVersion,state:'approved',approvedAt:stamp()},deliveries:[receipt]});
+  const postingStatus=editor.locator('details').filter({has:page.locator('summary').filter({hasText:/^Posting status$/})});
+  await page.evaluate(()=>window.dispatchEvent(new Event('online')));await postingStatus.getByText('Publishing',{exact:true}).waitFor();
+  assert.equal(await editor.getByRole('textbox',{name:'Caption',exact:true}).inputValue(),unsavedReceiptCaption);
+  receiptProjections.set(imageItem.id,{publication:{version:receiptVersion,state:'published',approvedAt:stamp()},deliveries:[{...receipt,state:'published',url:'https://www.instagram.com/p/synthetic/',checkedAt:stamp()}]});
+  await page.evaluate(()=>window.dispatchEvent(new Event('online')));await postingStatus.getByText('Published',{exact:true}).waitFor();
+  assert.equal(await postingStatus.getByRole('link',{name:'View receipt'}).getAttribute('href'),'https://www.instagram.com/p/synthetic/');
+  assert.equal(await editor.getByRole('textbox',{name:'Caption',exact:true}).inputValue(),unsavedReceiptCaption,'Provider readback preserves manual input');
+  assert.equal(imageItem.version,receiptVersion);assert.equal(requests.length,receiptWrites);assert.equal(publicationWrites.length,receiptPublishes,'Receipt refresh performs no save, retry or publication');
   await noOverflow('Polled image result and exact posting approval');await closeDialog();
   await page.getByRole('button',{name:'Calendar',exact:true}).click();await page.getByRole('button',{name:'Agenda',exact:true}).click();
 
@@ -485,6 +502,17 @@ try{
   const recreateWrites=requests.slice(recreateStart);assert.ok(recreateWrites.length>=1);assert.ok(recreateWrites.every(r=>r.operation==='generate'&&r.expectedVersion===recreateVersion));assert.equal(new Set(recreateWrites.map(r=>r.requestKey)).size,1,'Repeated taps reuse the exact-version retry key');assert.equal(publicationWrites.length,recreatePublications,'Re-create never grants publishing permission');
   await noOverflow('Button-first review and recreate');await page.screenshot({path:'artifacts/content-review-buttons-synthetic.png',fullPage:true});
 
+  writingAvailable=true;await page.reload();await page.getByRole('heading',{name:'Content',exact:true,level:1}).waitFor();
+  await page.getByRole('button',{name:'Calendar',exact:true}).click();await page.getByRole('button',{name:'Agenda',exact:true}).click();
+  await page.getByRole('button',{name:`Add content ${dayOffset(4)}`,exact:true}).click();await editor.waitFor();await customizeEditor(editor);
+  const customIdea='Explain a context review using the recorded Darth Algo chart',customBefore=requests.length;
+  await editor.getByRole('textbox',{name:'Idea',exact:true}).fill(customIdea);
+  assert.ok(await editor.getByRole('button',{name:'Generate image',exact:true}).isEnabled(),'Server-verified writing allowance enables a custom idea');
+  await editor.getByRole('button',{name:'Generate image',exact:true}).click();
+  await editor.getByText('Writing your source-matched lesson. You can leave and come back.',{exact:true}).waitFor();
+  assert.deepEqual(requests.slice(customBefore).map(body=>body.operation),['save','generate'],'Custom generation saves owner intent then queues the durable writing stage');
+  const customItem=items.find(item=>item.idea===customIdea);assert.equal(customItem.renderStage,'Writing source plan');assert.equal(customItem.mediaAssetId,null);
+  await closeDialog();writingAvailable=false;
   rendererAvailable=false;await page.reload();await page.getByRole('heading',{name:'Content',exact:true,level:1}).waitFor();
   await page.getByRole('button',{name:'Agent',exact:true}).click();
   const jobsBeforeBlockedStart=jobs.length,itemsBeforeBlockedStart=items.length;
@@ -523,7 +551,7 @@ try{
   await page.getByRole('switch',{name:'Content agent',checked:false,exact:true}).waitFor();assert.equal(agent.paused,true);
   assert.deepEqual(errors,[],'No browser runtime errors');
   const report={result:'PASS',engine:'Playwright WebKit; not a physical iPhone',widths,data:'Synthetic API responses only',productionWrites:0,
-    checks:['real private API 401/no-store','five destinations','unavailable money without fake zeros','Lifetime overlap explanation and unknown provider access','dialog focus containment and restoration','populated Inbox detail and summary coverage','versioned reply save and reload','session-only unfinished reply recovery','Inbox conflict preserves local reply and exposes account version','offline Inbox never sends or auto-saves on reconnect','persisted read state preserves reply','plain agent result and next step with optional original report','idea and format first; optional caption/title/date','empty-date draft creation','Save draft for ideas without media','input limits agree with server','saved account version after reload','409 preserves unsaved text','offline/reconnect does not silently send','reviewed image/video lessons save their canonical source-bound title before requesting a job','custom changed intent blocks generation without a paid request','accepted server job response shown','return and reload resume generation polling','renderer failure is visible without automatic retry','unavailable agent start remains Off without queued work','agent start accepts ten synthetic jobs across five future dates','generated files stay separate from creative review and publishing','enabled agent progress polling and explicit pause','month and six-date agenda controls','no horizontal overflow','125% rendered text size']};
+    checks:['real private API 401/no-store','five destinations','unavailable money without fake zeros','Lifetime overlap explanation and unknown provider access','dialog focus containment and restoration','populated Inbox detail and summary coverage','versioned reply save and reload','session-only unfinished reply recovery','Inbox conflict preserves local reply and exposes account version','offline Inbox never sends or auto-saves on reconnect','persisted read state preserves reply','plain agent result and next step with optional original report','idea and format first; optional caption/title/date','empty-date draft creation','Save draft for ideas without media','input limits agree with server','saved account version after reload','409 preserves unsaved text','offline/reconnect does not silently send','reviewed image/video lessons save their canonical source-bound title before requesting a job','custom changed intent blocks when AI allowance is unverified','custom intent enters durable writing stage only with verified AI allowance','accepted server job response shown','return and reload resume generation polling','renderer failure is visible without automatic retry','unavailable agent start remains Off without queued work','agent start accepts ten synthetic jobs across five future dates','generated files stay separate from creative review and publishing','enabled agent progress polling and explicit pause','month and six-date agenda controls','no horizontal overflow','125% rendered text size']};
   await writeFile('artifacts/founder-dashboard-validation.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));
 }catch(error){
   if(page){await page.screenshot({path:'artifacts/founder-failure-synthetic.png',fullPage:true}).catch(()=>{});await writeFile('artifacts/founder-failure-state.json',JSON.stringify({error:String(error),runtimeErrors:errors,url:page.url(),body:await page.locator('body').innerText().catch(()=>''),dialogs:await page.locator('dialog').evaluateAll(nodes=>nodes.map(node=>({open:node.open,label:node.getAttribute('aria-label'),html:node.outerHTML}))).catch(()=>[])},null,2));}
