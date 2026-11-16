@@ -1,0 +1,27 @@
+/* Real local SQL; synthetic identity/provider. Never sends email. */
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),Module=require('node:module'),ts=require('typescript');
+const root=process.cwd(),stubs={},cache=new Map();
+function load(file){file=path.resolve(root,file);if(stubs[file])return stubs[file];if(cache.has(file))return cache.get(file);const m=new Module(file,module);m.filename=file;m.paths=module.paths;cache.set(file,m.exports);m.require=id=>id.startsWith('.')?load(path.resolve(path.dirname(file),id)+'.ts'):require(id);m._compile(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,esModuleInterop:true}}).outputText,file);return m.exports;}
+(async()=>{
+ const {PGlite}=await import(process.env.OS_TEST_PGLITE_MODULE||'@electric-sql/pglite');const pg=new PGlite();let tail=Promise.resolve();
+ function adapter(c){const sql=async(strings,...values)=>{const q=strings.reduce((s,p,i)=>s+p+(i<values.length?'$'+(i+1):''),'');if(q.includes('pg_advisory_xact_lock'))return [];return(await c.query(q,values)).rows;};sql.begin=async fn=>{let release;const prior=tail;tail=new Promise(r=>release=r);await prior;try{return await pg.transaction(tx=>fn(adapter(tx)));}finally{release();}};return sql;}
+ stubs[path.resolve('app/lib/affiliate-db.ts')]={db:()=>adapter(pg)};
+ const login=load('app/lib/business-os/owner-email-login.ts'),route=load('app/api/owner/sign-in/route.ts');
+ assert.equal(login.emailLoginConfig(),null);
+ Object.assign(process.env,{AI_OS_EMAIL_LOGIN_ENABLED:'true',AI_OS_ENABLED:'true',AI_OS_OWNER_EMAIL:'owner@example.test',AI_OS_OWNER_KEY:'synthetic-test-key-not-for-production-123',NEON_AUTH_BASE_URL:'https://synthetic.neonauth.us-east-1.aws.neon.tech/neondb/auth'});
+ let calls=0,mode='ok';global.fetch=async(url,options)=>{calls++;assert.equal(options.redirect,'error');assert.equal(options.headers.Origin,'https://www.darthalgo.com');const b=JSON.parse(options.body);assert.equal(b.email,'owner@example.test');if(mode==='timeout')throw Error('private provider error');if(url.endsWith('/send-verification-otp'))return Response.json({success:true});if(mode==='wrong'||b.otp!=='123456')return Response.json({error:'invalid'},{status:400});return Response.json({token:'private-provider-token',user:{email:mode==='identity'?'attacker@example.test':'owner@example.test',emailVerified:mode!=='unverified'}});};
+ const req=body=>new Request('https://www.darthalgo.com/api/owner/sign-in',{method:'POST',headers:{origin:'https://www.darthalgo.com','content-type':'application/json'},body:JSON.stringify(body)});
+ assert.equal((await route.POST(new Request('https://www.darthalgo.com/api/owner/sign-in',{method:'POST',headers:{origin:'https://evil.test','content-type':'application/json'},body:'{}'}))).status,403);assert.equal(calls,0);
+ assert.equal(await login.requestOwnerCode('attacker@example.test'),null);assert.equal(calls,0);
+ const requests=await Promise.allSettled([login.requestOwnerCode('owner@example.test'),login.requestOwnerCode('owner@example.test')]);assert.equal(requests.filter(x=>x.status==='fulfilled').length,1);assert.equal(calls,1,'Concurrent requests send only once');
+ const token=requests.find(x=>x.status==='fulfilled').value;
+ for(const state of ['wrong','identity','unverified']){mode=state;await assert.rejects(login.verifyOwnerCode(token,'123456'));}
+ mode='ok';await login.verifyOwnerCode(token,'123456');await assert.rejects(login.verifyOwnerCode(token,'123456'),'Consumed challenge cannot be reused');
+ await pg.exec('delete from os_owner_email_login');const token2=await login.requestOwnerCode('owner@example.test');mode='wrong';for(let i=0;i<5;i++)await assert.rejects(login.verifyOwnerCode(token2,'111111'));const before=calls;mode='ok';await assert.rejects(login.verifyOwnerCode(token2,'123456'));assert.equal(calls,before,'Attempt cap enforced before provider');
+ await pg.exec('delete from os_owner_email_login');const start=await route.POST(req({operation:'request',email:'owner@example.test'}));const cookie=start.headers.get('set-cookie').split(';')[0];assert.match(cookie,/darth_owner_login=/);assert.match(start.headers.get('set-cookie'),/HttpOnly/);assert.match(start.headers.get('set-cookie'),/Secure/);assert.equal((await start.text()).includes('owner@example.test'),false);
+ const verify=req({operation:'verify',code:'123456'});verify.headers.set('cookie',cookie);const result=await route.POST(verify);assert.equal(result.status,200);assert.match(result.headers.get('set-cookie'),/darth_os_owner=/);assert.equal(result.headers.get('cache-control'),'no-store');assert.equal((await result.text()).includes('private-provider-token'),false);
+ await pg.exec('delete from os_owner_email_login');mode='timeout';await assert.rejects(login.requestOwnerCode('owner@example.test'));mode='ok';await assert.rejects(login.requestOwnerCode('owner@example.test'),/LOGIN_RATE_LIMIT/);
+ await pg.exec("update os_owner_email_login set created_at=now()-interval '2 hours',expires_at=now()-interval '1 second'");await assert.rejects(login.verifyOwnerCode(token2,'123456'));
+ process.env.AI_OS_OWNER_EMAIL='';assert.equal(login.emailLoginConfig(),null);assert.equal((await route.POST(req({operation:'request',email:'owner@example.test'}))).status,503);
+ await pg.close();console.log('PASS: owner-only OTP, CSRF, SQL concurrency, expiry, attempts, replay, verified identity, private cookies and failure reservation');
+})().catch(e=>{console.error(e);process.exitCode=1;});
