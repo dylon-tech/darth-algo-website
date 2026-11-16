@@ -1,3 +1,4 @@
+import LifetimeAccessNote from "../components/lifetime-access-note";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -69,7 +70,7 @@ const steps: Step[] = [
     source: "https://www.tradingview.com/support/solutions/43000763320-how-to-work-with-pine-editor/",
   },
   {
-    title: "Rename it whenever you like",
+    title: "Optionally rename your private copy",
     detail: "Click the script-name dropdown again and select 'Rename'. Type your preferred personal script name and save it.",
     tip: "Renaming the saved copy is different from publishing or sharing it.",
     image: sources.rename, alt: "Official TradingView Pine Editor menu with Rename and Save script controls",
@@ -114,12 +115,13 @@ export default function LifetimeSetupPage() {
         <p className="mt-12 text-xs font-bold uppercase tracking-[.25em] text-[#fb7185]">Pine Script / Setup</p>
         <h1 className="mt-4 max-w-3xl font-display text-4xl font-extrabold leading-tight sm:text-6xl">Your Pro indicator.<br /><span className="text-[#fb7185]">Ready in 10 steps.</span></h1>
         <p className="mt-5 max-w-2xl text-base leading-8 text-zinc-300">Follow the real TradingView Help Center screenshots below to create, save, rename and run your personal Darth Algo Pro Pine Script. Designed for desktop browsers. Select any image to enlarge it.</p>
+        <LifetimeAccessNote />
         <div className="mt-7 grid gap-3 sm:grid-cols-3">
           <div className="rounded-xl border border-white/10 bg-[#141922] p-4"><p className="text-xs uppercase text-zinc-500">You need</p><p className="mt-1 font-bold">TradingView account</p></div>
           <div className="rounded-xl border border-white/10 bg-[#141922] p-4"><p className="text-xs uppercase text-zinc-500">You need</p><p className="mt-1 font-bold">Private .pine attachment</p></div>
           <div className="rounded-xl border border-white/10 bg-[#141922] p-4"><p className="text-xs uppercase text-zinc-500">Time</p><p className="mt-1 font-bold">Around 10 minutes</p></div>
         </div>
-        <div className="mt-6 rounded-xl border border-[#d32038]/35 bg-[#2a111a] p-4 text-sm leading-6 text-rose-100"><strong>Privacy:</strong> Your Lifetime source is for your personal use. Do not publish the script or send its code to anyone else. This page contains instructions only, not the source.</div>
+        <div className="mt-6 rounded-xl border border-[#d32038]/35 bg-[#2a111a] p-4 text-sm leading-6 text-rose-100"><strong>Privacy:</strong> For a personal-use source license, keep your code private: do not publish the script or send its code to anyone else. Existing buyers retain any different license rights promised at purchase. This page contains instructions only, not the source.</div>
       </header>
       <main className="mx-auto max-w-5xl px-5 pb-20 sm:px-8">
         <div className="grid gap-6">
