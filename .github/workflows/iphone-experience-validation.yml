@@ -45,6 +45,7 @@ jobs:
         run: npm install --no-save --package-lock=false --ignore-scripts @electric-sql/pglite@0.5.8
       - name: Founder money, calendar, inbox and media safety
         run: |
+          node tests/subscription-activation.test.cjs
           node tests/founder-finance.test.cjs
           node tests/founder-access.test.cjs
           node tests/founder-content.test.cjs
