@@ -35,3 +35,17 @@ test("accepts only one reasonable TradingView username from checkout fields", ()
     {key:"tradingviewusername",type:"text",text:{value:"two"}},
   ]),null);
 });
+
+test('classifies real zero-total paid and no-payment-required trials without fabricating revenue', async () => {
+  const { checkoutActivationEvidence: classify } = await import('../app/lib/subscription-activation-policy.ts');
+  const session={status:'complete',payment_status:'paid',amount_total:0};
+  const subscription={status:'trialing',trial_start:1793696797,trial_end:1793869597};
+  for(const payment_status of ['paid','no_payment_required']) {
+    assert.deepEqual(classify({...session,payment_status},'Swing',subscription),{kind:'trial_checkout',amountPaidCents:0,trialEndsAt:new Date(subscription.trial_end*1000).toISOString()});
+  }
+  assert.deepEqual(classify({...session,amount_total:1499},'Swing',subscription),{kind:'paid_checkout',amountPaidCents:1499,trialEndsAt:null});
+  for(const change of [{status:'open'},{payment_status:'unpaid'},{amount_total:-1},{amount_total:0.5},{amount_total:null},{amount_total:NaN},{amount_total:Infinity}])assert.equal(classify({...session,...change},'Swing',subscription),null);
+  for(const status of ['active','past_due','canceled','paused','incomplete'])assert.equal(classify(session,'Swing',{...subscription,status}),null);
+  for(const change of [{trial_start:null},{trial_start:0},{trial_end:null},{trial_end:1793696797},{trial_end:1e15}])assert.equal(classify(session,'Swing',{...subscription,...change}),null);
+  for(const plan of ['Pro','Scalper'])assert.equal(classify(session,plan,subscription),null);
+});
