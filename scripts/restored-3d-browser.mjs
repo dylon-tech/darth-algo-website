@@ -51,12 +51,39 @@ try {
         assert.ok(imageLoaded, 'Actual indicator image loads');
       }
       const enlarge = explorer.getByRole('button', { name: /^Enlarge / });
-      await enlarge.click(); assert.ok(await page.getByRole('dialog').isVisible());
-      await page.getByRole('button', { name: 'Close enlarged chart', exact: true }).click();
-      assert.equal(await page.getByRole('dialog').count(), 0);
-      await enlarge.click(); await page.keyboard.press('Escape');
-      assert.equal(await page.getByRole('dialog').count(), 0);
-      assert.ok(await enlarge.evaluate(el => el === document.activeElement), 'Focus returns after dismissal');
+      const modal = explorer.locator('dialog');
+      const label = `${name} (${engine.name()}) ${path}`;
+      const waitForModal = async (open, phase) => {
+        try {
+          await modal.waitFor({ state: open ? 'visible' : 'hidden', timeout: 5000 });
+          assert.equal(await modal.evaluate(el => el.open), open, 'Native dialog open state');
+          assert.equal(await explorer.getByRole('dialog').count(), Number(open), 'Accessible dialog visibility');
+        } catch (error) {
+          const state = await page.evaluate(() => ({
+            url: location.pathname,
+            openDialogs: document.querySelectorAll('dialog[open]').length,
+            focused: document.activeElement?.getAttribute('aria-label') ?? document.activeElement?.tagName,
+          }));
+          console.error('RESTORED_3D_DIALOG_DIAGNOSTIC', JSON.stringify({ label, phase, expectedOpen: open, ...state }));
+          throw error;
+        }
+      };
+      console.log(`Testing repeated chart dismissal: ${label}`);
+      await enlarge.click();
+      await waitForModal(true, 'first open');
+      await explorer.getByRole('button', { name: 'Close enlarged chart', exact: true }).click();
+      await waitForModal(false, 'close button');
+      await enlarge.click();
+      await waitForModal(true, 'reopen before Escape');
+      await page.keyboard.press('Escape');
+      await waitForModal(false, 'Escape dismissal');
+      const opener = await enlarge.elementHandle({ timeout: 5000 });
+      try {
+        await page.waitForFunction(el => el === document.activeElement, opener, { timeout: 5000 });
+        assert.ok(await enlarge.evaluate(el => el === document.activeElement), `${label}: focus returns after Escape`);
+      } finally {
+        await opener.dispose();
+      }
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'No horizontal overflow');
       await page.locator('[data-product-spotlight] + section').scrollIntoViewIfNeeded();
       await page.screenshot({ path: `artifacts/removed-3d/${name}-${path === '/' ? 'home' : path.split('/').pop()}-transition.png` });
