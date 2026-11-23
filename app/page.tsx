@@ -342,7 +342,11 @@ const faqs = [
   },
   {
     question: "Do I need TradingView Premium?",
-    answer: "No. You need a TradingView account that supports invite-only scripts and the alert usage required by your workflow.",
+    answer: (
+      <>
+        No. TradingView Premium is not required to add the invite-only indicator once Darth Algo grants access to your TradingView username. To set up indicator alerts, you need TradingView Essential or higher because Pine indicator alerts count as technical alerts. <a href="https://www.tradingview.com/pricing/" className="font-bold text-white underline underline-offset-4">Compare TradingView plan limits</a>.
+      </>
+    ),
   },
   {
     question: "How does the 2-day Swing trial work?",
