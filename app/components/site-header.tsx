@@ -4,9 +4,9 @@ import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import SiteBrand from "./site-brand";
+import { blackFridayEndsAt, blackFridayNavLabel, isBlackFridayActive } from "../lib/black-friday-offer";
 
 const links = [
-  ["Black Friday", "/black-friday"],
   ["Products", "/#examples"],
   ["Workflow", "/#performance"],
   ["Education", "/education"],
@@ -16,8 +16,28 @@ const links = [
   ["Support", "/support"],
 ];
 
-export default function SiteHeader() {
+export default function SiteHeader({ initialPromoActive = true }: { initialPromoActive?: boolean } = {}) {
   const [open, setOpen] = useState(false);
+  const [promoActive, setPromoActive] = useState(initialPromoActive);
+  const navigationLinks = [[blackFridayNavLabel(promoActive), "/black-friday"], ...links];
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const refreshPromo = () => {
+      clearTimeout(timer);
+      const now = Date.now();
+      const active = initialPromoActive && isBlackFridayActive(now);
+      setPromoActive(active);
+      if (active) timer = setTimeout(refreshPromo, Math.min(blackFridayEndsAt - now, 2_147_483_647));
+    };
+    // Preserve static-route caching and reconcile its server-rendered default on hydration.
+    refreshPromo();
+    document.addEventListener("visibilitychange", refreshPromo);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("visibilitychange", refreshPromo);
+    };
+  }, [initialPromoActive]);
 
   useEffect(() => {
     if (!open) return;
@@ -33,7 +53,7 @@ export default function SiteHeader() {
       <nav className="section-shell flex h-[72px] items-center justify-between" aria-label="Primary navigation">
         <Link href="/#top" aria-label="Darth Algo home"><SiteBrand compact /></Link>
         <div className="hidden items-center gap-7 xl:flex">
-          {links.map(([label, href]) => <Link key={href} href={href} className="text-sm font-semibold text-zinc-400 transition hover:text-white">{label}</Link>)}
+          {navigationLinks.map(([label, href]) => <Link key={href} href={href} className="text-sm font-semibold text-zinc-400 transition hover:text-white">{label}</Link>)}
         </div>
         <div className="hidden items-center gap-2 xl:flex">
           <Link href="/#swing-trial" className="inline-flex min-h-11 items-center justify-center rounded-md border border-swing/40 bg-swing/10 px-4 text-xs font-extrabold text-blue-200 transition hover:bg-swing hover:text-white">Try Swing Free</Link>
@@ -46,7 +66,7 @@ export default function SiteHeader() {
       {open && (
         <div id="mobile-navigation" className="border-t border-white/10 bg-[#0d1117] px-5 py-4 xl:hidden">
           <div className="mx-auto flex max-w-7xl flex-col gap-2">
-            {links.map(([label, href]) => <Link key={href} href={href} onClick={() => setOpen(false)} className="rounded-md px-3 py-3 text-sm font-semibold text-zinc-300 hover:bg-white/5">{label}</Link>)}
+            {navigationLinks.map(([label, href]) => <Link key={href} href={href} onClick={() => setOpen(false)} className="rounded-md px-3 py-3 text-sm font-semibold text-zinc-300 hover:bg-white/5">{label}</Link>)}
             <Link href="/#swing-trial" onClick={() => setOpen(false)} className="mt-2 inline-flex min-h-12 items-center justify-center rounded-md bg-white px-5 text-sm font-extrabold text-black">Start 2-Day Free Trial</Link>
             <Link href="/#pricing" onClick={() => setOpen(false)} className="inline-flex min-h-12 items-center justify-center rounded-md bg-ember px-5 text-sm font-extrabold text-white shadow-glow">View All Plans</Link>
           </div>
