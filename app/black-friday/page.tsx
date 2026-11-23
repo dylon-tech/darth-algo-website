@@ -1,14 +1,16 @@
 import LifetimeAccessNote from "../components/lifetime-access-note";
 import type { Metadata } from "next";
+import { cache } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ShieldCheck, CalendarDays, Sparkles } from "lucide-react";
 import SiteHeader from "../components/site-header";
 import SiteFooter from "../components/site-footer";
+import { isBlackFridayActive } from "../lib/black-friday-offer";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
+const activeMetadata: Metadata = {
   title: "Black Friday | 25% Off TradingView Indicators + $89 Lifetime",
   description: "Darth Algo Black Friday: 25% off your first month of Swing, Scalper or Pro, or Lifetime Pro for $89. See real indicator screenshots, terms and secure Stripe checkout.",
   alternates: { canonical: "/black-friday" },
@@ -19,6 +21,30 @@ export const metadata: Metadata = {
     images: ["/indicators/swing-overview.png"],
   },
 };
+
+const archiveMetadata: Metadata = {
+  title: "Black Friday Offer Archive",
+  description: "The Darth Algo Black Friday promotion has ended. Explore the current TradingView indicator plans and pricing.",
+  alternates: { canonical: "/black-friday" },
+  openGraph: {
+    title: "Darth Algo | Black Friday Offer Archive",
+    description: "The promotion has ended. Explore current Darth Algo TradingView indicator plans and pricing.",
+    url: "/black-friday",
+    images: ["/indicators/swing-overview.png"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Darth Algo | Black Friday Offer Archive",
+    description: "The promotion has ended. Explore current Darth Algo TradingView indicator plans and pricing.",
+    images: ["/indicators/swing-overview.png"],
+  },
+};
+
+const requestPromoActive = cache(() => isBlackFridayActive());
+
+export function generateMetadata(): Metadata {
+  return requestPromoActive() ? activeMetadata : archiveMetadata;
+}
 
 const products = [
   {
@@ -57,11 +83,11 @@ const products = [
 ] as const;
 
 export default function BlackFridayPage() {
-  const promoActive = Date.now() < Date.parse("2026-12-10T04:59:00.000Z");
+  const promoActive = requestPromoActive();
 
   return (
     <>
-      <SiteHeader />
+      <SiteHeader initialPromoActive={promoActive} />
       <main id="main-content" className="min-h-screen bg-[#080a0e] text-white">
         <div className="border-t-[3px] border-[#e32645]" />
         <section className="relative isolate overflow-hidden border-b border-white/10 bg-[#101319]">
