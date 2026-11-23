@@ -1,14 +1,16 @@
 import LifetimeAccessNote from "../components/lifetime-access-note";
 import type { Metadata } from "next";
+import { cache } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ShieldCheck, CalendarDays, Sparkles } from "lucide-react";
 import SiteHeader from "../components/site-header";
 import SiteFooter from "../components/site-footer";
+import { isBlackFridayActive } from "../lib/black-friday-offer";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
+const activeMetadata: Metadata = {
   title: "Black Friday | 25% Off TradingView Indicators + $89 Lifetime",
   description: "Darth Algo Black Friday: 25% off your first month of Swing, Scalper or Pro, or Lifetime Pro for $89. See real indicator screenshots, terms and secure Stripe checkout.",
   alternates: { canonical: "/black-friday" },
@@ -19,6 +21,30 @@ export const metadata: Metadata = {
     images: ["/indicators/swing-overview.png"],
   },
 };
+
+const archiveMetadata: Metadata = {
+  title: "Black Friday Offer Archive",
+  description: "The Darth Algo Black Friday promotion has ended. Explore the current TradingView indicator plans and pricing.",
+  alternates: { canonical: "/black-friday" },
+  openGraph: {
+    title: "Darth Algo | Black Friday Offer Archive",
+    description: "The promotion has ended. Explore current Darth Algo TradingView indicator plans and pricing.",
+    url: "/black-friday",
+    images: ["/indicators/swing-overview.png"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Darth Algo | Black Friday Offer Archive",
+    description: "The promotion has ended. Explore current Darth Algo TradingView indicator plans and pricing.",
+    images: ["/indicators/swing-overview.png"],
+  },
+};
+
+const requestPromoActive = cache(() => isBlackFridayActive());
+
+export function generateMetadata(): Metadata {
+  return requestPromoActive() ? activeMetadata : archiveMetadata;
+}
 
 const products = [
   {
@@ -57,20 +83,20 @@ const products = [
 ] as const;
 
 export default function BlackFridayPage() {
-  const promoActive = Date.now() < Date.parse("2026-12-10T04:59:00.000Z");
+  const promoActive = requestPromoActive();
 
   return (
     <>
-      <SiteHeader />
+      <SiteHeader initialPromoActive={promoActive} />
       <main id="main-content" className="min-h-screen bg-[#080a0e] text-white">
         <div className="border-t-[3px] border-[#e32645]" />
         <section className="relative isolate overflow-hidden border-b border-white/10 bg-[#101319]">
           <div className="pointer-events-none absolute -right-32 -top-48 h-[480px] w-[480px] rounded-full bg-[#ad1a31]/20 blur-[120px]" aria-hidden="true" />
           <div className="section-shell relative grid gap-10 py-14 sm:py-20 lg:grid-cols-[0.95fr_1.05fr] lg:items-center lg:gap-14">
             <div>
-              <p className="inline-flex items-center gap-2 rounded-full border border-[#ed3651]/40 bg-[#ed3651]/10 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-rose-300"><Sparkles className="h-4 w-4" /> November–December 2026 · Limited-time offer</p>
+              <p className="inline-flex items-center gap-2 rounded-full border border-[#ed3651]/40 bg-[#ed3651]/10 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-rose-300"><Sparkles className="h-4 w-4" /> {promoActive ? "November–December 2026 · Limited-time offer" : "Black Friday offer archive"}</p>
               <h1 className="mt-7 text-4xl font-black leading-[1.06] tracking-tight sm:text-6xl">See the setup.<br /><span className="text-[#fc506b]">Plan the trade.</span></h1>
-              <p className="mt-6 max-w-xl text-base leading-8 text-zinc-300">Black Friday pricing for Darth Algo TradingView indicators. Review authentic chart screenshots, compare your options, and choose the workflow that fits your trading horizon.</p>
+              <p className="mt-6 max-w-xl text-base leading-8 text-zinc-300">{promoActive ? "Black Friday pricing for Darth Algo TradingView indicators." : "Current pricing for Darth Algo TradingView indicators."} Review authentic chart screenshots, compare your options, and choose the workflow that fits your trading horizon.</p>
               {promoActive ? (
                 <>
                   <p className="mt-7 text-2xl font-black sm:text-3xl"><span className="text-[#fc506b]">25% off</span> the first month <span className="text-zinc-500">or</span> <span className="text-[#fc506b]">$89</span> Lifetime</p>
@@ -82,11 +108,11 @@ export default function BlackFridayPage() {
               ) : (
                 <div className="mt-7 rounded-lg border border-white/15 bg-white/5 p-5">
                   <p className="font-bold">This Black Friday promotion has ended.</p>
-                  <p className="mt-2 text-sm text-zinc-400">Browse the current plans and pricing; the promotional codes below are no longer valid.</p>
+                  <p className="mt-2 text-sm text-zinc-400">Browse the current plans and pricing.</p>
                   <Link href="/indicators" className="mt-3 inline-block font-semibold text-rose-300 underline">Explore current products</Link>
                 </div>
               )}
-              <div className="mt-7 flex items-center gap-2 text-sm text-zinc-400"><CalendarDays className="h-4 w-4 text-rose-300" /> Offer ends December 9, 2026 at 11:59 PM Eastern.</div>
+              {promoActive && <div className="mt-7 flex items-center gap-2 text-sm text-zinc-400"><CalendarDays className="h-4 w-4 text-rose-300" /> Offer ends December 9, 2026 at 11:59 PM Eastern.</div>}
             </div>
             <figure className="overflow-hidden rounded-2xl border border-white/10 bg-black shadow-[0_0_80px_rgba(190,26,56,0.14)]">
               <div className="relative aspect-[1.3] w-full">
@@ -100,7 +126,7 @@ export default function BlackFridayPage() {
         <section id="monthly" className="section-shell py-14 sm:py-20">
           <p className="text-xs font-bold uppercase tracking-[0.23em] text-rose-300">Monthly indicators</p>
           <h2 className="mt-3 text-3xl font-black sm:text-4xl">Choose your trading horizon.</h2>
-          <p className="mt-4 max-w-3xl text-sm leading-7 text-zinc-400">All three monthly discounts use the code <strong className="select-all text-white">BLACKFRIDAY25</strong> at Stripe checkout. Only the first payment is discounted. Future monthly renewals use the standard price.</p>
+          <p className="mt-4 max-w-3xl text-sm leading-7 text-zinc-400">{promoActive ? <>All three monthly discounts use the code <strong className="select-all text-white">BLACKFRIDAY25</strong> at Stripe checkout. Only the first payment is discounted. Future monthly renewals use the standard price.</> : "These are the current standard monthly prices. Taxes may apply."}</p>
           <div className="mt-9 grid gap-5 lg:grid-cols-3">
             {products.map((product) => (
               <article key={product.name} className="overflow-hidden rounded-2xl border border-white/10 bg-[#131821]">
@@ -144,7 +170,7 @@ export default function BlackFridayPage() {
           <div className="mx-auto max-w-3xl text-center">
             <ShieldCheck className="mx-auto h-7 w-7 text-rose-300" />
             <h2 className="mt-4 text-2xl font-black sm:text-3xl">A clearer chart, not a promise of profits.</h2>
-            <p className="mt-5 text-sm leading-7 text-zinc-400">Darth Algo provides technical chart tools that help organize signals, trend context, entry ideas and risk levels. Trading involves financial risk. Historical examples or chart illustrations do not guarantee future results. Promotional pricing and eligibility are confirmed by Stripe at checkout; taxes may apply.</p>
+            <p className="mt-5 text-sm leading-7 text-zinc-400">Darth Algo provides technical chart tools that help organize signals, trend context, entry ideas and risk levels. Trading involves financial risk. Historical examples or chart illustrations do not guarantee future results. {promoActive ? "Promotional pricing and eligibility are confirmed by Stripe at checkout; taxes may apply." : "Final pricing is shown at checkout; taxes may apply."}</p>
             <Link href="/support" className="mt-6 inline-flex font-bold text-rose-300 underline underline-offset-4">Questions? Contact Darth Algo support</Link>
           </div>
         </section>
