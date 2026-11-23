@@ -25,7 +25,7 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import ProductSpotlight from "./components/product-spotlight";
 import SiteBrand from "./components/site-brand";
 import SiteFooter from "./components/site-footer";
@@ -330,7 +330,11 @@ const indicatorExamples = [
 const faqs = [
   {
     question: "How do I receive access?",
-    answer: "Enter your exact TradingView username during Stripe checkout. After payment confirmation, your access is processed and may take time. Once activated, open TradingView → Indicators → Invite-only scripts. Contact support if your tool is missing.",
+    answer: (
+      <>
+        Enter your exact TradingView username at checkout. Activation may take time. When your access is ready, open TradingView → Indicators → Invite-only scripts. If your tool is missing after a refresh, <Link href="/support" className="font-bold text-white underline underline-offset-4">get help from Support</Link>.
+      </>
+    ),
   },
   {
     question: "Which markets does Darth Algo support?",
@@ -338,7 +342,11 @@ const faqs = [
   },
   {
     question: "Do I need TradingView Premium?",
-    answer: "No. You need a TradingView account that supports invite-only scripts and the alert usage required by your workflow.",
+    answer: (
+      <>
+        No. TradingView Premium is not required to add the invite-only indicator once Darth Algo grants access to your TradingView username. To set up indicator alerts, you need TradingView Essential or higher because Pine indicator alerts count as technical alerts. <a href="https://www.tradingview.com/pricing/" className="font-bold text-white underline underline-offset-4">Compare TradingView plan limits</a>.
+      </>
+    ),
   },
   {
     question: "How does the 2-day Swing trial work?",
@@ -450,7 +458,7 @@ function SectionHeading({
 }: {
   eyebrow: string;
   title: string;
-  copy: string;
+  copy: ReactNode;
   centered?: boolean;
 }) {
   return (
@@ -951,7 +959,16 @@ export default function Home() {
 
       <section id="how-it-works" className="relative z-10 border-y border-white/10 bg-[#080809] py-24 sm:py-32">
         <div className="section-shell">
-          <SectionHeading centered eyebrow="Getting Started" title="From checkout to chart." copy="Enter your exact TradingView username at checkout. Your order is processed after Stripe confirms payment; activation may take time. Check Invite-only scripts and contact support if access is missing." />
+          <SectionHeading
+            centered
+            eyebrow="Getting Started"
+            title="From checkout to chart."
+            copy={
+              <>
+                Enter your exact TradingView username at checkout. If checkout shows a two-day Swing trial, it starts when you complete checkout. Activation may take time. If your tool is missing after a refresh, <Link href="/support" className="font-bold text-white underline underline-offset-4">get help from Support</Link>.
+              </>
+            }
+          />
           <div className="mt-14 grid gap-3 lg:grid-cols-5">
             {steps.map(([number, title, copy], index) => (
               <article key={number} className="relative rounded-md border border-white/10 bg-black/45 p-5">
@@ -966,7 +983,7 @@ export default function Home() {
 
       <section id="pricing" className="relative z-10 py-24 sm:py-32">
         <div className="section-shell">
-          <SectionHeading centered eyebrow="Simple Pricing" title="Choose the tool that fits your trading." copy="Choose Scalper, Swing, Pro, or Lifetime. Enter your TradingView username at checkout so access can be processed after payment confirmation." />
+          <SectionHeading centered eyebrow="Simple Pricing" title="Choose the tool that fits your trading." copy="Choose Scalper, Swing, Pro, or Lifetime. Enter your exact TradingView username at checkout so we can process your access." />
         <LifetimeAccessNote />
           <p className="mx-auto mt-5 max-w-2xl text-center text-sm leading-7 text-zinc-300">Monthly plans renew until canceled. Lifetime is a separate one-time purchase. Already subscribed and switching plans? <Link href="/support" className="font-bold text-white underline underline-offset-4">Contact support before purchasing</Link> so we can help with the transition.</p>
           <div className="pricing-command mx-auto mt-10 max-w-6xl overflow-hidden rounded-md border border-white/10 bg-black/70">
